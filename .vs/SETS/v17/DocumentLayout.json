@@ -3,12 +3,12 @@
   "WorkspaceRootPath": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\sets.client\\src\\components\\layout\\apptopbar.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|solutionrelative:sets.client\\src\\components\\layout\\apptopbar.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\sets.client\\src\\api\\transactionapi.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
       "RelativeMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|solutionrelative:sets.client\\src\\api\\transactionapi.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\sets.client\\src\\components\\layout\\apptopbar.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|solutionrelative:sets.client\\src\\components\\layout\\apptopbar.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\sets.client\\src\\api\\themeapi.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
@@ -274,7 +274,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 1,
               "Title": "AppTopbar.vue",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\components\\layout\\AppTopbar.vue",
               "RelativeDocumentMoniker": "sets.client\\src\\components\\layout\\AppTopbar.vue",
@@ -521,8 +521,7 @@
               "RelativeToolTip": "sets.client\\src\\api\\batchApi.js",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAA3AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2026-04-15T08:29:56.234Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-15T08:29:56.234Z"
             },
             {
               "$type": "Document",
@@ -550,13 +549,13 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 0,
               "Title": "transactionApi.js",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\api\\transactionApi.js",
               "RelativeDocumentMoniker": "sets.client\\src\\api\\transactionApi.js",
               "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\api\\transactionApi.js",
               "RelativeToolTip": "sets.client\\src\\api\\transactionApi.js",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
               "WhenOpened": "2026-04-15T01:43:41.21Z",
               "EditorCaption": ""
@@ -595,8 +594,7 @@
               "RelativeToolTip": "sets.client\\src\\api\\authApi.js",
               "ViewState": "AgIAAAMAAAAAAAAAAAAAAAoAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2026-04-14T23:54:07.677Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-14T23:54:07.677Z"
             },
             {
               "$type": "Document",
@@ -608,8 +606,7 @@
               "RelativeToolTip": "sets.client\\src\\views\\Dashboard.vue",
               "ViewState": "AgIAALwAAAAAAAAAAAAjwCoBAAARAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
-              "WhenOpened": "2026-04-15T06:46:08.053Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-15T06:46:08.053Z"
             },
             {
               "$type": "Document",
@@ -633,8 +630,7 @@
               "RelativeToolTip": "sets.client\\src\\stores\\UiStore.js",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABoAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2026-04-15T07:09:07.108Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-15T07:09:07.108Z"
             },
             {
               "$type": "Document",
@@ -646,8 +642,7 @@
               "RelativeToolTip": "sets.client\\src\\stores\\authStore.js",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAACIAAAALAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2026-04-15T06:50:50.164Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-15T06:50:50.164Z"
             },
             {
               "$type": "Document",
@@ -659,8 +654,7 @@
               "RelativeToolTip": "sets.client\\src\\api\\axiosInstance.js",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2026-04-15T08:30:06.097Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-15T08:30:06.097Z"
             },
             {
               "$type": "Document",
@@ -672,8 +666,7 @@
               "RelativeToolTip": "sets.client\\src\\api\\themeApi.js",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2026-04-15T08:30:03.317Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-15T08:30:03.317Z"
             },
             {
               "$type": "Document",

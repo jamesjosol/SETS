@@ -18,5 +18,6 @@ namespace Model.SETSDB
         public string? ProcReceivedBy { get; set; }
         public string Status { get; set; }
         public string? Remarks { get; set; }
+        public string? ReceivingRemarks { get; set; }
     }
 }

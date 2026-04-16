@@ -14,5 +14,7 @@ namespace Model.SETSDB
         public string Location { get; set; }
         public string ProcDestination { get; set; }
         public string Status { get; set; }
+        public DateTime? ProcReceived { get; set; }
+        public DateTime? Completed { get; set; }
     }
 }

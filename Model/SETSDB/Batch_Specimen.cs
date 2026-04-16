@@ -19,8 +19,6 @@ namespace Model.SETSDB
         public string SampleTypeName { get; set; }
         public DateTime Endorsed { get; set; }
         public string EndorsedBy { get; set; }
-        public DateTime? ProcReceived { get; set; }
-        public string? ProcReceivedBy { get; set; }
         public string Status { get; set; }
         public string? Remarks { get; set; }
     }
