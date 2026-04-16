@@ -1,0 +1,27 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="HCLAB" GeneratedClassName="hclab">
+  <Profiles />
+  <Settings>
+    <Setting Name="WES" Type="System.String" Scope="User">
+      <Value Profile="(Default)">data source=(DESCRIPTION=(ADDRESS=(PROTOCOL=tcp)(HOST=10.10.11.10)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=hclab))); user id = hclab; password = hclab;</Value>
+    </Setting>
+    <Setting Name="NAGA" Type="System.String" Scope="User">
+      <Value Profile="(Default)">data source=(DESCRIPTION=(ADDRESS=(PROTOCOL=tcp)(HOST=10.20.5.10)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=hclab))) ; user id = hclab; password = hclab;</Value>
+    </Setting>
+    <Setting Name="TABUNOK" Type="System.String" Scope="User">
+      <Value Profile="(Default)">data source=(DESCRIPTION=(ADDRESS=(PROTOCOL=tcp)(HOST=192.171.12.100)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=hclab))); user id = hclab; password = hclab;</Value>
+    </Setting>
+    <Setting Name="LILOAN" Type="System.String" Scope="User">
+      <Value Profile="(Default)">data source=(DESCRIPTION=(ADDRESS=(PROTOCOL=tcp)(HOST=192.171.51.100)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=hclab))); user id = hclab; password = hclab;</Value>
+    </Setting>
+    <Setting Name="DIAMOND" Type="System.String" Scope="User">
+      <Value Profile="(Default)">data source=(DESCRIPTION=(ADDRESS=(PROTOCOL=tcp)(HOST=192.171.10.100)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=hclab))); user id = hclab; password = hclab;</Value>
+    </Setting>
+    <Setting Name="MACTAN" Type="System.String" Scope="User">
+      <Value Profile="(Default)">data source=(DESCRIPTION=(ADDRESS=(PROTOCOL=tcp)(HOST=192.171.21.100)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=hclab))); user id = hclab; password = hclab;</Value>
+    </Setting>
+    <Setting Name="CONSOLACION" Type="System.String" Scope="User">
+      <Value Profile="(Default)">data source=(DESCRIPTION=(ADDRESS=(PROTOCOL=tcp)(HOST=10.62.2.10)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=hclab))); user id = hclab; password = hclab;</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>

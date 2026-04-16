@@ -1,0 +1,120 @@
+@import "tailwindcss";
+
+@plugin "daisyui" {
+  themes: light, dark, dim;
+}
+
+@import "nprogress/nprogress.css";
+
+@font-face {
+  font-family: "Manrope";
+  src: url("/fonts/Manrope-ExtraLight.ttf") format("truetype");
+  font-weight: 200;
+}
+
+@font-face {
+  font-family: "Manrope";
+  src: url("/fonts/Manrope-Light.ttf") format("truetype");
+  font-weight: 300;
+}
+
+@font-face {
+  font-family: "Manrope";
+  src: url("/fonts/Manrope-Regular.ttf") format("truetype");
+  font-weight: 400;
+}
+
+@font-face {
+  font-family: "Manrope";
+  src: url("/fonts/Manrope-Medium.ttf") format("truetype");
+  font-weight: 500;
+}
+
+@font-face {
+  font-family: "Manrope";
+  src: url("/fonts/Manrope-SemiBold.ttf") format("truetype");
+  font-weight: 600;
+}
+
+@font-face {
+  font-family: "Manrope";
+  src: url("/fonts/Manrope-Bold.ttf") format("truetype");
+  font-weight: 700;
+}
+
+@font-face {
+  font-family: "Manrope";
+  src: url("/fonts/Manrope-ExtraBold.ttf") format("truetype");
+  font-weight: 800;
+}
+
+
+/* Light Theme */
+[data-theme="light"] {
+  --color-bg: #f0f1f3;
+  --color-surface: #f8f9fa;
+  --color-surface-low: #edeef0;
+  --color-surface-mid: #e8e9ec;
+  --color-surface-high: #e2e3e6;
+  --color-surface-highest: #dcdde0;
+  --color-border: rgba(203,195,213,0.25);
+  --color-border-strong: rgba(203,195,213,0.45);
+  --color-text: #191c1d;
+  --color-text-muted: #7b7484;
+  --color-text-subtle: rgba(73,68,83,0.6);
+  --color-primary: #461599;
+  --color-primary-soft: rgba(70,21,153,0.08);
+  --color-primary-gradient: linear-gradient(135deg, #461599, #5e35b1);
+  --color-secondary: #4a626d;
+  --color-secondary-container: #cde6f4;
+  --color-error: #ba1a1a;
+  --color-error-soft: rgba(186,26,26,0.08);
+  --color-success: #059669;
+  --color-success-soft: rgba(5,150,105,0.08);
+  --color-warning: #d97706;
+  --color-warning-soft: rgba(217,119,6,0.08);
+  --color-shadow: rgba(0,0,0,0.07);
+}
+
+/* Dark Theme */
+[data-theme="dark"] {
+  --color-bg: #0f1117;
+  --color-surface: #1a1d27;
+  --color-surface-low: #222533;
+  --color-surface-high: #2a2d3e;
+  --color-border: rgba(255,255,255,0.08);
+  --color-text: #e8eaf0;
+  --color-text-muted: #8b8fa8;
+  --color-primary: #7c4dff;
+  --color-primary-gradient: linear-gradient(135deg, #7c4dff, #9c6fff);
+  --color-primary-soft: rgba(124,77,255,0.25); /* was 0.12, increase opacity */
+  --color-surface: #1e2130; /* slightly lighter surface */
+  --color-surface-low: #252838;
+  --color-error: #ba1a1a;
+  --color-error-soft: rgba(186,26,26,0.08);
+  --color-success: #059669;
+  --color-success-soft: rgba(5,150,105,0.08);
+  --color-warning: #d97706;
+  --color-warning-soft: rgba(217,119,6,0.08);
+}
+
+/* Dim Theme */
+[data-theme="dim"] {
+  --color-bg: #1e2130;
+  --color-surface: #262a3d;
+  --color-surface-low: #2e3347;
+  --color-surface-high: #363c52;
+  --color-border: rgba(255,255,255,0.06);
+  --color-text: #d4d7e8;
+  --color-text-muted: #7b8099;
+  --color-primary: #6c4ed4;
+  --color-primary-gradient: linear-gradient(135deg, #6c4ed4, #8a6ef0);
+  --color-primary-soft: rgba(124,77,255,0.25); /* was 0.12, increase opacity */
+  --color-surface-low: #252838;
+  --color-error: #ba1a1a;
+  --color-error-soft: rgba(186,26,26,0.08);
+  --color-success: #059669;
+  --color-success-soft: rgba(5,150,105,0.08);
+  --color-warning: #d97706;
+  --color-warning-soft: rgba(217,119,6,0.08);
+}
