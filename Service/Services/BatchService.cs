@@ -69,8 +69,6 @@ namespace Service.Services
                             SampleTypeName = s.SampleTypeName,
                             Endorsed = now,
                             EndorsedBy = request.UserID,
-                            ProcReceived = null,
-                            ProcReceivedBy = null,
                             Status = "P",
                             Remarks = s.Remarks
                         });
@@ -86,8 +84,6 @@ namespace Service.Services
                             Quantity = nb.Quantity,
                             Endorsed = now,
                             EndorsedBy = request.UserID,
-                            ProcReceived = null,
-                            ProcReceivedBy = null,
                             Status = "P",
                             Remarks = nb.Remarks
                         });

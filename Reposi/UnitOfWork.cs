@@ -24,6 +24,7 @@ namespace Reposi
         public BatchSpecimenRepo BatchSpecimens { get; private set; }
         public BatchNonBarcodedRepo BatchNonBarcodeds { get; private set; }
         public RefCodesRepo RefCodes { get; private set; }
+        public BatchSpecimenReceivingRepo BatchSpecimenReceivings { get; private set; }
 
         public UnitOfWork(AppDbContext context)
         {
@@ -39,6 +40,7 @@ namespace Reposi
             BatchSpecimens = new BatchSpecimenRepo(_context);
             BatchNonBarcodeds = new BatchNonBarcodedRepo(_context);
             RefCodes = new RefCodesRepo(_context);
+            BatchSpecimenReceivings = new BatchSpecimenReceivingRepo(_context);
         }
 
         public void Dispose()

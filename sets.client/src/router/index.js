@@ -8,19 +8,41 @@ const routes = [
     path: '/',
     name: 'Login',
     component: Login,
-    meta: { requiresGuest: true }  // only for non-logged in users
+    meta: { requiresGuest: true }
   },
+
+  // ── Endorser (category 1) ──────────────────────────────────────────
   {
     path: '/dashboard',
     name: 'Dashboard',
     component: () => import('../views/Dashboard.vue'),
-    meta: { requiresAuth: true }  // protected
+    meta: { requiresAuth: true, category: '1' }
   },
   {
     path: '/endorsement/new',
     name: 'NewEndorsement',
     component: () => import('../views/NewEndorsement.vue'),
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true, category: '1' }
+  },
+
+  // ── Receiver (category 2) ──────────────────────────────────────────
+  {
+    path: '/receiver/dashboard',
+    name: 'ReceiverDashboard',
+    component: () => import('../views/ReceiverDashboard.vue'),
+    meta: { requiresAuth: true, category: '2' }
+  },
+  {
+    path: '/receiver/receive',
+    name: 'ReceiveEndorsement',
+    component: () => import('../views/ReceiveEndorsement.vue'),
+    meta: { requiresAuth: true, category: '2' }
+  },
+
+  // ── Catch-all: redirect to login ───────────────────────────────────
+  {
+    path: '/:pathMatch(.*)*',
+    redirect: '/'
   }
 ]
 
@@ -34,14 +56,22 @@ router.beforeEach((to, from, next) => {
 
   const authStore = useAuthStore()
 
-  // redirect to dashboard if already logged in
+  // 1. Guest-only routes — redirect to home if already logged in
   if (to.meta.requiresGuest && authStore.isAuthenticated) {
-    return next('/dashboard')
+    return next(getDefaultRoute(authStore))
   }
 
-  // redirect to login if not authenticated
+  // 2. Protected routes — redirect to login if not authenticated
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
     return next('/')
+  }
+
+  // 3. Category guard — admin bypasses, others must match
+  if (to.meta.requiresAuth && to.meta.category && authStore.isAuthenticated) {
+    if (!authStore.isAdmin && authStore.sectionCategory !== to.meta.category) {
+      // Redirect to their own default route instead of blocking
+      return next(getDefaultRoute(authStore))
+    }
   }
 
   next()
@@ -50,5 +80,16 @@ router.beforeEach((to, from, next) => {
 router.afterEach(() => {
   NProgress.done()
 })
+
+// ── Helper: resolve default route per category ─────────────────────────────
+export function getDefaultRoute(authStore) {
+  if (authStore.isAdmin) return '/dashboard'
+  switch (authStore.sectionCategory) {
+    case '1': return '/dashboard'
+    case '2': return '/receiver/dashboard'
+    case '3': return '/runner/dashboard'
+    default: return '/'
+  }
+}
 
 export default router

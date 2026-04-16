@@ -227,8 +227,10 @@
   import NProgress from "nprogress";
   import { authApi } from "@/api/authApi";
   import { useAuthStore } from "@/stores/authStore";
+  import { getDefaultRoute } from '@/router'
   import AlertModal from "@/components/common/AlertModal.vue";
   import { useTheme } from '@/composables/useTheme'
+
 
   const { applyTheme } = useTheme()
   const router = useRouter();
@@ -351,7 +353,7 @@
 
       console.log(authStore.section)
       applyTheme(data.data.theme) 
-      router.push("/dashboard")
+      router.push(getDefaultRoute(authStore))
 
     } catch (err) {
       if (err.response) {

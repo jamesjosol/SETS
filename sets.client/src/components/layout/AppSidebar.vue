@@ -112,15 +112,30 @@
 
     </nav>
 
-    <!-- New Endorsement Button (Endorser only, or Admin) -->
-    <div v-if="authStore.isEndorser || authStore.isAdmin"
-         class="px-4 pb-6 pt-4"
+    <!-- New Endorsement Button (Endorser only) -->
+    <div v-if="authStore.isEndorser"
+         class="px-4 pt-4"
+         :class="authStore.isEndorser && authStore.isReceiver ? '' : 'pb-6'"
          style="border-top: 1px solid var(--color-border);">
       <router-link to="/endorsement/new">
         <button class="w-full py-4 rounded-xl font-bold text-xs uppercase tracking-widest flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-lg"
                 style="background: var(--color-primary-gradient); color: #ffffff;">
           <span class="material-symbols-outlined text-lg">add_circle</span>
           New Endorsement
+        </button>
+      </router-link>
+    </div>
+
+    <!-- Receive Endorsement Button (Receiver only) -->
+    <div v-if="authStore.isReceiver"
+         class="px-4 pb-6"
+         :class="authStore.isEndorser ? 'pt-2' : 'pt-4'"
+         style="border-top: 1px solid var(--color-border);">
+      <router-link to="/receiver/receive">
+        <button class="w-full py-4 rounded-xl font-bold text-xs uppercase tracking-widest flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-lg"
+                style="background: var(--color-primary-gradient); color: #ffffff;">
+          <span class="material-symbols-outlined text-lg">move_to_inbox</span>
+          Receive Endorsement
         </button>
       </router-link>
     </div>
@@ -153,7 +168,6 @@
 
   const receiverItems = [
     { name: 'Dashboard', path: '/receiver/dashboard', icon: 'dashboard' },
-    { name: 'Receive Specimens', path: '/receiver/receive', icon: 'inbox' },
     { name: 'Incoming Specimens', path: '/receiver/incoming', icon: 'move_to_inbox' },
     { name: 'Audit Trail', path: '/receiver/audit-trail', icon: 'manage_search' },
     { name: 'Contingency', path: '/receiver/contingency', icon: 'offline_bolt' },

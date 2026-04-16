@@ -9,9 +9,9 @@ C:\Users\jamespaul.josol\source\repos\SETS\HCLAB\obj\Debug\net8.0\HCLAB.Generate
 C:\Users\jamespaul.josol\source\repos\SETS\HCLAB\obj\Debug\net8.0\HCLAB.AssemblyInfoInputs.cache
 C:\Users\jamespaul.josol\source\repos\SETS\HCLAB\obj\Debug\net8.0\HCLAB.AssemblyInfo.cs
 C:\Users\jamespaul.josol\source\repos\SETS\HCLAB\obj\Debug\net8.0\HCLAB.csproj.CoreCompileInputs.cache
+C:\Users\jamespaul.josol\source\repos\SETS\HCLAB\obj\Debug\net8.0\HCLAB.sourcelink.json
 C:\Users\jamespaul.josol\source\repos\SETS\HCLAB\obj\Debug\net8.0\HCLAB.csproj.Up2Date
 C:\Users\jamespaul.josol\source\repos\SETS\HCLAB\obj\Debug\net8.0\HCLAB.dll
 C:\Users\jamespaul.josol\source\repos\SETS\HCLAB\obj\Debug\net8.0\refint\HCLAB.dll
 C:\Users\jamespaul.josol\source\repos\SETS\HCLAB\obj\Debug\net8.0\HCLAB.pdb
 C:\Users\jamespaul.josol\source\repos\SETS\HCLAB\obj\Debug\net8.0\ref\HCLAB.dll
-C:\Users\jamespaul.josol\source\repos\SETS\HCLAB\obj\Debug\net8.0\HCLAB.sourcelink.json

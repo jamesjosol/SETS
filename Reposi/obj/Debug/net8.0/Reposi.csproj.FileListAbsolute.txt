@@ -8,9 +8,9 @@ C:\Users\jamespaul.josol\source\repos\SETS\Reposi\obj\Debug\net8.0\Reposi.Genera
 C:\Users\jamespaul.josol\source\repos\SETS\Reposi\obj\Debug\net8.0\Reposi.AssemblyInfoInputs.cache
 C:\Users\jamespaul.josol\source\repos\SETS\Reposi\obj\Debug\net8.0\Reposi.AssemblyInfo.cs
 C:\Users\jamespaul.josol\source\repos\SETS\Reposi\obj\Debug\net8.0\Reposi.csproj.CoreCompileInputs.cache
+C:\Users\jamespaul.josol\source\repos\SETS\Reposi\obj\Debug\net8.0\Reposi.sourcelink.json
 C:\Users\jamespaul.josol\source\repos\SETS\Reposi\obj\Debug\net8.0\Reposi.csproj.Up2Date
 C:\Users\jamespaul.josol\source\repos\SETS\Reposi\obj\Debug\net8.0\Reposi.dll
 C:\Users\jamespaul.josol\source\repos\SETS\Reposi\obj\Debug\net8.0\refint\Reposi.dll
 C:\Users\jamespaul.josol\source\repos\SETS\Reposi\obj\Debug\net8.0\Reposi.pdb
 C:\Users\jamespaul.josol\source\repos\SETS\Reposi\obj\Debug\net8.0\ref\Reposi.dll
-C:\Users\jamespaul.josol\source\repos\SETS\Reposi\obj\Debug\net8.0\Reposi.sourcelink.json

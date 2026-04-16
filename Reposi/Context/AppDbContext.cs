@@ -19,6 +19,7 @@ namespace Reposi.Context
         public DbSet<Batch_Header> Batch_Header { get; set; }
         public DbSet<Batch_Specimen> Batch_Specimen { get; set; }
         public DbSet<Batch_NonBarcoded> Batch_NonBarcoded { get; set; }
+        public DbSet<Batch_Specimen_Receiving> Batch_Specimen_Receiving { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             // User_Master
@@ -95,6 +96,17 @@ namespace Reposi.Context
             // Ref_Codes
             modelBuilder.Entity<Ref_Codes>().ToTable("Ref_Codes");
             modelBuilder.Entity<Ref_Codes>().HasKey(r => r.No);
+
+            // Batch_Specimen_Receiving
+            modelBuilder.Entity<Batch_Specimen_Receiving>().ToTable("Batch_Specimen_Receiving");
+            modelBuilder.Entity<Batch_Specimen_Receiving>().HasKey(b => b.Id);
+            modelBuilder.Entity<Batch_Specimen_Receiving>()
+                .HasIndex(b => new { b.SpecimenNo, b.BatchNo })
+                .IsUnique();
+            modelBuilder.Entity<Batch_Specimen_Receiving>()
+                .HasOne<Batch_Header>()
+                .WithMany()
+                .HasForeignKey(b => b.BatchNo);
         }
     }
 }

@@ -40,9 +40,9 @@ export const useAuthStore = defineStore('auth', {
     sectionCategory: (state) => state.section?.category ?? null,
 
     // helper getters based on category code
-    isEndorser: (state) => state.section?.category === '1',
-    isReceiver: (state) => state.section?.category === '2',
-    isRunner: (state) => state.section?.category === '3',
+    isEndorser: (state) => !state.user?.isAdmin && state.section?.category === '1',
+    isReceiver: (state) => !state.user?.isAdmin && state.section?.category === '2',
+    isRunner: (state) => !state.user?.isAdmin && state.section?.category === '3',
   },
 
   persist: true

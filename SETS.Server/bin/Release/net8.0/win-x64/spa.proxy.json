@@ -1,0 +1,10 @@
+{
+"SpaProxyServer": {
+"ServerUrl": "https://localhost:39722",
+"RedirectUrl": "",
+"LaunchCommand": "npm run dev",
+"WorkingDirectory": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\SETS.Server\\..\\sets.client",
+"MaxTimeoutInSeconds": "120",
+"KeepRunning": "false"
+}
+}

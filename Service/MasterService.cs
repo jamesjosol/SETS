@@ -13,6 +13,7 @@ namespace Service
         public TransactionService Transaction { get; private set; }
         public SampleTypeService SampleType { get; set; }
         public BatchService Batch { get; private set; }
+        public ReceivingService Receiving { get; private set; }
 
         private readonly AppDbContextFactory _factory;
         private readonly string _branch;
@@ -34,6 +35,7 @@ namespace Service
             Transaction = new TransactionService(_branch);
             SampleType = new SampleTypeService(_factory, _branch);
             Batch = new BatchService(_factory, _branch);
+            Receiving = new ReceivingService(_factory, _branch);
         }
 
         public void Dispose()
@@ -45,6 +47,7 @@ namespace Service
             PC = null;
             Transaction = null;
             SampleType = null;
+            Receiving = null;
         }
     }
 }

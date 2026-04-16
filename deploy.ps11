@@ -1,0 +1,162 @@
+#Requires -RunAsAdministrator
+
+param(
+    [string]$SiteName    = "SETS",
+    [string]$AppPoolName = "SETS",
+    [string]$DeployPath  = "C:\inetpub\wwwroot\SETS",
+    [int]   $Port        = 7000,
+    [string]$Environment = "Production"
+)
+
+$ErrorActionPreference = "Stop"
+$Root = $PSScriptRoot
+
+function Write-Step($msg) { Write-Host "`n==> $msg" -ForegroundColor Cyan }
+function Write-Ok($msg)   { Write-Host "    [OK] $msg" -ForegroundColor Green }
+function Write-Warn($msg) { Write-Host "    [WARN] $msg" -ForegroundColor Yellow }
+function Write-Fail($msg) { Write-Host "    [FAIL] $msg" -ForegroundColor Red; exit 1 }
+
+# --- 1. Check prerequisites ---------------------------------------------------
+Write-Step "Checking prerequisites"
+
+if (-not (Get-Command dotnet -ErrorAction SilentlyContinue)) {
+    Write-Fail ".NET SDK not found. Install it from https://dotnet.microsoft.com/download"
+}
+Write-Ok ".NET SDK: $(dotnet --version)"
+
+if (-not (Get-Command npm -ErrorAction SilentlyContinue)) {
+    Write-Fail "npm not found. Install Node.js from https://nodejs.org"
+}
+Write-Ok "npm: $(npm --version)"
+
+try {
+    Import-Module WebAdministration -ErrorAction Stop
+    Write-Ok "IIS WebAdministration module loaded"
+} catch {
+    Write-Fail "WebAdministration module not found. Make sure IIS is installed."
+}
+
+# --- 2. Build Vue frontend ----------------------------------------------------
+Write-Step "Installing frontend dependencies"
+Push-Location "$Root\sets.client"
+npm install --prefer-offline
+if ($LASTEXITCODE -ne 0) { Pop-Location; Write-Fail "npm install failed" }
+Write-Ok "Dependencies installed"
+
+Write-Step "Building Vue frontend"
+npm run build
+if ($LASTEXITCODE -ne 0) { Pop-Location; Write-Fail "Vue build failed" }
+Pop-Location
+Write-Ok "Frontend built -> sets.client\dist"
+
+# --- 3. Copy dist to wwwroot --------------------------------------------------
+Write-Step "Copying frontend build to SETS.Server\wwwroot"
+$wwwroot = "$Root\SETS.Server\wwwroot"
+if (Test-Path $wwwroot) { Remove-Item $wwwroot -Recurse -Force }
+New-Item -ItemType Directory -Path $wwwroot | Out-Null
+Copy-Item "$Root\sets.client\dist\*" $wwwroot -Recurse
+Write-Ok "Copied to $wwwroot"
+
+# --- 4. Publish .NET app -------------------------------------------------------
+Write-Step "Publishing ASP.NET Core app"
+$PublishOutput = "$Root\publish"
+if (Test-Path $PublishOutput) { Remove-Item $PublishOutput -Recurse -Force }
+
+dotnet publish "$Root\SETS.Server\SETS.Server.csproj" -c Release -o $PublishOutput /p:EnvironmentName=$Environment
+if ($LASTEXITCODE -ne 0) { Write-Fail "dotnet publish failed" }
+Write-Ok "Published to $PublishOutput"
+
+# --- 5. Stop IIS site if running ----------------------------------------------
+Write-Step "Preparing IIS deployment"
+if (Test-Path "IIS:\Sites\$SiteName") {
+    $site = Get-WebSite -Name $SiteName
+    if ($site.State -eq "Started") {
+        Stop-WebSite -Name $SiteName
+        Write-Ok "Stopped existing site '$SiteName'"
+    }
+}
+
+# --- 6. Deploy files ----------------------------------------------------------
+Write-Step "Deploying files to $DeployPath"
+if (-not (Test-Path $DeployPath)) {
+    New-Item -ItemType Directory -Path $DeployPath | Out-Null
+}
+robocopy $PublishOutput $DeployPath /MIR /NP /NFL /NDL
+if ($LASTEXITCODE -ge 8) { Write-Fail "robocopy failed (exit code $LASTEXITCODE)" }
+Write-Ok "Files deployed to $DeployPath"
+
+# --- 7. Create appsettings.Production.json if missing -------------------------
+$prodSettings = "$DeployPath\appsettings.Production.json"
+if (-not (Test-Path $prodSettings)) {
+    Write-Step "Creating appsettings.Production.json"
+    $json = @{
+        AllowedOrigins = @("http://localhost:$Port")
+        Default        = @{ Branch = "WES" }
+    } | ConvertTo-Json -Depth 4
+    Set-Content -Path $prodSettings -Value $json -Encoding UTF8
+    Write-Ok "Created $prodSettings"
+    Write-Warn "Edit AllowedOrigins and connection strings in that file before use"
+} else {
+    Write-Ok "appsettings.Production.json already exists -- skipping"
+}
+
+# --- 8. Configure Application Pool -------------------------------------------
+Write-Step "Configuring IIS Application Pool '$AppPoolName'"
+if (-not (Test-Path "IIS:\AppPools\$AppPoolName")) {
+    New-WebAppPool -Name $AppPoolName
+    Write-Ok "Created app pool '$AppPoolName'"
+} else {
+    Write-Ok "App pool '$AppPoolName' already exists"
+}
+
+Set-ItemProperty "IIS:\AppPools\$AppPoolName" managedRuntimeVersion ""
+Set-ItemProperty "IIS:\AppPools\$AppPoolName" enable32BitAppOnWin64 $false
+Set-ItemProperty "IIS:\AppPools\$AppPoolName" processModel.idleTimeout ([TimeSpan]::Zero)
+Write-Ok "App pool configured (No Managed Code)"
+
+# --- 9. Set ASPNETCORE_ENVIRONMENT on App Pool --------------------------------
+Write-Step "Setting ASPNETCORE_ENVIRONMENT = $Environment"
+$appcmd = "$env:windir\system32\inetsrv\appcmd.exe"
+if (Test-Path $appcmd) {
+    & $appcmd set apppool $AppPoolName /+environmentVariables.[name='ASPNETCORE_ENVIRONMENT',value=$Environment] 2>&1 | Out-Null
+    Write-Ok "ASPNETCORE_ENVIRONMENT set to '$Environment'"
+} else {
+    Write-Warn "appcmd.exe not found -- set ASPNETCORE_ENVIRONMENT manually in IIS Manager"
+}
+
+# --- 10. Create / update IIS Site ---------------------------------------------
+Write-Step "Configuring IIS Site '$SiteName'"
+if (Test-Path "IIS:\Sites\$SiteName") {
+    Set-ItemProperty "IIS:\Sites\$SiteName" physicalPath $DeployPath
+    Set-ItemProperty "IIS:\Sites\$SiteName" applicationPool $AppPoolName
+    Write-Ok "Updated existing site '$SiteName'"
+} else {
+    New-WebSite -Name $SiteName -PhysicalPath $DeployPath -ApplicationPool $AppPoolName -Port $Port | Out-Null
+    Write-Ok "Created site '$SiteName' on port $Port"
+}
+
+# --- 11. Grant folder permissions ---------------------------------------------
+Write-Step "Setting folder permissions"
+$acl  = Get-Acl $DeployPath
+$rule = New-Object System.Security.AccessControl.FileSystemAccessRule(
+    "IIS AppPool\$AppPoolName",
+    "ReadAndExecute",
+    "ContainerInherit,ObjectInherit",
+    "None",
+    "Allow"
+)
+$acl.SetAccessRule($rule)
+Set-Acl $DeployPath $acl
+Write-Ok "Permissions granted to IIS AppPool\$AppPoolName"
+
+# --- 12. Start site -----------------------------------------------------------
+Write-Step "Starting IIS Site '$SiteName'"
+Start-WebSite -Name $SiteName
+Write-Ok "Site '$SiteName' started"
+
+Write-Host ""
+Write-Host "================================================" -ForegroundColor Green
+Write-Host "  Deployment complete!" -ForegroundColor Green
+Write-Host "  Site : http://localhost:$Port" -ForegroundColor Green
+Write-Host "  Path : $DeployPath" -ForegroundColor Green
+Write-Host "================================================" -ForegroundColor Green
