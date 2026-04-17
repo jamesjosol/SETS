@@ -363,7 +363,9 @@
     <BatchDetailDrawer :isOpen="drawerOpen"
                        :loading="drawerLoading"
                        :data="drawerData"
+                       :pendingOnly="true"
                        @close="closeDrawer" />
+
     <!-- Alert Modal -->
     <AlertModal :isVisible="alert.isVisible"
                 :type="alert.type"

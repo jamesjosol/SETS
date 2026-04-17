@@ -45,13 +45,111 @@
         <!-- ===== BARCODED TAB ===== -->
         <div v-if="activeTab === 'barcoded'">
 
+          <!-- Active Batch Info -->
+          <div class="mb-6 rounded-xl p-4 flex items-center gap-4"
+               :style="activeBatchNo
+         ? 'background-color: var(--color-primary-soft);'
+         : 'background-color: var(--color-surface-low);'">
+            <span class="material-symbols-outlined"
+                  :style="activeBatchNo ? 'color: var(--color-primary);' : 'color: var(--color-text-muted);'">
+              inventory_2
+            </span>
+            <div>
+              <p class="text-[10px] font-bold uppercase tracking-widest"
+                 :style="activeBatchNo ? 'color: var(--color-primary);' : 'color: var(--color-text-muted);'">
+                {{ activeBatchNo ? 'Active Batch' : 'No Active Batch' }}
+              </p>
+              <p class="text-sm font-bold"
+                 :style="activeBatchNo ? 'color: var(--color-primary);' : 'color: var(--color-text-muted);'">
+                {{ activeBatchNo ?? 'Scan a specimen to begin' }}
+                <span v-if="activeBatchName" class="font-normal text-xs ml-2"
+                      style="color: var(--color-text-muted);">· {{ activeBatchName }}</span>
+              </p>
+            </div>
+          </div>
+
+          <!-- Temp / BagNo Fields — shown only when active batch is set -->
+          <!-- Temp / BagNo Fields — shown only when active batch is set -->
+          <div v-if="activeBatchNo"
+               class="mb-6 rounded-xl overflow-hidden"
+               style="background-color: var(--color-surface-low); border: 1px solid var(--color-border);">
+
+            <!-- Collapsible Header -->
+            <button class="w-full flex items-center justify-between px-5 py-3 transition-all"
+                    :style="batchDetailsExpanded ? 'border-bottom: 1px solid var(--color-border);' : ''"
+                    @click="batchDetailsExpanded = !batchDetailsExpanded">
+              <p class="text-[10px] font-bold uppercase tracking-widest"
+                 style="color: var(--color-text-muted);">Batch Details</p>
+              <span class="material-symbols-outlined text-sm transition-transform duration-200"
+                    :style="`color: var(--color-text-muted); transform: rotate(${batchDetailsExpanded ? '0' : '-90'}deg);`">
+                expand_more
+              </span>
+            </button>
+
+            <!-- Collapsible Content -->
+            <div v-show="batchDetailsExpanded" class="p-5">
+              <div class="grid grid-cols-3 gap-4 mb-4">
+
+                <!-- Temperature -->
+                <div>
+                  <label class="block text-[11px] font-bold uppercase tracking-widest mb-2"
+                         style="color: var(--color-text-muted);">Temperature</label>
+                  <input v-model="temp"
+                         type="text"
+                         placeholder="e.g. 2-8°C"
+                         class="w-full border-none outline-none rounded-xl py-3 px-4 text-sm transition-colors"
+                         style="background-color: var(--color-surface); color: var(--color-text);"
+                         @focus="e => e.target.style.backgroundColor = 'var(--color-surface-high)'"
+                         @blur="e => e.target.style.backgroundColor = 'var(--color-surface)'" />
+                </div>
+
+                <!-- Temp Remarks -->
+                <div>
+                  <label class="block text-[11px] font-bold uppercase tracking-widest mb-2"
+                         style="color: var(--color-text-muted);">Temp Remarks</label>
+                  <input v-model="tempRemarks"
+                         type="text"
+                         placeholder="e.g. Cold chain maintained"
+                         class="w-full border-none outline-none rounded-xl py-3 px-4 text-sm transition-colors"
+                         style="background-color: var(--color-surface); color: var(--color-text);"
+                         @focus="e => e.target.style.backgroundColor = 'var(--color-surface-high)'"
+                         @blur="e => e.target.style.backgroundColor = 'var(--color-surface)'" />
+                </div>
+
+                <!-- Bag No -->
+                <div>
+                  <label class="block text-[11px] font-bold uppercase tracking-widest mb-2"
+                         style="color: var(--color-text-muted);">Bag No.</label>
+                  <input v-model="bagNo"
+                         type="text"
+                         placeholder="e.g. BAG-001"
+                         class="w-full border-none outline-none rounded-xl py-3 px-4 text-sm transition-colors"
+                         style="background-color: var(--color-surface); color: var(--color-text);"
+                         @focus="e => e.target.style.backgroundColor = 'var(--color-surface-high)'"
+                         @blur="e => e.target.style.backgroundColor = 'var(--color-surface)'" />
+                </div>
+              </div>
+
+              <!-- Save Button -->
+              <div class="flex justify-end">
+                <button class="px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest transition-all active:scale-95 flex items-center gap-2"
+                        :disabled="isSavingTemp"
+                        style="background-color: var(--color-primary); color: #ffffff;"
+                        @click="handleSaveTemp">
+                  <span v-if="isSavingTemp"
+                        class="material-symbols-outlined text-sm animate-spin">progress_activity</span>
+                  <span v-else class="material-symbols-outlined text-sm">save</span>
+                  {{ isSavingTemp ? 'Saving...' : 'Save' }}
+                </button>
+              </div>
+            </div>
+          </div>
+
           <!-- Scan Input -->
           <div class="flex items-end gap-4 mb-6">
             <div class="flex-1">
               <label class="block text-[11px] font-bold uppercase tracking-widest mb-2"
-                     style="color: var(--color-text-muted);">
-                Specimen No.
-              </label>
+                     style="color: var(--color-text-muted);">Specimen No.</label>
               <div class="relative flex items-center">
                 <span class="material-symbols-outlined absolute left-4 text-lg"
                       style="color: var(--color-text-muted);">qr_code_scanner</span>
@@ -76,12 +174,11 @@
               <span v-else class="material-symbols-outlined text-sm">send</span>
               {{ isScanning ? 'Receiving...' : 'Receive' }}
             </button>
-            <!-- Clear Button -->
             <button class="px-6 py-4 rounded-xl text-xs font-bold uppercase tracking-widest transition-all active:scale-95 flex items-center gap-2"
                     :disabled="receivedSpecimens.length === 0"
                     :style="receivedSpecimens.length === 0
-            ? 'background-color: var(--color-surface-low); color: var(--color-text-muted); cursor: not-allowed;'
-            : 'background-color: var(--color-error-soft); color: var(--color-error);'"
+              ? 'background-color: var(--color-surface-low); color: var(--color-text-muted); cursor: not-allowed;'
+              : 'background-color: var(--color-error-soft); color: var(--color-error);'"
                     @click="clearReceivedList">
               <span class="material-symbols-outlined text-sm">delete_sweep</span>
               Clear
@@ -511,7 +608,7 @@ async function handleScan() {
   const input = specimenNoInput.value.trim().toUpperCase()
   if (!input) return
 
-  // Prevent duplicate in current session
+  // Duplicate check in current session only
   if (receivedSpecimens.value.some(s => s.specimenNo === input)) {
     showAlert('warning', 'Already Received', `Specimen ${input} has already been received in this session.`)
     specimenNoInput.value = ''
@@ -525,20 +622,26 @@ async function handleScan() {
     const response = await receivingApi.receiveSpecimen({
       userID: authStore.userID,
       specimenNo: input,
-      temp: null,
-      tempRemarks: null,
-      bagNo: null,
+      currentBatchNo: activeBatchNo.value ?? null,  // ← pass active batch
       receivingRemarks: null
     })
 
     const data = response.data.data
 
-    // Push to received list
+    // First scan — set active batch and pre-populate temp fields
+    if (!activeBatchNo.value) {
+      activeBatchNo.value = data.batchNo
+      activeBatchName.value = data.locationName
+      temp.value = data.temp ?? ''
+      tempRemarks.value = data.tempRemarks ?? ''
+      bagNo.value = data.bagNo ?? ''
+    }
+
     receivedSpecimens.value.unshift({
       specimenNo: data.specimenNo,
       batchNo: data.batchNo,
-      location: data.locationName,   // ← was derived from batchNo, now proper
-      pid: data.pid,            // ← now populated
+      location: data.locationName,
+      pid: data.pid,
       patientName: data.patientName,
       sampleTypeName: data.sampleTypeName,
       endorsementRemarks: null,
@@ -553,6 +656,7 @@ async function handleScan() {
     if (err.response?.status === 401) {
       showAlert('error', 'Session Expired', 'Your session has expired. Please log in again.')
     } else {
+      // This now catches the batch restriction error from backend too
       showAlert('error', 'Cannot Receive', msg || 'An error occurred.')
     }
   } finally {
@@ -669,6 +773,34 @@ async function handleReceiveNonBarcoded() {
   }
 }
 
+  // ── Active Batch ───────────────────────────────────────────────────────────
+  const activeBatchNo = ref(null)
+  const activeBatchName = ref(null)
+  const temp = ref('')
+  const tempRemarks = ref('')
+  const bagNo = ref('')
+  const isSavingTemp = ref(false)
+  const batchDetailsExpanded = ref(true)
+
+  async function handleSaveTemp() {
+    if (!activeBatchNo.value) return
+
+    isSavingTemp.value = true
+    try {
+      await receivingApi.updateBatchTemp({
+        batchNo: activeBatchNo.value,
+        temp: temp.value || null,
+        tempRemarks: tempRemarks.value || null,
+        bagNo: bagNo.value || null
+      })
+      showAlert('success', 'Saved', 'Temperature and bag details have been saved.')
+    } catch (err) {
+      showAlert('error', 'Save Failed', 'Unable to save temperature details.')
+    } finally {
+      isSavingTemp.value = false
+    }
+  }
+
 // ── Lifecycle ──────────────────────────────────────────────────────────────
 
 onMounted(async () => {
@@ -679,5 +811,11 @@ onMounted(async () => {
 
   function clearReceivedList() {
     receivedSpecimens.value = []
+    activeBatchNo.value = null
+    activeBatchName.value = null
+    temp.value = ''
+    tempRemarks.value = ''
+    bagNo.value = ''
+    batchDetailsExpanded = ref(true)
   }
 </script>

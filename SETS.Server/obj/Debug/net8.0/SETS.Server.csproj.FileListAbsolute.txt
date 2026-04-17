@@ -23,13 +23,6 @@ C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\obj\Debug\net8.0\scopedcs
 C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\obj\Debug\net8.0\staticwebassets.build.json
 C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\obj\Debug\net8.0\staticwebassets.development.json
 C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\obj\Debug\net8.0\staticwebassets.build.endpoints.json
-C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\obj\Debug\net8.0\staticwebassets\msbuild.SETS.Server.Microsoft.AspNetCore.StaticWebAssets.props
-C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\obj\Debug\net8.0\staticwebassets\msbuild.SETS.Server.Microsoft.AspNetCore.StaticWebAssetEndpoints.props
-C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\obj\Debug\net8.0\staticwebassets\msbuild.build.SETS.Server.props
-C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\obj\Debug\net8.0\staticwebassets\msbuild.buildMultiTargeting.SETS.Server.props
-C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\obj\Debug\net8.0\staticwebassets\msbuild.buildTransitive.SETS.Server.props
-C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\obj\Debug\net8.0\staticwebassets.pack.json
-C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
 C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\obj\Debug\net8.0\SETS.Ser.4080C162.Up2Date
 C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\obj\Debug\net8.0\SETS.Server.dll
 C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\obj\Debug\net8.0\refint\SETS.Server.dll
@@ -99,3 +92,10 @@ C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\bin\Debug\net8.0\HCLAB.dl
 C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\obj\Debug\net8.0\SETS.Server.sourcelink.json
 C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\bin\Debug\net8.0\SETS.Server.staticwebassets.runtime.json
 C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\obj\Debug\net8.0\SETS.Server.MvcApplicationPartsAssemblyInfo.cs
+C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\obj\Debug\net8.0\staticwebassets\msbuild.SETS.Server.Microsoft.AspNetCore.StaticWebAssets.props
+C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\obj\Debug\net8.0\staticwebassets\msbuild.SETS.Server.Microsoft.AspNetCore.StaticWebAssetEndpoints.props
+C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\obj\Debug\net8.0\staticwebassets\msbuild.build.SETS.Server.props
+C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\obj\Debug\net8.0\staticwebassets\msbuild.buildMultiTargeting.SETS.Server.props
+C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\obj\Debug\net8.0\staticwebassets\msbuild.buildTransitive.SETS.Server.props
+C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\obj\Debug\net8.0\staticwebassets.pack.json
+C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt

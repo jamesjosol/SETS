@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("HCLAB")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ed19cb6082634f7cd18a028a33cc3ef3c419ab50")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+9c068956dade18a7d2e84d25ce592e01a0f4727e")]
 [assembly: System.Reflection.AssemblyProductAttribute("HCLAB")]
 [assembly: System.Reflection.AssemblyTitleAttribute("HCLAB")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

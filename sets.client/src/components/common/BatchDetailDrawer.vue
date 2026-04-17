@@ -97,6 +97,44 @@
                 {{ getBatchStatusLabel(data.status) }}
               </span>
             </div>
+            <!-- Temp / TempRemarks / BagNo — subtle hover icons, only shown if value exists -->
+            <div v-if="data.temp || data.tempRemarks || data.bagNo"
+                 class="col-span-2">
+              <p class="text-[10px] font-bold uppercase tracking-widest mb-2"
+                 style="color: var(--color-text-muted);">Bag Info</p>
+              <div class="flex items-center gap-3">
+
+                <!-- Temperature -->
+                <div v-if="data.temp" class="relative group/temp">
+                  <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg cursor-default"
+                       style="background-color: var(--color-surface-low);">
+                    <span class="material-symbols-outlined"
+                          style="font-size: 14px; color: var(--color-text-muted);">thermometer</span>
+                    <span class="text-xs font-bold"
+                          style="color: var(--color-text);">{{ data.temp }}</span>
+                  </div>
+                  <div v-if="data.tempRemarks"
+                       class="absolute bottom-full left-0 mb-2 w-48 rounded-xl p-3 text-xs shadow-xl z-10 pointer-events-none opacity-0 group-hover/temp:opacity-100 transition-opacity"
+                       style="background-color: var(--color-surface); border: 1px solid var(--color-border);">
+                    <p class="text-[10px] font-bold uppercase tracking-widest mb-1"
+                       style="color: var(--color-text-muted);">Temp Remarks</p>
+                    <p style="color: var(--color-text);">{{ data.tempRemarks }}</p>
+                  </div>
+                </div>
+
+                <!-- Bag No -->
+                <div v-if="data.bagNo" class="relative group/bagno">
+                  <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg cursor-default"
+                       style="background-color: var(--color-surface-low);">
+                    <span class="material-symbols-outlined"
+                          style="font-size: 14px; color: var(--color-text-muted);">shopping_bag</span>
+                    <span class="text-xs font-bold"
+                          style="color: var(--color-text);">{{ data.bagNo }}</span>
+                  </div>
+                </div>
+
+              </div>
+            </div>
           </div>
         </div>
 
@@ -107,15 +145,15 @@
                   :key="tab"
                   class="px-4 py-2 text-xs font-bold uppercase tracking-widest rounded-t-lg transition-all"
                   :style="activeTab === tab
-                    ? 'color: var(--color-primary); border-bottom: 2px solid var(--color-primary); margin-bottom: -1px;'
-                    : 'color: var(--color-text-muted);'"
+          ? 'color: var(--color-primary); border-bottom: 2px solid var(--color-primary); margin-bottom: -1px;'
+          : 'color: var(--color-text-muted);'"
                   @click="activeTab = tab">
             {{ tab }}
             <span class="ml-1.5 text-[10px] px-1.5 py-0.5 rounded-full font-bold"
                   :style="activeTab === tab
-                    ? 'background-color: var(--color-primary-soft); color: var(--color-primary);'
-                    : 'background-color: var(--color-surface-low); color: var(--color-text-muted);'">
-              {{ tab === 'Specimens' ? data.specimens.length : data.nonBarcoded.length }}
+          ? 'background-color: var(--color-primary-soft); color: var(--color-primary);'
+          : 'background-color: var(--color-surface-low); color: var(--color-text-muted);'">
+              {{ tab === 'Specimens' ? visibleSpecimens.length : visibleNonBarcoded.length }}
             </span>
           </button>
         </div>
@@ -125,7 +163,7 @@
 
           <!-- Specimens Tab -->
           <template v-if="activeTab === 'Specimens'">
-            <div v-if="data.specimens.length === 0"
+            <div v-if="visibleSpecimens.length === 0"
                  class="flex flex-col items-center justify-center py-12 gap-2">
               <span class="material-symbols-outlined text-3xl"
                     style="color: var(--color-text-muted);">biotech</span>
@@ -133,7 +171,7 @@
                  style="color: var(--color-text-muted);">No specimens</p>
             </div>
             <div v-else class="space-y-2">
-              <div v-for="sp in data.specimens"
+              <div v-for="sp in visibleSpecimens"
                    :key="sp.id"
                    class="rounded-xl p-4"
                    style="background-color: var(--color-surface-low);">
@@ -214,7 +252,7 @@
 
           <!-- Non-Barcoded Tab -->
           <template v-else>
-            <div v-if="data.nonBarcoded.length === 0"
+            <div v-if="visibleNonBarcoded.length === 0"
                  class="flex flex-col items-center justify-center py-12 gap-2">
               <span class="material-symbols-outlined text-3xl"
                     style="color: var(--color-text-muted);">description</span>
@@ -222,7 +260,7 @@
                  style="color: var(--color-text-muted);">No non-barcoded items</p>
             </div>
             <div v-else class="space-y-2">
-              <div v-for="nb in data.nonBarcoded"
+              <div v-for="nb in visibleNonBarcoded"
                    :key="nb.itemID"
                    class="rounded-xl p-4"
                    style="background-color: var(--color-surface-low);">
@@ -302,17 +340,31 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
 
 const props = defineProps({
-  isOpen:  { type: Boolean, default: false },
-  loading: { type: Boolean, default: false },
-  data:    { type: Object,  default: null  },
+  isOpen:      { type: Boolean, default: false },
+  loading:     { type: Boolean, default: false },
+  data:        { type: Object,  default: null  },
+  pendingOnly: { type: Boolean, default: false }, // ← add
 })
 
 defineEmits(['close'])
 
 const activeTab = ref('Specimens')
+
+
+const visibleSpecimens = computed(() => {
+  if (!props.data?.specimens) return []
+  if (props.pendingOnly) return props.data.specimens.filter(s => s.status !== 'R')
+  return props.data.specimens
+})
+
+const visibleNonBarcoded = computed(() => {
+  if (!props.data?.nonBarcoded) return []
+  if (props.pendingOnly) return props.data.nonBarcoded.filter(n => n.status !== 'R')
+  return props.data.nonBarcoded
+})
 
 // Reset tab when drawer opens
 watch(() => props.isOpen, (val) => {

@@ -13,9 +13,6 @@ namespace Model.SETSDB
         public string BatchNo { get; set; }
         public DateTime ProcReceived { get; set; }
         public string ProcReceivedBy { get; set; }
-        public string? Temp { get; set; }
-        public string? TempRemarks { get; set; }
-        public string? BagNo { get; set; }
         public string? ReceivingRemarks { get; set; }
     }
 }

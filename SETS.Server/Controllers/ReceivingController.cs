@@ -62,6 +62,30 @@ namespace SETS.Server.Controllers
             }
         }
 
+        // PATCH api/receiving/batch-temp
+        [HttpPatch("batch-temp")]
+        public IActionResult UpdateBatchTemp([FromBody] UpdateBatchTempRequest request)
+        {
+            try
+            {
+                var branch = HttpContext.Session.GetString("BranchCode");
+                if (string.IsNullOrEmpty(branch))
+                    return Unauthorized(new { message = "Session expired." });
+
+                if (string.IsNullOrEmpty(request.BatchNo))
+                    return BadRequest(new { message = "Batch number is required." });
+
+                using var master = new MasterService(branch);
+                master.Receiving.UpdateBatchTemp(request);
+
+                return Ok(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(400, new { message = ex.Message });
+            }
+        }
+
         // POST api/receiving/nonbarcoded
         [HttpPost("nonbarcoded")]
         public IActionResult ReceiveNonBarcoded([FromBody] ReceiveNonBarcodedRequest request)

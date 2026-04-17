@@ -12,6 +12,7 @@ namespace Service.Interfaces
     {
         ReceiveSpecimenResponse ReceiveSpecimen(ReceiveSpecimenRequest request);
         void UpdateSpecimenReceivingRemarks(string specimenNo, string batchNo, string? remarks);
+        void UpdateBatchTemp(UpdateBatchTempRequest request);
         void UpdateNonBarcodedReceivingRemarks(int itemID, string? remarks);
         ReceiveResponse ReceiveNonBarcoded(ReceiveNonBarcodedRequest request);
         List<PendingNonBarcodedItem> GetPendingNonBarcoded(string sectionCode);

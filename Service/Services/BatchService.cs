@@ -291,6 +291,9 @@ namespace Service.Services
                     Status = header.Status,
                     ProcReceived = header.ProcReceived,
                     Completed = header.Completed,
+                    Temp = header.Temp,        
+                    TempRemarks = header.TempRemarks,  
+                    BagNo = header.BagNo,      
                     Specimens = specimens.Select(s => new BatchSpecimenDetail
                     {
                         Id = s.Id,

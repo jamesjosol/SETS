@@ -38,12 +38,24 @@ namespace Service.Services
                         .FirstOrDefault(s => s.SpecimenNo == request.SpecimenNo)
                         ?? throw new Exception($"Specimen '{request.SpecimenNo}' was not endorsed.");
 
-                    // 2. Check if already received
+                    // 2. Batch restriction — if a current batch is active, block different batch
+                    if (!string.IsNullOrEmpty(request.CurrentBatchNo) &&
+                        specimen.BatchNo != request.CurrentBatchNo)
+                    {
+                        throw new Exception(
+                            $"Specimen '{request.SpecimenNo}' belongs to batch {specimen.BatchNo}. " +
+                            $"Currently receiving batch {request.CurrentBatchNo}. " +
+                            $"Clear the list to receive a different batch."
+                        );
+                    }
+
+                    // 3. Check if already received
                     bool alreadyReceived = context.Batch_Specimen_Receiving
                         .Any(r => r.SpecimenNo == request.SpecimenNo && r.BatchNo == specimen.BatchNo);
 
                     if (alreadyReceived)
                         throw new Exception($"Specimen '{request.SpecimenNo}' has already been received.");
+
 
                     // 3. Insert receiving record
                     context.Batch_Specimen_Receiving.Add(new Batch_Specimen_Receiving
@@ -52,9 +64,6 @@ namespace Service.Services
                         BatchNo = specimen.BatchNo,
                         ProcReceived = now,
                         ProcReceivedBy = request.UserID,
-                        Temp = request.Temp,
-                        TempRemarks = request.TempRemarks,
-                        BagNo = request.BagNo,
                         ReceivingRemarks = request.ReceivingRemarks
                     });
 
@@ -101,7 +110,10 @@ namespace Service.Services
                         LocationName = sections.TryGetValue(header.Location, out var locName) ? locName : header.Location,
                         ProcReceived = now,
                         ProcReceivedBy = request.UserID,
-                        BatchStatus = newBatchStatus
+                        BatchStatus = newBatchStatus,
+                        Temp = header.Temp,        // ← carry existing temp
+                        TempRemarks = header.TempRemarks,
+                        BagNo = header.BagNo
                     };
                 }
                 catch
@@ -109,6 +121,25 @@ namespace Service.Services
                     tx.Rollback();
                     throw;
                 }
+            }
+            catch { throw; }
+        }
+        public void UpdateBatchTemp(UpdateBatchTempRequest request)
+        {
+            try
+            {
+                using var context = _factory.CreateContext(_branch);
+
+                var header = context.Batch_Header
+                    .FirstOrDefault(b => b.BatchNo == request.BatchNo)
+                    ?? throw new Exception($"Batch '{request.BatchNo}' not found.");
+
+                header.Temp = request.Temp;
+                header.TempRemarks = request.TempRemarks;
+                header.BagNo = request.BagNo;
+
+                context.Batch_Header.Update(header);
+                context.SaveChanges();
             }
             catch { throw; }
         }

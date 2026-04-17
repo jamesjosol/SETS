@@ -5,6 +5,7 @@ const BASE_URL = '/api/Receiving'
 export const receivingApi = {
   receiveSpecimen: (payload) => api.post(`${BASE_URL}/specimen`, payload),
   updateSpecimenRemarks: (payload) => api.patch(`${BASE_URL}/specimen-remarks`, payload),
+  updateBatchTemp: (payload) => api.patch(`${BASE_URL}/batch-temp`, payload),
   receiveNonBarcoded: (payload) => api.post(`${BASE_URL}/nonbarcoded`, payload),
   updateNonBarcodedRemarks: (payload) => api.patch(`${BASE_URL}/nonbarcoded-remarks`, payload),
   getPendingNonBarcoded: (sectionCode) => api.get(`${BASE_URL}/pending-nonbarcoded`, { params: { sectionCode } }).then(r => r.data),

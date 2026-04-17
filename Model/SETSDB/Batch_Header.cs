@@ -16,5 +16,8 @@ namespace Model.SETSDB
         public string Status { get; set; }
         public DateTime? ProcReceived { get; set; }
         public DateTime? Completed { get; set; }
+        public string? Temp { get; set; }
+        public string? TempRemarks { get; set; }
+        public string? BagNo { get; set; }
     }
 }

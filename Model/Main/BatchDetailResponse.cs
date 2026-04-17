@@ -19,6 +19,9 @@ namespace Model.Main
         public string Status { get; set; }
         public DateTime? ProcReceived { get; set; }
         public DateTime? Completed { get; set; }
+        public string? Temp { get; set; }
+        public string? TempRemarks { get; set; }
+        public string? BagNo { get; set; }
         public List<BatchSpecimenDetail> Specimens { get; set; } = new();  // ← updated type
         public List<Batch_NonBarcoded> NonBarcoded { get; set; } = new();
     }
