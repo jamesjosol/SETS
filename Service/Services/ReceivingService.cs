@@ -112,6 +112,22 @@ namespace Service.Services
             }
             catch { throw; }
         }
+        public void UpdateSpecimenReceivingRemarks(string specimenNo, string batchNo, string? remarks)
+        {
+            try
+            {
+                using var context = _factory.CreateContext(_branch);
+
+                var record = context.Batch_Specimen_Receiving
+                    .FirstOrDefault(r => r.SpecimenNo == specimenNo && r.BatchNo == batchNo)
+                    ?? throw new Exception($"Receiving record for specimen '{specimenNo}' not found.");
+
+                record.ReceivingRemarks = remarks;
+                context.Batch_Specimen_Receiving.Update(record);
+                context.SaveChanges();
+            }
+            catch { throw; }
+        }
 
         public ReceiveResponse ReceiveNonBarcoded(ReceiveNonBarcodedRequest request)
         {
@@ -203,6 +219,23 @@ namespace Service.Services
             catch { throw; }
         }
 
+        public void UpdateNonBarcodedReceivingRemarks(int itemID, string? remarks)
+        {
+            try
+            {
+                using var context = _factory.CreateContext(_branch);
+
+                var record = context.Batch_NonBarcoded
+                    .FirstOrDefault(n => n.ItemID == itemID)
+                    ?? throw new Exception($"Non-barcoded item '{itemID}' not found.");
+
+                record.ReceivingRemarks = remarks;
+                context.Batch_NonBarcoded.Update(record);
+                context.SaveChanges();
+            }
+            catch { throw; }
+        }
+
         public List<PendingNonBarcodedItem> GetPendingNonBarcoded(string sectionCode)
         {
             try
@@ -236,7 +269,8 @@ namespace Service.Services
                     Quantity = x.NonBarcoded.Quantity,
                     Endorsed = x.NonBarcoded.Endorsed,
                     EndorsedBy = x.NonBarcoded.EndorsedBy,
-                    Remarks = x.NonBarcoded.Remarks
+                    Remarks = x.NonBarcoded.Remarks,
+                    ReceivingRemarks = x.NonBarcoded.ReceivingRemarks
                 }).ToList();
             }
             catch { throw; }
@@ -388,6 +422,44 @@ namespace Service.Services
             catch { throw; }
         }
 
+        public List<HourlyFlow> GetHourlyReceivedFlow(string procSectionCode)
+        {
+            try
+            {
+                using var context = _factory.CreateContext(_branch);
+
+                var today = DateTime.Today;
+                var currentHour = DateTime.Now.Hour;
+
+                // Load today's receiving records for this section
+                var raw = context.Batch_Specimen_Receiving
+                    .Join(context.Batch_Header,
+                        r => r.BatchNo,
+                        h => h.BatchNo,
+                        (r, h) => new { Receiving = r, Header = h })
+                    .Where(x => x.Header.ProcDestination == procSectionCode &&
+                                x.Receiving.ProcReceived.Date == today)
+                    .ToList();
+
+                var result = new List<HourlyFlow>();
+
+                // 5AM to 7PM = hours 5 to 19
+                for (int hour = 5; hour <= 19; hour++)
+                {
+                    var count = raw.Count(x => x.Receiving.ProcReceived.Hour == hour);
+                    result.Add(new HourlyFlow
+                    {
+                        Hour = $"{hour:D2}:00",
+                        Count = count,
+                        IsCurrent = hour == currentHour
+                    });
+                }
+
+                return result;
+            }
+            catch { throw; }
+        }
+
         private static (DateTime Monday, DateTime Sunday) GetCurrentWeekRange()
         {
             var today = DateTime.Today;
@@ -395,6 +467,104 @@ namespace Service.Services
             if (diff < 0) diff += 7;
             var monday = today.AddDays(-diff);
             return (monday, monday.AddDays(6));
+        }
+
+        public List<IncomingBatchItem> GetIncomingBatches(string procSectionCode)
+        {
+            try
+            {
+                using var context = _factory.CreateContext(_branch);
+
+                var sections = context.Section_Master
+                    .ToDictionary(s => s.Code, s => s.Name);
+
+                // All non-completed batches destined for this processing section
+                var headers = context.Batch_Header
+                    .Where(h => h.ProcDestination == procSectionCode &&
+                                h.Status != "C")
+                    .OrderByDescending(h => h.Endorsed)
+                    .ToList();
+
+                var batchNos = headers.Select(h => h.BatchNo).ToList();
+
+                // Specimen counts per batch — in memory to avoid CTE error
+                var specimens = context.Batch_Specimen
+                    .Where(s => s.Status != null)
+                    .ToList()
+                    .Where(s => batchNos.Contains(s.BatchNo))
+                    .GroupBy(s => s.BatchNo)
+                    .ToDictionary(
+                        g => g.Key,
+                        g => new { Total = g.Count(), Received = g.Count(s => s.Status == "R") }
+                    );
+
+                return headers.Select(h => new IncomingBatchItem
+                {
+                    BatchNo = h.BatchNo,
+                    Location = h.Location,
+                    LocationName = sections.TryGetValue(h.Location, out var name) ? name : h.Location,
+                    Endorsed = h.Endorsed,
+                    EndorsedBy = h.EndorsedBy,
+                    Status = h.Status,
+                    TotalSpecimens = specimens.TryGetValue(h.BatchNo, out var c) ? c.Total : 0,
+                    ReceivedSpecimens = specimens.TryGetValue(h.BatchNo, out var c2) ? c2.Received : 0
+                }).ToList();
+            }
+            catch { throw; }
+        }
+
+        public List<IncomingSpecimenItem> GetIncomingSpecimens(string procSectionCode)
+        {
+            try
+            {
+                using var context = _factory.CreateContext(_branch);
+
+                var sections = context.Section_Master
+                    .ToDictionary(s => s.Code, s => s.Name);
+
+                // Get all non-completed batch headers for this section
+                var pendingBatchHeaders = context.Batch_Header
+                    .Where(h => h.ProcDestination == procSectionCode &&
+                                h.Status != "C")
+                    .ToList();
+
+                var pendingBatchNos = pendingBatchHeaders
+                    .Select(h => h.BatchNo)
+                    .ToList();
+
+                // Reuse the same result for locations — no second query needed
+                var batchLocations = pendingBatchHeaders
+                    .ToDictionary(h => h.BatchNo, h => h.Location);
+
+                // Get all pending specimens from those batches — in memory
+                var specimens = context.Batch_Specimen
+                    .Where(s => s.Status == "P")
+                    .ToList()
+                    .Where(s => pendingBatchNos.Contains(s.BatchNo))
+                    .OrderByDescending(s => s.Endorsed)
+                    .ThenBy(s => s.BatchNo)
+                    .ThenBy(s => s.SpecimenNo)
+                    .ToList();
+
+                return specimens.Select(s =>
+                {
+                    var locationCode = batchLocations.TryGetValue(s.BatchNo, out var loc) ? loc : "";
+                    return new IncomingSpecimenItem
+                    {
+                        BatchNo = s.BatchNo,
+                        Location = locationCode,
+                        LocationName = sections.TryGetValue(locationCode, out var name) ? name : locationCode,
+                        SpecimenNo = s.SpecimenNo,
+                        LabNo = s.LabNo,
+                        PID = s.PID,
+                        PatientName = s.PatientName,
+                        SampleTypeName = s.SampleTypeName,
+                        Status = s.Status,
+                        Remarks = s.Remarks
+                    };
+                }).ToList();
+            }
+            catch { throw; }
         }
     }
 }

@@ -97,3 +97,5 @@ C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\bin\Debug\net8.0\Service.
 C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\bin\Debug\net8.0\HCLAB.pdb
 C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\bin\Debug\net8.0\HCLAB.dll.config
 C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\obj\Debug\net8.0\SETS.Server.sourcelink.json
+C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\bin\Debug\net8.0\SETS.Server.staticwebassets.runtime.json
+C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\obj\Debug\net8.0\SETS.Server.MvcApplicationPartsAssemblyInfo.cs

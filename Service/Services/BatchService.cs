@@ -260,7 +260,6 @@ namespace Service.Services
 
                 if (header == null) return null;
 
-                // Load section name lookup in one query
                 var sections = context.Section_Master
                     .ToDictionary(s => s.Code, s => s.Name);
 
@@ -269,6 +268,12 @@ namespace Service.Services
                     .OrderBy(s => s.SampleTypeName)
                     .ThenBy(s => s.SpecimenNo)
                     .ToList();
+
+                // Load receiving records for this batch
+                var receivingRecords = context.Batch_Specimen_Receiving
+                    .Where(r => r.BatchNo == batchNo)
+                    .ToList()
+                    .ToDictionary(r => r.SpecimenNo, r => r.ReceivingRemarks);
 
                 var nonBarcoded = context.Batch_NonBarcoded
                     .Where(n => n.BatchNo == batchNo)
@@ -284,7 +289,25 @@ namespace Service.Services
                     DestinationCode = header.ProcDestination,
                     Destination = sections.TryGetValue(header.ProcDestination, out var dest) ? dest : header.ProcDestination,
                     Status = header.Status,
-                    Specimens = specimens,
+                    ProcReceived = header.ProcReceived,
+                    Completed = header.Completed,
+                    Specimens = specimens.Select(s => new BatchSpecimenDetail
+                    {
+                        Id = s.Id,
+                        SpecimenNo = s.SpecimenNo,
+                        BatchNo = s.BatchNo,
+                        LabNo = s.LabNo,
+                        TrxDate = s.TrxDate,
+                        PID = s.PID,
+                        PatientName = s.PatientName,
+                        SampleTypeCode = s.SampleTypeCode,
+                        SampleTypeName = s.SampleTypeName,
+                        Endorsed = s.Endorsed,
+                        EndorsedBy = s.EndorsedBy,
+                        Status = s.Status,
+                        Remarks = s.Remarks,
+                        ReceivingRemarks = receivingRecords.TryGetValue(s.SpecimenNo, out var rr) ? rr : null
+                    }).ToList(),
                     NonBarcoded = nonBarcoded
                 };
             }

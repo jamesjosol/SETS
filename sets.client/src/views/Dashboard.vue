@@ -442,10 +442,11 @@
   })
 
   const systemStatus = [
-    { label: 'Lab Connectivity', icon: 'router', iconColor: '#059669', state: 'Online', note: null },
-    { label: 'Tracking Relay', icon: 'satellite_alt', iconColor: '#059669', state: 'Online', note: null },
-    { label: 'Endorsement API', icon: 'api', iconColor: '#d97706', state: 'Delayed', note: '140ms latency' },
+    { label: 'HCLAB Connectivity', icon: 'router', iconColor: '#059669', state: 'Online', note: null },
+    { label: 'SETS Database', icon: 'database', iconColor: '#059669', state: 'Online', note: null },
+    { label: 'Endorsement API', icon: 'api', iconColor: '#d97706', state: 'Online', note: '140ms latency' },
   ]
+
 </script>
 
 <style scoped>

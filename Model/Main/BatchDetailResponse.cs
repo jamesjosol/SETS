@@ -10,14 +10,16 @@ namespace Model.Main
     public class BatchDetailResponse
     {
         public string BatchNo { get; set; }
-        public string Location { get; set; }          // endorser section full name
-        public string LocationCode { get; set; }      // endorser section code
+        public string Location { get; set; }
+        public string LocationCode { get; set; }
         public DateTime Endorsed { get; set; }
         public string EndorsedBy { get; set; }
-        public string Destination { get; set; }       // processing section full name
-        public string DestinationCode { get; set; }   // processing section code
+        public string Destination { get; set; }
+        public string DestinationCode { get; set; }
         public string Status { get; set; }
-        public List<Batch_Specimen> Specimens { get; set; } = new();
+        public DateTime? ProcReceived { get; set; }
+        public DateTime? Completed { get; set; }
+        public List<BatchSpecimenDetail> Specimens { get; set; } = new();  // ← updated type
         public List<Batch_NonBarcoded> NonBarcoded { get; set; } = new();
     }
 }

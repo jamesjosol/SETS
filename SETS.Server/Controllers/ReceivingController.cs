@@ -37,6 +37,31 @@ namespace SETS.Server.Controllers
             }
         }
 
+        // PATCH api/receiving/specimen-remarks
+        [HttpPatch("specimen-remarks")]
+        public IActionResult UpdateSpecimenRemarks([FromBody] UpdateSpecimenRemarksRequest request)
+        {
+            try
+            {
+                var branch = HttpContext.Session.GetString("BranchCode");
+                if (string.IsNullOrEmpty(branch))
+                    return Unauthorized(new { message = "Session expired." });
+
+                using var master = new MasterService(branch);
+                master.Receiving.UpdateSpecimenReceivingRemarks(
+                    request.SpecimenNo,
+                    request.BatchNo,
+                    request.ReceivingRemarks
+                );
+
+                return Ok(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(400, new { message = ex.Message });
+            }
+        }
+
         // POST api/receiving/nonbarcoded
         [HttpPost("nonbarcoded")]
         public IActionResult ReceiveNonBarcoded([FromBody] ReceiveNonBarcodedRequest request)
@@ -57,6 +82,31 @@ namespace SETS.Server.Controllers
                 var result = master.Receiving.ReceiveNonBarcoded(request);
 
                 return Ok(new { success = true, data = result });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(400, new { message = ex.Message });
+            }
+        }
+
+
+        // PATCH api/receiving/nonbarcoded-remarks
+        [HttpPatch("nonbarcoded-remarks")]
+        public IActionResult UpdateNonBarcodedRemarks([FromBody] UpdateNonBarcodedRemarksRequest request)
+        {
+            try
+            {
+                var branch = HttpContext.Session.GetString("BranchCode");
+                if (string.IsNullOrEmpty(branch))
+                    return Unauthorized(new { message = "Session expired." });
+
+                using var master = new MasterService(branch);
+                master.Receiving.UpdateNonBarcodedReceivingRemarks(
+                    request.ItemID,
+                    request.ReceivingRemarks
+                );
+
+                return Ok(new { success = true });
             }
             catch (Exception ex)
             {
@@ -185,5 +235,79 @@ namespace SETS.Server.Controllers
             }
         }
 
+        // GET api/receiving/hourly-flow?sectionCode=WP
+        [HttpGet("hourly-flow")]
+        public IActionResult GetHourlyFlow([FromQuery] string sectionCode)
+        {
+            try
+            {
+                var branch = HttpContext.Session.GetString("BranchCode");
+                if (string.IsNullOrEmpty(branch))
+                    return Unauthorized(new { message = "Session expired." });
+
+                using var master = new MasterService(branch);
+
+                var resolvedCode = ResolveProcessingSection(master, branch, sectionCode);
+                if (resolvedCode == null)
+                    return StatusCode(500, new { message = "No active Processing section found for this branch." });
+
+                var flow = master.Receiving.GetHourlyReceivedFlow(resolvedCode);
+                return Ok(flow);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+
+        // GET api/receiving/incoming-batches?sectionCode=WP
+        [HttpGet("incoming-batches")]
+        public IActionResult GetIncomingBatches([FromQuery] string sectionCode)
+        {
+            try
+            {
+                var branch = HttpContext.Session.GetString("BranchCode");
+                if (string.IsNullOrEmpty(branch))
+                    return Unauthorized(new { message = "Session expired." });
+
+                using var master = new MasterService(branch);
+
+                var resolvedCode = ResolveProcessingSection(master, branch, sectionCode);
+                if (resolvedCode == null)
+                    return StatusCode(500, new { message = "No active Processing section found for this branch." });
+
+                var data = master.Receiving.GetIncomingBatches(resolvedCode);
+                return Ok(data);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+
+        // GET api/receiving/incoming-specimens?sectionCode=WP
+        [HttpGet("incoming-specimens")]
+        public IActionResult GetIncomingSpecimens([FromQuery] string sectionCode)
+        {
+            try
+            {
+                var branch = HttpContext.Session.GetString("BranchCode");
+                if (string.IsNullOrEmpty(branch))
+                    return Unauthorized(new { message = "Session expired." });
+
+                using var master = new MasterService(branch);
+
+                var resolvedCode = ResolveProcessingSection(master, branch, sectionCode);
+                if (resolvedCode == null)
+                    return StatusCode(500, new { message = "No active Processing section found for this branch." });
+
+                var data = master.Receiving.GetIncomingSpecimens(resolvedCode);
+                return Ok(data);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
     }
 }

@@ -179,8 +179,9 @@
     <!-- Main Bottom Grid -->
     <div class="grid grid-cols-12 gap-6 mt-6">
 
-      <!-- Daily Specimen Received Chart -->
-      <div class="col-span-12 lg:col-span-8">
+      <div class="col-span-12 lg:col-span-8 grid grid-cols-2 gap-4">
+
+        <!-- Daily Specimen Received — weekly bars -->
         <div class="rounded-2xl p-6"
              style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
           <h2 class="text-xs font-bold uppercase tracking-widest mb-6"
@@ -188,24 +189,19 @@
             Daily Specimen Received
           </h2>
 
-          <!-- Loading -->
           <div v-if="flowLoading"
-               class="h-48 flex items-center justify-center gap-3">
+               class="h-36 flex items-center justify-center gap-3">
             <span class="material-symbols-outlined animate-spin"
                   style="color: var(--color-text-muted);">progress_activity</span>
-            <p class="text-xs font-bold uppercase tracking-widest"
-               style="color: var(--color-text-muted);">Loading...</p>
           </div>
 
           <template v-else>
-            <div class="h-48 flex items-end justify-between gap-2 px-2">
+            <div class="h-36 flex items-end justify-between gap-2 px-2">
               <div v-for="(bar, i) in flowBars"
                    :key="i"
                    class="relative w-full h-full flex flex-col items-center justify-end group/bar">
-                <!-- Count tooltip -->
                 <span class="absolute -top-5 text-[10px] font-bold opacity-0 group-hover/bar:opacity-100 transition-opacity"
                       style="color: var(--color-primary);">{{ bar.count }}</span>
-                <!-- Bar -->
                 <div class="w-full rounded-t-lg transition-all duration-500"
                      :style="`height: ${bar.height}%; background-color: ${bar.active ? 'var(--color-primary)' : 'var(--color-primary-soft)'};`"
                      @mouseenter="e => { if (!bar.active) e.currentTarget.style.opacity = '0.7' }"
@@ -213,19 +209,116 @@
                 </div>
               </div>
             </div>
-            <div class="flex justify-between mt-4">
+            <div class="flex justify-between mt-3">
               <span v-for="bar in flowBars"
                     :key="bar.day"
                     class="text-[10px] font-bold uppercase tracking-widest"
-                    :style="bar.active
-                      ? 'color: var(--color-primary);'
-                      : 'color: var(--color-text-muted);'">
+                    :style="bar.active ? 'color: var(--color-primary);' : 'color: var(--color-text-muted);'">
                 {{ bar.day }}
+              </span>
+            </div>
+          </template>
+        </div>
+
+        <!-- Hourly Breakdown — line chart -->
+        <div class="rounded-2xl p-6"
+             style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
+          <h2 class="text-xs font-bold uppercase tracking-widest mb-6"
+              style="color: var(--color-text);">
+            Today's Hourly Breakdown
+          </h2>
+
+          <div v-if="hourlyLoading"
+               class="h-36 flex items-center justify-center gap-3">
+            <span class="material-symbols-outlined animate-spin"
+                  style="color: var(--color-text-muted);">progress_activity</span>
+          </div>
+
+          <template v-else>
+            <!-- SVG Line Chart -->
+            <div class="relative h-36">
+              <svg class="w-full h-full overflow-visible" viewBox="0 0 300 120" preserveAspectRatio="none">
+
+                <!-- Grid lines -->
+                <line v-for="i in 4" :key="i"
+                      x1="0" :y1="(i / 4) * 100"
+                      x2="300" :y2="(i / 4) * 100"
+                      stroke="var(--color-surface-low)"
+                      stroke-width="1" />
+
+                <!-- Area fill -->
+                <path :d="areaPath"
+                      fill="var(--color-primary)"
+                      opacity="0.08" />
+
+                <!-- Line -->
+                <path :d="linePath"
+                      fill="none"
+                      stroke="var(--color-primary)"
+                      stroke-width="1.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round" />
+
+                <!-- Pass 1: Dots only -->
+                <circle v-for="(point, i) in chartPoints"
+                        :key="`dot-${i}`"
+                        :cx="point.x"
+                        :cy="point.y"
+                        r="2"
+                        :fill="hourlyFlow[i]?.isCurrent ? 'var(--color-primary)' : 'var(--color-surface)'"
+                        stroke="var(--color-primary)"
+                        stroke-width="1.5" />
+
+                <!-- Pass 2: Tooltip triggers on top of everything -->
+                <g v-for="(point, i) in chartPoints"
+                   :key="`tip-${i}`"
+                   class="group/tip"
+                   style="cursor: pointer;">
+
+                  <!-- Invisible hit area -->
+                  <circle :cx="point.x"
+                          :cy="point.y"
+                          r="8"
+                          fill="transparent" />
+
+                  <!-- Tooltip — rendered on top, hidden by default -->
+                  <g class="opacity-0 group-hover/tip:opacity-100 transition-opacity">
+                    <rect :x="point.x - 18"
+                          :y="point.y - 28"
+                          width="36"
+                          height="18"
+                          rx="4"
+                          fill="var(--color-primary)" />
+                    <text :x="point.x"
+                          :y="point.y - 15"
+                          text-anchor="middle"
+                          font-size="8"
+                          font-weight="bold"
+                          fill="white">
+                      {{ hourlyFlow[i]?.count }}
+                    </text>
+                  </g>
+
+                </g>
+
+              </svg>
+            </div>
+
+            <!-- Hour labels — show every 3 hours to avoid crowding -->
+            <div class="flex justify-between mt-2 px-1">
+              <span v-for="(bar, i) in hourlyFlow"
+                    :key="bar.hour"
+                    class="text-[9px] font-bold"
+                    :style="bar.isCurrent
+                ? 'color: var(--color-primary); font-weight: 800;'
+                : 'color: var(--color-text-muted);'">
+                {{ i % 3 === 0 ? bar.hour : '' }}
               </span>
             </div>
           </template>
 
         </div>
+
       </div>
 
       <!-- System Status -->
@@ -414,6 +507,18 @@ onMounted(async () => {
     flowLoading.value = false
   }
 
+  try {
+    hourlyFlow.value = await receivingApi.getHourlyFlow(authStore.sectionCode)
+  } catch (err) {
+    if (err.response?.status === 401) {
+      showAlert('error', 'Session Expired', 'Your session has expired. Please log in again.')
+    } else {
+      showAlert('error', 'Error', 'Unable to load hourly flow.')
+    }
+  } finally {
+    hourlyLoading.value = false
+  }
+
 })
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -461,11 +566,44 @@ function getBatchStatusDot(status) {
     }))
   })
 
+  // ── Hourly Flow ────────────────────────────────────────────────────────────
+
+  const hourlyLoading = ref(true)
+  const hourlyFlow = ref([])
+
+  const chartPoints = computed(() => {
+    if (hourlyFlow.value.length === 0) return []
+
+    const max = Math.max(...hourlyFlow.value.map(d => d.count), 1)
+    const total = hourlyFlow.value.length
+    const padX = 10  // small left/right padding inside SVG
+
+    return hourlyFlow.value.map((d, i) => ({
+      x: padX + (i / (total - 1)) * (300 - padX * 2),
+      y: 100 - Math.round((d.count / max) * 90)  // 90 = usable height, leaves top margin
+    }))
+  })
+
+  const linePath = computed(() => {
+    if (chartPoints.value.length === 0) return ''
+    return chartPoints.value
+      .map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`)
+      .join(' ')
+  })
+
+  const areaPath = computed(() => {
+    if (chartPoints.value.length === 0) return ''
+    const points = chartPoints.value
+    const first = points[0]
+    const last = points[points.length - 1]
+    return `${linePath.value} L ${last.x} 100 L ${first.x} 100 Z`
+  })
+
   // ── System Status ──────────────────────────────────────────────────────────
 
   const systemStatus = [
-    { label: 'Lab Connectivity', icon: 'router', iconColor: '#059669', state: 'Online', note: null },
-    { label: 'Tracking Relay', icon: 'satellite_alt', iconColor: '#059669', state: 'Online', note: null },
+    { label: 'HCLAB Connectivity', icon: 'router', iconColor: '#059669', state: 'Online', note: null },
+    { label: 'SETS Database', icon: 'database', iconColor: '#059669', state: 'Online', note: null },
     { label: 'Endorsement API', icon: 'api', iconColor: '#d97706', state: 'Delayed', note: '140ms latency' },
   ]
 

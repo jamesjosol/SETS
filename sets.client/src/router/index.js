@@ -38,7 +38,12 @@ const routes = [
     component: () => import('../views/ReceiveEndorsement.vue'),
     meta: { requiresAuth: true, category: '2' }
   },
-
+  {
+    path: '/receiver/incoming',
+    name: 'IncomingSpecimens',
+    component: () => import('../views/IncomingSpecimens.vue'),
+    meta: { requiresAuth: true, category: '2' }
+  },
   // ── Catch-all: redirect to login ───────────────────────────────────
   {
     path: '/:pathMatch(.*)*',

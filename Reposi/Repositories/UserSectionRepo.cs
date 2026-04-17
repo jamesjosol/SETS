@@ -11,6 +11,6 @@ namespace Reposi.Repositories
             => dbSet.Where(us => us.UserID == userID && us.Active == true).ToList();
 
         public User_Section? GetByUserAndSection(string userID, string sectionCode)
-            => dbSet.FirstOrDefault(us => us.UserID == userID && us.SectionCode == sectionCode);
+            => dbSet.FirstOrDefault(us => us.UserID == userID && us.SectionCode == sectionCode && us.Active);
     }
 }

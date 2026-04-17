@@ -118,3 +118,18 @@
   --color-warning: #d97706;
   --color-warning-soft: rgba(217,119,6,0.08);
 }
+
+
+#nprogress .bar {
+  background: #461599 !important;
+  height: 3px;
+}
+
+#nprogress .peg {
+  box-shadow: 0 0 10px #461599, 0 0 5px #461599 !important;
+}
+
+#nprogress .spinner-icon {
+  border-top-color: #461599 !important;
+  border-left-color: #461599 !important;
+}

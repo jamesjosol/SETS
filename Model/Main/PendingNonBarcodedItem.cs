@@ -17,5 +17,6 @@ namespace Model.Main
         public DateTime Endorsed { get; set; }
         public string EndorsedBy { get; set; }
         public string? Remarks { get; set; }        // endorsement remarks
+        public string? ReceivingRemarks { get; set; }
     }
 }

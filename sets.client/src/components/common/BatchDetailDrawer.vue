@@ -137,25 +137,77 @@
                    :key="sp.id"
                    class="rounded-xl p-4"
                    style="background-color: var(--color-surface-low);">
+
+                <!-- Top row: specimen no + status -->
                 <div class="flex justify-between items-start mb-2">
                   <p class="text-xs font-bold font-mono"
                      style="color: var(--color-primary);">{{ sp.specimenNo }}</p>
                   <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase"
                         :style="sp.status === 'R'
-                          ? 'background-color: var(--color-success-soft); color: var(--color-success);'
-                          : 'background-color: var(--color-warning-soft); color: var(--color-warning);'">
+            ? 'background-color: var(--color-success-soft); color: var(--color-success);'
+            : 'background-color: var(--color-warning-soft); color: var(--color-warning);'">
                     {{ sp.status === 'R' ? 'Received' : 'Pending' }}
                   </span>
                 </div>
+
+                <!-- Patient name -->
                 <p class="text-sm font-bold mb-0.5"
                    style="color: var(--color-text);">{{ sp.patientName }}</p>
+
+                <!-- Sample type + lab no + remark icons all on same row -->
                 <div class="flex items-center gap-3 mt-1">
                   <span class="text-[10px] font-bold uppercase tracking-widest"
                         style="color: var(--color-text-muted);">{{ sp.sampleTypeName }}</span>
                   <span class="text-[10px]" style="color: var(--color-text-muted);">·</span>
                   <span class="text-[10px] font-mono"
                         style="color: var(--color-text-muted);">{{ sp.labNo }}</span>
+
+                  <!-- Push icons to the right -->
+                  <div class="ml-auto flex items-center gap-1.5">
+
+                    <!-- Endorsement Remarks -->
+                    <div class="relative group/endrem">
+                      <button class="w-5 h-5 rounded-full flex items-center justify-center transition-all"
+                              :style="sp.remarks
+                ? 'color: var(--color-warning);'
+                : 'color: var(--color-text-muted); opacity: 0.3;'"
+                              :disabled="!sp.remarks">
+                        <span class="material-symbols-outlined" style="font-size: 14px;">
+                          {{ sp.remarks ? 'chat_bubble' : 'chat_bubble_outline' }}
+                        </span>
+                      </button>
+                      <div v-if="sp.remarks"
+                           class="absolute bottom-full right-0 mb-2 w-56 rounded-xl p-3 text-xs shadow-xl z-10 pointer-events-none opacity-0 group-hover/endrem:opacity-100 transition-opacity"
+                           style="background-color: var(--color-surface); border: 1px solid var(--color-border);">
+                        <p class="text-[10px] font-bold uppercase tracking-widest mb-1"
+                           style="color: var(--color-warning);">Endorsement Remarks</p>
+                        <p class="whitespace-pre-wrap" style="color: var(--color-text);">{{ sp.remarks }}</p>
+                      </div>
+                    </div>
+
+                    <!-- Receiving Remarks -->
+                    <div class="relative group/recrem">
+                      <button class="w-5 h-5 rounded-full flex items-center justify-center transition-all"
+                              :style="sp.receivingRemarks
+                ? 'color: var(--color-primary);'
+                : 'color: var(--color-text-muted); opacity: 0.3;'"
+                              :disabled="!sp.receivingRemarks">
+                        <span class="material-symbols-outlined" style="font-size: 14px;">
+                          {{ sp.receivingRemarks ? 'chat_bubble' : 'chat_bubble_outline' }}
+                        </span>
+                      </button>
+                      <div v-if="sp.receivingRemarks"
+                           class="absolute bottom-full right-0 mb-2 w-56 rounded-xl p-3 text-xs shadow-xl z-10 pointer-events-none opacity-0 group-hover/recrem:opacity-100 transition-opacity"
+                           style="background-color: var(--color-surface); border: 1px solid var(--color-border);">
+                        <p class="text-[10px] font-bold uppercase tracking-widest mb-1"
+                           style="color: var(--color-primary);">Receiving Remarks</p>
+                        <p class="whitespace-pre-wrap" style="color: var(--color-text);">{{ sp.receivingRemarks }}</p>
+                      </div>
+                    </div>
+
+                  </div>
                 </div>
+
               </div>
             </div>
           </template>
@@ -172,20 +224,72 @@
             <div v-else class="space-y-2">
               <div v-for="nb in data.nonBarcoded"
                    :key="nb.itemID"
-                   class="rounded-xl p-4 flex items-center justify-between"
+                   class="rounded-xl p-4"
                    style="background-color: var(--color-surface-low);">
-                <div>
-                  <p class="text-sm font-bold mb-0.5"
+
+                <!-- Top row: description + status -->
+                <div class="flex justify-between items-start mb-1">
+                  <p class="text-sm font-bold"
                      style="color: var(--color-text);">{{ nb.description }}</p>
+                  <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase"
+                        :style="nb.status === 'R'
+            ? 'background-color: var(--color-success-soft); color: var(--color-success);'
+            : 'background-color: var(--color-warning-soft); color: var(--color-warning);'">
+                    {{ nb.status === 'R' ? 'Received' : 'Pending' }}
+                  </span>
+                </div>
+
+                <!-- Qty + remark icons on same row -->
+                <div class="flex items-center gap-3 mt-1">
                   <span class="text-[10px] font-bold uppercase tracking-widest"
                         style="color: var(--color-text-muted);">Qty: {{ nb.quantity }}</span>
+
+                  <!-- Push icons to the right -->
+                  <div class="ml-auto flex items-center gap-1.5">
+
+                    <!-- Endorsement Remarks -->
+                    <div class="relative group/endrem">
+                      <button class="w-5 h-5 rounded-full flex items-center justify-center transition-all"
+                              :style="nb.remarks
+                  ? 'color: var(--color-warning);'
+                  : 'color: var(--color-text-muted); opacity: 0.3;'"
+                              :disabled="!nb.remarks">
+                        <span class="material-symbols-outlined" style="font-size: 14px;">
+                          {{ nb.remarks ? 'chat_bubble' : 'chat_bubble_outline' }}
+                        </span>
+                      </button>
+                      <div v-if="nb.remarks"
+                           class="absolute bottom-full right-0 mb-2 w-56 rounded-xl p-3 text-xs shadow-xl z-10 pointer-events-none opacity-0 group-hover/endrem:opacity-100 transition-opacity"
+                           style="background-color: var(--color-surface); border: 1px solid var(--color-border);">
+                        <p class="text-[10px] font-bold uppercase tracking-widest mb-1"
+                           style="color: var(--color-warning);">Endorsement Remarks</p>
+                        <p class="whitespace-pre-wrap" style="color: var(--color-text);">{{ nb.remarks }}</p>
+                      </div>
+                    </div>
+
+                    <!-- Receiving Remarks -->
+                    <div class="relative group/recrem">
+                      <button class="w-5 h-5 rounded-full flex items-center justify-center transition-all"
+                              :style="nb.receivingRemarks
+                  ? 'color: var(--color-primary);'
+                  : 'color: var(--color-text-muted); opacity: 0.3;'"
+                              :disabled="!nb.receivingRemarks">
+                        <span class="material-symbols-outlined" style="font-size: 14px;">
+                          {{ nb.receivingRemarks ? 'chat_bubble' : 'chat_bubble_outline' }}
+                        </span>
+                      </button>
+                      <div v-if="nb.receivingRemarks"
+                           class="absolute bottom-full right-0 mb-2 w-56 rounded-xl p-3 text-xs shadow-xl z-10 pointer-events-none opacity-0 group-hover/recrem:opacity-100 transition-opacity"
+                           style="background-color: var(--color-surface); border: 1px solid var(--color-border);">
+                        <p class="text-[10px] font-bold uppercase tracking-widest mb-1"
+                           style="color: var(--color-primary);">Receiving Remarks</p>
+                        <p class="whitespace-pre-wrap" style="color: var(--color-text);">{{ nb.receivingRemarks }}</p>
+                      </div>
+                    </div>
+
+                  </div>
                 </div>
-                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase"
-                      :style="nb.status === 'R'
-                        ? 'background-color: var(--color-success-soft); color: var(--color-success);'
-                        : 'background-color: var(--color-warning-soft); color: var(--color-warning);'">
-                  {{ nb.status === 'R' ? 'Received' : 'Pending' }}
-                </span>
+
               </div>
             </div>
           </template>

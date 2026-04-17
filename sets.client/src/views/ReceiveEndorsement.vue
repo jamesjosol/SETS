@@ -76,6 +76,16 @@
               <span v-else class="material-symbols-outlined text-sm">send</span>
               {{ isScanning ? 'Receiving...' : 'Receive' }}
             </button>
+            <!-- Clear Button -->
+            <button class="px-6 py-4 rounded-xl text-xs font-bold uppercase tracking-widest transition-all active:scale-95 flex items-center gap-2"
+                    :disabled="receivedSpecimens.length === 0"
+                    :style="receivedSpecimens.length === 0
+            ? 'background-color: var(--color-surface-low); color: var(--color-text-muted); cursor: not-allowed;'
+            : 'background-color: var(--color-error-soft); color: var(--color-error);'"
+                    @click="clearReceivedList">
+              <span class="material-symbols-outlined text-sm">delete_sweep</span>
+              Clear
+            </button>
           </div>
 
           <!-- Received Specimens Table -->
@@ -447,18 +457,48 @@ function openReceivingRemark(index, type) {
   remarkModal.value = { visible: true, index, type, text: item.receivingRemarks ?? '' }
 }
 
-function saveReceivingRemark(text) {
-  const { index, type } = remarkModal.value
-  if (type === 'barcoded') {
-    receivedSpecimens.value[index].receivingRemarks = text
-  } else {
-    // find the item in the full list and update
-    const filtered = filteredNonBarcoded.value[index]
-    const real = pendingNonBarcoded.value.find(n => n.itemID === filtered.itemID)
-    if (real) real.receivingRemarks = text
+  async function saveReceivingRemark(text) {
+    const { index, type } = remarkModal.value
+
+    if (type === 'barcoded') {
+      const item = receivedSpecimens.value[index]
+      try {
+        await receivingApi.updateSpecimenRemarks({
+          specimenNo: item.specimenNo,
+          batchNo: item.batchNo,
+          receivingRemarks: text || null
+        })
+        item.receivingRemarks = text
+      } catch (err) {
+        showAlert('error', 'Save Failed', 'Unable to save receiving remarks.')
+        remarkModal.value.visible = false
+        return
+      }
+
+    } else {
+      // Non-barcoded — now persisted
+      const filtered = filteredNonBarcoded.value[index]
+      const real = pendingNonBarcoded.value.find(n => n.itemID === filtered.itemID)
+      if (!real) {
+        remarkModal.value.visible = false
+        return
+      }
+      try {
+        await receivingApi.updateNonBarcodedRemarks({
+          itemID: real.itemID,
+          receivingRemarks: text || null
+        })
+        real.receivingRemarks = text
+      } catch (err) {
+        showAlert('error', 'Save Failed', 'Unable to save receiving remarks.')
+        remarkModal.value.visible = false
+        return
+      }
+    }
+
+    remarkModal.value.visible = false
   }
-  remarkModal.value.visible = false
-}
+
 
 // ── Barcoded Tab ───────────────────────────────────────────────────────────
 
@@ -496,6 +536,7 @@ async function handleScan() {
     // Push to received list
     receivedSpecimens.value.unshift({
       specimenNo: data.specimenNo,
+      batchNo: data.batchNo,
       location: data.locationName,   // ← was derived from batchNo, now proper
       pid: data.pid,            // ← now populated
       patientName: data.patientName,
@@ -580,8 +621,8 @@ async function loadPendingNonBarcoded() {
   nonBarcodedLoading.value = true
   try {
     const data = await receivingApi.getPendingNonBarcoded(authStore.sectionCode)
-    // Attach receivingRemarks field for local tracking
-    pendingNonBarcoded.value = data.map(item => ({ ...item, receivingRemarks: null }))
+    // ReceivingRemarks now comes from API — no need to override with null
+    pendingNonBarcoded.value = Array.isArray(data) ? data : []
   } catch (err) {
     if (err.response?.status === 401) {
       showAlert('error', 'Session Expired', 'Your session has expired. Please log in again.')
@@ -635,4 +676,8 @@ onMounted(async () => {
   await nextTick()
   specimenInput.value?.focus()
 })
+
+  function clearReceivedList() {
+    receivedSpecimens.value = []
+  }
 </script>
