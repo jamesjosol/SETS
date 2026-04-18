@@ -7,7 +7,7 @@
         Incoming Specimens
       </h1>
       <p class="text-sm mt-1" style="color: var(--color-text-muted);">
-        {{ authStore.sectionName }} · {{ authStore.branchCode }}
+        <span :style="authStore.isAdmin ? 'color: var(--color-primary); font-weight: 700;' : ''">{{ authStore.isAdmin ? 'ADMINISTRATOR' : authStore.sectionName }}</span> · {{ authStore.branchCode }}
       </p>
     </div>
 
@@ -47,31 +47,21 @@
 
           <!-- Location Filter -->
           <div>
-            <select v-model="locationFilter"
-                    class="border-none outline-none rounded-xl py-2.5 px-4 text-xs font-bold transition-colors"
-                    style="background-color: var(--color-surface-low); color: var(--color-text);"
-                    @change="onLocationFilterChange">
-              <option value="">All Locations</option>
-              <option v-for="loc in availableLocations"
-                      :key="loc.code"
-                      :value="loc.code">
-                {{ loc.name }}
-              </option>
-            </select>
+            <DropdownSelect v-model="locationFilter"
+                            icon="location_on"
+                            placeholder="All Locations"
+                            :options="locationOptions"
+                            @change="onLocationFilterChange" />
+
+
           </div>
 
           <!-- Batch Filter (specimen view only) -->
           <div v-if="activeTab === 'specimen'">
-            <select v-model="batchFilter"
-                    class="border-none outline-none rounded-xl py-2.5 px-4 text-xs font-bold transition-colors"
-                    style="background-color: var(--color-surface-low); color: var(--color-text);">
-              <option value="">All Batches</option>
-              <option v-for="batchNo in availableBatchNos"
-                      :key="batchNo"
-                      :value="batchNo">
-                {{ batchNo }}
-              </option>
-            </select>
+            <DropdownSelect v-model="batchFilter"
+                            icon="tag"
+                            placeholder="All Batches"
+                            :options="batchOptions" />
           </div>
 
           <!-- Refresh -->
@@ -336,6 +326,7 @@ import { ref, computed, onMounted } from 'vue'
 import AppLayout from '@/components/layout/AppLayout.vue'
 import AlertModal from '@/components/common/AlertModal.vue'
 import BatchDetailDrawer from '@/components/common/BatchDetailDrawer.vue'
+import DropdownSelect from '@/components/common/DropdownSelect.vue'
 import { useAuthStore } from '@/stores/authStore'
 import { receivingApi } from '@/api/receivingApi'
 import { batchApi } from '@/api/batchApi'
@@ -382,6 +373,15 @@ const availableLocations = computed(() => {
   return Array.from(seen.values()).sort((a, b) => a.name.localeCompare(b.name))
 })
 
+  const locationOptions = computed(() => [
+    { value: '', label: 'All Locations' },
+    ...availableLocations.value.map(loc => ({
+      value: loc.code,
+      label: loc.name,
+    }))
+  ])
+
+
 // Batch nos available in specimen view — filtered by location if set
 const availableBatchNos = computed(() => {
   const source = Array.isArray(specimens.value) ? specimens.value : []
@@ -390,6 +390,14 @@ const availableBatchNos = computed(() => {
     : source
   return [...new Set(filtered.map(s => s.batchNo))].sort()
 })
+
+  const batchOptions = computed(() => [
+    { value: '', label: 'All Batches' },
+    ...availableBatchNos.value.map(batchNo => ({
+      value: batchNo,
+      label: batchNo,
+    }))
+  ])
 
 function onLocationFilterChange() {
   // Reset batch filter when location changes

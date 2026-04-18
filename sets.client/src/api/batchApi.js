@@ -30,4 +30,9 @@ export const batchApi = {
   // Admin — consolidated weekly flow across all endorser sections
   getAllSectionsWeeklyFlow: () =>
     api.get(`${BATCH_URL}/weekly-flow/all`).then(r => r.data),
+
+  // Regular / TL — all endorsements for own section (archive)
+  getEndorsements: (sectionCode, dateFrom, dateTo) => api.get(`${BATCH_URL}/endorsements`, { params: { sectionCode, dateFrom, dateTo } }).then(r => r.data),
+
+  getAllEndorsements: (dateFrom, dateTo) => api.get(`${BATCH_URL}/endorsements/all`, { params: { dateFrom, dateTo } }).then(r => r.data),
 }

@@ -5,6 +5,7 @@
 }
 
 @import "nprogress/nprogress.css";
+@import "pikaday/css/pikaday.css";
 
 @font-face {
   font-family: "Manrope";
@@ -117,6 +118,96 @@
   --color-success-soft: rgba(5,150,105,0.08);
   --color-warning: #d97706;
   --color-warning-soft: rgba(217,119,6,0.08);
+}
+
+/* ── Pikaday Calendar — theme-aware overrides ─────────────────────────────── */
+
+.pika-single {
+  font-family: "Manrope", sans-serif !important;
+  border-radius: 0.75rem !important;
+  border: 1px solid var(--color-border) !important;
+  background-color: var(--color-surface) !important;
+  color: var(--color-text) !important;
+  box-shadow: 0 4px 24px var(--color-shadow) !important;
+}
+
+  /* Header row (month/year + nav arrows) */
+  .pika-single .pika-title {
+    background-color: var(--color-surface) !important;
+  }
+
+  .pika-single .pika-label {
+    color: var(--color-text) !important;
+    background-color: var(--color-surface) !important;
+    font-weight: 700 !important;
+    font-size: 0.8rem !important;
+  }
+
+  .pika-single .pika-prev,
+  .pika-single .pika-next {
+    opacity: 0.6 !important;
+    filter: var(--pika-arrow-filter) !important;
+  }
+
+    .pika-single .pika-prev:hover,
+    .pika-single .pika-next:hover {
+      opacity: 1 !important;
+    }
+
+  /* Day-of-week header */
+  .pika-single th abbr {
+    color: var(--color-text-muted) !important;
+    font-weight: 700 !important;
+    font-size: 0.65rem !important;
+    text-decoration: none !important;
+  }
+
+  /* Individual day cells */
+  .pika-single .pika-button {
+    color: var(--color-text) !important;
+    background-color: transparent !important;
+    border-radius: 0.5rem !important;
+    font-family: "Manrope", sans-serif !important;
+    font-weight: 600 !important;
+  }
+
+    .pika-single .pika-button:hover {
+      background-color: var(--color-primary-soft) !important;
+      color: var(--color-primary) !important;
+    }
+
+  /* Today */
+  .pika-single .is-today .pika-button {
+    color: var(--color-primary) !important;
+    font-weight: 800 !important;
+  }
+
+  /* Selected date */
+  .pika-single .is-selected .pika-button,
+  .pika-single .is-selected .pika-button:hover {
+    background-color: var(--color-primary) !important;
+    color: #ffffff !important;
+    box-shadow: none !important;
+  }
+
+  /* Disabled / out-of-range days */
+  .pika-single .is-disabled .pika-button,
+  .pika-single .is-outside-current-month .pika-button {
+    color: var(--color-text-muted) !important;
+    opacity: 0.35 !important;
+  }
+
+/* ── Arrow filter per theme (makes the SVG arrows match the text color) ─────── */
+[data-theme="light"] {
+  --pika-arrow-filter: none;
+}
+
+[data-theme="dark"] {
+  --pika-arrow-filter: invert(1);
+}
+
+[data-theme="dim"] {
+  --pika-arrow-filter: invert(0.8);
 }
 
 

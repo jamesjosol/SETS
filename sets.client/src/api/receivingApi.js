@@ -15,4 +15,5 @@ export const receivingApi = {
   getHourlyFlow: (sectionCode) => api.get(`${BASE_URL}/hourly-flow`, { params: { sectionCode } }).then(r => r.data),
   getIncomingBatches: (sectionCode) => api.get(`${BASE_URL}/incoming-batches`, { params: { sectionCode } }).then(r => r.data),
   getIncomingSpecimens: (sectionCode) => api.get(`${BASE_URL}/incoming-specimens`, { params: { sectionCode } }).then(r => r.data),
+  getReceivedBatches: (sectionCode, dateFrom, dateTo) => api.get(`${BASE_URL}/received-batches`, { params: { sectionCode, dateFrom, dateTo }}).then(r => r.data),
 }

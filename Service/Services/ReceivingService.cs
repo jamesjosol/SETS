@@ -597,5 +597,61 @@ namespace Service.Services
             }
             catch { throw; }
         }
+        public List<ReceivedBatchItem> GetReceivedBatches(string? sectionCode, DateTime dateFrom, DateTime dateTo)
+        {
+            try
+            {
+                using var context = _factory.CreateContext(_branch);
+
+                var sections = context.Section_Master
+                    .ToDictionary(s => s.Code, s => s.Name);
+
+                var batches = context.Batch_Header
+                    .Where(b =>
+                        (string.IsNullOrEmpty(sectionCode) || b.ProcDestination == sectionCode) &&
+                        b.Endorsed.Date >= dateFrom.Date &&
+                        b.Endorsed.Date <= dateTo.Date &&
+                        b.Status == "C")
+                    .OrderByDescending(b => b.Endorsed)
+                    .ToList();
+
+                var batchNos = batches.Select(b => b.BatchNo).ToList();
+
+                // Pull all receiving records for these batches in one query
+                // then group by BatchNo to get unique receivers per batch
+                var receiversByBatch = (
+                   from r in context.Batch_Specimen_Receiving
+                   join b in context.Batch_Header
+                       on r.BatchNo equals b.BatchNo
+                   where (string.IsNullOrEmpty(sectionCode) || b.ProcDestination == sectionCode) &&
+                        b.Endorsed.Date >= dateFrom.Date &&
+                        b.Endorsed.Date <= dateTo.Date &&
+                        b.Status == "C"
+                   select r
+               )
+               .ToList()
+               .GroupBy(r => r.BatchNo)
+               .ToDictionary(
+                   g => g.Key,
+                   g => string.Join(", ", g.Select(r => r.ProcReceivedBy)
+                                           .Distinct()
+                                           .OrderBy(u => u))
+               );
+
+                return batches.Select(b => new ReceivedBatchItem
+                {
+                    BatchNo = b.BatchNo,
+                    Location = sections.TryGetValue(b.Location, out var loc) ? loc : b.Location,
+                    Endorsed = b.Endorsed,
+                    EndorsedBy = b.EndorsedBy,
+                    ProcReceived = b.ProcReceived,
+                    ReceivedBy = receiversByBatch.TryGetValue(b.BatchNo, out var receivers)
+                                       ? receivers
+                                       : null,
+                    Status = b.Status
+                }).ToList();
+            }
+            catch { throw; }
+        }
     }
 }

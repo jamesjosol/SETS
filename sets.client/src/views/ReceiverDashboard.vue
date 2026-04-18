@@ -351,8 +351,8 @@
           </div>
           <div class="mt-5 pt-4 flex justify-between text-[10px] font-bold uppercase tracking-widest"
                style="border-top: 1px solid var(--color-border); color: var(--color-text-muted);">
-            <span>Last Global Sync</span>
-            <span>2 mins ago</span>
+            <span>Last Status Check</span>
+            <span>{{ lastStatusCheck }}</span>
           </div>
         </div>
       </div>
@@ -378,13 +378,14 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import AppLayout from '@/components/layout/AppLayout.vue'
 import AlertModal from '@/components/common/AlertModal.vue'
 import BatchDetailDrawer from '@/components/common/BatchDetailDrawer.vue'
 import { useAuthStore } from '@/stores/authStore'
 import { receivingApi } from '@/api/receivingApi'
 import { batchApi } from '@/api/batchApi'
+import { healthApi } from '@/api/healthApi'
 
 const authStore = useAuthStore()
 
@@ -440,6 +441,94 @@ function getBatchCellStyle(batch) {
   return 'background-color: var(--color-surface-low); color: var(--color-text);'
 }
 
+  // ── Fetch ──────────────────────────────────────────────────────────────────
+
+  async function fetchSummary() {
+    try {
+      summary.value = await receivingApi.getDashboardSummary(authStore.sectionCode)
+    } catch (err) {
+      if (err.response?.status === 401) {
+        showAlert('error', 'Session Expired', 'Your session has expired. Please log in again.')
+      } else {
+        showAlert('error', 'Error', 'Unable to load summary.')
+      }
+    }
+  }
+
+  async function fetchMonitoring() {
+    try {
+      monitoringData.value = await receivingApi.getMonitoringDashboard(authStore.sectionCode)
+    } catch (err) {
+      if (err.response?.status === 401) {
+        showAlert('error', 'Session Expired', 'Your session has expired. Please log in again.')
+      } else {
+        showAlert('error', 'Error', 'Unable to load monitoring data.')
+      }
+    }
+  }
+
+  async function fetchWeeklyFlow() {
+    try {
+      weeklyFlow.value = await receivingApi.getWeeklyFlow(authStore.sectionCode)
+    } catch (err) {
+      if (err.response?.status === 401) {
+        showAlert('error', 'Session Expired', 'Your session has expired. Please log in again.')
+      } else {
+        showAlert('error', 'Error', 'Unable to load weekly flow.')
+      }
+    }
+  }
+
+  async function fetchHourlyFlow() {
+    try {
+      hourlyFlow.value = await receivingApi.getHourlyFlow(authStore.sectionCode)
+    } catch (err) {
+      if (err.response?.status === 401) {
+        showAlert('error', 'Session Expired', 'Your session has expired. Please log in again.')
+      } else {
+        showAlert('error', 'Error', 'Unable to load hourly flow.')
+      }
+    }
+  }
+
+  // Silent refresh — no spinners touched
+  async function silentRefresh() {
+    await Promise.all([
+      fetchSummary(),
+      fetchMonitoring(),
+      fetchWeeklyFlow(),
+      fetchHourlyFlow(),
+    ])
+  }
+
+  let refreshInterval = null
+
+  onMounted(async () => {
+    // First load — show spinners sequentially so UI builds top-down
+    await fetchSummary()
+    loading.value = false
+
+    await fetchMonitoring()
+    monitoringLoading.value = false
+
+    await fetchWeeklyFlow()
+    flowLoading.value = false
+
+    await fetchHourlyFlow()
+    hourlyLoading.value = false
+
+    // Start silent background refresh every 5 seconds
+    refreshInterval = setInterval(silentRefresh, 5000)
+
+    await fetchSystemStatus()
+    statusInterval = setInterval(fetchSystemStatus, 30000)
+  })
+
+  onUnmounted(() => {
+    clearInterval(refreshInterval)
+    clearInterval(statusInterval) 
+  })
+
 // ── Drawer ─────────────────────────────────────────────────────────────────
 
 const drawerOpen = ref(false)
@@ -470,58 +559,6 @@ function closeDrawer() {
   drawerData.value = null
 }
 
-// ── Fetch ──────────────────────────────────────────────────────────────────
-
-onMounted(async () => {
-  try {
-    summary.value = await receivingApi.getDashboardSummary(authStore.sectionCode)
-  } catch (err) {
-    if (err.response?.status === 401) {
-      showAlert('error', 'Session Expired', 'Your session has expired. Please log in again.')
-    } else {
-      showAlert('error', 'Error', 'Unable to load summary.')
-    }
-  } finally {
-    loading.value = false
-  }
-
-  try {
-    monitoringData.value = await receivingApi.getMonitoringDashboard(authStore.sectionCode)
-  } catch (err) {
-    if (err.response?.status === 401) {
-      showAlert('error', 'Session Expired', 'Your session has expired. Please log in again.')
-    } else {
-      showAlert('error', 'Error', 'Unable to load monitoring data.')
-    }
-  } finally {
-    monitoringLoading.value = false
-  }
-
-  try {
-    weeklyFlow.value = await receivingApi.getWeeklyFlow(authStore.sectionCode)
-  } catch (err) {
-    if (err.response?.status === 401) {
-      showAlert('error', 'Session Expired', 'Your session has expired. Please log in again.')
-    } else {
-      showAlert('error', 'Error', 'Unable to load weekly flow.')
-    }
-  } finally {
-    flowLoading.value = false
-  }
-
-  try {
-    hourlyFlow.value = await receivingApi.getHourlyFlow(authStore.sectionCode)
-  } catch (err) {
-    if (err.response?.status === 401) {
-      showAlert('error', 'Session Expired', 'Your session has expired. Please log in again.')
-    } else {
-      showAlert('error', 'Error', 'Unable to load hourly flow.')
-    }
-  } finally {
-    hourlyLoading.value = false
-  }
-
-})
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -603,20 +640,106 @@ function getBatchStatusDot(status) {
 
   // ── System Status ──────────────────────────────────────────────────────────
 
-  const systemStatus = [
-    { label: 'HCLAB Connectivity', icon: 'router', iconColor: '#059669', state: 'Online', note: null },
-    { label: 'SETS Database', icon: 'database', iconColor: '#059669', state: 'Online', note: null },
-    { label: 'Endorsement API', icon: 'api', iconColor: '#d97706', state: 'Delayed', note: '140ms latency' },
-  ]
+  const lastStatusCheck = ref('—')
+
+  // Add this line at the end of fetchSystemStatus():
+  lastStatusCheck.value = new Date().toLocaleTimeString('en-US', {
+    hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true
+  })
+
+  const systemStatus = ref([
+    {
+      label: 'HCLAB Connectivity',
+      icon: 'router',
+      iconColor: 'var(--color-text-muted)',
+      state: 'Checking',
+      note: null,
+    },
+    {
+      label: 'SETS Database',
+      icon: 'database',
+      iconColor: 'var(--color-text-muted)',
+      state: 'Checking',
+      note: null,
+    },
+    {
+      label: 'SETS Host',
+      icon: 'dns',
+      iconColor: 'var(--color-text-muted)',
+      state: 'Checking',
+      note: null,
+    },
+  ])
 
   function getStatusBadgeStyle(state) {
     const map = {
-      Online: 'background-color: var(--color-success-soft); color: var(--color-success);',
-      Delayed: 'background-color: var(--color-warning-soft); color: var(--color-warning);',
-      Offline: 'background-color: var(--color-error-soft); color: var(--color-error);',
+      'Online': 'background-color: var(--color-success-soft); color: var(--color-success);',
+      'Slight Delay': 'background-color: rgba(202,138,4,0.1); color: #ca8a04;',
+      'Delay': 'background-color: var(--color-warning-soft); color: var(--color-warning);',
+      'Severe Delay': 'background-color: rgba(234,88,12,0.1); color: #ea580c;',
+      'Offline': 'background-color: var(--color-error-soft); color: var(--color-error);',
     }
     return map[state] ?? 'background-color: var(--color-surface-low); color: var(--color-text-muted);'
   }
+
+  function applyState(index, online, latencyMs) {
+    const item = systemStatus.value[index]
+    if (online) {
+      if (latencyMs >= 200) {
+        item.state = 'Severe Delay'
+        item.iconColor = '#ea580c'
+      } else if (latencyMs >= 100) {
+        item.state = 'Delay'
+        item.iconColor = '#d97706'
+      } else if (latencyMs >= 50) {
+        item.state = 'Slight Delay'
+        item.iconColor = '#ca8a04'
+      } else {
+        item.state = 'Online'
+        item.iconColor = '#059669'
+      }
+      item.note = latencyMs > 0 ? `${latencyMs}ms` : null
+    } else {
+      item.state = 'Offline'
+      item.iconColor = 'var(--color-error)'
+      item.note = null
+    }
+  }
+
+  async function fetchSystemStatus() {
+    // ── SETS Host + SETS Database (one request) ──────────────────────────────
+    try {
+      const { hostLatencyMs, db } = await healthApi.ping()
+
+      applyState(2, true, hostLatencyMs)   // [2] = SETS Host
+      applyState(1, db.online, db.latencyMs) // [1] = SETS Database
+
+    } catch {
+      // ping failed entirely — host is unreachable, DB state unknown
+      systemStatus.value[2].state = 'Offline'
+      systemStatus.value[2].iconColor = 'var(--color-error)'
+      systemStatus.value[2].note = null
+      systemStatus.value[1].state = 'Offline'
+      systemStatus.value[1].iconColor = 'var(--color-error)'
+      systemStatus.value[1].note = null
+    }
+
+    // ── HCLAB Connectivity (separate request) ─────────────────────────────────
+    try {
+      const hclab = await healthApi.hclab()
+      applyState(0, hclab.online, hclab.latencyMs) // [0] = HCLAB
+    } catch {
+      systemStatus.value[0].state = 'Offline'
+      systemStatus.value[0].iconColor = 'var(--color-error)'
+      systemStatus.value[0].note = null
+    }
+
+    lastStatusCheck.value = new Date().toLocaleTimeString('en-US', {
+      hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true
+    })
+  }
+
+  let statusInterval = null
 
 
 </script>

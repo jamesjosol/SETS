@@ -184,7 +184,7 @@ namespace Service.Services
             catch { throw; }
         }
 
-        public List<BatchRecentItem> GetRecentBatches(string sectionCode, int top = 5)
+        public List<BatchRecentItem> GetRecentBatches(string sectionCode)
         {
             try
             {
@@ -195,9 +195,9 @@ namespace Service.Services
                     .ToDictionary(s => s.Code, s => s.Name);
 
                 var batches = context.Batch_Header
-                    .Where(b => b.Location == sectionCode)
+                    .Where(b => b.Location == sectionCode &&
+                                b.Endorsed.Date == DateTime.Today)
                     .OrderByDescending(b => b.Endorsed)
-                    .Take(top)
                     .ToList();
 
                 return batches.Select(b => new BatchRecentItem
@@ -213,7 +213,7 @@ namespace Service.Services
             catch { throw; }
         }
 
-        public List<BatchRecentItem> GetAllSectionsRecentBatches(int top = 5)
+        public List<BatchRecentItem> GetAllSectionsRecentBatches()
         {
             try
             {
@@ -233,7 +233,6 @@ namespace Service.Services
                     orderby b.Endorsed descending
                     select b
                 )
-                .Take(top)
                 .ToList();
 
                 return batches.Select(b => new BatchRecentItem
@@ -396,6 +395,69 @@ namespace Service.Services
             }
 
             return result;
+        }
+
+        public List<BatchRecentItem> GetEndorsements(string sectionCode, DateTime dateFrom, DateTime dateTo)
+        {
+            try
+            {
+                using var context = _factory.CreateContext(_branch);
+
+                var sections = context.Section_Master
+                    .ToDictionary(s => s.Code, s => s.Name);
+
+                var batches = context.Batch_Header
+                    .Where(b =>
+                        b.Location == sectionCode &&
+                        b.Endorsed.Date >= dateFrom.Date &&
+                        b.Endorsed.Date <= dateTo.Date)
+                    .OrderByDescending(b => b.Endorsed)
+                    .ToList();
+
+                return batches.Select(b => new BatchRecentItem
+                {
+                    BatchNo = b.BatchNo,
+                    Location = null,
+                    Endorsed = b.Endorsed,
+                    EndorsedBy = b.EndorsedBy,
+                    Destination = sections.TryGetValue(b.ProcDestination, out var dest) ? dest : b.ProcDestination,
+                    Status = b.Status
+                }).ToList();
+            }
+            catch { throw; }
+        }
+
+        public List<BatchRecentItem> GetAllEndorsements(DateTime dateFrom, DateTime dateTo)
+        {
+            try
+            {
+                using var context = _factory.CreateContext(_branch);
+
+                var sections = context.Section_Master
+                    .ToDictionary(s => s.Code, s => s.Name);
+
+                var batches = (
+                    from b in context.Batch_Header
+                    join s in context.Section_Master
+                        on b.Location equals s.Code
+                    where s.Active && s.Category == "1" &&
+                          b.Endorsed.Date >= dateFrom.Date &&
+                          b.Endorsed.Date <= dateTo.Date
+                    orderby b.Endorsed descending
+                    select b
+                ).ToList();
+
+                return batches.Select(b => new BatchRecentItem
+                {
+                    BatchNo = b.BatchNo,
+                    Location = sections.TryGetValue(b.Location, out var loc) ? loc : b.Location,
+                    Endorsed = b.Endorsed,
+                    EndorsedBy = b.EndorsedBy,
+                    Destination = sections.TryGetValue(b.ProcDestination, out var dest) ? dest : b.ProcDestination,
+                    Status = b.Status
+                }).ToList();
+            }
+            catch { throw; }
         }
     }
 }

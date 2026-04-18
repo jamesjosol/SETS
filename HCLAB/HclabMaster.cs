@@ -1,6 +1,9 @@
 ﻿using Model.HCLAB;
+using Model.Main;
 using Oracle.ManagedDataAccess.Client;
+using System.Diagnostics;
 using static HCLAB.Queries;
+using Model.Main;
 
 namespace HCLAB
 {
@@ -136,6 +139,29 @@ namespace HCLAB
                 {
 
                     throw;
+                }
+            }
+        }
+        
+        public static class MISC
+        {
+            public static HealthCheckResult CheckHcLab(string conn)
+            {
+                var sw = Stopwatch.StartNew();
+                try
+                {
+                    // Replace with your actual Oracle connection open call
+
+                    using var con = new OracleConnection(conn);
+                    con.Open();
+                    con.Close();
+                    sw.Stop();
+                    return new HealthCheckResult { Online = true, LatencyMs = sw.ElapsedMilliseconds };
+                }
+                catch (Exception ex)
+                {
+                    sw.Stop();
+                    return new HealthCheckResult { Online = false, LatencyMs = sw.ElapsedMilliseconds, Error = ex.Message };
                 }
             }
         }

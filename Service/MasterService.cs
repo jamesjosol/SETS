@@ -14,6 +14,7 @@ namespace Service
         public SampleTypeService SampleType { get; set; }
         public BatchService Batch { get; private set; }
         public ReceivingService Receiving { get; private set; }
+        public HealthService Health { get; private set; }
 
         private readonly AppDbContextFactory _factory;
         private readonly string _branch;
@@ -36,6 +37,7 @@ namespace Service
             SampleType = new SampleTypeService(_factory, _branch);
             Batch = new BatchService(_factory, _branch);
             Receiving = new ReceivingService(_factory, _branch);
+            Health = new HealthService(_factory, _branch);
         }
 
         public void Dispose()
@@ -48,6 +50,7 @@ namespace Service
             Transaction = null;
             SampleType = null;
             Receiving = null;
+            Health = null;
         }
     }
 }

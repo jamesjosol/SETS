@@ -22,5 +22,6 @@ namespace Service.Interfaces
         List<HourlyFlow> GetHourlyReceivedFlow(string procSectionCode);
         List<IncomingBatchItem> GetIncomingBatches(string procSectionCode);
         List<IncomingSpecimenItem> GetIncomingSpecimens(string procSectionCode);
+        List<ReceivedBatchItem> GetReceivedBatches(string? sectionCode, DateTime dateFrom, DateTime dateTo);
     }
 }

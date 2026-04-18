@@ -333,5 +333,33 @@ namespace SETS.Server.Controllers
                 return StatusCode(500, new { message = ex.Message });
             }
         }
+
+        // GET api/receiving/received-batches?sectionCode=WP&dateFrom=2025-01-01&dateTo=2025-01-31
+        [HttpGet("received-batches")]
+        public IActionResult GetReceivedBatches([FromQuery] string? sectionCode,
+                                                [FromQuery] string dateFrom,
+                                                [FromQuery] string dateTo)
+        {
+            try
+            {
+                var branch = HttpContext.Session.GetString("BranchCode");
+                var isAdminString = HttpContext.Session.GetString("IsAdmin");
+                bool isAdmin = bool.TryParse(isAdminString, out var result) && result;
+                if (string.IsNullOrEmpty(branch))
+                    return Unauthorized(new { message = "Session expired." });
+                if (string.IsNullOrEmpty(sectionCode) && !isAdmin)
+                    return BadRequest(new { message = "Section code is required." });
+
+                var from = DateTime.TryParse(dateFrom, out var df) ? df : DateTime.Today.AddDays(-30);
+                var to = DateTime.TryParse(dateTo, out var dt) ? dt : DateTime.Today;
+
+                using var master = new MasterService(branch);
+                return Ok(master.Receiving.GetReceivedBatches(sectionCode, from, to));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
     }
 }

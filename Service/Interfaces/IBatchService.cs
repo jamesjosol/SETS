@@ -14,10 +14,12 @@ namespace Service.Interfaces
         Batch_Specimen? CheckSpecimen(string specimenNo);
         BatchSummary GetDashboardSummary(string sectionCode, DateTime date);
         List<BatchSectionSummary> GetAllSectionsSummary(DateTime date);
-        List<BatchRecentItem> GetRecentBatches(string sectionCode, int top = 5);
-        List<BatchRecentItem> GetAllSectionsRecentBatches(int top = 5);
+        List<BatchRecentItem> GetRecentBatches(string sectionCode);
+        List<BatchRecentItem> GetAllSectionsRecentBatches();
         BatchDetailResponse? GetBatchDetail(string batchNo);
         List<BatchDailyFlow> GetWeeklyFlow(string sectionCode);
         List<BatchDailyFlow> GetAllSectionsWeeklyFlow();
+        List<BatchRecentItem> GetEndorsements(string sectionCode, DateTime dateFrom, DateTime dateTo);
+        List<BatchRecentItem> GetAllEndorsements(DateTime dateFrom, DateTime dateTo);
     }
 }

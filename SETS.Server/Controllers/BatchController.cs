@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Model.HCLAB;
 using Model.Main;
 using Service;
 
@@ -228,6 +229,55 @@ namespace API.Controllers
                 var flow = master.Batch.GetAllSectionsWeeklyFlow();
 
                 return Ok(flow);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+
+        // GET api/batch/endorsements?sectionCode=WP
+        // Regular / TL — all endorsements for their section (archive)
+        [HttpGet("endorsements")]
+        public IActionResult GetEndorsements([FromQuery] string sectionCode,
+                                      [FromQuery] string dateFrom,
+                                      [FromQuery] string dateTo)
+        {
+            try
+            {
+                var branch = HttpContext.Session.GetString("BranchCode");
+                if (string.IsNullOrEmpty(branch))
+                    return Unauthorized(new { message = "Session expired." });
+                if (string.IsNullOrEmpty(sectionCode))
+                    return BadRequest(new { message = "Section code is required." });
+
+                var from = DateTime.TryParse(dateFrom, out var df) ? df : DateTime.Today.AddDays(-30);
+                var to = DateTime.TryParse(dateTo, out var dt) ? dt : DateTime.Today;
+
+                using var master = new MasterService(branch);
+                return Ok(master.Batch.GetEndorsements(sectionCode, from, to));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+
+        [HttpGet("endorsements/all")]
+        public IActionResult GetAllEndorsements([FromQuery] string dateFrom,
+                                                [FromQuery] string dateTo)
+        {
+            try
+            {
+                var branch = HttpContext.Session.GetString("BranchCode");
+                if (string.IsNullOrEmpty(branch))
+                    return Unauthorized(new { message = "Session expired." });
+
+                var from = DateTime.TryParse(dateFrom, out var df) ? df : DateTime.Today.AddDays(-30);
+                var to = DateTime.TryParse(dateTo, out var dt) ? dt : DateTime.Today;
+
+                using var master = new MasterService(branch);
+                return Ok(master.Batch.GetAllEndorsements(from, to));
             }
             catch (Exception ex)
             {

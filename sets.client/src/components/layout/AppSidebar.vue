@@ -157,7 +157,7 @@
 
   const endorserItems = [
     { name: 'Dashboard', path: '/dashboard', icon: 'dashboard' },
-    { name: 'Batch Monitoring', path: '/batch-monitoring', icon: 'monitoring' },
+    { name: 'Endorsements', path: '/endorsements', icon: 'inventory_2' },
     { name: 'Audit Trail', path: '/audit-trail', icon: 'manage_search' },
   ]
 
@@ -169,6 +169,7 @@
   const receiverItems = [
     { name: 'Dashboard', path: '/receiver/dashboard', icon: 'dashboard' },
     { name: 'Incoming Specimens', path: '/receiver/incoming', icon: 'move_to_inbox' },
+    { name: 'Received Batches', path: '/receiver/received-batches', icon: 'inventory_2' },
     { name: 'Audit Trail', path: '/receiver/audit-trail', icon: 'manage_search' },
     { name: 'Contingency', path: '/receiver/contingency', icon: 'offline_bolt' },
   ]

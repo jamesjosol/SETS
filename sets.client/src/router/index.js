@@ -24,7 +24,12 @@ const routes = [
     component: () => import('../views/NewEndorsement.vue'),
     meta: { requiresAuth: true, category: '1' }
   },
-
+  {
+    path: '/endorsements',
+    name: 'Endorsements',
+    component: () => import('../views/Endorsements.vue'),
+    meta: { requiresAuth: true, category: '1' }
+  },
   // ── Receiver (category 2) ──────────────────────────────────────────
   {
     path: '/receiver/dashboard',
@@ -42,6 +47,12 @@ const routes = [
     path: '/receiver/incoming',
     name: 'IncomingSpecimens',
     component: () => import('../views/IncomingSpecimens.vue'),
+    meta: { requiresAuth: true, category: '2' }
+  },
+  {
+    path: '/receiver/received-batches',
+    name: 'ReceivedBatches',
+    component: () => import('../views/ReceivedBatches.vue'),
     meta: { requiresAuth: true, category: '2' }
   },
   // ── Catch-all: redirect to login ───────────────────────────────────

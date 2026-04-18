@@ -14,6 +14,7 @@
     <PackageJsonDependenciesAxios Condition="$(PackageJsonDependenciesAxios) == ''">^1.15.0</PackageJsonDependenciesAxios>
     <PackageJsonDependenciesMaterialSymbols Condition="$(PackageJsonDependenciesMaterialSymbols) == ''">^0.44.1</PackageJsonDependenciesMaterialSymbols>
     <PackageJsonDependenciesNprogress Condition="$(PackageJsonDependenciesNprogress) == ''">^0.2.0</PackageJsonDependenciesNprogress>
+    <PackageJsonDependenciesPikaday Condition="$(PackageJsonDependenciesPikaday) == ''">^1.8.2</PackageJsonDependenciesPikaday>
     <PackageJsonDependenciesPinia Condition="$(PackageJsonDependenciesPinia) == ''">^3.0.4</PackageJsonDependenciesPinia>
     <PackageJsonDependenciesPiniaPluginPersistedstate Condition="$(PackageJsonDependenciesPiniaPluginPersistedstate) == ''">^4.7.1</PackageJsonDependenciesPiniaPluginPersistedstate>
     <PackageJsonDependenciesVue Condition="$(PackageJsonDependenciesVue) == ''">^3.5.31</PackageJsonDependenciesVue>
