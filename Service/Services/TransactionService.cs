@@ -36,11 +36,11 @@ namespace Service.Services
             }
         }
 
-        public async Task<List<Ord_Dtl>> GetOrdDtl(string labNo, string code)
+        public async Task<List<Ord_Dtl>> GetOrdDtl(string labNo, string sampleCode)
         {
             try
             {
-                return await HclabMaster.HCLABTransactions.GetOrd_Dtl(_conn, labNo, code);
+                return await HclabMaster.HCLABTransactions.GetOrd_Dtl(_conn, labNo, sampleCode);
             }
             catch { throw; }
         }

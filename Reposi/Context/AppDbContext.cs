@@ -20,6 +20,9 @@ namespace Reposi.Context
         public DbSet<Batch_Specimen> Batch_Specimen { get; set; }
         public DbSet<Batch_NonBarcoded> Batch_NonBarcoded { get; set; }
         public DbSet<Batch_Specimen_Receiving> Batch_Specimen_Receiving { get; set; }
+        public DbSet<Section_TestGroup> Section_TestGroup { get; set; }
+        public DbSet<Specimen_Section_Header> Specimen_Section_Header { get; set; }
+        public DbSet<Specimen_Section_Test> Specimen_Section_Test { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             // User_Master
@@ -107,6 +110,39 @@ namespace Reposi.Context
                 .HasOne<Batch_Header>()
                 .WithMany()
                 .HasForeignKey(b => b.BatchNo);
+
+            // Section_TestGroup
+            modelBuilder.Entity<Section_TestGroup>().ToTable("Section_TestGroup");
+            modelBuilder.Entity<Section_TestGroup>().HasKey(s => s.Id);
+            modelBuilder.Entity<Section_TestGroup>()
+                .HasIndex(s => new { s.SectionCode, s.TestGroupCode })
+                .IsUnique();
+            modelBuilder.Entity<Section_TestGroup>()
+                .HasOne<Section_Master>()
+                .WithMany()
+                .HasForeignKey(s => s.SectionCode);
+
+            // Specimen_Section_Header
+            modelBuilder.Entity<Specimen_Section_Header>().ToTable("Specimen_Section_Header");
+            modelBuilder.Entity<Specimen_Section_Header>().HasKey(s => s.Id);
+            modelBuilder.Entity<Specimen_Section_Header>()
+                .HasIndex(s => new { s.SpecimenNo, s.TestGroupCode })
+                .IsUnique();
+            modelBuilder.Entity<Specimen_Section_Header>()
+                .HasOne<Section_Master>()
+                .WithMany()
+                .HasForeignKey(s => s.SectionCode);
+
+            // Specimen_Section_Test
+            modelBuilder.Entity<Specimen_Section_Test>().ToTable("Specimen_Section_Test");
+            modelBuilder.Entity<Specimen_Section_Test>().HasKey(s => s.Id);
+            modelBuilder.Entity<Specimen_Section_Test>()
+                .HasIndex(s => new { s.HeaderId, s.TestCode })
+                .IsUnique();
+            modelBuilder.Entity<Specimen_Section_Test>()
+                .HasOne<Specimen_Section_Header>()
+                .WithMany()
+                .HasForeignKey(s => s.HeaderId);
         }
     }
 }

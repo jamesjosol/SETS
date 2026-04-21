@@ -10,7 +10,7 @@ namespace SETS.Server.Controllers
     {
         // POST api/receiving/specimen
         [HttpPost("specimen")]
-        public IActionResult ReceiveSpecimen([FromBody] ReceiveSpecimenRequest request)
+        public async Task<IActionResult> ReceiveSpecimen([FromBody] ReceiveSpecimenRequest request)
         {
             try
             {
@@ -25,7 +25,7 @@ namespace SETS.Server.Controllers
                     return BadRequest(new { message = "User ID is required." });
 
                 using var master = new MasterService(branch);
-                var result = master.Receiving.ReceiveSpecimen(request);
+                var result = await master.Receiving.ReceiveSpecimen(request);
 
                 return Ok(new { success = true, data = result });
             }

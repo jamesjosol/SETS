@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using HCLAB;
 using Model.Main;
 using Model.SETSDB;
 using Reposi;
@@ -15,14 +16,16 @@ namespace Service.Services
     {
         private readonly AppDbContextFactory _factory;
         private readonly string _branch;
+        private readonly string _branch_raw;
 
         public ReceivingService(AppDbContextFactory factory, string branch)
         {
             _factory = factory;
             _branch = SetsConnection.ConnectionString(branch);
+            _branch_raw = branch;
         }
 
-        public ReceiveSpecimenResponse ReceiveSpecimen(ReceiveSpecimenRequest request)
+        public async Task<ReceiveSpecimenResponse> ReceiveSpecimen(ReceiveSpecimenRequest request)
         {
             try
             {
@@ -96,6 +99,9 @@ namespace Service.Services
 
                     context.Batch_Header.Update(header);
                     context.SaveChanges();
+
+                    // Route specimen to lab sections
+                    await RouteToLabSections(context, specimen, request.UserID, now);
 
                     tx.Commit();
 
@@ -652,6 +658,66 @@ namespace Service.Services
                 }).ToList();
             }
             catch { throw; }
+        }
+
+        private async Task RouteToLabSections(
+                AppDbContext context,
+                Batch_Specimen specimen,
+                string routedByUserID,
+                DateTime routedAt)
+        {
+            // Step 1 — Query Oracle for all tests under this specimen
+            var connStr = HclabConnection.ConnectionString(_branch_raw);
+            var tests = await HclabMaster.HCLABTransactions
+                .GetOrd_Dtl(connStr, specimen.LabNo, specimen.SampleTypeCode);
+
+            if (tests == null || !tests.Any()) return;
+
+            // Step 2 — All rows share the same TestGroup — take it from the first row
+            var testGroupCode = tests.First().TESTGROUP;
+            if (string.IsNullOrEmpty(testGroupCode)) return;
+
+            // Step 3 — Resolve which section owns this test group
+            var mapping = context.Section_TestGroup
+                .FirstOrDefault(m => m.Active && m.TestGroupCode == testGroupCode);
+
+            if (mapping == null) return; // unmapped test group — skip silently
+
+            // Step 4 — Guard against duplicate routing
+            bool alreadyRouted = context.Specimen_Section_Header
+                .Any(h => h.SpecimenNo == specimen.SpecimenNo
+                       && h.TestGroupCode == testGroupCode);
+
+            if (alreadyRouted) return;
+
+            // Step 5 — Create the single header for this specimen
+            var header = new Specimen_Section_Header
+            {
+                SpecimenNo = specimen.SpecimenNo,
+                SectionCode = mapping.SectionCode,
+                TestGroupCode = testGroupCode,
+                SampleTypeCode = specimen.SampleTypeCode,
+                Status = "P",
+                RoutedBy = routedByUserID,
+                Routed = routedAt
+            };
+
+            context.Specimen_Section_Header.Add(header);
+            context.SaveChanges(); // flush to get generated Id
+
+            // Step 6 — Create child rows — one per test code
+            foreach (var test in tests)
+            {
+                context.Specimen_Section_Test.Add(new Specimen_Section_Test
+                {
+                    HeaderId = header.Id,
+                    TestCode = test.TESTCODE,
+                    TestName = test.TESTNAME,
+                    Status = "P"
+                });
+            }
+
+            context.SaveChanges();
         }
     }
 }

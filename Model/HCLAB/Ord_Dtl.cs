@@ -12,6 +12,6 @@ namespace Model.HCLAB
         public string TESTCODE { get; set; }
         public string TESTNAME { get; set; }
         public string SAMPLETYPECODE { get; set; }
-        public string WORKSTATIONCODE { get; set; }
+        public string TESTGROUP { get; set; }
     }
 }

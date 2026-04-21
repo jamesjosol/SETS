@@ -15,45 +15,68 @@ const routes = [
   {
     path: '/dashboard',
     name: 'Dashboard',
-    component: () => import('../views/Dashboard.vue'),
+    component: () => import('../views/endorser/Dashboard.vue'),
     meta: { requiresAuth: true, category: '1' }
   },
   {
     path: '/endorsement/new',
     name: 'NewEndorsement',
-    component: () => import('../views/NewEndorsement.vue'),
+    component: () => import('../views/endorser/NewEndorsement.vue'),
     meta: { requiresAuth: true, category: '1' }
   },
   {
     path: '/endorsements',
     name: 'Endorsements',
-    component: () => import('../views/Endorsements.vue'),
+    component: () => import('../views/endorser/Endorsements.vue'),
     meta: { requiresAuth: true, category: '1' }
   },
   // ── Receiver (category 2) ──────────────────────────────────────────
   {
     path: '/receiver/dashboard',
     name: 'ReceiverDashboard',
-    component: () => import('../views/ReceiverDashboard.vue'),
+    component: () => import('../views/receiver/ReceiverDashboard.vue'),
     meta: { requiresAuth: true, category: '2' }
   },
   {
     path: '/receiver/receive',
     name: 'ReceiveEndorsement',
-    component: () => import('../views/ReceiveEndorsement.vue'),
+    component: () => import('../views/receiver/ReceiveEndorsement.vue'),
     meta: { requiresAuth: true, category: '2' }
   },
   {
     path: '/receiver/incoming',
     name: 'IncomingSpecimens',
-    component: () => import('../views/IncomingSpecimens.vue'),
+    component: () => import('../views/receiver/IncomingSpecimens.vue'),
     meta: { requiresAuth: true, category: '2' }
   },
   {
     path: '/receiver/received-batches',
     name: 'ReceivedBatches',
-    component: () => import('../views/ReceivedBatches.vue'),
+    component: () => import('../views/receiver/ReceivedBatches.vue'),
     meta: { requiresAuth: true, category: '2' }
+  },
+  // ── Runner ───────────────────────────────────
+  {
+    path: '/runner/dashboard',
+    name: 'RunnerDashboard',
+    component: () => import('../views/runner/RunnerDashboard.vue'),
+    meta: { requiresAuth: true, category: '3' }
+  },
+  {
+    path: '/runner/pending',
+    name: 'PendingSpecimens',
+    component: () => import('../views/runner/PendingSpecimens.vue'),
+    meta: { requiresAuth: true, category: '3' }
+  },
+  {
+    path: '/runner/saved', name: 'SavedSpecimens',
+    component: () => import('../views/runner/SavedSpecimens.vue'),
+    meta: { requiresAuth: true, category: '3' }
+  },
+  {
+    path: '/runner/assign', name: 'AssignRMT',
+    component: () => import('../views/runner/AssignRMT.vue'),
+    meta: { requiresAuth: true, category: '3' }
   },
   // ── Catch-all: redirect to login ───────────────────────────────────
   {

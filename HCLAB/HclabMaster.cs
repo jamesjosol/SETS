@@ -126,7 +126,7 @@ namespace HCLAB
                                     TESTCODE = reader["testcode"].ToString(),
                                     TESTNAME = reader["testname"].ToString(),
                                     SAMPLETYPECODE = reader["sampletypecode"].ToString(),
-                                    WORKSTATIONCODE = reader["workstationcode"].ToString()
+                                    TESTGROUP = reader["testgroup"].ToString()
                                 });
 
                             }

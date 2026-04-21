@@ -37,16 +37,16 @@ namespace HCLAB
 				";
 
 			public static string Get_Ord_Test = @"
-					  SELECT
+					 select 		
 						od.od_tno AS labno,
 						od.od_testcode as testcode,
 						ti.ti_name as testname,
 						od.od_spl_type as sampletypecode,
-						(select os_spl_rcvd_ws from ord_spl where os_tno = od.od_tno and os_spl_type = od.od_spl_type) as workstationcode
-					FROM ord_dtl od
-					LEFT JOIN test_item ti ON ti.ti_code = od.od_order_ti
-					where od_item_parent = '000000' and od_test_grp not in ('IMAGE', '00')
-					and od.od_tno = :p0 and od.od_spl_type = :p1
+						od.od_test_grp as testgroup
+					from ord_dtl od
+					left join test_item ti ON ti.ti_code = od.od_order_ti
+					where od.od_tno = :p0 and od.od_spl_type = :p1
+					and od_testcode = od_order_ti
 				";
 
 		}

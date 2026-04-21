@@ -111,7 +111,7 @@
                     <span class="material-symbols-outlined"
                           style="font-size: 14px; color: var(--color-text-muted);">thermometer</span>
                     <span class="text-xs font-bold"
-                          style="color: var(--color-text);">{{ data.temp }}</span>
+                          style="color: var(--color-text);">{{ data.temp }} °C</span>
                   </div>
                   <div v-if="data.tempRemarks"
                        class="absolute bottom-full left-0 mb-2 w-48 rounded-xl p-3 text-xs shadow-xl z-10 pointer-events-none opacity-0 group-hover/temp:opacity-100 transition-opacity"
