@@ -147,86 +147,99 @@
                   </button>
                 </td>
               </tr>
-
               <!-- Expanded child test rows -->
-              <tr v-if="expandedSpecimen === group.specimenNo" :key="`exp-${group.specimenNo}`">
-                <td colspan="8" class="px-0 py-0">
-                  <div class="mx-4 mb-3 rounded-xl overflow-hidden"
-                       style="border: 1.5px solid var(--color-border);">
-                    <table class="w-full text-xs">
-                      <thead>
-                        <tr style="background-color: var(--color-surface-low); border-bottom: 1px solid var(--color-border);">
-                          <th class="px-4 py-2.5 text-left text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Test Code</th>
-                          <th class="px-4 py-2.5 text-left text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Test Name</th>
-                          <th class="px-4 py-2.5 text-left text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Status</th>
-                          <th class="px-4 py-2.5 text-left text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Assigned RMT</th>
-                          <th class="px-4 py-2.5 text-left text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Schedule</th>
-                          <th class="px-4 py-2.5 text-left text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Running Date</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr v-for="test in group.tests" :key="test.id"
-                            style="border-top: 1px solid var(--color-border);">
+              <Transition name="expand">
+                <tr v-if="expandedSpecimen === group.specimenNo" :key="`exp-${group.specimenNo}`">
+                  <td colspan="8" class="px-0 py-0">
+                    <div class="mx-4 mb-3 rounded-xl overflow-hidden"
+                         style="border: 1.5px solid var(--color-border);">
+                      <table class="w-full text-xs">
+                        <thead>
+                          <tr style="background-color: var(--color-surface-low); border-bottom: 1px solid var(--color-border);">
+                            <th class="px-4 py-2.5 text-left text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Test Code</th>
+                            <th class="px-4 py-2.5 text-left text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Test Name</th>
+                            <th class="px-4 py-2.5 text-left text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Status</th>
+                            <th class="px-4 py-2.5 text-left text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Assigned RMT</th>
+                            <th class="px-4 py-2.5 text-left text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Schedule</th>
+                            <th class="px-4 py-2.5 text-left text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Running Date</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr v-for="test in group.tests" :key="test.id"
+                              :style="(test.status === 'R' || test.status === 'X')
+                              ? 'border-top: 1px solid var(--color-border); opacity: 0.45; pointer-events: none;'
+                              : 'border-top: 1px solid var(--color-border);'">
 
-                          <td class="px-4 py-3">
-                            <span class="font-mono font-bold" style="color: var(--color-text);">{{ test.testCode }}</span>
-                          </td>
+                            <td class="px-4 py-3">
+                              <span class="font-mono font-bold" style="color: var(--color-text);">{{ test.testCode }}</span>
+                            </td>
 
-                          <td class="px-4 py-3" style="color: var(--color-text);">{{ test.testName }}</td>
+                            <td class="px-4 py-3" style="color: var(--color-text);">{{ test.testName }}</td>
 
-                          <td class="px-4 py-3">
-                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest"
-                                  :style="testStatusStyle(test.status)">
-                              {{ testStatusLabel(test.status) }}
-                            </span>
-                          </td>
+                            <td class="px-4 py-3">
+                              <div class="flex items-center gap-1.5">
+                                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest"
+                                      :style="testStatusStyle(test.status)">
+                                  {{ testStatusLabel(test.status) }}
+                                </span>
+                                <span v-if="test.status === 'R' || test.status === 'X'"
+                                      class="material-symbols-outlined text-xs"
+                                      style="color: var(--color-text-muted);"
+                                      title="Cannot be changed">
+                                  lock
+                                </span>
+                              </div>
+                            </td>
 
-                          <!-- Assigned RMT — auto-filled to current user, editable -->
-                          <td class="px-4 py-3">
-                            <select v-model="test.selectedRMT"
-                                    class="px-2 py-1 rounded-lg text-xs outline-none transition-all"
-                                    style="background-color: var(--color-surface-low); border: 1.5px solid var(--color-border); color: var(--color-text); min-width: 130px;">
-                              <option value="">— None —</option>
-                              <option v-for="rmt in availableRMTs" :key="rmt.userID" :value="rmt.userID">
-                                {{ rmt.fullName ?? rmt.userID }}
-                              </option>
-                            </select>
-                          </td>
+                            <!-- Assigned RMT — auto-filled to current user, editable -->
+                            <td class="px-4 py-3">
+                              <select v-model="test.selectedRMT"
+                                      class="px-2 py-1 rounded-lg text-xs outline-none transition-all"
+                                      style="background-color: var(--color-surface-low); border: 1.5px solid var(--color-border); color: var(--color-text); min-width: 130px;">
+                                <option value="">— None —</option>
+                                <option v-for="rmt in availableRMTs" :key="rmt.userID" :value="rmt.userID">
+                                  {{ rmt.fullName ?? rmt.userID }}
+                                </option>
+                              </select>
+                            </td>
 
-                          <!-- Schedule tag pills: Today / ERD / CRD / SRD -->
-                          <td class="px-4 py-3">
-                            <div class="flex items-center gap-1.5 flex-wrap">
-                              <label v-for="tag in scheduleTags" :key="tag.value"
-                                     class="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest cursor-pointer px-2.5 py-1 rounded-lg transition-all select-none"
-                                     :style="test.scheduleTag === tag.value
+                            <!-- Schedule tag pills: Today / ERD / CRD / SRD -->
+                            <td class="px-4 py-3">
+                              <div class="flex items-center gap-1.5 flex-wrap">
+                                <label v-for="tag in scheduleTags" :key="tag.value"
+                                       class="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest cursor-pointer px-2.5 py-1 rounded-lg transition-all select-none"
+                                       :style="test.scheduleTag === tag.value
                                        ? scheduleTagActiveStyle(tag.value)
                                        : 'color: var(--color-text-muted); background-color: var(--color-surface-low);'">
-                                <input type="radio"
-                                       :name="`tag-${test.id}`"
-                                       :value="tag.value"
-                                       v-model="test.scheduleTag"
-                                       class="hidden" />
-                                {{ tag.label }}
-                              </label>
-                            </div>
-                          </td>
+                                  <input type="radio"
+                                         :name="`tag-${test.id}`"
+                                         :value="tag.value"
+                                         v-model="test.scheduleTag"
+                                         class="hidden" />
+                                  {{ tag.label }}
+                                </label>
+                              </div>
+                            </td>
 
-                          <!-- Running date — only visible for CRD -->
-                          <td class="px-4 py-3">
-                            <input v-if="test.scheduleTag === 'CRD'"
-                                   type="date"
-                                   v-model="test.runningDate"
-                                   class="px-2 py-1 rounded-lg text-xs outline-none"
-                                   style="background-color: var(--color-surface-low); border: 1.5px solid var(--color-border); color: var(--color-text);" />
-                            <span v-else class="text-[10px]" style="color: var(--color-text-muted);">—</span>
-                          </td>
+                            <!-- Running date — only visible for CRD -->
+                            <td class="px-4 py-3">
+                              <input v-if="test.scheduleTag === 'CRD'"
+                                     type="date"
+                                     v-model="test.runningDate"
+                                     class="px-2 py-1 rounded-lg text-xs outline-none"
+                                     style="background-color: var(--color-surface-low); border: 1.5px solid var(--color-border); color: var(--color-text);" />
+                              <span v-else class="text-[10px]" style="color: var(--color-text-muted);">—</span>
+                            </td>
 
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </td>
-              </tr>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </td>
+                </tr>
+              </Transition>
+
+
 
             </template>
           </tbody>
@@ -496,3 +509,22 @@
     scanInput.value?.focus()
   })
 </script>
+<style scoped>
+  .expand-enter-active,
+  .expand-leave-active {
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+  }
+
+  .expand-enter-from,
+  .expand-leave-to {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+
+  .expand-enter-to,
+  .expand-leave-from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+</style>

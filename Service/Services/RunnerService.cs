@@ -51,6 +51,7 @@ namespace Service.Services
                     {
                         header.ReceivedBy = request.UserID;
                         header.Received = now;
+                        header.Status = "S";
                         header.Updated = now;
                         header.UpdatedBy = request.UserID;
                         context.Specimen_Section_Header.Update(header);
@@ -129,6 +130,9 @@ namespace Service.Services
                     {
                         var test = tests.FirstOrDefault(t => t.Id == assignment.TestId);
                         if (test == null) continue;
+
+                        // Skip tests that are already Running or Released — do not overwrite
+                        if (test.Status == "R" || test.Status == "X") continue;
 
                         test.UpdatedBy = request.UserID;
                         test.Updated = now;
@@ -235,7 +239,7 @@ namespace Service.Services
                         if (allTests.All(t => t.Status == "X"))
                             header.Status = "C";
                         else if (allTests.Any(t => t.Status == "S") &&
-                                 allTests.All(t => t.Status == "S" || t.Status == "X"))
+                                 allTests.All(t => t.Status == "S" || t.Status == "X" || t.Status == "R"))
                             header.Status = "S";
                         else
                             header.Status = "P";

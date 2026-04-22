@@ -140,6 +140,19 @@
       </router-link>
     </div>
 
+    <!-- Assign RMT Button (Runner only) -->
+    <div v-if="authStore.isRunner"
+         class="px-4 pb-6"
+         :class="authStore.isRunner ? 'pt-4' : ''"
+         style="border-top: 1px solid var(--color-border);">
+      <router-link to="/runner/assign">
+        <button class="w-full py-4 rounded-xl font-bold text-xs uppercase tracking-widest flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-lg"
+                style="background: var(--color-primary-gradient); color: #ffffff;">
+          <span class="material-symbols-outlined text-lg">assignment_ind</span>
+          Assign RMT
+        </button>
+      </router-link>
+    </div>
   </aside>
 </template>
 
@@ -183,7 +196,6 @@
     { name: 'Dashboard', path: '/runner/dashboard', icon: 'dashboard' },
     { name: 'Pending Specimens', path: '/runner/pending', icon: 'pending_actions' },
     { name: 'Saved Specimens', path: '/runner/saved', icon: 'bookmark' },
-    { name: 'Assign RMT', path: '/runner/assign', icon: 'assignment_ind' },
     { name: 'Audit Trail', path: '/runner/audit-trail', icon: 'manage_search' },
   ]
 
