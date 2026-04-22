@@ -1,0 +1,1 @@
+import{r as e}from"./router-4gpHErjq.js";var t=`/api/health`,n={ping:()=>{let n=performance.now();return e.get(`${t}/ping`).then(e=>({hostLatencyMs:Math.round(performance.now()-n),db:e.data.db}))},hclab:()=>e.get(`${t}/hclab`).then(e=>e.data)};export{n as t};

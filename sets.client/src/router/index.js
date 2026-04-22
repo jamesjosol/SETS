@@ -84,6 +84,13 @@ const routes = [
     component: () => import('../views/runner/RunningSpecimens.vue'),
     meta: { requiresAuth: true, category: '3' }
   },
+  // - admin
+  {
+    path: '/admin/settings',
+    name: 'AdminSettings',
+    component: () => import('../views/admin/AdminSettings.vue'),
+    meta: { requiresAuth: true, requiresAdmin: true }
+  },
   // ── Catch-all: redirect to login ───────────────────────────────────
   {
     path: '/:pathMatch(.*)*',

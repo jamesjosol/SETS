@@ -88,6 +88,7 @@
               expand_more
             </span>
           </button>
+
           <transition name="sidebar-group">
             <!-- Group Items -->
             <div v-show="!uiStore.sidebarCollapsed[group.categoryCode]"
@@ -99,7 +100,7 @@
                            :style="isActive(item.path) ? activeStyle : inactiveStyle"
                            @mouseenter="(e) => { if (!isActive(item.path)) applyHover(e) }"
                            @mouseleave="(e) => { if (!isActive(item.path)) removeHover(e) }">
-                <span class="material-symbols-outlined text-base">{{ item.icon }}</span>
+                <span class="material-symbols-outlined text-lg">{{ item.icon }}</span>
                 <span>{{ item.name }}</span>
                 <div v-if="isActive(item.path)"
                      class="ml-auto w-1.5 h-1.5 rounded-full"
@@ -107,9 +108,26 @@
               </router-link>
             </div>
           </transition>
-  
+
         </div>
+
+        <!-- ── Global Settings (admin-only, outside categories) ─── -->
+        <div class="pt-3" style="border-top: 1px solid var(--color-border);">
+          <router-link to="/admin/settings"
+                       class="flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold uppercase tracking-widest transition-all duration-200"
+                       :style="isActive('/admin/settings') ? activeStyle : inactiveStyle"
+                       @mouseenter="(e) => { if (!isActive('/admin/settings')) applyHover(e) }"
+                       @mouseleave="(e) => { if (!isActive('/admin/settings')) removeHover(e) }">
+            <span class="material-symbols-outlined text-lg">settings</span>
+            <span>Global Settings</span>
+            <div v-if="isActive('/admin/settings')"
+                 class="ml-auto w-1.5 h-1.5 rounded-full"
+                 style="background-color: var(--color-primary);"></div>
+          </router-link>
+        </div>
+
       </template>
+
     </nav>
 
     <!-- New Endorsement Button (Endorser only) -->
@@ -152,7 +170,7 @@
           Assign RMT
         </button>
       </router-link>
-    </div>
+      </div>
   </aside>
 </template>
 
@@ -266,12 +284,13 @@
     e.currentTarget.style.cssText = inactiveStyle
   }
 </script>
+
 <style scoped>
   .sidebar-group-enter-active,
   .sidebar-group-leave-active {
     transition: max-height 0.25s ease, opacity 0.2s ease;
     overflow: hidden;
-    max-height: 400px; /* tall enough to fit any group */
+    max-height: 400px;
   }
 
   .sidebar-group-enter-from,
