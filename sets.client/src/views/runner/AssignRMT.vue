@@ -18,20 +18,22 @@
       </div>
       <div class="flex-1">
         <p class="text-[10px] font-bold uppercase tracking-widest mb-1" style="color: var(--color-text-muted);">Scan Barcode</p>
-        <input ref="scanInput"
-               v-model="scanValue"
-               type="text"
-               placeholder="Scan or enter specimen no. here..."
-               class="w-full px-3 py-2 rounded-xl text-sm outline-none transition-all"
-               style="background-color: var(--color-surface-low); border: 1.5px solid var(--color-border); color: var(--color-text);"
-               @keydown.enter="scanSpecimen" />
+        <div class="flex items-center gap-2">
+          <input ref="scanInput"
+                 v-model="scanValue"
+                 type="text"
+                 placeholder="Scan or enter specimen no. here..."
+                 class="flex-1 px-3 py-2 rounded-xl text-sm outline-none transition-all"
+                 style="background-color: var(--color-surface-low); border: 1.5px solid var(--color-border); color: var(--color-text);"
+                 @keydown.enter="scanSpecimen" />
+          <button class="px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest transition-all active:scale-[0.97] whitespace-nowrap"
+                  style="background: var(--color-primary-gradient); color: #fff;"
+                  :disabled="scanning || !scanValue.trim()"
+                  @click="scanSpecimen">
+            {{ scanning ? 'Scanning...' : 'Add' }}
+          </button>
+        </div>
       </div>
-      <button class="px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest transition-all active:scale-[0.97]"
-              style="background: var(--color-primary-gradient); color: #fff;"
-              :disabled="scanning || !scanValue.trim()"
-              @click="scanSpecimen">
-        {{ scanning ? 'Scanning...' : 'Add' }}
-      </button>
     </div>
 
     <!-- Scanned list -->
@@ -108,8 +110,9 @@
                   </span>
                 </td>
 
-                <td class="px-4 py-3 text-xs" style="color: var(--color-text-muted);">
-                  {{ group.sampleTypeCode }}
+                <td class="px-4 py-3">
+                  <span class="text-xs font-semibold" style="color: var(--color-text);">{{ group.sampleTypeName ?? group.sampleTypeCode }}</span>
+                  <span class="text-[10px] ml-1.5" style="color: var(--color-text-muted);">({{ group.sampleTypeCode }})</span>
                 </td>
 
                 <td class="px-4 py-3 text-xs" style="color: var(--color-text-muted);">
@@ -162,6 +165,7 @@
                             <th class="px-4 py-2.5 text-left text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Assigned RMT</th>
                             <th class="px-4 py-2.5 text-left text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Schedule</th>
                             <th class="px-4 py-2.5 text-left text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Running Date</th>
+                            <th class="px-4 py-2.5 text-left text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Run Date &amp; Time</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -231,6 +235,12 @@
                               <span v-else class="text-[10px]" style="color: var(--color-text-muted);">—</span>
                             </td>
 
+                            <td class="px-4 py-3">
+                              <span v-if="test.runAt" class="text-xs" style="color: var(--color-text-muted);">
+                                {{ formatDt(test.runAt) }}
+                              </span>
+                              <span v-else class="text-[10px]" style="color: var(--color-text-muted);">—</span>
+                            </td>
                           </tr>
                         </tbody>
                       </table>
@@ -306,7 +316,7 @@
   // TODAY = no tag in DB, test runs today → status R
   // ERD/CRD/SRD = saved with schedule → status S
   const scheduleTags = [
-    { value: 'TODAY', label: 'Today' },
+    { value: 'NOW', label: 'Now' },
     { value: 'ERD', label: 'ERD' },
     { value: 'CRD', label: 'CRD' },
     { value: 'SRD', label: 'SRD' },
@@ -343,7 +353,7 @@
 
       const {
         firstScan, tests, specimenNo,
-        testGroupCode, sampleTypeCode,
+        testGroupCode, sampleTypeCode, sampleTypeName,
         received, receivedBy
       } = result.data
 
@@ -359,16 +369,33 @@
         headerId: result.data.headerId,
         testGroupCode,
         sampleTypeCode,
+        sampleTypeName,
         firstScan,
         received,
         receivedBy,
         remarks: result.data.remarks ?? '', 
-        tests: tests.map(t => ({
-          ...t,
-          selectedRMT: authStore.userID,  // ← auto-assign logged-in user
-          scheduleTag: 'TODAY',           // ← default to Today
-          runningDate: null,
-        }))
+        tests: tests.map(t => {
+          const today = new Date().toISOString().split('T')[0]
+          const runningDateStr = t.runningDate ?? null  // DateOnly from backend e.g. "2026-04-22"
+
+          // Determine initial schedule tag:
+          // - If test already has a tag but running date is today or past → NOW
+          // - If test has a tag and running date is future → keep the tag
+          // - If no tag → NOW (default for new/pending tests)
+          let initialTag = 'NOW'
+          if (t.scheduleTag && runningDateStr && runningDateStr > today) {
+            initialTag = t.scheduleTag  // future ERD/CRD/SRD — preserve
+          } else if (t.scheduleTag === 'SRD' && !runningDateStr) {
+            initialTag = 'SRD'  // SRD has no running date — keep as SRD
+          }
+
+          return {
+            ...t,
+            selectedRMT: t.assignedRMT ?? authStore.userID,
+            scheduleTag: initialTag,
+            runningDate: initialTag === t.scheduleTag ? runningDateStr : null,
+          }
+        })
       })
 
       // Auto-expand newly scanned specimen
@@ -411,8 +438,9 @@
         g.tests.map(t => ({
           testId: t.id,
           assignedRMT: t.selectedRMT || null,
-          scheduleTag: t.scheduleTag === 'TODAY' ? null : (t.scheduleTag || null),
+          scheduleTag: t.scheduleTag === 'NOW' ? null : (t.scheduleTag || null),
           runningDate: t.scheduleTag === 'CRD' ? (t.runningDate || null) : null,
+          runAt: t.scheduleTag === 'NOW' ? (t.runAt || null) : null,  // ← only for NOW
         }))
       )
       // Inside saveAssignments(), before the API call:
@@ -487,12 +515,18 @@
 
   function scheduleTagActiveStyle(tag) {
     const map = {
-      TODAY: 'background-color: rgba(22,163,74,0.12); color: var(--color-success, #16a34a);',
+      NOW: 'background-color: rgba(22,163,74,0.12); color: var(--color-success, #16a34a);',
       ERD: 'background-color: rgba(70,21,153,0.12); color: var(--color-primary);',
       CRD: 'background-color: rgba(217,119,6,0.12); color: var(--color-warning);',
       SRD: 'background-color: rgba(74,98,109,0.12); color: var(--color-info, #4a626d);',
     }
     return map[tag] ?? 'background-color: var(--color-surface-low); color: var(--color-text-muted);'
+  }
+
+  function getCurrentDateTimeLocal() {
+    const now = new Date()
+    const pad = n => String(n).padStart(2, '0')
+    return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`
   }
 
   // ── Mount ──────────────────────────────────────────────────────────────────

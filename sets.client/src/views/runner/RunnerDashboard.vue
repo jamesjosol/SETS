@@ -1,79 +1,552 @@
 <template>
   <AppLayout>
+
     <!-- Page Header -->
-    <div class="mb-6 flex items-center justify-between">
-      <div>
-        <h1 class="text-2xl font-extrabold tracking-tight" style="color: var(--color-text);">Dashboard</h1>
-        <p class="text-sm mt-1" style="color: var(--color-text-muted);">
-          {{ authStore.sectionName }} · {{ authStore.branchCode }}
-        </p>
-      </div>
-      <span class="text-xs font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">{{ today }}</span>
+    <div class="mb-8">
+      <h1 class="text-2xl font-extrabold tracking-tight" style="color: var(--color-text);">Dashboard</h1>
+      <p class="text-sm mt-1" style="color: var(--color-text-muted);">
+        {{ today }} ·
+        <span v-if="authStore.isAdmin" style="color: var(--color-primary); font-weight: 700;">ADMINISTRATOR</span>
+        <span v-else style="color: var(--color-primary); font-weight: 700;">{{ authStore.sectionName }}</span>
+      </p>
     </div>
 
-    <!-- KPI Cards -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-      <div v-for="card in kpiCards" :key="card.label"
-           class="rounded-2xl p-5 flex flex-col gap-2"
-           style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
-        <div class="flex items-center justify-between">
-          <span class="text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">{{ card.label }}</span>
-          <div class="p-1.5 rounded-lg" :style="{ backgroundColor: card.iconBg }">
-            <span class="material-symbols-outlined text-sm" :style="{ color: card.iconColor }">{{ card.icon }}</span>
+    <!-- ══════════════════════════════════════════════════════════════════════
+         REGULAR / TEAM LEAD VIEW
+    ══════════════════════════════════════════════════════════════════════ -->
+    <template v-if="!authStore.isAdmin">
+
+      <!-- KPI Cards -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-5 mb-8">
+
+        <router-link to="/runner/pending" class="block">
+          <div class="rounded-2xl p-6 relative overflow-hidden group cursor-pointer transition-all hover:-translate-y-0.5"
+               style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
+            <div class="flex justify-between items-start mb-4">
+              <div class="p-2 rounded-xl" style="background-color: rgba(70,21,153,0.1);">
+                <span class="material-symbols-outlined" style="color: var(--color-primary);">pending_actions</span>
+              </div>
+              <span class="text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Specimens</span>
+            </div>
+            <h3 class="text-4xl font-extrabold mb-1" style="color: var(--color-text);">
+              <span v-if="summaryLoading" class="block h-9 w-16 rounded-lg animate-pulse" style="background-color: var(--color-surface-low);"></span>
+              <span v-else>{{ summary.pending }}</span>
+            </h3>
+            <p class="text-xs font-bold uppercase tracking-tighter" style="color: var(--color-text-muted);">Pending</p>
+            <div class="absolute bottom-0 left-0 w-full h-0.5 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-500" style="background-color: var(--color-primary);"></div>
           </div>
-        </div>
-        <div v-if="loading" class="h-8 rounded-lg animate-pulse" style="background-color: var(--color-surface-low);"></div>
-        <span v-else class="text-3xl font-black tracking-tight" :style="{ color: card.valueColor || 'var(--color-text)' }">
-          {{ card.value }}
-        </span>
-      </div>
-    </div>
-
-    <!-- Recent Activity -->
-    <div class="rounded-2xl overflow-hidden" style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
-      <div class="px-6 py-4 flex items-center justify-between" style="border-bottom: 1px solid var(--color-border);">
-        <div class="flex items-center gap-2">
-          <span class="material-symbols-outlined text-base" style="color: var(--color-primary);">history</span>
-          <h2 class="text-sm font-bold uppercase tracking-widest" style="color: var(--color-text);">Recent Specimens</h2>
-        </div>
-        <router-link to="/runner/pending"
-                     class="text-xs font-bold uppercase tracking-widest transition-all"
-                     style="color: var(--color-primary);">
-          View All →
         </router-link>
-      </div>
 
-      <div v-if="loading" class="p-6 flex flex-col gap-3">
-        <div v-for="i in 4" :key="i" class="h-12 rounded-xl animate-pulse" style="background-color: var(--color-surface-low);"></div>
-      </div>
-
-      <div v-else-if="!recentSpecimens.length" class="p-12 flex flex-col items-center gap-3">
-        <span class="material-symbols-outlined text-4xl" style="color: var(--color-text-muted);">inbox</span>
-        <p class="text-sm font-medium" style="color: var(--color-text-muted);">No specimens today</p>
-      </div>
-
-      <div v-else class="divide-y" style="--tw-divide-color: var(--color-border);">
-        <div v-for="item in recentSpecimens" :key="item.id"
-             class="px-6 py-4 flex items-center justify-between gap-4">
-          <div class="flex items-center gap-3 min-w-0">
-            <div class="p-2 rounded-xl flex-shrink-0" style="background-color: var(--color-primary-soft);">
-              <span class="material-symbols-outlined text-sm" style="color: var(--color-primary);">biotech</span>
+        <router-link to="/runner/scheduled" class="block">
+          <div class="rounded-2xl p-6 relative overflow-hidden group cursor-pointer transition-all hover:-translate-y-0.5"
+               style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
+            <div class="flex justify-between items-start mb-4">
+              <div class="p-2 rounded-xl" style="background-color: rgba(74,98,109,0.1);">
+                <span class="material-symbols-outlined" style="color: var(--color-info, #4a626d);">event_available</span>
+              </div>
+              <span class="text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Tests</span>
             </div>
-            <div class="min-w-0">
-              <p class="text-sm font-bold truncate" style="color: var(--color-text);">{{ item.specimenNo }}</p>
-              <p class="text-xs truncate" style="color: var(--color-text-muted);">{{ item.patientName }}</p>
+            <h3 class="text-4xl font-extrabold mb-1" style="color: var(--color-info, #4a626d);">
+              <span v-if="summaryLoading" class="block h-9 w-16 rounded-lg animate-pulse" style="background-color: var(--color-surface-low);"></span>
+              <span v-else>{{ summary.scheduled }}</span>
+            </h3>
+            <p class="text-xs font-bold uppercase tracking-tighter" style="color: var(--color-text-muted);">Scheduled</p>
+            <div class="absolute bottom-0 left-0 w-full h-0.5 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-500" style="background-color: var(--color-info, #4a626d);"></div>
+          </div>
+        </router-link>
+
+        <router-link to="/runner/running" class="block">
+          <div class="rounded-2xl p-6 relative overflow-hidden group cursor-pointer transition-all hover:-translate-y-0.5"
+               style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
+            <div class="flex justify-between items-start mb-4">
+              <div class="p-2 rounded-xl" style="background-color: rgba(217,119,6,0.1);">
+                <span class="material-symbols-outlined" style="color: var(--color-warning);">labs</span>
+              </div>
+              <span class="text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-warning);">Mine</span>
+            </div>
+            <h3 class="text-4xl font-extrabold mb-1" style="color: var(--color-warning);">
+              <span v-if="summaryLoading" class="block h-9 w-16 rounded-lg animate-pulse" style="background-color: var(--color-surface-low);"></span>
+              <span v-else>{{ summary.running }}</span>
+            </h3>
+            <p class="text-xs font-bold uppercase tracking-tighter" style="color: var(--color-text-muted);">Running</p>
+            <div class="absolute bottom-0 left-0 w-full h-0.5 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-500" style="background-color: var(--color-warning);"></div>
+          </div>
+        </router-link>
+
+        <div class="rounded-2xl p-6 relative overflow-hidden group transition-all hover:-translate-y-0.5"
+             style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
+          <div class="flex justify-between items-start mb-4">
+            <div class="p-2 rounded-xl" style="background-color: rgba(22,163,74,0.1);">
+              <span class="material-symbols-outlined" style="color: var(--color-success, #16a34a);">check_circle</span>
+            </div>
+            <span class="text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-success, #16a34a);">Today</span>
+          </div>
+          <h3 class="text-4xl font-extrabold mb-1" style="color: var(--color-success, #16a34a);">
+            <span v-if="summaryLoading" class="block h-9 w-16 rounded-lg animate-pulse" style="background-color: var(--color-surface-low);"></span>
+            <span v-else>{{ summary.completedToday }}</span>
+          </h3>
+          <p class="text-xs font-bold uppercase tracking-tighter" style="color: var(--color-text-muted);">Completed</p>
+          <div class="absolute bottom-0 left-0 w-full h-0.5 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-500" style="background-color: var(--color-success, #16a34a);"></div>
+        </div>
+
+      </div>
+
+      <!-- Regular Bottom Grid -->
+      <div class="grid grid-cols-12 gap-6">
+        <div class="col-span-12 lg:col-span-8 flex flex-col gap-6">
+
+          <!-- My Running Tests -->
+          <div class="rounded-2xl overflow-hidden" style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
+            <div class="px-6 py-4 flex items-center justify-between" style="border-bottom: 1px solid var(--color-border);">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-base" style="color: var(--color-warning);">labs</span>
+                <h2 class="text-sm font-bold uppercase tracking-widest" style="color: var(--color-text);">My Running Tests</h2>
+              </div>
+              <router-link to="/runner/running" class="text-xs font-bold uppercase tracking-widest" style="color: var(--color-primary);">View All →</router-link>
+            </div>
+            <div v-if="runningLoading" class="p-6 flex flex-col gap-3">
+              <div v-for="i in 3" :key="i" class="h-12 rounded-xl animate-pulse" style="background-color: var(--color-surface-low);"></div>
+            </div>
+            <div v-else-if="!runningSpecimens.length" class="p-10 flex flex-col items-center gap-3">
+              <span class="material-symbols-outlined text-4xl" style="color: var(--color-text-muted);">labs</span>
+              <p class="text-sm font-bold" style="color: var(--color-text);">No running tests</p>
+              <p class="text-xs" style="color: var(--color-text-muted);">You have no tests currently running.</p>
+            </div>
+            <div v-else>
+              <div v-for="specimen in runningSpecimens" :key="specimen.headerId"
+                   class="px-6 py-4 flex flex-col gap-2" style="border-bottom: 1px solid var(--color-border);">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-3">
+                    <div class="p-2 rounded-xl" style="background-color: rgba(217,119,6,0.1);">
+                      <span class="material-symbols-outlined text-sm" style="color: var(--color-warning);">biotech</span>
+                    </div>
+                    <div>
+                      <p class="text-xs font-bold font-mono" style="color: var(--color-text);">{{ specimen.specimenNo }}</p>
+                      <p class="text-[10px]" style="color: var(--color-text-muted);">{{ specimen.patientName ?? '—' }}</p>
+                    </div>
+                  </div>
+                  <div class="text-right">
+                    <p class="text-xs font-semibold" style="color: var(--color-text);">{{ specimen.sampleTypeName }}</p>
+                    <p class="text-[10px]" style="color: var(--color-text-muted);">({{ specimen.sampleTypeCode }})</p>
+                  </div>
+                </div>
+                <div class="flex flex-wrap gap-2 pl-11">
+                  <div v-for="test in specimen.tests" :key="test.id"
+                       class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg"
+                       style="background-color: rgba(217,119,6,0.08);">
+                    <span class="text-[10px] font-bold font-mono" style="color: var(--color-warning);">{{ test.testCode }}</span>
+                    <span class="text-[10px]" style="color: var(--color-text-muted);">{{ test.testName }}</span>
+                    <span v-if="test.runAt" class="text-[10px] font-bold" style="color: var(--color-text-muted);">· {{ formatDt(test.runAt) }}</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-          <div class="flex items-center gap-3 flex-shrink-0">
-            <span class="text-xs font-bold" style="color: var(--color-text-muted);">{{ item.testGroupCode }}</span>
-            <span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest"
-                  :style="statusStyle(item.status)">
-              {{ statusLabel(item.status) }}
-            </span>
+
+          <!-- Due Today -->
+          <div class="rounded-2xl overflow-hidden" style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
+            <div class="px-6 py-4 flex items-center justify-between" style="border-bottom: 1px solid var(--color-border);">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-base" style="color: var(--color-primary);">today</span>
+                <h2 class="text-sm font-bold uppercase tracking-widest" style="color: var(--color-text);">Due Today</h2>
+              </div>
+              <router-link to="/runner/scheduled" class="text-xs font-bold uppercase tracking-widest" style="color: var(--color-primary);">View All →</router-link>
+            </div>
+            <div v-if="scheduledLoading" class="p-6 flex flex-col gap-3">
+              <div v-for="i in 3" :key="i" class="h-12 rounded-xl animate-pulse" style="background-color: var(--color-surface-low);"></div>
+            </div>
+            <div v-else-if="!dueToday.length" class="p-10 flex flex-col items-center gap-3">
+              <span class="material-symbols-outlined text-4xl" style="color: var(--color-text-muted);">event_available</span>
+              <p class="text-sm font-bold" style="color: var(--color-text);">Nothing due today</p>
+              <p class="text-xs" style="color: var(--color-text-muted);">No specimens scheduled to run today.</p>
+            </div>
+            <div v-else>
+              <div v-for="specimen in dueToday" :key="specimen.headerId"
+                   class="px-6 py-3 flex items-center justify-between gap-4" style="border-bottom: 1px solid var(--color-border);">
+                <div class="flex items-center gap-3 min-w-0">
+                  <div class="p-2 rounded-xl flex-shrink-0" style="background-color: var(--color-primary-soft);">
+                    <span class="material-symbols-outlined text-sm" style="color: var(--color-primary);">biotech</span>
+                  </div>
+                  <div class="min-w-0">
+                    <p class="text-xs font-bold font-mono truncate" style="color: var(--color-text);">{{ specimen.specimenNo }}</p>
+                    <p class="text-[10px] truncate" style="color: var(--color-text-muted);">{{ specimen.patientName ?? '—' }}</p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2 flex-shrink-0 flex-wrap justify-end">
+                  <span v-for="tag in getDistinctTags(specimen)" :key="tag"
+                        class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest"
+                        :style="scheduleTagStyle(tag)">{{ tag }}</span>
+                  <span class="text-xs font-semibold" style="color: var(--color-text-muted);">
+                    {{ specimen.tests.length }} test{{ specimen.tests.length !== 1 ? 's' : '' }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Regular Right col -->
+        <div class="col-span-12 lg:col-span-4 flex flex-col gap-6">
+
+          <!-- Recently Routed -->
+          <div class="rounded-2xl overflow-hidden" style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
+            <div class="px-6 py-4 flex items-center justify-between" style="border-bottom: 1px solid var(--color-border);">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-base" style="color: var(--color-primary);">move_to_inbox</span>
+                <h2 class="text-sm font-bold uppercase tracking-widest" style="color: var(--color-text);">Recently Routed</h2>
+                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full" style="background-color: rgba(70,21,153,0.1); color: var(--color-primary);">Not yet received</span>
+              </div>
+              <router-link to="/runner/pending" class="text-xs font-bold uppercase tracking-widest" style="color: var(--color-primary);">View All →</router-link>
+            </div>
+            <div v-if="pendingLoading" class="p-6 flex flex-col gap-3">
+              <div v-for="i in 3" :key="i" class="h-12 rounded-xl animate-pulse" style="background-color: var(--color-surface-low);"></div>
+            </div>
+            <div v-else-if="!recentlyRouted.length" class="p-10 flex flex-col items-center gap-3">
+              <span class="material-symbols-outlined text-4xl" style="color: var(--color-text-muted);">inbox</span>
+              <p class="text-sm font-bold" style="color: var(--color-text);">All caught up</p>
+              <p class="text-xs" style="color: var(--color-text-muted);">No unreceived specimens at the moment.</p>
+            </div>
+            <div v-else>
+              <div v-for="item in recentlyRouted" :key="item.id"
+                   class="px-6 py-3 flex items-center justify-between gap-4" style="border-bottom: 1px solid var(--color-border);">
+                <div class="flex items-center gap-3 min-w-0">
+                  <div class="p-2 rounded-xl flex-shrink-0" style="background-color: var(--color-primary-soft);">
+                    <span class="material-symbols-outlined text-sm" style="color: var(--color-primary);">biotech</span>
+                  </div>
+                  <div class="min-w-0">
+                    <p class="text-xs font-bold font-mono truncate" style="color: var(--color-text);">{{ item.specimenNo }}</p>
+                    <p class="text-[10px] truncate" style="color: var(--color-text-muted);">{{ item.patientName ?? '—' }}</p>
+                  </div>
+                </div>
+                <div class="flex flex-col items-end flex-shrink-0 gap-0.5">
+                  <span class="text-xs font-semibold" style="color: var(--color-text);">{{ item.sampleTypeName }}</span>
+                  <span class="text-[10px]" style="color: var(--color-text-muted);">{{ formatDt(item.routed) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Completed Today -->
+          <div class="rounded-2xl overflow-hidden" style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
+            <div class="px-6 py-4 flex items-center gap-2" style="border-bottom: 1px solid var(--color-border);">
+              <span class="material-symbols-outlined text-base" style="color: var(--color-success, #16a34a);">check_circle</span>
+              <h2 class="text-sm font-bold uppercase tracking-widest" style="color: var(--color-text);">Completed Today</h2>
+            </div>
+            <div v-if="pendingLoading" class="p-6 flex flex-col gap-3">
+              <div v-for="i in 3" :key="i" class="h-10 rounded-xl animate-pulse" style="background-color: var(--color-surface-low);"></div>
+            </div>
+            <div v-else-if="!completedToday.length" class="p-8 flex flex-col items-center gap-2">
+              <span class="material-symbols-outlined text-3xl" style="color: var(--color-text-muted);">inbox</span>
+              <p class="text-xs font-bold" style="color: var(--color-text-muted);">None completed yet</p>
+            </div>
+            <div v-else>
+              <div v-for="item in completedToday" :key="item.id"
+                   class="px-6 py-3 flex items-center justify-between gap-3" style="border-bottom: 1px solid var(--color-border);">
+                <div class="min-w-0">
+                  <p class="text-xs font-bold font-mono truncate" style="color: var(--color-text);">{{ item.specimenNo }}</p>
+                  <p class="text-[10px] truncate" style="color: var(--color-text-muted);">{{ item.patientName ?? '—' }}</p>
+                </div>
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold flex-shrink-0"
+                      style="background-color: rgba(22,163,74,0.1); color: var(--color-success, #16a34a);">Done</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- System Status -->
+          <div class="rounded-2xl p-6" style="background-color: var(--color-surface-low); box-shadow: 0 1px 3px var(--color-shadow);">
+            <h2 class="text-xs font-bold uppercase tracking-widest mb-5" style="color: var(--color-text);">System Status</h2>
+            <div class="space-y-3">
+              <div v-for="status in systemStatus" :key="status.label"
+                   class="flex items-center justify-between p-3 rounded-xl"
+                   style="background-color: var(--color-surface);">
+                <div class="flex items-center gap-3">
+                  <span class="material-symbols-outlined text-lg" :style="`color: ${status.iconColor}`">{{ status.icon }}</span>
+                  <span class="text-xs font-bold" style="color: var(--color-text-muted);">{{ status.label }}</span>
+                </div>
+                <div class="flex flex-col items-end">
+                  <span class="text-[10px] font-bold px-2 py-0.5 rounded uppercase" :style="getStatusBadgeStyle(status.state)">{{ status.state }}</span>
+                  <span v-if="status.note" class="text-[8px] mt-0.5" style="color: var(--color-text-muted);">{{ status.note }}</span>
+                </div>
+              </div>
+            </div>
+            <div class="mt-5 pt-4 flex justify-between text-[10px] font-bold uppercase tracking-widest"
+                 style="border-top: 1px solid var(--color-border); color: var(--color-text-muted);">
+              <span>Last Status Check</span>
+              <span>{{ lastStatusCheck }}</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </template>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         ADMIN VIEW
+    ══════════════════════════════════════════════════════════════════════ -->
+    <template v-else>
+
+      <!-- Admin KPI Cards — per section grid -->
+      <div class="mb-8">
+        <div v-if="adminSummaryLoading" class="grid grid-cols-2 md:grid-cols-4 gap-5">
+          <div v-for="i in 4" :key="i" class="rounded-2xl p-6 animate-pulse h-32"
+               style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);"></div>
+        </div>
+        <div v-else-if="!adminSectionSummaries.length" class="p-10 rounded-2xl flex flex-col items-center gap-3"
+             style="background-color: var(--color-surface);">
+          <span class="material-symbols-outlined text-4xl" style="color: var(--color-text-muted);">science</span>
+          <p class="text-sm font-bold" style="color: var(--color-text-muted);">No active lab sections found</p>
+        </div>
+        <div v-else class="grid gap-4"
+             :style="`grid-template-columns: repeat(${Math.min(adminSectionSummaries.length, 4)}, minmax(0, 1fr));`">
+          <div v-for="sec in adminSectionSummaries" :key="sec.sectionCode"
+               class="rounded-2xl p-5 relative overflow-hidden transition-all hover:-translate-y-0.5"
+               style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
+            <p class="text-[10px] font-bold uppercase tracking-widest mb-3 truncate" style="color: var(--color-primary);">{{ sec.sectionName }}</p>
+            <div class="grid grid-cols-4 gap-1 text-center">
+              <div>
+                <p class="text-xl font-extrabold" style="color: var(--color-text);">{{ sec.pending }}</p>
+                <p class="text-[9px] font-bold uppercase tracking-tighter mt-0.5" style="color: var(--color-text-muted);">Pending</p>
+              </div>
+              <div>
+                <p class="text-xl font-extrabold" style="color: var(--color-info, #4a626d);">{{ sec.scheduled }}</p>
+                <p class="text-[9px] font-bold uppercase tracking-tighter mt-0.5" style="color: var(--color-text-muted);">Sched.</p>
+              </div>
+              <div>
+                <p class="text-xl font-extrabold" style="color: var(--color-warning);">{{ sec.running }}</p>
+                <p class="text-[9px] font-bold uppercase tracking-tighter mt-0.5" style="color: var(--color-text-muted);">Running</p>
+              </div>
+              <div>
+                <p class="text-xl font-extrabold" style="color: var(--color-success, #16a34a);">{{ sec.completedToday }}</p>
+                <p class="text-[9px] font-bold uppercase tracking-tighter mt-0.5" style="color: var(--color-text-muted);">Done</p>
+              </div>
+            </div>
+            <div class="absolute bottom-0 left-0 w-full h-0.5" style="background-color: var(--color-primary); opacity: 0.3;"></div>
           </div>
         </div>
       </div>
-    </div>
+
+      <!-- Admin Bottom Grid -->
+      <div class="grid grid-cols-12 gap-6">
+        <div class="col-span-12 lg:col-span-8 flex flex-col gap-6">
+
+          <!-- All Running Tests — grouped by section -->
+          <div class="rounded-2xl overflow-hidden" style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
+            <div class="px-6 py-4 flex items-center gap-2" style="border-bottom: 1px solid var(--color-border);">
+              <span class="material-symbols-outlined text-base" style="color: var(--color-warning);">labs</span>
+              <h2 class="text-sm font-bold uppercase tracking-widest" style="color: var(--color-text);">All Running Tests</h2>
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full" style="background-color: rgba(217,119,6,0.1); color: var(--color-warning);">All Sections</span>
+            </div>
+            <div v-if="adminRunningLoading" class="p-6 flex flex-col gap-3">
+              <div v-for="i in 3" :key="i" class="h-12 rounded-xl animate-pulse" style="background-color: var(--color-surface-low);"></div>
+            </div>
+            <div v-else-if="!adminRunning.length" class="p-10 flex flex-col items-center gap-3">
+              <span class="material-symbols-outlined text-4xl" style="color: var(--color-text-muted);">labs</span>
+              <p class="text-sm font-bold" style="color: var(--color-text);">No running tests</p>
+              <p class="text-xs" style="color: var(--color-text-muted);">No tests are currently running across all sections.</p>
+            </div>
+            <div v-else>
+              <div v-for="group in adminRunning" :key="group.sectionCode">
+                <div class="px-6 py-2 flex items-center gap-2" style="background-color: var(--color-surface-low); border-bottom: 1px solid var(--color-border); border-top: 1px solid var(--color-border);">
+                  <span class="material-symbols-outlined text-sm" style="color: var(--color-primary);">science</span>
+                  <span class="text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-primary);">{{ group.sectionName }}</span>
+                  <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full ml-auto"
+                        style="background-color: rgba(217,119,6,0.1); color: var(--color-warning);">
+                    {{ group.specimens.reduce((sum, s) => sum + s.tests.length, 0) }} running
+                  </span>
+                </div>
+                <div v-for="specimen in group.specimens" :key="specimen.headerId"
+                     class="px-6 py-4 flex flex-col gap-2" style="border-bottom: 1px solid var(--color-border);">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                      <div class="p-2 rounded-xl" style="background-color: rgba(217,119,6,0.1);">
+                        <span class="material-symbols-outlined text-sm" style="color: var(--color-warning);">biotech</span>
+                      </div>
+                      <div>
+                        <p class="text-xs font-bold font-mono" style="color: var(--color-text);">{{ specimen.specimenNo }}</p>
+                        <p class="text-[10px]" style="color: var(--color-text-muted);">{{ specimen.patientName ?? '—' }}</p>
+                      </div>
+                    </div>
+                    <div class="text-right">
+                      <p class="text-xs font-semibold" style="color: var(--color-text);">{{ specimen.sampleTypeName }}</p>
+                      <p class="text-[10px]" style="color: var(--color-text-muted);">({{ specimen.sampleTypeCode }})</p>
+                    </div>
+                  </div>
+                  <div class="flex flex-wrap gap-2 pl-11">
+                    <div v-for="test in specimen.tests" :key="test.id"
+                         class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg"
+                         style="background-color: rgba(217,119,6,0.08);">
+                      <span class="text-[10px] font-bold font-mono" style="color: var(--color-warning);">{{ test.testCode }}</span>
+                      <span class="text-[10px]" style="color: var(--color-text-muted);">{{ test.testName }}</span>
+                      <span v-if="test.assignedRMT" class="text-[10px] font-bold" style="color: var(--color-text-muted);">· {{ test.assignedRMT }}</span>
+                      <span v-if="test.runAt" class="text-[10px]" style="color: var(--color-text-muted);">· {{ formatDt(test.runAt) }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Due Today — all sections -->
+          <div class="rounded-2xl overflow-hidden" style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
+            <div class="px-6 py-4 flex items-center gap-2" style="border-bottom: 1px solid var(--color-border);">
+              <span class="material-symbols-outlined text-base" style="color: var(--color-primary);">today</span>
+              <h2 class="text-sm font-bold uppercase tracking-widest" style="color: var(--color-text);">Due Today</h2>
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full" style="background-color: rgba(70,21,153,0.1); color: var(--color-primary);">All Sections</span>
+            </div>
+            <div v-if="adminDueTodayLoading" class="p-6 flex flex-col gap-3">
+              <div v-for="i in 3" :key="i" class="h-12 rounded-xl animate-pulse" style="background-color: var(--color-surface-low);"></div>
+            </div>
+            <div v-else-if="!adminDueToday.length" class="p-10 flex flex-col items-center gap-3">
+              <span class="material-symbols-outlined text-4xl" style="color: var(--color-text-muted);">event_available</span>
+              <p class="text-sm font-bold" style="color: var(--color-text);">Nothing due today</p>
+              <p class="text-xs" style="color: var(--color-text-muted);">No specimens scheduled across all sections today.</p>
+            </div>
+            <div v-else>
+              <div v-for="group in adminDueToday" :key="group.sectionCode">
+                <div class="px-6 py-2 flex items-center gap-2" style="background-color: var(--color-surface-low); border-bottom: 1px solid var(--color-border); border-top: 1px solid var(--color-border);">
+                  <span class="material-symbols-outlined text-sm" style="color: var(--color-primary);">science</span>
+                  <span class="text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-primary);">{{ group.sectionName }}</span>
+                </div>
+                <div v-for="specimen in group.specimens" :key="specimen.headerId"
+                     class="px-6 py-3 flex items-center justify-between gap-4" style="border-bottom: 1px solid var(--color-border);">
+                  <div class="flex items-center gap-3 min-w-0">
+                    <div class="p-2 rounded-xl flex-shrink-0" style="background-color: var(--color-primary-soft);">
+                      <span class="material-symbols-outlined text-sm" style="color: var(--color-primary);">biotech</span>
+                    </div>
+                    <div class="min-w-0">
+                      <p class="text-xs font-bold font-mono truncate" style="color: var(--color-text);">{{ specimen.specimenNo }}</p>
+                      <p class="text-[10px] truncate" style="color: var(--color-text-muted);">{{ specimen.patientName ?? '—' }}</p>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-2 flex-shrink-0 flex-wrap justify-end">
+                    <span v-for="tag in getDistinctTags(specimen)" :key="tag"
+                          class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest"
+                          :style="scheduleTagStyle(tag)">{{ tag }}</span>
+                    <span class="text-xs font-semibold" style="color: var(--color-text-muted);">
+                      {{ specimen.tests.length }} test{{ specimen.tests.length !== 1 ? 's' : '' }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Admin Right col -->
+        <div class="col-span-12 lg:col-span-4 flex flex-col gap-6">
+
+          <!-- Recently Routed — all sections -->
+          <div class="rounded-2xl overflow-hidden" style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
+            <div class="px-6 py-4 flex items-center gap-2" style="border-bottom: 1px solid var(--color-border);">
+              <span class="material-symbols-outlined text-base" style="color: var(--color-primary);">move_to_inbox</span>
+              <h2 class="text-sm font-bold uppercase tracking-widest" style="color: var(--color-text);">Recently Routed</h2>
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full" style="background-color: rgba(70,21,153,0.1); color: var(--color-primary);">Not yet received · All Sections</span>
+            </div>
+            <div v-if="adminRoutedLoading" class="p-6 flex flex-col gap-3">
+              <div v-for="i in 3" :key="i" class="h-12 rounded-xl animate-pulse" style="background-color: var(--color-surface-low);"></div>
+            </div>
+            <div v-else-if="!adminRecentlyRouted.length" class="p-10 flex flex-col items-center gap-3">
+              <span class="material-symbols-outlined text-4xl" style="color: var(--color-text-muted);">inbox</span>
+              <p class="text-sm font-bold" style="color: var(--color-text);">All caught up</p>
+              <p class="text-xs" style="color: var(--color-text-muted);">No unreceived specimens across all sections.</p>
+            </div>
+            <div v-else>
+              <div v-for="group in adminRecentlyRouted" :key="group.sectionCode">
+                <div class="px-6 py-2 flex items-center gap-2" style="background-color: var(--color-surface-low); border-bottom: 1px solid var(--color-border); border-top: 1px solid var(--color-border);">
+                  <span class="material-symbols-outlined text-sm" style="color: var(--color-primary);">science</span>
+                  <span class="text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-primary);">{{ group.sectionName }}</span>
+                  <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full ml-auto"
+                        style="background-color: rgba(70,21,153,0.1); color: var(--color-primary);">
+                    {{ group.specimens.length }} specimen{{ group.specimens.length !== 1 ? 's' : '' }}
+                  </span>
+                </div>
+                <div v-for="item in group.specimens.slice(0, 6)" :key="item.id"
+                     class="px-6 py-3 flex items-center justify-between gap-4" style="border-bottom: 1px solid var(--color-border);">
+                  <div class="flex items-center gap-3 min-w-0">
+                    <div class="p-2 rounded-xl flex-shrink-0" style="background-color: var(--color-primary-soft);">
+                      <span class="material-symbols-outlined text-sm" style="color: var(--color-primary);">biotech</span>
+                    </div>
+                    <div class="min-w-0">
+                      <p class="text-xs font-bold font-mono truncate" style="color: var(--color-text);">{{ item.specimenNo }}</p>
+                      <p class="text-[10px] truncate" style="color: var(--color-text-muted);">{{ item.patientName ?? '—' }}</p>
+                    </div>
+                  </div>
+                  <div class="flex flex-col items-end flex-shrink-0 gap-0.5">
+                    <span class="text-xs font-semibold" style="color: var(--color-text);">{{ item.sampleTypeName }}</span>
+                    <span class="text-[10px]" style="color: var(--color-text-muted);">{{ formatDt(item.routed) }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Completed Today — all sections -->
+          <div class="rounded-2xl overflow-hidden" style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
+            <div class="px-6 py-4 flex items-center gap-2" style="border-bottom: 1px solid var(--color-border);">
+              <span class="material-symbols-outlined text-base" style="color: var(--color-success, #16a34a);">check_circle</span>
+              <h2 class="text-sm font-bold uppercase tracking-widest" style="color: var(--color-text);">Completed Today</h2>
+            </div>
+            <div v-if="adminCompletedLoading" class="p-6 flex flex-col gap-3">
+              <div v-for="i in 3" :key="i" class="h-10 rounded-xl animate-pulse" style="background-color: var(--color-surface-low);"></div>
+            </div>
+            <div v-else-if="!adminCompletedToday.length" class="p-8 flex flex-col items-center gap-2">
+              <span class="material-symbols-outlined text-3xl" style="color: var(--color-text-muted);">inbox</span>
+              <p class="text-xs font-bold" style="color: var(--color-text-muted);">None completed yet</p>
+            </div>
+            <div v-else>
+              <div v-for="group in adminCompletedToday" :key="group.sectionCode">
+                <div class="px-6 py-2 flex items-center gap-2" style="background-color: var(--color-surface-low); border-bottom: 1px solid var(--color-border); border-top: 1px solid var(--color-border);">
+                  <span class="material-symbols-outlined text-sm" style="color: var(--color-success, #16a34a);">science</span>
+                  <span class="text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-success, #16a34a);">{{ group.sectionName }}</span>
+                  <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full ml-auto"
+                        style="background-color: rgba(22,163,74,0.1); color: var(--color-success, #16a34a);">
+                    {{ group.specimens.length }}
+                  </span>
+                </div>
+                <div v-for="item in group.specimens.slice(0, 5)" :key="item.id"
+                     class="px-6 py-3 flex items-center justify-between gap-3" style="border-bottom: 1px solid var(--color-border);">
+                  <div class="min-w-0">
+                    <p class="text-xs font-bold font-mono truncate" style="color: var(--color-text);">{{ item.specimenNo }}</p>
+                    <p class="text-[10px] truncate" style="color: var(--color-text-muted);">{{ item.patientName ?? '—' }}</p>
+                  </div>
+                  <span class="px-2 py-0.5 rounded-full text-[10px] font-bold flex-shrink-0"
+                        style="background-color: rgba(22,163,74,0.1); color: var(--color-success, #16a34a);">Done</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- System Status -->
+          <div class="rounded-2xl p-6" style="background-color: var(--color-surface-low); box-shadow: 0 1px 3px var(--color-shadow);">
+            <h2 class="text-xs font-bold uppercase tracking-widest mb-5" style="color: var(--color-text);">System Status</h2>
+            <div class="space-y-3">
+              <div v-for="status in systemStatus" :key="status.label"
+                   class="flex items-center justify-between p-3 rounded-xl"
+                   style="background-color: var(--color-surface);">
+                <div class="flex items-center gap-3">
+                  <span class="material-symbols-outlined text-lg" :style="`color: ${status.iconColor}`">{{ status.icon }}</span>
+                  <span class="text-xs font-bold" style="color: var(--color-text-muted);">{{ status.label }}</span>
+                </div>
+                <div class="flex flex-col items-end">
+                  <span class="text-[10px] font-bold px-2 py-0.5 rounded uppercase" :style="getStatusBadgeStyle(status.state)">{{ status.state }}</span>
+                  <span v-if="status.note" class="text-[8px] mt-0.5" style="color: var(--color-text-muted);">{{ status.note }}</span>
+                </div>
+              </div>
+            </div>
+            <div class="mt-5 pt-4 flex justify-between text-[10px] font-bold uppercase tracking-widest"
+                 style="border-top: 1px solid var(--color-border); color: var(--color-text-muted);">
+              <span>Last Status Check</span>
+              <span>{{ lastStatusCheck }}</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </template>
 
     <!-- Alert Modal -->
     <AlertModal :isVisible="alert.isVisible"
@@ -82,91 +555,232 @@
                 :message="alert.message"
                 @close="alert.isVisible = false"
                 @confirm="alert.isVisible = false" />
+
   </AppLayout>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import AppLayout from '@/components/layout/AppLayout.vue'
-import AlertModal from '@/components/common/AlertModal.vue'
-import { useAuthStore } from '@/stores/authStore'
-import { runnerApi } from '@/api/runnerApi'
+  import { ref, computed, onMounted, onUnmounted } from 'vue'
+  import AppLayout from '@/components/layout/AppLayout.vue'
+  import AlertModal from '@/components/common/AlertModal.vue'
+  import { useAuthStore } from '@/stores/authStore'
+  import { runnerApi } from '@/api/runnerApi'
+  import { healthApi } from '@/api/healthApi'
 
-const authStore = useAuthStore()
+  const authStore = useAuthStore()
 
-const alert = ref({ isVisible: false, type: 'error', title: '', message: '' })
-function showAlert(type, title, message) {
-  alert.value = { isVisible: true, type, title, message }
-}
-
-const today = computed(() =>
-  new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
-)
-
-const loading = ref(true)
-const recentSpecimens = ref([])
-const summary = ref({ pending: 0, saved: 0, running: 0, completed: 0 })
-
-const kpiCards = computed(() => [
-  {
-    label: 'Pending',
-    value: summary.value.pending,
-    icon: 'pending_actions',
-    iconBg: 'rgba(70,21,153,0.1)',
-    iconColor: 'var(--color-primary)',
-  },
-  {
-    label: 'Saved',
-    value: summary.value.saved,
-    icon: 'bookmark',
-    iconBg: 'rgba(74,98,109,0.1)',
-    iconColor: 'var(--color-info, #4a626d)',
-  },
-  {
-    label: 'Running',
-    value: summary.value.running,
-    icon: 'science',
-    iconBg: 'rgba(217,119,6,0.1)',
-    iconColor: 'var(--color-warning)',
-  },
-  {
-    label: 'Completed',
-    value: summary.value.completed,
-    icon: 'check_circle',
-    iconBg: 'rgba(22,163,74,0.1)',
-    iconColor: 'var(--color-success, #16a34a)',
-  },
-])
-
-function statusLabel(s) {
-  return { P: 'Pending', S: 'Saved', R: 'Running', C: 'Completed' }[s] ?? s
-}
-
-function statusStyle(s) {
-  const map = {
-    P: 'background-color: rgba(70,21,153,0.1); color: var(--color-primary);',
-    S: 'background-color: rgba(74,98,109,0.1); color: var(--color-info, #4a626d);',
-    R: 'background-color: rgba(217,119,6,0.1); color: var(--color-warning);',
-    C: 'background-color: rgba(22,163,74,0.1); color: var(--color-success, #16a34a);',
+  const alert = ref({ isVisible: false, type: 'error', title: '', message: '' })
+  function showAlert(type, title, message) {
+    alert.value = { isVisible: true, type, title, message }
   }
-  return map[s] ?? 'background-color: var(--color-surface-low); color: var(--color-text-muted);'
-}
 
-async function load() {
-  loading.value = true
-  try {
-    const data = await runnerApi.getPendingSpecimens(authStore.sectionCode)
-    recentSpecimens.value = Array.isArray(data) ? data.slice(0, 8) : []
+  // ── Date ───────────────────────────────────────────────────────────────────
 
-    // Derive summary counts from pending list + you can extend with a dedicated summary endpoint later
-    summary.value.pending = Array.isArray(data) ? data.filter(d => d.status === 'P').length : 0
-    summary.value.saved   = Array.isArray(data) ? data.filter(d => d.status === 'S').length : 0
-  } catch (e) {
-    showAlert('error', 'Load Failed', e?.response?.data?.message ?? 'Could not load dashboard.')
-  } finally {
-    loading.value = false
+  const today = computed(() =>
+    new Date().toLocaleDateString('en-US', {
+      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+    })
+  )
+
+  const todayStr = new Date().toISOString().split('T')[0]
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // REGULAR / TEAM LEAD DATA
+  // ══════════════════════════════════════════════════════════════════════════
+
+  const summaryLoading = ref(true)
+  const runningLoading = ref(true)
+  const scheduledLoading = ref(true)
+  const pendingLoading = ref(true)
+
+  const summary = ref({ pending: 0, scheduled: 0, running: 0, completedToday: 0 })
+  const runningSpecimens = ref([])
+  const scheduledSpecimens = ref([])
+  const allPending = ref([])
+
+  async function fetchSummary() {
+    try { summary.value = await runnerApi.getDashboardSummary(authStore.sectionCode) }
+    catch (e) { if (e?.response?.status !== 401) showAlert('error', 'Error', 'Unable to load summary.') }
   }
-}
+  async function fetchRunning() {
+    try { const d = await runnerApi.getRunningSpecimens(authStore.sectionCode); runningSpecimens.value = Array.isArray(d) ? d : [] }
+    catch (e) { if (e?.response?.status !== 401) showAlert('error', 'Error', 'Unable to load running specimens.') }
+  }
+  async function fetchScheduled() {
+    try { const d = await runnerApi.getScheduledSpecimens(authStore.sectionCode); scheduledSpecimens.value = Array.isArray(d) ? d : [] }
+    catch (e) { if (e?.response?.status !== 401) showAlert('error', 'Error', 'Unable to load scheduled specimens.') }
+  }
+  async function fetchPending() {
+    try { const d = await runnerApi.getPendingSpecimens(authStore.sectionCode); allPending.value = Array.isArray(d) ? d : [] }
+    catch (e) { if (e?.response?.status !== 401) showAlert('error', 'Error', 'Unable to load specimens.') }
+  }
 
-onMounted(load)
+  const dueToday = computed(() =>
+    scheduledSpecimens.value.filter(s =>
+      s.tests.some(t =>
+        (t.scheduleTag === 'ERD' || t.scheduleTag === 'CRD') && t.runningDate === todayStr
+      )
+    )
+  )
+  const recentlyRouted = computed(() => allPending.value.filter(s => !s.receivedBy).slice(0, 8))
+  const completedToday = computed(() => allPending.value.filter(s => s.status === 'C').slice(0, 8))
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // ADMIN DATA
+  // ══════════════════════════════════════════════════════════════════════════
+
+  const adminSummaryLoading = ref(true)
+  const adminRunningLoading = ref(true)
+  const adminRoutedLoading = ref(true)
+  const adminDueTodayLoading = ref(true)
+  const adminCompletedLoading = ref(true)
+
+  const adminSectionSummaries = ref([])
+  const adminRunning = ref([])
+  const adminRecentlyRouted = ref([])
+  const adminDueToday = ref([])
+  const adminCompletedToday = ref([])
+
+  async function fetchAdminSummary() {
+    try { const d = await runnerApi.getAllSectionsSummary(); adminSectionSummaries.value = Array.isArray(d) ? d : [] }
+    catch (e) { if (e?.response?.status !== 401) showAlert('error', 'Error', 'Unable to load section summaries.') }
+  }
+  async function fetchAdminRunning() {
+    try { const d = await runnerApi.getAdminRunning(); adminRunning.value = Array.isArray(d) ? d : [] }
+    catch (e) { if (e?.response?.status !== 401) showAlert('error', 'Error', 'Unable to load running tests.') }
+  }
+  async function fetchAdminRecentlyRouted() {
+    try { const d = await runnerApi.getAdminRecentlyRouted(); adminRecentlyRouted.value = Array.isArray(d) ? d : [] }
+    catch (e) { if (e?.response?.status !== 401) showAlert('error', 'Error', 'Unable to load recently routed.') }
+  }
+  async function fetchAdminDueToday() {
+    try { const d = await runnerApi.getAdminDueToday(); adminDueToday.value = Array.isArray(d) ? d : [] }
+    catch (e) { if (e?.response?.status !== 401) showAlert('error', 'Error', 'Unable to load due today.') }
+  }
+  async function fetchAdminCompletedToday() {
+    try { const d = await runnerApi.getAdminCompletedToday(); adminCompletedToday.value = Array.isArray(d) ? d : [] }
+    catch (e) { if (e?.response?.status !== 401) showAlert('error', 'Error', 'Unable to load completed today.') }
+  }
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // HELPERS
+  // ══════════════════════════════════════════════════════════════════════════
+
+  function getDistinctTags(specimen) {
+    const seen = new Set()
+    for (const t of specimen.tests) { if (t.scheduleTag) seen.add(t.scheduleTag) }
+    return ['ERD', 'CRD', 'SRD'].filter(tag => seen.has(tag))
+  }
+
+  function scheduleTagStyle(tag) {
+    const map = {
+      ERD: 'background-color: rgba(70,21,153,0.1); color: var(--color-primary);',
+      CRD: 'background-color: rgba(217,119,6,0.1); color: var(--color-warning);',
+      SRD: 'background-color: rgba(74,98,109,0.1); color: var(--color-info, #4a626d);',
+    }
+    return map[tag] ?? 'background-color: var(--color-surface-low); color: var(--color-text-muted);'
+  }
+
+  function formatDt(dt) {
+    if (!dt) return '—'
+    return new Date(dt).toLocaleString('en-PH', {
+      month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit'
+    })
+  }
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // SYSTEM STATUS
+  // ══════════════════════════════════════════════════════════════════════════
+
+  const lastStatusCheck = ref('—')
+  const systemStatus = ref([
+    { label: 'HCLAB Connectivity', icon: 'router', iconColor: 'var(--color-text-muted)', state: 'Checking', note: null },
+    { label: 'SETS Database', icon: 'database', iconColor: 'var(--color-text-muted)', state: 'Checking', note: null },
+    { label: 'SETS Host', icon: 'dns', iconColor: 'var(--color-text-muted)', state: 'Checking', note: null },
+  ])
+
+  function getStatusBadgeStyle(state) {
+    const map = {
+      'Online': 'background-color: var(--color-success-soft); color: var(--color-success);',
+      'Slight Delay': 'background-color: rgba(202,138,4,0.1); color: #ca8a04;',
+      'Delay': 'background-color: var(--color-warning-soft); color: var(--color-warning);',
+      'Severe Delay': 'background-color: rgba(234,88,12,0.1); color: #ea580c;',
+      'Offline': 'background-color: var(--color-error-soft); color: var(--color-error);',
+      'Checking': 'background-color: var(--color-surface-low); color: var(--color-text-muted);',
+    }
+    return map[state] ?? 'background-color: var(--color-surface-low); color: var(--color-text-muted);'
+  }
+
+  function applyState(index, online, latencyMs) {
+    const item = systemStatus.value[index]
+    if (online) {
+      if (latencyMs >= 200) { item.state = 'Severe Delay'; item.iconColor = '#ea580c' }
+      else if (latencyMs >= 100) { item.state = 'Delay'; item.iconColor = '#d97706' }
+      else if (latencyMs >= 50) { item.state = 'Slight Delay'; item.iconColor = '#ca8a04' }
+      else { item.state = 'Online'; item.iconColor = '#059669' }
+      item.note = latencyMs > 0 ? `${latencyMs}ms` : null
+    } else {
+      item.state = 'Offline'; item.iconColor = 'var(--color-error)'; item.note = null
+    }
+  }
+
+  async function fetchSystemStatus() {
+    try {
+      const { hostLatencyMs, db } = await healthApi.ping()
+      applyState(2, true, hostLatencyMs); applyState(1, db.online, db.latencyMs)
+    } catch {
+      systemStatus.value[2].state = 'Offline'; systemStatus.value[2].iconColor = 'var(--color-error)'; systemStatus.value[2].note = null
+      systemStatus.value[1].state = 'Offline'; systemStatus.value[1].iconColor = 'var(--color-error)'; systemStatus.value[1].note = null
+    }
+    try {
+      const hclab = await healthApi.hclab(); applyState(0, hclab.online, hclab.latencyMs)
+    } catch {
+      systemStatus.value[0].state = 'Offline'; systemStatus.value[0].iconColor = 'var(--color-error)'; systemStatus.value[0].note = null
+    }
+    lastStatusCheck.value = new Date().toLocaleTimeString('en-US', {
+      hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true
+    })
+  }
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // MOUNT / UNMOUNT
+  // ══════════════════════════════════════════════════════════════════════════
+
+  async function silentRefreshRegular() {
+    await Promise.all([fetchSummary(), fetchRunning(), fetchScheduled(), fetchPending()])
+  }
+  async function silentRefreshAdmin() {
+    await Promise.all([
+      fetchAdminSummary(), fetchAdminRunning(),
+      fetchAdminRecentlyRouted(), fetchAdminDueToday(), fetchAdminCompletedToday(),
+    ])
+  }
+
+  let dataInterval = null
+  let statusInterval = null
+
+  onMounted(async () => {
+    if (!authStore.isAdmin) {
+      await fetchSummary(); summaryLoading.value = false
+      await fetchRunning(); runningLoading.value = false
+      await fetchScheduled(); scheduledLoading.value = false
+      await fetchPending(); pendingLoading.value = false
+      dataInterval = setInterval(silentRefreshRegular, 10000)
+    } else {
+      await fetchAdminSummary(); adminSummaryLoading.value = false
+      await fetchAdminRunning(); adminRunningLoading.value = false
+      await fetchAdminRecentlyRouted(); adminRoutedLoading.value = false
+      await fetchAdminDueToday(); adminDueTodayLoading.value = false
+      await fetchAdminCompletedToday(); adminCompletedLoading.value = false
+      dataInterval = setInterval(silentRefreshAdmin, 10000)
+    }
+
+    await fetchSystemStatus()
+    statusInterval = setInterval(fetchSystemStatus, 30000)
+  })
+
+  onUnmounted(() => {
+    clearInterval(dataInterval)
+    clearInterval(statusInterval)
+  })
 </script>

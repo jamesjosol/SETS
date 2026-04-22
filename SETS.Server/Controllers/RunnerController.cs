@@ -90,9 +90,9 @@ namespace SETS.Server.Controllers
             }
         }
 
-        // GET api/runner/saved?sectionCode=HEMA
-        [HttpGet("saved")]
-        public IActionResult GetSavedSpecimens([FromQuery] string sectionCode)
+        // GET api/runner/scheduled?sectionCode=HEMA
+        [HttpGet("scheduled")]
+        public IActionResult GetScheduledSpecimens([FromQuery] string sectionCode)
         {
             try
             {
@@ -104,7 +104,7 @@ namespace SETS.Server.Controllers
                     return BadRequest(new { message = "Section code is required." });
 
                 using var master = new MasterService(branch);
-                return Ok(master.Runner.GetSavedTests(sectionCode));
+                return Ok(master.Runner.GetScheduledSpecimens(sectionCode));
             }
             catch (Exception ex)
             {
@@ -124,6 +124,186 @@ namespace SETS.Server.Controllers
 
                 using var master = new MasterService(branch);
                 return Ok(master.Runner.GetTestsByHeader(headerId));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+
+        // GET api/runner/running?sectionCode=HEMA
+        [HttpGet("running")]
+        public IActionResult GetRunningSpecimens([FromQuery] string sectionCode)
+        {
+            try
+            {
+                var branch = HttpContext.Session.GetString("BranchCode");
+                if (string.IsNullOrEmpty(branch))
+                    return Unauthorized(new { message = "Session expired." });
+
+                var userID = HttpContext.Session.GetString("UserID");
+                if (string.IsNullOrEmpty(userID))
+                    return Unauthorized(new { message = "Session expired." });
+
+                if (string.IsNullOrEmpty(sectionCode))
+                    return BadRequest(new { message = "Section code is required." });
+
+                using var master = new MasterService(branch);
+                return Ok(master.Runner.GetRunningSpecimens(sectionCode, userID));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+
+        // GET api/runner/dashboard-summary?sectionCode=HEMA
+        [HttpGet("dashboard-summary")]
+        public IActionResult GetDashboardSummary([FromQuery] string sectionCode)
+        {
+            try
+            {
+                var branch = HttpContext.Session.GetString("BranchCode");
+                if (string.IsNullOrEmpty(branch))
+                    return Unauthorized(new { message = "Session expired." });
+
+                var userID = HttpContext.Session.GetString("UserID");
+                if (string.IsNullOrEmpty(userID))
+                    return Unauthorized(new { message = "Session expired." });
+
+                if (string.IsNullOrEmpty(sectionCode))
+                    return BadRequest(new { message = "Section code is required." });
+
+                using var master = new MasterService(branch);
+                return Ok(master.Runner.GetDashboardSummary(sectionCode, userID));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+
+        // GET api/runner/dashboard-summary/all  — admin only
+        [HttpGet("dashboard-summary/all")]
+        public IActionResult GetAllSectionsSummary()
+        {
+            try
+            {
+                var branch = HttpContext.Session.GetString("BranchCode");
+                if (string.IsNullOrEmpty(branch))
+                    return Unauthorized(new { message = "Session expired." });
+
+                using var master = new MasterService(branch);
+                return Ok(master.Runner.GetAllSectionsSummary());
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+
+        [HttpGet("admin/running")]
+        public IActionResult GetAllSectionsRunning()
+        {
+            try
+            {
+                var branch = HttpContext.Session.GetString("BranchCode");
+                if (string.IsNullOrEmpty(branch))
+                    return Unauthorized(new { message = "Session expired." });
+
+                using var master = new MasterService(branch);
+                return Ok(master.Runner.GetAllSectionsRunning());
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+
+        [HttpGet("admin/recently-routed")]
+        public IActionResult GetAllSectionsRecentlyRouted()
+        {
+            try
+            {
+                var branch = HttpContext.Session.GetString("BranchCode");
+                if (string.IsNullOrEmpty(branch))
+                    return Unauthorized(new { message = "Session expired." });
+
+                using var master = new MasterService(branch);
+                return Ok(master.Runner.GetAllSectionsRecentlyRouted());
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+
+        [HttpGet("admin/due-today")]
+        public IActionResult GetAllSectionsDueToday()
+        {
+            try
+            {
+                var branch = HttpContext.Session.GetString("BranchCode");
+                if (string.IsNullOrEmpty(branch))
+                    return Unauthorized(new { message = "Session expired." });
+
+                using var master = new MasterService(branch);
+                return Ok(master.Runner.GetAllSectionsDueToday());
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+
+        [HttpGet("admin/completed-today")]
+        public IActionResult GetAllSectionsCompletedToday()
+        {
+            try
+            {
+                var branch = HttpContext.Session.GetString("BranchCode");
+                if (string.IsNullOrEmpty(branch))
+                    return Unauthorized(new { message = "Session expired." });
+
+                using var master = new MasterService(branch);
+                return Ok(master.Runner.GetAllSectionsCompletedToday());
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+
+        // GET api/runner/admin/pending
+        [HttpGet("admin/pending")]
+        public IActionResult GetAllSectionsPending()
+        {
+            try
+            {
+                var branch = HttpContext.Session.GetString("BranchCode");
+                if (string.IsNullOrEmpty(branch))
+                    return Unauthorized(new { message = "Session expired." });
+
+                using var master = new MasterService(branch);
+                return Ok(master.Runner.GetAllSectionsPending());
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+
+        [HttpGet("admin/scheduled")]
+        public IActionResult GetAllSectionsScheduled()
+        {
+            try
+            {
+                var branch = HttpContext.Session.GetString("BranchCode");
+                if (string.IsNullOrEmpty(branch))
+                    return Unauthorized(new { message = "Session expired." });
+
+                using var master = new MasterService(branch);
+                return Ok(master.Runner.GetAllSectionsScheduled());
             }
             catch (Exception ex)
             {

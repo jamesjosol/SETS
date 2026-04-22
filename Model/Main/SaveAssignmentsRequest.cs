@@ -19,6 +19,7 @@ namespace Model.Main
         public string? AssignedRMT { get; set; }
         public string? ScheduleTag { get; set; }
         public DateOnly? RunningDate { get; set; }
+        public DateTime? RunAt { get; set; }
     }
 
     public class SpecimenRemarkItem

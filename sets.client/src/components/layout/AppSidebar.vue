@@ -88,28 +88,28 @@
               expand_more
             </span>
           </button>
-
-          <!-- Group Items -->
-          <div v-show="!uiStore.sidebarCollapsed[group.categoryCode]"
-               class="mt-1 space-y-1 pl-2">
-            <router-link v-for="item in group.items"
-                         :key="item.name"
-                         :to="item.path"
-                         class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest transition-all duration-200"
-                         :style="isActive(item.path) ? activeStyle : inactiveStyle"
-                         @mouseenter="(e) => { if (!isActive(item.path)) applyHover(e) }"
-                         @mouseleave="(e) => { if (!isActive(item.path)) removeHover(e) }">
-              <span class="material-symbols-outlined text-base">{{ item.icon }}</span>
-              <span>{{ item.name }}</span>
-              <div v-if="isActive(item.path)"
-                   class="ml-auto w-1.5 h-1.5 rounded-full"
-                   style="background-color: var(--color-primary);"></div>
-            </router-link>
-          </div>
-
+          <transition name="sidebar-group">
+            <!-- Group Items -->
+            <div v-show="!uiStore.sidebarCollapsed[group.categoryCode]"
+                 class="mt-1 space-y-1 pl-2">
+              <router-link v-for="item in group.items"
+                           :key="item.name"
+                           :to="item.path"
+                           class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest transition-all duration-200"
+                           :style="isActive(item.path) ? activeStyle : inactiveStyle"
+                           @mouseenter="(e) => { if (!isActive(item.path)) applyHover(e) }"
+                           @mouseleave="(e) => { if (!isActive(item.path)) removeHover(e) }">
+                <span class="material-symbols-outlined text-base">{{ item.icon }}</span>
+                <span>{{ item.name }}</span>
+                <div v-if="isActive(item.path)"
+                     class="ml-auto w-1.5 h-1.5 rounded-full"
+                     style="background-color: var(--color-primary);"></div>
+              </router-link>
+            </div>
+          </transition>
+  
         </div>
       </template>
-
     </nav>
 
     <!-- New Endorsement Button (Endorser only) -->
@@ -195,7 +195,8 @@
   const runnerItems = [
     { name: 'Dashboard', path: '/runner/dashboard', icon: 'dashboard' },
     { name: 'Pending Specimens', path: '/runner/pending', icon: 'pending_actions' },
-    { name: 'Saved Specimens', path: '/runner/saved', icon: 'bookmark' },
+    { name: 'Scheduled Specimens', path: '/runner/scheduled', icon: 'event_available' },
+    { name: 'Running Specimens', path: '/runner/running', icon: 'labs' },
     { name: 'Audit Trail', path: '/runner/audit-trail', icon: 'manage_search' },
   ]
 
@@ -265,3 +266,17 @@
     e.currentTarget.style.cssText = inactiveStyle
   }
 </script>
+<style scoped>
+  .sidebar-group-enter-active,
+  .sidebar-group-leave-active {
+    transition: max-height 0.25s ease, opacity 0.2s ease;
+    overflow: hidden;
+    max-height: 400px; /* tall enough to fit any group */
+  }
+
+  .sidebar-group-enter-from,
+  .sidebar-group-leave-to {
+    max-height: 0;
+    opacity: 0;
+  }
+</style>

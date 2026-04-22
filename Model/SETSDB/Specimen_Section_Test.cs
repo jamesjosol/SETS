@@ -15,6 +15,7 @@ namespace Model.SETSDB
         public string Status { get; set; }
         public string? ScheduleTag { get; set; }
         public DateOnly? RunningDate { get; set; }
+        public DateTime? RunAt { get; set; }
         public string? AssignedRMT { get; set; }
         public DateTime? Assigned { get; set; }
         public string? UpdatedBy { get; set; }

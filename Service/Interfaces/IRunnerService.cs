@@ -12,8 +12,17 @@ namespace Service.Interfaces
     {
         ScanSpecimenResponse ScanSpecimen(ScanSpecimenRequest request);
         void SaveAssignments(SaveAssignmentsRequest request);
-        List<Specimen_Section_Header> GetPendingSpecimens(string sectionCode);
-        List<Specimen_Section_Test> GetSavedTests(string sectionCode);
+        List<PendingSpecimenItem> GetPendingSpecimens(string sectionCode);
+        List<ScheduledSpecimenItem> GetScheduledSpecimens(string sectionCode);
         List<Specimen_Section_Test> GetTestsByHeader(int headerId);
+        List<RunningSpecimenItem> GetRunningSpecimens(string sectionCode, string? userID);
+        RunnerDashboardSummary GetDashboardSummary(string sectionCode, string userID);
+        List<LabSectionSummary> GetAllSectionsSummary();
+        List<SectionRunningGroup> GetAllSectionsRunning();
+        List<SectionPendingGroup> GetAllSectionsRecentlyRouted();
+        List<SectionScheduledGroup> GetAllSectionsDueToday();
+        List<SectionPendingGroup> GetAllSectionsCompletedToday();
+        List<SectionPendingGroup> GetAllSectionsPending();
+        List<SectionScheduledGroup> GetAllSectionsScheduled();
     }
 }

@@ -69,13 +69,19 @@ const routes = [
     meta: { requiresAuth: true, category: '3' }
   },
   {
-    path: '/runner/saved', name: 'SavedSpecimens',
-    component: () => import('../views/runner/SavedSpecimens.vue'),
+    path: '/runner/scheduled', name: 'ScheduledSpecimens',
+    component: () => import('../views/runner/ScheduledSpecimens.vue'),
     meta: { requiresAuth: true, category: '3' }
   },
   {
     path: '/runner/assign', name: 'AssignRMT',
     component: () => import('../views/runner/AssignRMT.vue'),
+    meta: { requiresAuth: true, category: '3' }
+  },
+  {
+    path: '/runner/running',
+    name: 'RunningSpecimens',
+    component: () => import('../views/runner/RunningSpecimens.vue'),
     meta: { requiresAuth: true, category: '3' }
   },
   // ── Catch-all: redirect to login ───────────────────────────────────

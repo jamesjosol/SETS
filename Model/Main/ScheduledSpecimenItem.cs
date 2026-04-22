@@ -6,23 +6,22 @@ using System.Threading.Tasks;
 
 namespace Model.Main
 {
-    public class ScanSpecimenResponse
+    public class ScheduledSpecimenItem
     {
         public int HeaderId { get; set; }
         public string SpecimenNo { get; set; }
         public string SectionCode { get; set; }
-        public string TestGroupCode { get; set; }
         public string SampleTypeCode { get; set; }
-        public string? SampleTypeName { get; set; }
-        public string Status { get; set; }
-        public bool FirstScan { get; set; }         // true = Received was just stamped
-        public DateTime? Received { get; set; }
-        public string? ReceivedBy { get; set; }
+        public string SampleTypeName { get; set; }
+        public string? PatientName { get; set; }
+        public string? PatientID { get; set; }
         public string? Remarks { get; set; }
-        public List<ScanSpecimenTestItem> Tests { get; set; }
+        public string? ReceivedBy { get; set; }
+        public DateTime? Received { get; set; }
+        public List<ScheduledTestItem> Tests { get; set; } = new();
     }
 
-    public class ScanSpecimenTestItem
+    public class ScheduledTestItem
     {
         public int Id { get; set; }
         public string TestCode { get; set; }
@@ -31,7 +30,5 @@ namespace Model.Main
         public string? ScheduleTag { get; set; }
         public DateOnly? RunningDate { get; set; }
         public string? AssignedRMT { get; set; }
-        public DateTime? Assigned { get; set; }
-        public DateTime? RunAt { get; set; } 
     }
 }
