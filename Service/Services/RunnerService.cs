@@ -45,6 +45,9 @@ namespace Service.Services
                         ?? throw new Exception(
                             $"Specimen '{request.SpecimenNo}' has not been routed to this section.");
 
+                    if (!header.IsHclabRouted)
+                        throw new Exception($"Specimen '{request.SpecimenNo}' has not been routed in HCLAB yet.");
+
                     // 2. Stamp received — ONLY if first scan
                     bool firstScan = header.ReceivedBy == null;
                     if (firstScan)
@@ -275,10 +278,11 @@ namespace Service.Services
                 using var context = _factory.CreateContext(_branch);
 
                 var headers = context.Specimen_Section_Header
-                    .Where(h => h.SectionCode == sectionCode
-                             && (h.Status == "P"))
-                    .OrderByDescending(h => h.Routed)
-                    .ToList();
+                      .Where(h => h.SectionCode == sectionCode
+                               && h.Status == "P"
+                               && h.IsHclabRouted)          // ← add this
+                      .OrderByDescending(h => h.Routed)
+                      .ToList();
 
                 if (!headers.Any()) return new List<PendingSpecimenItem>();
 
@@ -464,7 +468,7 @@ namespace Service.Services
                 using var context = _factory.CreateContext(_branch);
 
                 var headers = context.Specimen_Section_Header
-                    .Where(h => h.SectionCode == sectionCode)
+                    .Where(h => h.SectionCode == sectionCode && h.IsHclabRouted)
                     .ToList();
 
                 var headerIds = headers.Select(h => h.Id).ToList();
@@ -514,7 +518,7 @@ namespace Service.Services
                 return sections.Select(s =>
                 {
                     var headers = context.Specimen_Section_Header
-                        .Where(h => h.SectionCode == s.Code)
+                        .Where(h => h.SectionCode == s.Code && h.IsHclabRouted)
                         .ToList();
 
                     var headerIds = headers.Select(h => h.Id).ToList();

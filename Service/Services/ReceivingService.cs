@@ -690,6 +690,9 @@ namespace Service.Services
 
             if (alreadyRouted) return;
 
+            bool isHclabRouted = await HclabMaster.HCLABTransactions
+                                    .CheckSplRouted(connStr, specimen.SpecimenNo);
+
             // Step 5 — Create the single header for this specimen
             var header = new Specimen_Section_Header
             {
@@ -699,7 +702,8 @@ namespace Service.Services
                 SampleTypeCode = specimen.SampleTypeCode,
                 Status = "P",
                 RoutedBy = routedByUserID,
-                Routed = routedAt
+                Routed = routedAt,
+                IsHclabRouted = isHclabRouted
             };
 
             context.Specimen_Section_Header.Add(header);

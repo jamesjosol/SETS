@@ -255,9 +255,6 @@
                   </td>
                 </tr>
               </Transition>
-
-
-
             </template>
           </tbody>
         </table>

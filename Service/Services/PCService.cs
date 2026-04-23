@@ -51,6 +51,17 @@ namespace Service.Services
             catch { throw; }
         }
 
+        public List<PC_Section> GetSectionsByPCId(int pcId)
+        {
+            try
+            {
+                using var context = _factory.CreateContext(_branch);
+                using var unit = new UnitOfWork(context);
+                return unit.PCSections.GetByPCId(pcId);
+            }
+            catch { throw; }
+        }
+
         public void Add(PC_Master pc)
         {
             try
@@ -91,6 +102,19 @@ namespace Service.Services
                 using var context = _factory.CreateContext(_branch);
                 using var unit = new UnitOfWork(context);
                 unit.PCSections.Delete(id);
+            }
+            catch { throw; }
+        }
+
+        public void DeleteSectionsByPCId(int pcId)
+        {
+            try
+            {
+                using var context = _factory.CreateContext(_branch);
+                using var unit = new UnitOfWork(context);
+                var rows = unit.PCSections.GetByPCId(pcId);
+                foreach (var row in rows)
+                    unit.PCSections.Delete(row);
             }
             catch { throw; }
         }

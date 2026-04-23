@@ -14,4 +14,5 @@ export const healthApi = {
 
   // Checks HCLAB (Oracle) connectivity
   hclab: () => api.get(`${HEALTH_URL}/hclab`).then(r => r.data),
+  middleware: () => api.get(`${HEALTH_URL}/middleware`).then(r => r.data),
 }

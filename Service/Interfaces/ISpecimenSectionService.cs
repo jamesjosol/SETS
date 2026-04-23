@@ -25,5 +25,10 @@ namespace Service.Interfaces
         void AddTest(Specimen_Section_Test test);
         void UpdateTest(Specimen_Section_Test test);
         bool AllTestsReleased(int headerId);
+
+
+        // Middleware
+        List<string> GetUnroutedSpecimenNos();
+        void FlipHclabRouted(string specimenNo);
     }
 }

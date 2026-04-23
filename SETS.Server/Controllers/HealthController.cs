@@ -37,5 +37,26 @@ namespace SETS.Server.Controllers
 
             return Ok(result);
         }
+
+        // GET api/health/middleware
+        [HttpGet("middleware")]
+        public async Task<IActionResult> Middleware()
+        {
+            var branch = HttpContext.Session.GetString("BranchCode");
+            if (string.IsNullOrEmpty(branch))
+                return Unauthorized(new { message = "Session expired." });
+
+            try
+            {
+                using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(3) };
+                var resp = await http.GetAsync("http://localhost:5100/health");
+                var json = await resp.Content.ReadAsStringAsync();
+                return Content(json, "application/json");
+            }
+            catch
+            {
+                return Ok(new { online = false, branch, tasks = Array.Empty<object>() });
+            }
+        }
     }
 }

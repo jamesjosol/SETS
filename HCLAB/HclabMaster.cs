@@ -4,6 +4,7 @@ using Oracle.ManagedDataAccess.Client;
 using System.Diagnostics;
 using static HCLAB.Queries;
 using Model.Main;
+using System.Reflection.Emit;
 
 namespace HCLAB
 {
@@ -138,6 +139,27 @@ namespace HCLAB
                 catch (Exception)
                 {
 
+                    throw;
+                }
+            }
+
+            public async static Task<bool> CheckSplRouted(string conn, string specimenNo)
+            {
+                try
+                {
+                    using (var con = new OracleConnection(conn))
+                    using (var cmd = new OracleCommand(Queries.Transaction.Check_Spl_Routed, con))
+                    {
+                        cmd.Parameters.Add("p0", specimenNo);
+                        await con.OpenAsync();
+
+                        var result = await cmd.ExecuteScalarAsync();
+                        if (result == null || result == DBNull.Value) return false;
+                        return result.ToString().Trim().ToUpper() == "Y";
+                    }
+                }
+                catch (Exception)
+                {
                     throw;
                 }
             }

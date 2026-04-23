@@ -163,5 +163,30 @@ namespace Service.Services
             }
             catch { throw; }
         }
+         
+        // ── Middleware ────────────────────────────────────────────────────────────
+ 
+        public List<string> GetUnroutedSpecimenNos()
+        {
+            try
+            {
+                using var context = _factory.CreateContext(_branch);
+                using var unit = new UnitOfWork(context);
+                return unit.SpecimenSectionHeaders.GetUnroutedSpecimenNos();
+            }
+            catch { throw; }
+        }
+ 
+        public void FlipHclabRouted(string specimenNo)
+        {
+            try
+            {
+                using var context = _factory.CreateContext(_branch);
+                using var unit = new UnitOfWork(context);
+                unit.SpecimenSectionHeaders.FlipHclabRouted(specimenNo);
+            }
+            catch { throw; }
+        }
+
     }
 }

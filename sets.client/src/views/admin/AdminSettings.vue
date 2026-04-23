@@ -37,9 +37,252 @@
       <!-- Right Content Panel -->
       <div class="flex-1 min-w-0">
 
+
         <!-- ══════════════════════════════════════════════════════════
-             TAT SET-UP
-        ══════════════════════════════════════════════════════════ -->
+       PC REGISTRATION
+  ══════════════════════════════════════════════════════════ -->
+        <div v-if="activeTab === 'pc'"
+             class="rounded-2xl overflow-hidden"
+             style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
+
+          <!-- Header -->
+          <div class="px-8 py-5 flex items-center justify-between" style="border-bottom: 1px solid var(--color-border);">
+            <div class="flex items-center gap-4">
+              <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                   style="background-color: var(--color-primary-soft);">
+                <span class="material-symbols-outlined text-base" style="color: var(--color-primary);">computer</span>
+              </div>
+              <div>
+                <h2 class="text-base font-extrabold tracking-tight" style="color: var(--color-text);">PC Registration</h2>
+                <p class="text-xs mt-0.5" style="color: var(--color-text-muted);">
+                  Register workstations by IP address and assign which sections they can access.
+                </p>
+              </div>
+            </div>
+            <button class="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest transition-all active:scale-95 shadow"
+                    style="background: var(--color-primary-gradient); color: #ffffff;"
+                    @click="openAddPC">
+              <span class="material-symbols-outlined text-sm">add</span>
+              Register PC
+            </button>
+          </div>
+
+          <!-- PC Table -->
+          <div class="px-8 py-6">
+            <!-- Loading -->
+            <div v-if="pcLoading" class="flex items-center justify-center py-12 gap-3"
+                 style="color: var(--color-text-muted);">
+              <span class="material-symbols-outlined text-xl animate-spin">progress_activity</span>
+              <span class="text-sm font-medium">Loading registered PCs...</span>
+            </div>
+
+            <!-- Empty -->
+            <div v-else-if="!pcList.length"
+                 class="py-12 flex flex-col items-center gap-2" style="color: var(--color-text-muted);">
+              <span class="material-symbols-outlined text-3xl">computer_cancel</span>
+              <p class="text-sm font-medium">No PCs registered yet.</p>
+            </div>
+
+            <!-- Table -->
+            <table v-else class="w-full text-sm">
+              <thead>
+                <tr style="border-bottom: 1px solid var(--color-border);">
+                  <th class="text-left pb-3 text-[10px] font-bold uppercase tracking-widest pr-6"
+                      style="color: var(--color-text-muted);">IP Address</th>
+                  <th class="text-left pb-3 text-[10px] font-bold uppercase tracking-widest pr-6"
+                      style="color: var(--color-text-muted);">Description</th>
+                  <th class="text-left pb-3 text-[10px] font-bold uppercase tracking-widest pr-6"
+                      style="color: var(--color-text-muted);">Allowed Sections</th>
+                  <th class="text-left pb-3 text-[10px] font-bold uppercase tracking-widest pr-6"
+                      style="color: var(--color-text-muted);">Status</th>
+                  <th class="pb-3"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="pc in pcList" :key="pc.id"
+                    style="border-bottom: 1px solid var(--color-surface-low);">
+                  <!-- IP Address -->
+                  <td class="py-3 pr-6">
+                    <span class="font-mono font-bold text-xs" style="color: var(--color-text);">
+                      {{ pc.ipAddress }}
+                    </span>
+                  </td>
+
+                  <!-- Description -->
+                  <td class="py-3 pr-6">
+                    <span class="text-sm" style="color: var(--color-text-muted);">
+                      {{ pc.description || '—' }}
+                    </span>
+                  </td>
+
+                  <!-- Sections -->
+                  <td class="py-3 pr-6">
+                    <div class="flex flex-wrap gap-1">
+                      <span v-if="!pc.sections.length"
+                            class="text-xs font-bold" style="color: var(--color-text-muted);">No sections</span>
+                      <span v-for="sec in pc.sections" :key="sec.id"
+                            class="px-2 py-0.5 rounded-lg text-[10px] font-bold"
+                            style="background-color: var(--color-primary-soft); color: var(--color-primary);">
+                        {{ sec.sectionName }}
+                      </span>
+                    </div>
+                  </td>
+
+                  <!-- Status toggle -->
+                  <td class="py-3 pr-6">
+                    <button class="flex items-center gap-1.5 px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all"
+                            :style="pc.active
+                      ? 'background-color: var(--color-primary-soft); color: var(--color-primary);'
+                      : 'background-color: var(--color-surface-low); color: var(--color-text-muted); border: 1px solid var(--color-border);'"
+                            @click="togglePC(pc)">
+                      <span class="material-symbols-outlined text-xs">
+                        {{ pc.active ? 'check_circle' : 'cancel' }}
+                      </span>
+                      {{ pc.active ? 'Active' : 'Inactive' }}
+                    </button>
+                  </td>
+
+                  <!-- Actions -->
+                  <td class="py-3">
+                    <div class="flex items-center gap-1 justify-end">
+                      <button class="w-8 h-8 rounded-lg flex items-center justify-center transition-all"
+                              style="color: var(--color-text-muted);"
+                              title="Edit sections"
+                              @mouseenter="(e) => e.currentTarget.style.backgroundColor = 'var(--color-surface-low)'"
+                              @mouseleave="(e) => e.currentTarget.style.backgroundColor = 'transparent'"
+                              @click="openEditSections(pc)">
+                        <span class="material-symbols-outlined text-sm">edit</span>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ══════════════════════════════════════════════════════════
+       ADD PC MODAL
+  ══════════════════════════════════════════════════════════ -->
+        <Teleport to="body">
+          <Transition name="modal">
+            <div v-if="pcModal.visible"
+                 class="fixed inset-0 z-50 flex items-center justify-center"
+                 style="background-color: rgba(0,0,0,0.4);"
+                 @click.self="closePCModal">
+
+              <div class="w-full max-w-md rounded-2xl overflow-hidden"
+                   style="background-color: var(--color-surface); box-shadow: 0 8px 32px rgba(0,0,0,0.24);">
+
+                <!-- Modal Header -->
+                <div class="px-6 py-4 flex items-center justify-between"
+                     style="border-bottom: 1px solid var(--color-border);">
+                  <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-lg flex items-center justify-center"
+                         style="background-color: var(--color-primary-soft);">
+                      <span class="material-symbols-outlined text-sm" style="color: var(--color-primary);">computer</span>
+                    </div>
+                    <h3 class="text-sm font-extrabold tracking-tight" style="color: var(--color-text);">
+                      {{ pcModal.mode === 'add' ? 'Register New PC' : 'Edit Section Assignments' }}
+                    </h3>
+                  </div>
+                  <button class="w-8 h-8 rounded-lg flex items-center justify-center transition-all"
+                          style="color: var(--color-text-muted);"
+                          @mouseenter="(e) => e.currentTarget.style.backgroundColor = 'var(--color-surface-low)'"
+                          @mouseleave="(e) => e.currentTarget.style.backgroundColor = 'transparent'"
+                          @click="closePCModal">
+                    <span class="material-symbols-outlined text-base">close</span>
+                  </button>
+                </div>
+
+                <!-- Modal Body -->
+                <div class="px-6 py-5 space-y-4">
+
+                  <!-- IP Address (add mode only) -->
+                  <div v-if="pcModal.mode === 'add'">
+                    <label class="block text-[10px] font-bold uppercase tracking-widest mb-1.5"
+                           style="color: var(--color-text-muted);">IP Address *</label>
+                    <input v-model="pcModal.form.ipAddress"
+                           placeholder="e.g. 192.168.1.100"
+                           class="w-full px-4 py-2.5 rounded-xl text-sm font-mono font-medium outline-none transition-all"
+                           style="background-color: var(--color-surface-low); color: var(--color-text); border: 1.5px solid var(--color-border);"
+                           @focus="(e) => e.target.style.borderColor = 'var(--color-primary)'"
+                           @blur="(e) => e.target.style.borderColor = 'var(--color-border)'" />
+                  </div>
+
+                  <!-- Description (add mode only) -->
+                  <div v-if="pcModal.mode === 'add'">
+                    <label class="block text-[10px] font-bold uppercase tracking-widest mb-1.5"
+                           style="color: var(--color-text-muted);">Description</label>
+                    <input v-model="pcModal.form.description"
+                           placeholder="e.g. Hematology workstation"
+                           class="w-full px-4 py-2.5 rounded-xl text-sm font-medium outline-none transition-all"
+                           style="background-color: var(--color-surface-low); color: var(--color-text); border: 1.5px solid var(--color-border);"
+                           @focus="(e) => e.target.style.borderColor = 'var(--color-primary)'"
+                           @blur="(e) => e.target.style.borderColor = 'var(--color-border)'" />
+                  </div>
+
+                  <!-- Section Assignment -->
+                  <div>
+                    <label class="block text-[10px] font-bold uppercase tracking-widest mb-2"
+                           style="color: var(--color-text-muted);">Allowed Sections</label>
+                    <div class="rounded-xl overflow-hidden"
+                         style="border: 1.5px solid var(--color-border);">
+                      <div v-for="sec in availableSections" :key="sec.code"
+                           class="flex items-center justify-between px-4 py-2.5 transition-all cursor-pointer"
+                           style="border-bottom: 1px solid var(--color-surface-low);"
+                           :style="pcModal.form.sectionCodes.includes(sec.code)
+                     ? 'background-color: var(--color-primary-soft);'
+                     : ''"
+                           @click="toggleSectionInModal(sec.code)">
+                        <span class="text-sm font-medium" style="color: var(--color-text);">{{ sec.name }}</span>
+                        <div class="w-5 h-5 rounded-md flex items-center justify-center transition-all"
+                             :style="pcModal.form.sectionCodes.includes(sec.code)
+                       ? 'background-color: var(--color-primary);'
+                       : 'border: 1.5px solid var(--color-border);'">
+                          <span v-if="pcModal.form.sectionCodes.includes(sec.code)"
+                                class="material-symbols-outlined text-xs" style="color: #ffffff;">check</span>
+                        </div>
+                      </div>
+                      <p v-if="!availableSections.length"
+                         class="px-4 py-3 text-xs text-center" style="color: var(--color-text-muted);">
+                        No sections available.
+                      </p>
+                    </div>
+                  </div>
+
+                  <!-- Error -->
+                  <p v-if="pcModal.error" class="text-xs font-bold" style="color: #ba1a1a;">
+                    {{ pcModal.error }}
+                  </p>
+                </div>
+
+                <!-- Modal Footer -->
+                <div class="px-6 py-4 flex justify-end gap-3"
+                     style="border-top: 1px solid var(--color-border);">
+                  <button class="px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest transition-all"
+                          style="background-color: var(--color-surface-low); color: var(--color-text-muted);"
+                          @click="closePCModal">
+                    Cancel
+                  </button>
+                  <button class="px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest transition-all active:scale-95 flex items-center gap-2 shadow"
+                          style="background: var(--color-primary-gradient); color: #ffffff;"
+                          :disabled="pcModal.saving"
+                          @click="savePCModal">
+                    <span v-if="pcModal.saving" class="material-symbols-outlined text-sm animate-spin">progress_activity</span>
+                    <span class="material-symbols-outlined text-sm" v-else>save</span>
+                    {{ pcModal.mode === 'add' ? 'Register' : 'Save' }}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </Transition>
+        </Teleport>
+
+
+        <!-- ══════════════════════════════════════════════════════════
+       TAT SET-UP
+  ══════════════════════════════════════════════════════════ -->
         <div v-if="activeTab === 'tat'"
              class="rounded-2xl overflow-hidden"
              style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
@@ -145,8 +388,8 @@
         </div>
 
         <!-- ══════════════════════════════════════════════════════════
-             BRANCH
-        ══════════════════════════════════════════════════════════ -->
+       BRANCH
+  ══════════════════════════════════════════════════════════ -->
         <div v-if="activeTab === 'branch'"
              class="rounded-2xl overflow-hidden"
              style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
@@ -225,8 +468,8 @@
         </div>
 
         <!-- ══════════════════════════════════════════════════════════
-             SECTION / LOCATION
-        ══════════════════════════════════════════════════════════ -->
+       SECTION / LOCATION
+  ══════════════════════════════════════════════════════════ -->
         <div v-if="activeTab === 'section'"
              class="rounded-2xl overflow-hidden"
              style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
@@ -343,8 +586,8 @@
         </div>
 
         <!-- ══════════════════════════════════════════════════════════
-             USER MANAGEMENT
-        ══════════════════════════════════════════════════════════ -->
+       USER MANAGEMENT
+  ══════════════════════════════════════════════════════════ -->
         <div v-if="activeTab === 'users'"
              class="rounded-2xl overflow-hidden"
              style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
@@ -413,8 +656,8 @@
         </div>
 
         <!-- ══════════════════════════════════════════════════════════
-             ENDORSEMENT SET-UP
-        ══════════════════════════════════════════════════════════ -->
+       ENDORSEMENT SET-UP
+  ══════════════════════════════════════════════════════════ -->
         <div v-if="activeTab === 'endorsement'"
              class="rounded-2xl overflow-hidden"
              style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
@@ -499,8 +742,8 @@
         </div>
 
         <!-- ══════════════════════════════════════════════════════════
-             ARCHIVE
-        ══════════════════════════════════════════════════════════ -->
+       ARCHIVE
+  ══════════════════════════════════════════════════════════ -->
         <div v-if="activeTab === 'archive'"
              class="rounded-2xl overflow-hidden"
              style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
@@ -564,8 +807,8 @@
         </div>
 
         <!-- ══════════════════════════════════════════════════════════
-             PROCESSING OPTIONS
-        ══════════════════════════════════════════════════════════ -->
+       PROCESSING OPTIONS
+  ══════════════════════════════════════════════════════════ -->
         <div v-if="activeTab === 'processing'"
              class="rounded-2xl overflow-hidden"
              style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
@@ -624,14 +867,17 @@
 </template>
 
 <script setup>
-  import { ref, computed } from 'vue'
+  import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+  import { pcApi } from '@/api/pcApi'
+  import { settingsApi } from '@/api/settingsApi'
   import AppLayout from '@/components/layout/AppLayout.vue'
 
   // ── Tabs ───────────────────────────────────────────────────────────────────
 
-  const activeTab = ref('tat')
+  const activeTab = ref('pc')
 
   const settingsTabs = [
+    { key: 'pc', label: 'PC Registration', icon: 'computer' },
     { key: 'tat', label: 'TAT Set-Up', icon: 'timer' },
     { key: 'branch', label: 'Branch', icon: 'location_city' },
     { key: 'section', label: 'Section', icon: 'apartment' },
@@ -646,6 +892,11 @@
     { key: 'showTempRemarks', label: 'Temperature Remarks', hint: 'Show temperature remarks field' },
     { key: 'showBagNo', label: 'Bag Number', hint: 'Show bag number field during receiving' },
   ]
+
+  onMounted(() => {
+  loadPCs()
+  loadSections()
+})
 
   // ── Settings State ─────────────────────────────────────────────────────────
 
@@ -748,6 +999,129 @@
     toast.value = { visible: true, message: `${section} settings saved.` }
     setTimeout(() => { toast.value.visible = false }, 2500)
     // TODO: call API endpoint
+  }
+
+  function showToast(msg) {
+    toast.value = { visible: true, message: msg }
+    setTimeout(() => { toast.value.visible = false }, 2500)
+    // TODO: call API endpoint
+  }
+
+  // ── PC Registration state ────────────────────────────────────────────
+  const pcList = ref([])
+  const pcLoading = ref(false)
+
+  const availableSections = ref([])   // all Section_Master for the branch
+
+  const pcModal = ref({
+    visible: false,
+    mode: 'add',          // 'add' | 'editSections'
+    pcId: null,
+    form: { ipAddress: '', description: '', sectionCodes: [] },
+    saving: false,
+    error: ''
+  })
+
+  async function loadPCs() {
+    pcLoading.value = true
+    try {
+      const res = await pcApi.getAll()
+      pcList.value = res.data
+    } catch {
+      pcList.value = []
+    } finally {
+      pcLoading.value = false
+    }
+  }
+
+  async function loadSections() {
+    try {
+      // Reuse your existing settingsApi or sectionApi — adjust as needed
+      const res = await settingsApi.getSections()
+      availableSections.value = res.data.filter(s => s.active)
+    } catch {
+      availableSections.value = []
+    }
+  }
+
+  // Called when 'pc' tab is activated — load data lazily
+  watch(activeTab, (val) => {
+    if (val === 'pc' && !pcList.value.length) {
+      loadPCs()
+      loadSections()
+    }
+  })
+
+  function openAddPC() {
+    pcModal.value = {
+      visible: true, mode: 'add', pcId: null,
+      form: { ipAddress: '', description: '', sectionCodes: [] },
+      saving: false, error: ''
+    }
+  }
+
+  function openEditSections(pc) {
+    pcModal.value = {
+      visible: true, mode: 'editSections', pcId: pc.id,
+      form: {
+        ipAddress: pc.ipAddress,
+        description: pc.description,
+        sectionCodes: pc.sections.map(s => s.sectionCode)
+      },
+      saving: false, error: ''
+    }
+  }
+
+  function closePCModal() {
+    pcModal.value.visible = false
+  }
+
+  function toggleSectionInModal(code) {
+    const idx = pcModal.value.form.sectionCodes.indexOf(code)
+    if (idx === -1) pcModal.value.form.sectionCodes.push(code)
+    else pcModal.value.form.sectionCodes.splice(idx, 1)
+  }
+
+  async function savePCModal() {
+    pcModal.value.error = ''
+    pcModal.value.saving = true
+    try {
+      if (pcModal.value.mode === 'add') {
+        if (!pcModal.value.form.ipAddress.trim()) {
+          pcModal.value.error = 'IP Address is required.'
+          return
+        }
+        await pcApi.add({
+          ipAddress: pcModal.value.form.ipAddress.trim(),
+          description: pcModal.value.form.description.trim(),
+          sectionCodes: pcModal.value.form.sectionCodes
+        })
+      } else {
+        await pcApi.updateSections(pcModal.value.pcId, {
+          sectionCodes: pcModal.value.form.sectionCodes
+        })
+      }
+      closePCModal()
+
+      await loadPCs()
+      showToast(pcModal.value.mode === 'add'
+        ? 'PC registered successfully.'
+        : 'Section assignments updated.')
+
+    } catch (err) {
+      pcModal.value.error = err.response?.data?.message || 'An error occurred.'
+    } finally {
+      pcModal.value.saving = false
+    }
+  }
+
+  async function togglePC(pc) {
+    try {
+      await pcApi.toggle(pc.id)
+      pc.active = !pc.active
+    } catch (err) {
+      showToast(err.response?.data?.message || 'Failed to update status.')
+    }
   }
 </script>
 

@@ -49,6 +49,11 @@ namespace HCLAB
 					and od_testcode = od_order_ti
 				";
 
-		}
+			public static string Check_Spl_Routed = @"
+					SELECT os_spl_rcvd_flag 
+					FROM ord_spl
+					WHERE os_sno = :p0";
+
+        }
 	}
 }

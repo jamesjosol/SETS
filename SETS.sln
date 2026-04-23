@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.13.35828.75 d17.13
+VisualStudioVersion = 17.13.35828.75
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "sets.client", "sets.client\sets.client.esproj", "{D3B564EF-D969-677B-D6AB-FF965BE8582B}"
 EndProject
@@ -14,6 +14,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Model", "Model\Model.csproj", "{8846EF0D-E626-4817-8821-A132989DCA6B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Service", "Service\Service.csproj", "{C841152B-74B7-43B7-8E9A-E2B82C80289A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SETSMiddleware", "SETSMiddleware\SETSMiddleware.csproj", "{1E05344D-E1EC-4DBC-B24B-6E177E94DC79}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -47,6 +49,10 @@ Global
 		{C841152B-74B7-43B7-8E9A-E2B82C80289A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C841152B-74B7-43B7-8E9A-E2B82C80289A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C841152B-74B7-43B7-8E9A-E2B82C80289A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1E05344D-E1EC-4DBC-B24B-6E177E94DC79}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1E05344D-E1EC-4DBC-B24B-6E177E94DC79}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1E05344D-E1EC-4DBC-B24B-6E177E94DC79}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1E05344D-E1EC-4DBC-B24B-6E177E94DC79}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
