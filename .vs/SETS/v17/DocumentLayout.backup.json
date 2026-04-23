@@ -3,20 +3,32 @@
   "WorkspaceRootPath": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\sets.client\\src\\router\\index.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
-      "RelativeMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|solutionrelative:sets.client\\src\\router\\index.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
+      "AbsoluteMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\sets.client\\src\\components\\layout\\appsidebar.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|solutionrelative:sets.client\\src\\components\\layout\\appsidebar.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C841152B-74B7-43B7-8E9A-E2B82C80289A}|Service\\Service.csproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\service\\services\\runnerservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C841152B-74B7-43B7-8E9A-E2B82C80289A}|Service\\Service.csproj|solutionrelative:service\\services\\runnerservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\sets.client\\src\\views\\admin\\adminsettings.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}",
       "RelativeMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|solutionrelative:sets.client\\src\\views\\admin\\adminsettings.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
+      "AbsoluteMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\sets.client\\src\\router\\index.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
+      "RelativeMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|solutionrelative:sets.client\\src\\router\\index.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\sets.client\\src\\api\\runnerapi.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
       "RelativeMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|solutionrelative:sets.client\\src\\api\\runnerapi.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\sets.client\\src\\components\\layout\\appsidebar.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|solutionrelative:sets.client\\src\\components\\layout\\appsidebar.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+      "AbsoluteMoniker": "D:0:0:{8846EF0D-E626-4817-8821-A132989DCA6B}|Model\\Model.csproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\model\\main\\scheduledspecimenitem.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8846EF0D-E626-4817-8821-A132989DCA6B}|Model\\Model.csproj|solutionrelative:model\\main\\scheduledspecimenitem.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C841152B-74B7-43B7-8E9A-E2B82C80289A}|Service\\Service.csproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\service\\interfaces\\irunnerservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C841152B-74B7-43B7-8E9A-E2B82C80289A}|Service\\Service.csproj|solutionrelative:service\\interfaces\\irunnerservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\sets.client\\src\\views\\runner\\runningspecimens.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}",
@@ -33,14 +45,6 @@
     {
       "AbsoluteMoniker": "D:0:0:{BD9ED67C-9663-4A71-9490-22712D3ED118}|SETS.Server\\SETS.Server.csproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\sets.server\\controllers\\runnercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{BD9ED67C-9663-4A71-9490-22712D3ED118}|SETS.Server\\SETS.Server.csproj|solutionrelative:sets.server\\controllers\\runnercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{C841152B-74B7-43B7-8E9A-E2B82C80289A}|Service\\Service.csproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\service\\services\\runnerservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{C841152B-74B7-43B7-8E9A-E2B82C80289A}|Service\\Service.csproj|solutionrelative:service\\services\\runnerservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{C841152B-74B7-43B7-8E9A-E2B82C80289A}|Service\\Service.csproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\service\\interfaces\\irunnerservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{C841152B-74B7-43B7-8E9A-E2B82C80289A}|Service\\Service.csproj|solutionrelative:service\\interfaces\\irunnerservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\sets.client\\src\\views\\receiver\\incomingspecimens.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}",
@@ -69,10 +73,6 @@
     {
       "AbsoluteMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\sets.client\\src\\views\\runner\\assignrmt.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}",
       "RelativeMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|solutionrelative:sets.client\\src\\views\\runner\\assignrmt.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{8846EF0D-E626-4817-8821-A132989DCA6B}|Model\\Model.csproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\model\\main\\scheduledspecimenitem.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{8846EF0D-E626-4817-8821-A132989DCA6B}|Model\\Model.csproj|solutionrelative:model\\main\\scheduledspecimenitem.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\sets.client\\src\\views\\endorser\\dashboard.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}",
@@ -178,7 +178,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 288,
-          "SelectedChildIndex": 7,
+          "SelectedChildIndex": 3,
           "Children": [
             {
               "$type": "Bookmark",
@@ -186,7 +186,19 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 2,
+              "Title": "AdminSettings.vue",
+              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\admin\\AdminSettings.vue",
+              "RelativeDocumentMoniker": "sets.client\\src\\views\\admin\\AdminSettings.vue",
+              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\admin\\AdminSettings.vue",
+              "RelativeToolTip": "sets.client\\src\\views\\admin\\AdminSettings.vue",
+              "ViewState": "AgIAAHsCAAAAAAAAAAAAwP0CAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
+              "WhenOpened": "2026-04-22T08:21:39.677Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
               "Title": "RunningSpecimens.vue",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\runner\\RunningSpecimens.vue",
               "RelativeDocumentMoniker": "sets.client\\src\\views\\runner\\RunningSpecimens.vue",
@@ -194,12 +206,36 @@
               "RelativeToolTip": "sets.client\\src\\views\\runner\\RunningSpecimens.vue",
               "ViewState": "AgIAAM0AAAAAAAAAAAAAwKwBAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
-              "WhenOpened": "2026-04-22T05:32:32.999Z",
+              "WhenOpened": "2026-04-22T05:32:32.999Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "AppSidebar.vue",
+              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\components\\layout\\AppSidebar.vue",
+              "RelativeDocumentMoniker": "sets.client\\src\\components\\layout\\AppSidebar.vue",
+              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\components\\layout\\AppSidebar.vue",
+              "RelativeToolTip": "sets.client\\src\\components\\layout\\AppSidebar.vue",
+              "ViewState": "AgIAAHcAAAAAAAAAAAAgwI0AAAAZAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
+              "WhenOpened": "2026-04-18T00:47:49.334Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 11,
+              "DocumentIndex": 3,
+              "Title": "index.js",
+              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\router\\index.js",
+              "RelativeDocumentMoniker": "sets.client\\src\\router\\index.js",
+              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\router\\index.js",
+              "RelativeToolTip": "sets.client\\src\\router\\index.js",
+              "ViewState": "AgIAAEYAAAAAAAAAAAAnwE8AAAAEAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
+              "WhenOpened": "2026-04-22T08:29:59.994Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
               "Title": "RunningSpecimenItem.cs",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Model\\Main\\RunningSpecimenItem.cs",
               "RelativeDocumentMoniker": "Model\\Main\\RunningSpecimenItem.cs",
@@ -207,12 +243,11 @@
               "RelativeToolTip": "Model\\Main\\RunningSpecimenItem.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAB8AAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-22T05:23:15.142Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-22T05:23:15.142Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 10,
+              "DocumentIndex": 11,
               "Title": "IncomingSpecimens.vue",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\receiver\\IncomingSpecimens.vue",
               "RelativeDocumentMoniker": "sets.client\\src\\views\\receiver\\IncomingSpecimens.vue",
@@ -220,12 +255,11 @@
               "RelativeToolTip": "sets.client\\src\\views\\receiver\\IncomingSpecimens.vue",
               "ViewState": "AgIAALgBAAAAAAAAAAAAAMoBAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
-              "WhenOpened": "2026-04-22T01:52:54.235Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-22T01:52:54.235Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 9,
               "Title": "PendingSpecimens.vue",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\runner\\PendingSpecimens.vue",
               "RelativeDocumentMoniker": "sets.client\\src\\views\\runner\\PendingSpecimens.vue",
@@ -233,12 +267,11 @@
               "RelativeToolTip": "sets.client\\src\\views\\runner\\PendingSpecimens.vue",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAAEAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
-              "WhenOpened": "2026-04-22T01:30:51.364Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-22T01:30:51.364Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 10,
               "Title": "RunnerController.cs",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\SETS.Server\\Controllers\\RunnerController.cs",
               "RelativeDocumentMoniker": "SETS.Server\\Controllers\\RunnerController.cs",
@@ -246,8 +279,7 @@
               "RelativeToolTip": "SETS.Server\\Controllers\\RunnerController.cs",
               "ViewState": "AgIAANcAAAAAAAAAAAAAwA4BAAAgAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-21T09:06:49.375Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-21T09:06:49.375Z"
             },
             {
               "$type": "Document",
@@ -259,38 +291,11 @@
               "RelativeToolTip": "Service\\MasterService.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAqwA0AAAA5AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-18T00:50:47.893Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-18T00:50:47.893Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "index.js",
-              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\router\\index.js",
-              "RelativeDocumentMoniker": "sets.client\\src\\router\\index.js",
-              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\router\\index.js",
-              "RelativeToolTip": "sets.client\\src\\router\\index.js",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAFAAAAADAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2026-04-18T00:49:54.837Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "AppSidebar.vue",
-              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\components\\layout\\AppSidebar.vue",
-              "RelativeDocumentMoniker": "sets.client\\src\\components\\layout\\AppSidebar.vue",
-              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\components\\layout\\AppSidebar.vue",
-              "RelativeToolTip": "sets.client\\src\\components\\layout\\AppSidebar.vue",
-              "ViewState": "AgIAAMYAAAAAAAAAAAAjwBoBAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
-              "WhenOpened": "2026-04-18T00:47:49.334Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 8,
               "Title": "ScheduledSpecimens.vue",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\runner\\ScheduledSpecimens.vue",
               "RelativeDocumentMoniker": "sets.client\\src\\views\\runner\\ScheduledSpecimens.vue",
@@ -298,8 +303,7 @@
               "RelativeToolTip": "sets.client\\src\\views\\runner\\ScheduledSpecimens.vue",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAAMAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
-              "WhenOpened": "2026-04-22T02:58:16.393Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-22T02:58:16.393Z"
             },
             {
               "$type": "Document",
@@ -323,8 +327,7 @@
               "RelativeToolTip": "sets.client\\src\\views\\endorser\\Dashboard.vue",
               "ViewState": "AgIAALcBAAAAAAAAAAAjwOkBAAAeAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
-              "WhenOpened": "2026-04-22T01:53:28.907Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-22T01:53:28.907Z"
             },
             {
               "$type": "Document",
@@ -336,8 +339,7 @@
               "RelativeToolTip": "SETS.Server\\Controllers\\ReceivingController.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAqwAsAAAAeAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-17T23:45:29.321Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-17T23:45:29.321Z"
             },
             {
               "$type": "Document",
@@ -445,8 +447,7 @@
               "RelativeToolTip": "Service\\Interfaces\\IBatchService.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABgAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-18T00:51:54.826Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-18T00:51:54.826Z"
             },
             {
               "$type": "Document",
@@ -464,7 +465,7 @@
         },
         {
           "DockedWidth": 272,
-          "SelectedChildIndex": 1,
+          "SelectedChildIndex": 3,
           "Children": [
             {
               "$type": "Bookmark",
@@ -472,33 +473,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "AdminSettings.vue",
-              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\admin\\AdminSettings.vue",
-              "RelativeDocumentMoniker": "sets.client\\src\\views\\admin\\AdminSettings.vue",
-              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\admin\\AdminSettings.vue",
-              "RelativeToolTip": "sets.client\\src\\views\\admin\\AdminSettings.vue",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
-              "WhenOpened": "2026-04-22T08:16:13.572Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 9,
-              "Title": "IRunnerService.cs",
-              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Service\\Interfaces\\IRunnerService.cs",
-              "RelativeDocumentMoniker": "Service\\Interfaces\\IRunnerService.cs",
-              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Service\\Interfaces\\IRunnerService.cs",
-              "RelativeToolTip": "Service\\Interfaces\\IRunnerService.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAqwBsAAAABAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-22T05:23:53.077Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 17,
+              "DocumentIndex": 5,
               "Title": "ScheduledSpecimenItem.cs",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Model\\Main\\ScheduledSpecimenItem.cs",
               "RelativeDocumentMoniker": "Model\\Main\\ScheduledSpecimenItem.cs",
@@ -506,12 +481,11 @@
               "RelativeToolTip": "Model\\Main\\ScheduledSpecimenItem.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAACEAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-22T03:06:06.008Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-22T03:06:06.008Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 4,
               "Title": "runnerApi.js",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\api\\runnerApi.js",
               "RelativeDocumentMoniker": "sets.client\\src\\api\\runnerApi.js",
@@ -519,25 +493,36 @@
               "RelativeToolTip": "sets.client\\src\\api\\runnerApi.js",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABkAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2026-04-22T02:59:44.08Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-22T02:59:44.08Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 8,
+              "DocumentIndex": 1,
               "Title": "RunnerService.cs",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Service\\Services\\RunnerService.cs",
               "RelativeDocumentMoniker": "Service\\Services\\RunnerService.cs",
               "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Service\\Services\\RunnerService.cs",
               "RelativeToolTip": "Service\\Services\\RunnerService.cs",
-              "ViewState": "AgIAAIsCAAAAAAAAAAAjwKICAAAcAAAAAAAAAA==",
+              "ViewState": "AgIAAPgBAAAAAAAAAAAlwPgBAAA2AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-04-21T09:05:10.669Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 14,
+              "DocumentIndex": 6,
+              "Title": "IRunnerService.cs",
+              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Service\\Interfaces\\IRunnerService.cs",
+              "RelativeDocumentMoniker": "Service\\Interfaces\\IRunnerService.cs",
+              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Service\\Interfaces\\IRunnerService.cs",
+              "RelativeToolTip": "Service\\Interfaces\\IRunnerService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAqwBsAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-22T05:23:53.077Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 15,
               "Title": "ReceiverDashboard.vue",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\receiver\\ReceiverDashboard.vue",
               "RelativeDocumentMoniker": "sets.client\\src\\views\\receiver\\ReceiverDashboard.vue",
@@ -545,12 +530,11 @@
               "RelativeToolTip": "sets.client\\src\\views\\receiver\\ReceiverDashboard.vue",
               "ViewState": "AgIAAJgCAAAAAAAAAAAAwKECAAAnAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
-              "WhenOpened": "2026-04-22T05:54:09.789Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-22T05:54:09.789Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 12,
+              "DocumentIndex": 13,
               "Title": "RunnerDashboardSummary.cs",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Model\\Main\\RunnerDashboardSummary.cs",
               "RelativeDocumentMoniker": "Model\\Main\\RunnerDashboardSummary.cs",
@@ -558,8 +542,7 @@
               "RelativeToolTip": "Model\\Main\\RunnerDashboardSummary.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAA8AAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-22T06:34:20.883Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-22T06:34:20.883Z"
             },
             {
               "$type": "Document",
@@ -571,12 +554,11 @@
               "RelativeToolTip": "Service\\Services\\TransactionService.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAA8AAAA6AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-21T07:03:00.674Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-21T07:03:00.674Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 13,
+              "DocumentIndex": 14,
               "Title": "ReceivingService.cs",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Service\\Services\\ReceivingService.cs",
               "RelativeDocumentMoniker": "Service\\Services\\ReceivingService.cs",
@@ -584,8 +566,7 @@
               "RelativeToolTip": "Service\\Services\\ReceivingService.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAMICAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-17T23:45:29.305Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-17T23:45:29.305Z"
             },
             {
               "$type": "Document",
@@ -613,7 +594,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 15,
+              "DocumentIndex": 16,
               "Title": "receivingApi.js",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\api\\receivingApi.js",
               "RelativeDocumentMoniker": "sets.client\\src\\api\\receivingApi.js",
@@ -621,12 +602,11 @@
               "RelativeToolTip": "sets.client\\src\\api\\receivingApi.js",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABMAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2026-04-18T06:32:24.374Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-18T06:32:24.374Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 16,
+              "DocumentIndex": 17,
               "Title": "AssignRMT.vue",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\runner\\AssignRMT.vue",
               "RelativeDocumentMoniker": "sets.client\\src\\views\\runner\\AssignRMT.vue",
@@ -634,8 +614,7 @@
               "RelativeToolTip": "sets.client\\src\\views\\runner\\AssignRMT.vue",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAADQAAAB2AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
-              "WhenOpened": "2026-04-22T03:14:33.992Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-22T03:14:33.992Z"
             },
             {
               "$type": "Document",
@@ -671,8 +650,7 @@
               "RelativeToolTip": "Model\\SETSDB\\Specimen_Section_Header.cs",
               "ViewState": "AgIAAAMAAAAAAAAAAAAAABkAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-21T06:47:28.305Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-21T06:47:28.305Z"
             },
             {
               "$type": "Document",

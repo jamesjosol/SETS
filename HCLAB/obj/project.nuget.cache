@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "ru/M/0cspVI=",
+  "dgSpecHash": "UNzM4cvHcb0=",
   "success": true,
   "projectFilePath": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\HCLAB\\HCLAB.csproj",
   "expectedPackageFiles": [
@@ -26,14 +26,11 @@
     {
       "code": "NU1903",
       "level": "Warning",
-      "message": "Package 'Oracle.ManagedDataAccess.Core' 3.21.1 has a known high severity vulnerability, https://github.com/advisories/GHSA-5pm2-9mr2-3frq",
-      "projectPath": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\HCLAB\\HCLAB.csproj",
       "warningLevel": 1,
-      "filePath": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\HCLAB\\HCLAB.csproj",
+      "message": "Package 'Oracle.ManagedDataAccess.Core' 3.21.1 has a known high severity vulnerability, https://github.com/advisories/GHSA-5pm2-9mr2-3frq",
       "libraryId": "Oracle.ManagedDataAccess.Core",
       "targetGraphs": [
-        "net8.0",
-        "net8.0/win-x64"
+        "net8.0"
       ]
     }
   ]

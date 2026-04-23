@@ -39,8 +39,8 @@
     </div>
 
     <!-- ══════════════════════════════════════════════════════════════════════
-         REGULAR / TEAM LEAD VIEW
-    ══════════════════════════════════════════════════════════════════════ -->
+       REGULAR / TEAM LEAD VIEW
+  ══════════════════════════════════════════════════════════════════════ -->
     <template v-if="!authStore.isAdmin">
 
       <div class="rounded-2xl overflow-hidden" style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
@@ -79,7 +79,7 @@
                       chevron_right
                     </span>
                   </td>
-                  <td class="px-4 py-3"><span class="font-bold font-mono text-xs" style="color: var(--color-text);">{{ item.specimenNo }}</span></td>
+                  <td class="px-4 py-3"><span class="font-semibold font-mono" style="color: var(--color-text);">{{ item.specimenNo }}</span></td>
                   <td class="px-4 py-3">
                     <p class="font-semibold text-xs" style="color: var(--color-text);">{{ item.patientName ?? '—' }}</p>
                     <p v-if="item.patientID" class="text-[10px]" style="color: var(--color-text-muted);">{{ item.patientID }}</p>
@@ -144,8 +144,8 @@
     </template>
 
     <!-- ══════════════════════════════════════════════════════════════════════
-         ADMIN VIEW — all sections grouped
-    ══════════════════════════════════════════════════════════════════════ -->
+       ADMIN VIEW — all sections grouped
+  ══════════════════════════════════════════════════════════════════════ -->
     <template v-else>
 
       <div v-if="adminLoading" class="flex flex-col gap-4">
@@ -165,121 +165,131 @@
              class="rounded-2xl overflow-hidden" style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
 
           <!-- Section header -->
-          <div class="px-6 py-3 flex items-center gap-3"
-               style="background-color: var(--color-primary-soft); border-bottom: 1.5px solid var(--color-border);">
+          <div class="px-6 py-3 flex items-center gap-3 cursor-pointer select-none"
+               style="background-color: var(--color-primary-soft); border-bottom: 1.5px solid var(--color-border);"
+               @click="toggleCollapse(group.sectionCode)">
             <span class="material-symbols-outlined text-base" style="color: var(--color-primary);">science</span>
             <h2 class="text-sm font-bold uppercase tracking-widest" style="color: var(--color-primary);">{{ group.sectionName }}</h2>
             <span class="ml-auto text-[10px] font-bold px-2.5 py-1 rounded-full"
                   style="background-color: rgba(217,119,6,0.15); color: var(--color-warning);">
               {{ group.specimens.reduce((sum, s) => sum + s.tests.length, 0) }} running
             </span>
+            <span class="material-symbols-outlined text-sm transition-transform"
+                  :style="collapsedSections.has(group.sectionCode)
+          ? 'color: var(--color-primary); transform: rotate(-90deg);'
+          : 'color: var(--color-primary); transform: rotate(0deg);'">
+              expand_more
+            </span>
           </div>
-
           <!-- Table -->
-          <div class="overflow-x-auto">
-            <table class="w-full text-sm">
-              <thead>
-                <tr style="border-bottom: 1.5px solid var(--color-border);">
-                  <th class="w-8 px-4 py-3"></th>
-                  <th class="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Specimen No.</th>
-                  <th class="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Patient</th>
-                  <th class="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Sample Type</th>
-                  <th class="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Received</th>
-                  <th class="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Tests Running</th>
-                  <th class="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Remarks</th>
-                </tr>
-              </thead>
-              <tbody>
-                <template v-for="item in group.filteredSpecimens" :key="item.headerId">
-                  <tr class="transition-colors cursor-pointer"
-                      :style="adminExpandedKey === `${group.sectionCode}-${item.headerId}` ? 'background-color: var(--color-primary-soft);' : 'background-color: transparent;'"
-                      @mouseenter="e => { if (adminExpandedKey !== `${group.sectionCode}-${item.headerId}`) e.currentTarget.style.backgroundColor = 'var(--color-surface-low)' }"
-                      @mouseleave="e => { if (adminExpandedKey !== `${group.sectionCode}-${item.headerId}`) e.currentTarget.style.backgroundColor = 'transparent' }"
-                      @click="adminToggleExpand(group.sectionCode, item)"
-                      style="border-top: 1px solid var(--color-border);">
-                    <td class="px-4 py-3">
-                      <span class="material-symbols-outlined text-sm transition-transform duration-200"
-                            :style="{ color: 'var(--color-text-muted)', display: 'block', transform: adminExpandedKey === `${group.sectionCode}-${item.headerId}` ? 'rotate(90deg)' : 'rotate(0deg)' }">
-                        chevron_right
-                      </span>
-                    </td>
-                    <td class="px-4 py-3"><span class="font-bold font-mono text-xs" style="color: var(--color-text);">{{ item.specimenNo }}</span></td>
-                    <td class="px-4 py-3">
-                      <p class="font-semibold text-xs" style="color: var(--color-text);">{{ item.patientName ?? '—' }}</p>
-                      <p v-if="item.patientID" class="text-[10px]" style="color: var(--color-text-muted);">{{ item.patientID }}</p>
-                    </td>
-                    <td class="px-4 py-3">
-                      <span class="text-xs font-semibold" style="color: var(--color-text);">{{ item.sampleTypeName }}</span>
-                      <span class="text-[10px] ml-1.5" style="color: var(--color-text-muted);">({{ item.sampleTypeCode }})</span>
-                    </td>
-                    <td class="px-4 py-3">
-                      <span v-if="item.received" class="text-xs" style="color: var(--color-text-muted);">{{ formatDt(item.received) }}</span>
-                      <span v-else class="text-xs italic" style="color: var(--color-text-muted);">—</span>
-                    </td>
-                    <td class="px-4 py-3">
-                      <span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest"
-                            style="background-color: rgba(217,119,6,0.1); color: var(--color-warning);">
-                        {{ item.tests.length }} running
-                      </span>
-                    </td>
-                    <td class="px-4 py-3" @click.stop>
-                      <button class="p-1.5 rounded-lg transition-all"
-                              :style="item.remarks ? 'color: var(--color-warning);' : 'color: var(--color-text-muted); opacity: 0.4;'"
-                              :disabled="!item.remarks" @click="openRemarks(item)">
-                        <span class="material-symbols-outlined text-sm">{{ item.remarks ? 'chat_bubble' : 'chat_bubble_outline' }}</span>
-                      </button>
-                    </td>
+          <Transition name="expand">
+            <div v-show="!collapsedSections.has(group.sectionCode)" class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead>
+                  <tr style="border-bottom: 1.5px solid var(--color-border);">
+                    <th class="w-8 px-4 py-3"></th>
+                    <th class="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Specimen No.</th>
+                    <th class="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Patient</th>
+                    <th class="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Sample Type</th>
+                    <th class="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Received</th>
+                    <th class="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Tests Running</th>
+                    <th class="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Remarks</th>
                   </tr>
-                  <Transition name="expand">
-                    <tr v-if="adminExpandedKey === `${group.sectionCode}-${item.headerId}`"
-                        :key="`exp-${group.sectionCode}-${item.headerId}`">
-                      <td colspan="7" class="px-0 py-0">
-                        <div class="mx-4 mb-3 rounded-xl overflow-hidden" style="border: 1.5px solid var(--color-border);">
-                          <table class="w-full text-xs">
-                            <thead>
-                              <tr style="background-color: var(--color-surface-low); border-bottom: 1px solid var(--color-border);">
-                                <th class="px-4 py-2 text-left text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Test Code</th>
-                                <th class="px-4 py-2 text-left text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Test Name</th>
-                                <th class="px-4 py-2 text-left text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Assigned RMT</th>
-                                <th class="px-4 py-2 text-left text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Assigned</th>
-                                <th class="px-4 py-2 text-left text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Run Date &amp; Time</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              <tr v-for="test in item.tests" :key="test.id" style="border-top: 1px solid var(--color-border);">
-                                <td class="px-4 py-2.5"><span class="font-mono font-bold" style="color: var(--color-text);">{{ test.testCode }}</span></td>
-                                <td class="px-4 py-2.5" style="color: var(--color-text);">{{ test.testName }}</td>
-                                <td class="px-4 py-2.5">
-                                  <span v-if="test.assignedRMT" class="text-xs font-bold px-2 py-0.5 rounded-lg"
-                                        style="background-color: var(--color-primary-soft); color: var(--color-primary);">
-                                    {{ test.assignedRMT }}
-                                  </span>
-                                  <span v-else class="text-xs" style="color: var(--color-text-muted);">—</span>
-                                </td>
-                                <td class="px-4 py-2.5" style="color: var(--color-text-muted);">{{ formatDt(test.assigned) }}</td>
-                                <td class="px-4 py-2.5">
-                                  <span v-if="test.runAt" class="text-xs" style="color: var(--color-text-muted);">{{ formatDt(test.runAt) }}</span>
-                                  <span v-else class="text-xs italic" style="color: var(--color-text-muted);">—</span>
-                                </td>
-                              </tr>
-                            </tbody>
-                          </table>
-                        </div>
+                </thead>
+                <tbody>
+                  <template v-for="item in group.filteredSpecimens" :key="item.headerId">
+                    <tr class="transition-colors cursor-pointer"
+                        :style="adminExpandedKey === `${group.sectionCode}-${item.headerId}` ? 'background-color: var(--color-primary-soft);' : 'background-color: transparent;'"
+                        @mouseenter="e => { if (adminExpandedKey !== `${group.sectionCode}-${item.headerId}`) e.currentTarget.style.backgroundColor = 'var(--color-surface-low)' }"
+                        @mouseleave="e => { if (adminExpandedKey !== `${group.sectionCode}-${item.headerId}`) e.currentTarget.style.backgroundColor = 'transparent' }"
+                        @click="adminToggleExpand(group.sectionCode, item)"
+                        style="border-top: 1px solid var(--color-border);">
+                      <td class="px-4 py-3">
+                        <span class="material-symbols-outlined text-sm transition-transform duration-200"
+                              :style="{ color: 'var(--color-text-muted)', display: 'block', transform: adminExpandedKey === `${group.sectionCode}-${item.headerId}` ? 'rotate(90deg)' : 'rotate(0deg)' }">
+                          chevron_right
+                        </span>
+                      </td>
+                      <td class="px-4 py-3"><span class="font-bold font-mono text-xs" style="color: var(--color-text);">{{ item.specimenNo }}</span></td>
+                      <td class="px-4 py-3">
+                        <p class="font-semibold text-xs" style="color: var(--color-text);">{{ item.patientName ?? '—' }}</p>
+                        <p v-if="item.patientID" class="text-[10px]" style="color: var(--color-text-muted);">{{ item.patientID }}</p>
+                      </td>
+                      <td class="px-4 py-3">
+                        <span class="text-xs font-semibold" style="color: var(--color-text);">{{ item.sampleTypeName }}</span>
+                        <span class="text-[10px] ml-1.5" style="color: var(--color-text-muted);">({{ item.sampleTypeCode }})</span>
+                      </td>
+                      <td class="px-4 py-3">
+                        <span v-if="item.received" class="text-xs" style="color: var(--color-text-muted);">{{ formatDt(item.received) }}</span>
+                        <span v-else class="text-xs italic" style="color: var(--color-text-muted);">—</span>
+                      </td>
+                      <td class="px-4 py-3">
+                        <span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest"
+                              style="background-color: rgba(217,119,6,0.1); color: var(--color-warning);">
+                          {{ item.tests.length }} running
+                        </span>
+                      </td>
+                      <td class="px-4 py-3" @click.stop>
+                        <button class="p-1.5 rounded-lg transition-all"
+                                :style="item.remarks ? 'color: var(--color-warning);' : 'color: var(--color-text-muted); opacity: 0.4;'"
+                                :disabled="!item.remarks" @click="openRemarks(item)">
+                          <span class="material-symbols-outlined text-sm">{{ item.remarks ? 'chat_bubble' : 'chat_bubble_outline' }}</span>
+                        </button>
                       </td>
                     </tr>
-                  </Transition>
-                </template>
-              </tbody>
-            </table>
-          </div>
+                    <Transition name="expand">
+                      <tr v-if="adminExpandedKey === `${group.sectionCode}-${item.headerId}`"
+                          :key="`exp-${group.sectionCode}-${item.headerId}`">
+                        <td colspan="7" class="px-0 py-0">
+                          <div class="mx-4 mb-3 rounded-xl overflow-hidden" style="border: 1.5px solid var(--color-border);">
+                            <table class="w-full text-xs">
+                              <thead>
+                                <tr style="background-color: var(--color-surface-low); border-bottom: 1px solid var(--color-border);">
+                                  <th class="px-4 py-2 text-left text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Test Code</th>
+                                  <th class="px-4 py-2 text-left text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Test Name</th>
+                                  <th class="px-4 py-2 text-left text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Assigned RMT</th>
+                                  <th class="px-4 py-2 text-left text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Assigned</th>
+                                  <th class="px-4 py-2 text-left text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Run Date &amp; Time</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <tr v-for="test in item.tests" :key="test.id" style="border-top: 1px solid var(--color-border);">
+                                  <td class="px-4 py-2.5"><span class="font-mono font-bold" style="color: var(--color-text);">{{ test.testCode }}</span></td>
+                                  <td class="px-4 py-2.5" style="color: var(--color-text);">{{ test.testName }}</td>
+                                  <td class="px-4 py-2.5">
+                                    <span v-if="test.assignedRMT" class="text-xs font-bold px-2 py-0.5 rounded-lg"
+                                          style="background-color: var(--color-primary-soft); color: var(--color-primary);">
+                                      {{ test.assignedRMT }}
+                                    </span>
+                                    <span v-else class="text-xs" style="color: var(--color-text-muted);">—</span>
+                                  </td>
+                                  <td class="px-4 py-2.5" style="color: var(--color-text-muted);">{{ formatDt(test.assigned) }}</td>
+                                  <td class="px-4 py-2.5">
+                                    <span v-if="test.runAt" class="text-xs" style="color: var(--color-text-muted);">{{ formatDt(test.runAt) }}</span>
+                                    <span v-else class="text-xs italic" style="color: var(--color-text-muted);">—</span>
+                                  </td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </div>
+                        </td>
+                      </tr>
+                    </Transition>
+                  </template>
+                </tbody>
+              </table>
+            </div>
+          </Transition>
+
         </div>
       </div>
 
     </template>
 
-    <!-- Remarks Modal (shared, view-only) -->
-    <RemarkModal :isVisible="remarksModal.visible" title="Specimen Remarks" :initialText="remarksModal.text"
-                 @save="remarksModal.visible = false" @cancel="remarksModal.visible = false" @close="remarksModal.visible = false" />
+    <RemarkViewer :isVisible="remarkViewer.visible"
+                  title="Specimen Remarks"
+                  :text="remarkViewer.text"
+                  @close="remarkViewer.visible = false" />
 
     <!-- Alert Modal -->
     <AlertModal :isVisible="alert.isVisible" :type="alert.type" :title="alert.title" :message="alert.message"
@@ -288,18 +298,22 @@
 </template>
 
 <script setup>
-  import { ref, computed, onMounted, onUnmounted } from 'vue'
+  import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
   import AppLayout from '@/components/layout/AppLayout.vue'
   import AlertModal from '@/components/common/AlertModal.vue'
-  import RemarkModal from '@/components/common/RemarkModal.vue'
+  import RemarkViewer from '@/components/common/RemarkViewer.vue'
   import { useAuthStore } from '@/stores/authStore'
   import { runnerApi } from '@/api/runnerApi'
 
   const authStore = useAuthStore()
   const alert = ref({ isVisible: false, type: 'error', title: '', message: '' })
   function showAlert(type, title, message) { alert.value = { isVisible: true, type, title, message } }
-  const remarksModal = ref({ visible: false, text: '' })
-  function openRemarks(item) { remarksModal.value = { visible: true, text: item.remarks ?? '' } }
+  const remarkViewer = ref({ visible: false, text: '' })
+
+  function openRemarks(item) {
+    remarkViewer.value = { visible: true, text: item.remarks ?? '' }
+  }
+
 
   // ══════════════════════════════════════════════════════════════════════════
   // REGULAR / TEAM LEAD
@@ -316,6 +330,7 @@
   const adminLoading = ref(true)
   const adminGroups = ref([])
   const adminExpandedKey = ref(null)   // format: `${sectionCode}-${headerId}`
+  const collapsedSections = ref(new Set())
 
   // ══════════════════════════════════════════════════════════════════════════
   // SHARED — search applies to both views
@@ -332,6 +347,20 @@
       s.patientID?.toLowerCase().includes(q)
     )
   })
+
+    watch(searchQuery, (q) => {
+        if (!q) return
+        const next = new Set(collapsedSections.value)
+        adminGroups.value.forEach(group => {
+            const hasMatch = group.specimens.some(s =>
+                s.specimenNo?.toLowerCase().includes(q.toLowerCase()) ||
+                s.patientName?.toLowerCase().includes(q.toLowerCase()) ||
+                s.patientID?.toLowerCase().includes(q.toLowerCase())
+            )
+            if (hasMatch) next.delete(group.sectionCode)
+        })
+        collapsedSections.value = next
+    })
 
   const adminFilteredGroups = computed(() => {
     const q = searchQuery.value.toLowerCase()
@@ -372,6 +401,13 @@
     const key = `${sectionCode}-${item.headerId}`
     adminExpandedKey.value = adminExpandedKey.value === key ? null : key
   }
+
+    function toggleCollapse(sectionCode) {
+        const next = new Set(collapsedSections.value)
+        if (next.has(sectionCode)) next.delete(sectionCode)
+        else next.add(sectionCode)
+        collapsedSections.value = next
+    }
 
   // ══════════════════════════════════════════════════════════════════════════
   // LOAD
@@ -415,20 +451,3 @@
   onMounted(() => { load(); refreshInterval = setInterval(silentRefresh, 10000) })
   onUnmounted(() => { clearInterval(refreshInterval) })
 </script>
-
-<style scoped>
-  .expand-enter-active, .expand-leave-active {
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    overflow: hidden;
-  }
-
-  .expand-enter-from, .expand-leave-to {
-    opacity: 0;
-    transform: translateY(-6px);
-  }
-
-  .expand-enter-to, .expand-leave-from {
-    opacity: 1;
-    transform: translateY(0);
-  }
-</style>

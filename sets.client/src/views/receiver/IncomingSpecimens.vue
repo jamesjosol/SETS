@@ -278,32 +278,10 @@
     </div>
 
     <!-- Remark Viewer -->
-    <div v-if="remarkViewer.visible"
-         class="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div class="absolute inset-0 bg-black/40 backdrop-blur-sm"
-           @click="remarkViewer.visible = false"></div>
-      <div class="relative w-full max-w-sm rounded-2xl shadow-2xl p-6 flex flex-col gap-4"`
-           style="background-color: var(--color-surface);">
-        <div class="flex items-center gap-2">
-          <div class="p-2 rounded-xl"
-               style="background-color: rgba(217,119,6,0.1);">
-            <span class="material-symbols-outlined text-sm"
-                  style="color: var(--color-warning);">chat_bubble</span>
-          </div>
-          <h3 class="text-sm font-bold" style="color: var(--color-text);">Endorsement Remarks</h3>
-        </div>
-        <p class="text-sm rounded-xl p-4 whitespace-pre-wrap"
-           style="background-color: var(--color-surface-low); color: var(--color-text);">
-          {{ remarkViewer.text }}
-        </p>
-        <button class="w-full py-3 rounded-xl text-xs font-bold uppercase tracking-widest"
-                style="background-color: var(--color-surface-low); color: var(--color-text-muted);"
-                @click="remarkViewer.visible = false">
-          Close
-        </button>
-      </div>
-    </div>
-
+    <RemarkViewer :isVisible="remarkViewer.visible"
+                  title="Endorsement Remarks"
+                  :text="remarkViewer.text"
+                  @close="remarkViewer.visible = false" />
     <!-- Batch Detail Drawer -->
     <BatchDetailDrawer :isOpen="drawerOpen"
                        :loading="drawerLoading"
@@ -325,7 +303,8 @@
 import { ref, computed, onMounted } from 'vue'
 import AppLayout from '@/components/layout/AppLayout.vue'
 import AlertModal from '@/components/common/AlertModal.vue'
-import BatchDetailDrawer from '@/components/common/BatchDetailDrawer.vue'
+  import BatchDetailDrawer from '@/components/common/BatchDetailDrawer.vue'
+  import RemarkViewer from '@/components/common/RemarkViewer.vue'
 import DropdownSelect from '@/components/common/DropdownSelect.vue'
 import { useAuthStore } from '@/stores/authStore'
 import { receivingApi } from '@/api/receivingApi'

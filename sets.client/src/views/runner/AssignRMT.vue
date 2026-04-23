@@ -197,17 +197,24 @@
 
                             <!-- Assigned RMT — auto-filled to current user, editable -->
                             <td class="px-4 py-3">
-                              <select v-model="test.selectedRMT"
-                                      class="px-2 py-1 rounded-lg text-xs outline-none transition-all"
-                                      style="background-color: var(--color-surface-low); border: 1.5px solid var(--color-border); color: var(--color-text); min-width: 130px;">
-                                <option value="">— None —</option>
-                                <option v-for="rmt in availableRMTs" :key="rmt.userID" :value="rmt.userID">
-                                  {{ rmt.fullName ?? rmt.userID }}
-                                </option>
-                              </select>
+             
+                              <template v-if="test.status === 'R' || test.status === 'X'">
+                                <span class="text-xs font-semibold" style="color: var(--color-text);">
+                                  {{ test.assignedRMT ?? '—' }}
+                                </span>
+                              </template>
+                              <template v-else>
+                                <select v-model="test.selectedRMT"
+                                        class="px-2 py-1 rounded-lg text-xs outline-none transition-all"
+                                        style="background-color: var(--color-surface-low); border: 1.5px solid var(--color-border); color: var(--color-text); min-width: 130px;">
+                                  <option v-for="rmt in availableRMTs" :key="rmt.userID" :value="rmt.userID">
+                                    {{ rmt.userID }}
+                                  </option>
+                                </select>
+                              </template>
                             </td>
 
-                            <!-- Schedule tag pills: Today / ERD / CRD / SRD -->
+                            <!-- Schedule tag pills: Today / END / CRD / SRD -->
                             <td class="px-4 py-3">
                               <div class="flex items-center gap-1.5 flex-wrap">
                                 <label v-for="tag in scheduleTags" :key="tag.value"
@@ -314,10 +321,10 @@
 
   // Schedule tag options
   // TODAY = no tag in DB, test runs today → status R
-  // ERD/CRD/SRD = saved with schedule → status S
+  // END/CRD/SRD = saved with schedule → status S
   const scheduleTags = [
     { value: 'NOW', label: 'Now' },
-    { value: 'ERD', label: 'ERD' },
+    { value: 'END', label: 'END' },
     { value: 'CRD', label: 'CRD' },
     { value: 'SRD', label: 'SRD' },
   ]
@@ -364,7 +371,7 @@
 
       // Build group entry
       // Auto-assign current user as RMT, default schedule = Today
-      specimenGroups.value.push({
+      specimenGroups.value.unshift({
         specimenNo,
         headerId: result.data.headerId,
         testGroupCode,
@@ -384,14 +391,15 @@
           // - If no tag → NOW (default for new/pending tests)
           let initialTag = 'NOW'
           if (t.scheduleTag && runningDateStr && runningDateStr > today) {
-            initialTag = t.scheduleTag  // future ERD/CRD/SRD — preserve
+            initialTag = t.scheduleTag  // future END/CRD/SRD — preserve
           } else if (t.scheduleTag === 'SRD' && !runningDateStr) {
             initialTag = 'SRD'  // SRD has no running date — keep as SRD
           }
 
           return {
             ...t,
-            selectedRMT: t.assignedRMT ?? authStore.userID,
+            //selectedRMT: t.assignedRMT ?? authStore.userID,
+            selectedRMT: authStore.userID,
             scheduleTag: initialTag,
             runningDate: initialTag === t.scheduleTag ? runningDateStr : null,
           }
@@ -400,10 +408,10 @@
 
       // Auto-expand newly scanned specimen
       expandedSpecimen.value = specimenNo
-
-      if (firstScan) {
-        showAlert('success', 'Received', `Specimen ${val} marked as received by section.`)
-      }
+      //hidden, they decide that no prompt on first scan
+      //if (firstScan) {
+      //  showAlert('success', 'Received', `Specimen ${val} marked as received by section.`)
+      //}
 
     } catch (e) {
       showAlert('error', 'Scan Failed', e?.response?.data?.message ?? 'Could not scan specimen.')
@@ -516,7 +524,7 @@
   function scheduleTagActiveStyle(tag) {
     const map = {
       NOW: 'background-color: rgba(22,163,74,0.12); color: var(--color-success, #16a34a);',
-      ERD: 'background-color: rgba(70,21,153,0.12); color: var(--color-primary);',
+      END: 'background-color: rgba(70,21,153,0.12); color: var(--color-primary);',
       CRD: 'background-color: rgba(217,119,6,0.12); color: var(--color-warning);',
       SRD: 'background-color: rgba(74,98,109,0.12); color: var(--color-info, #4a626d);',
     }

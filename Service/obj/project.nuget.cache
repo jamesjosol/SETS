@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "rSNCLuHmHXc=",
+  "dgSpecHash": "82kVSaRdm1w=",
   "success": true,
   "projectFilePath": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Service\\Service.csproj",
   "expectedPackageFiles": [
@@ -38,8 +38,6 @@
     "C:\\Users\\jamespaul.josol\\.nuget\\packages\\microsoft.win32.registry\\4.7.0\\microsoft.win32.registry.4.7.0.nupkg.sha512",
     "C:\\Users\\jamespaul.josol\\.nuget\\packages\\microsoft.win32.systemevents\\4.7.0\\microsoft.win32.systemevents.4.7.0.nupkg.sha512",
     "C:\\Users\\jamespaul.josol\\.nuget\\packages\\oracle.manageddataaccess.core\\3.21.1\\oracle.manageddataaccess.core.3.21.1.nupkg.sha512",
-    "C:\\Users\\jamespaul.josol\\.nuget\\packages\\runtime.any.system.runtime\\4.3.0\\runtime.any.system.runtime.4.3.0.nupkg.sha512",
-    "C:\\Users\\jamespaul.josol\\.nuget\\packages\\runtime.any.system.text.encoding\\4.3.0\\runtime.any.system.text.encoding.4.3.0.nupkg.sha512",
     "C:\\Users\\jamespaul.josol\\.nuget\\packages\\system.clientmodel\\1.0.0\\system.clientmodel.1.0.0.nupkg.sha512",
     "C:\\Users\\jamespaul.josol\\.nuget\\packages\\system.configuration.configurationmanager\\8.0.0\\system.configuration.configurationmanager.8.0.0.nupkg.sha512",
     "C:\\Users\\jamespaul.josol\\.nuget\\packages\\system.diagnostics.diagnosticsource\\6.0.1\\system.diagnostics.diagnosticsource.6.0.1.nupkg.sha512",
@@ -54,7 +52,6 @@
     "C:\\Users\\jamespaul.josol\\.nuget\\packages\\system.memory\\4.5.4\\system.memory.4.5.4.nupkg.sha512",
     "C:\\Users\\jamespaul.josol\\.nuget\\packages\\system.memory.data\\1.0.2\\system.memory.data.1.0.2.nupkg.sha512",
     "C:\\Users\\jamespaul.josol\\.nuget\\packages\\system.numerics.vectors\\4.5.0\\system.numerics.vectors.4.5.0.nupkg.sha512",
-    "C:\\Users\\jamespaul.josol\\.nuget\\packages\\system.private.uri\\4.3.0\\system.private.uri.4.3.0.nupkg.sha512",
     "C:\\Users\\jamespaul.josol\\.nuget\\packages\\system.runtime\\4.3.0\\system.runtime.4.3.0.nupkg.sha512",
     "C:\\Users\\jamespaul.josol\\.nuget\\packages\\system.runtime.caching\\6.0.0\\system.runtime.caching.6.0.0.nupkg.sha512",
     "C:\\Users\\jamespaul.josol\\.nuget\\packages\\system.runtime.compilerservices.unsafe\\6.0.0\\system.runtime.compilerservices.unsafe.6.0.0.nupkg.sha512",

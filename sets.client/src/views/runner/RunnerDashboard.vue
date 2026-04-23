@@ -62,7 +62,7 @@
               <div class="p-2 rounded-xl" style="background-color: rgba(217,119,6,0.1);">
                 <span class="material-symbols-outlined" style="color: var(--color-warning);">labs</span>
               </div>
-              <span class="text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-warning);">Mine</span>
+              <span class="text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-warning);">SELF</span>
             </div>
             <h3 class="text-4xl font-extrabold mb-1" style="color: var(--color-warning);">
               <span v-if="summaryLoading" class="block h-9 w-16 rounded-lg animate-pulse" style="background-color: var(--color-surface-low);"></span>
@@ -100,20 +100,42 @@
             <div class="px-6 py-4 flex items-center justify-between" style="border-bottom: 1px solid var(--color-border);">
               <div class="flex items-center gap-2">
                 <span class="material-symbols-outlined text-base" style="color: var(--color-warning);">labs</span>
-                <h2 class="text-sm font-bold uppercase tracking-widest" style="color: var(--color-text);">My Running Tests</h2>
+                <h2 class="text-sm font-bold uppercase tracking-widest" style="color: var(--color-text);">
+                  {{ runningView === 'self' ? 'My Running Tests' : 'All Running Tests' }}
+                </h2>
               </div>
-              <router-link to="/runner/running" class="text-xs font-bold uppercase tracking-widest" style="color: var(--color-primary);">View All →</router-link>
+              <div class="flex items-center gap-3">
+                <!-- Self | All toggle -->
+                <div class="flex rounded-xl overflow-hidden text-[10px] font-bold uppercase tracking-widest"
+                     style="border: 1.5px solid var(--color-border);">
+                  <button @click="runningView = 'self'"
+                          class="px-3 py-1.5 transition-colors"
+                          :style="runningView === 'self'
+              ? 'background-color: var(--color-primary); color: #fff;'
+              : 'background-color: transparent; color: var(--color-text-muted);'">
+                    Self
+                  </button>
+                  <button @click="runningView = 'all'"
+                          class="px-3 py-1.5 transition-colors"
+                          :style="runningView === 'all'
+              ? 'background-color: var(--color-primary); color: #fff;'
+              : 'background-color: transparent; color: var(--color-text-muted);'">
+                    All
+                  </button>
+                </div>
+                <router-link to="/runner/running" class="text-xs font-bold uppercase tracking-widest" style="color: var(--color-primary);">View All →</router-link>
+              </div>
             </div>
             <div v-if="runningLoading" class="p-6 flex flex-col gap-3">
               <div v-for="i in 3" :key="i" class="h-12 rounded-xl animate-pulse" style="background-color: var(--color-surface-low);"></div>
             </div>
-            <div v-else-if="!runningSpecimens.length" class="p-10 flex flex-col items-center gap-3">
+            <div v-else-if="!displayedRunning.length" class="p-10 flex flex-col items-center gap-3">
               <span class="material-symbols-outlined text-4xl" style="color: var(--color-text-muted);">labs</span>
               <p class="text-sm font-bold" style="color: var(--color-text);">No running tests</p>
               <p class="text-xs" style="color: var(--color-text-muted);">You have no tests currently running.</p>
             </div>
             <div v-else>
-              <div v-for="specimen in runningSpecimens" :key="specimen.headerId"
+              <div v-for="specimen in displayedRunning" :key="specimen.headerId"
                    class="px-6 py-4 flex flex-col gap-2" style="border-bottom: 1px solid var(--color-border);">
                 <div class="flex items-center justify-between">
                   <div class="flex items-center gap-3">
@@ -137,6 +159,11 @@
                     <span class="text-[10px] font-bold font-mono" style="color: var(--color-warning);">{{ test.testCode }}</span>
                     <span class="text-[10px]" style="color: var(--color-text-muted);">{{ test.testName }}</span>
                     <span v-if="test.runAt" class="text-[10px] font-bold" style="color: var(--color-text-muted);">· {{ formatDt(test.runAt) }}</span>
+                    <span v-if="runningView === 'all' && test.assignedRMT"
+                          class="text-[10px] font-bold px-1.5 py-0.5 rounded"
+                          style="background-color: rgba(70,21,153,0.08); color: var(--color-primary);">
+                      {{ test.assignedRMT }}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -592,6 +619,9 @@
   const runningLoading = ref(true)
   const scheduledLoading = ref(true)
   const pendingLoading = ref(true)
+  const runningView = ref('self') // 'self' | 'all'
+  const allRunningSpecimens = ref([])
+  const allRunningLoading = ref(false)
 
   const summary = ref({ pending: 0, scheduled: 0, running: 0, completedToday: 0 })
   const runningSpecimens = ref([])
@@ -603,8 +633,14 @@
     catch (e) { if (e?.response?.status !== 401) showAlert('error', 'Error', 'Unable to load summary.') }
   }
   async function fetchRunning() {
-    try { const d = await runnerApi.getRunningSpecimens(authStore.sectionCode); runningSpecimens.value = Array.isArray(d) ? d : [] }
-    catch (e) { if (e?.response?.status !== 401) showAlert('error', 'Error', 'Unable to load running specimens.') }
+    try {
+      const d = await runnerApi.getRunningSpecimens(authStore.sectionCode, false)
+      runningSpecimens.value = Array.isArray(d) ? d : []
+      const all = await runnerApi.getRunningSpecimens(authStore.sectionCode, true)
+      allRunningSpecimens.value = Array.isArray(all) ? all : []
+    } catch (e) {
+      if (e?.response?.status !== 401) showAlert('error', 'Error', 'Unable to load running specimens.')
+    }
   }
   async function fetchScheduled() {
     try { const d = await runnerApi.getScheduledSpecimens(authStore.sectionCode); scheduledSpecimens.value = Array.isArray(d) ? d : [] }
@@ -613,6 +649,17 @@
   async function fetchPending() {
     try { const d = await runnerApi.getPendingSpecimens(authStore.sectionCode); allPending.value = Array.isArray(d) ? d : [] }
     catch (e) { if (e?.response?.status !== 401) showAlert('error', 'Error', 'Unable to load specimens.') }
+  }
+  async function fetchAllRunning() {
+    allRunningLoading.value = true
+    try {
+      const d = await runnerApi.getRunningSpecimens(authStore.sectionCode)
+      allRunningSpecimens.value = Array.isArray(d) ? d : []
+    } catch (e) {
+      if (e?.response?.status !== 401) showAlert('error', 'Error', 'Unable to load running specimens.')
+    } finally {
+      allRunningLoading.value = false
+    }
   }
 
   const dueToday = computed(() =>
@@ -624,6 +671,14 @@
   )
   const recentlyRouted = computed(() => allPending.value.filter(s => !s.receivedBy).slice(0, 8))
   const completedToday = computed(() => allPending.value.filter(s => s.status === 'C').slice(0, 8))
+
+  const displayedRunning = computed(() =>
+    runningView.value === 'self'
+      ? runningSpecimens.value
+      : allRunningSpecimens.value
+  )
+
+
 
   // ══════════════════════════════════════════════════════════════════════════
   // ADMIN DATA

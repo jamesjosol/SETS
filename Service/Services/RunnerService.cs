@@ -145,8 +145,8 @@ namespace Service.Services
                         {
                             switch (assignment.ScheduleTag)
                             {
-                                case "ERD":
-                                    test.ScheduleTag = "ERD";
+                                case "END":
+                                    test.ScheduleTag = "END";
                                     test.RunningDate = DateOnly.FromDateTime(now.AddDays(1));
                                     test.Status = "S";
                                     test.AssignedRMT = assignment.AssignedRMT;
@@ -624,7 +624,7 @@ namespace Service.Services
                     var scheduled = GetScheduledSpecimens(section.Code);
                     var due = scheduled.Where(s =>
                         s.Tests.Any(t =>
-                            (t.ScheduleTag == "ERD" || t.ScheduleTag == "CRD") &&
+                            (t.ScheduleTag == "END" || t.ScheduleTag == "CRD") &&
                             t.RunningDate == todayStr
                         )).ToList();
 

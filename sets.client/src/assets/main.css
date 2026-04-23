@@ -224,3 +224,22 @@
   border-top-color: #461599 !important;
   border-left-color: #461599 !important;
 }
+
+
+.expand-enter-active,
+.expand-leave-active {
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+
+.expand-enter-from,
+.expand-leave-to {
+  opacity: 0;
+  transform: translateY(-6px);
+}
+
+.expand-enter-to,
+.expand-leave-from {
+  opacity: 1;
+  transform: translateY(0);
+}

@@ -9,7 +9,7 @@ export const runnerApi = {
   // Scheduled Specimens
   getScheduledSpecimens: (sectionCode) => api.get(`${BASE_URL}/scheduled`, { params: { sectionCode } }).then(r => r.data),
   rescheduleTest: (payload) => api.patch(`${BASE_URL}/reschedule`, payload),
-  getRunningSpecimens: (sectionCode) => api.get(`${BASE_URL}/running`, { params: { sectionCode } }).then(r => r.data),
+  getRunningSpecimens: (sectionCode, allUsers = false) => api.get(`${BASE_URL}/running`, { params: { sectionCode, allUsers } }).then(r => r.data),
   // Assign RMT / Section Receiving
   scanSpecimen: (payload) => api.post(`${BASE_URL}/scan`, payload).then(r => r.data),
   saveAssignments: (payload) => api.post(`${BASE_URL}/assign`, payload),

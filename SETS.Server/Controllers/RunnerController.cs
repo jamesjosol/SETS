@@ -133,7 +133,7 @@ namespace SETS.Server.Controllers
 
         // GET api/runner/running?sectionCode=HEMA
         [HttpGet("running")]
-        public IActionResult GetRunningSpecimens([FromQuery] string sectionCode)
+        public IActionResult GetRunningSpecimens([FromQuery] string sectionCode, [FromQuery] bool allUsers = false)
         {
             try
             {
@@ -141,9 +141,7 @@ namespace SETS.Server.Controllers
                 if (string.IsNullOrEmpty(branch))
                     return Unauthorized(new { message = "Session expired." });
 
-                var userID = HttpContext.Session.GetString("UserID");
-                if (string.IsNullOrEmpty(userID))
-                    return Unauthorized(new { message = "Session expired." });
+                var userID = allUsers ? null : HttpContext.Session.GetString("UserID");
 
                 if (string.IsNullOrEmpty(sectionCode))
                     return BadRequest(new { message = "Section code is required." });
