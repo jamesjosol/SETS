@@ -29,6 +29,7 @@ namespace Reposi
         public SpecimenSectionHeaderRepo SpecimenSectionHeaders { get; private set; }
         public SpecimenSectionTestRepo SpecimenSectionTests { get; private set; }
         public TestGroupRepo TestGroups { get; set; }
+        public TestRunningDayRepo TestRunningDays { get; set; }
 
         public UnitOfWork(AppDbContext context)
         {
@@ -49,6 +50,7 @@ namespace Reposi
             SpecimenSectionHeaders = new SpecimenSectionHeaderRepo(_context);
             SpecimenSectionTests = new SpecimenSectionTestRepo(_context);
             TestGroups = new TestGroupRepo(_context);
+            TestRunningDays = new TestRunningDayRepo(_context);
         }
 
         public void Dispose()

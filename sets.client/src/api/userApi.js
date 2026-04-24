@@ -1,27 +1,27 @@
-import axios from 'axios'
+import api from './axiosInstance'
 
 export const userApi = {
   // GET all users with section assignments
   getAll: () =>
-    axios.get('/api/user'),
+    api.get('/api/user'),
 
   // GET all user from hclab
   getHCLABUsers: (param) =>
-    axios.get('/api/user/hclab-user', { params: { param } }),
+    api.get('/api/user/hclab-user', { params: { param } }),
 
   // POST register new user
   add: (data) =>
-    axios.post('/api/user', data),
+    api.post('/api/user', data),
 
   // PUT update user info (name, isAdmin, active)
   update: (userID, data) =>
-    axios.put(`/api/user/${userID}`, data),
+    api.put(`/api/user/${userID}`, data),
 
   // PATCH toggle active/inactive
   toggle: (userID) =>
-    axios.patch(`/api/user/${userID}/toggle`),
+    api.patch(`/api/user/${userID}/toggle`),
 
   // PUT replace all section assignments
   updateSections: (userID, data) =>
-    axios.put(`/api/user/${userID}/sections`, data),
+    api.put(`/api/user/${userID}/sections`, data),
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -113,6 +114,7 @@ namespace Service.Services
         // - ScheduleTag set               → Status = S (Saved)
         // - Neither                       → Status = P (Pending)
         // Then re-derives header status from all its child tests.
+
         public void SaveAssignments(SaveAssignmentsRequest request)
         {
             try
@@ -122,6 +124,7 @@ namespace Service.Services
                 try
                 {
                     var now = DateTime.Now;
+                    var today = DateOnly.FromDateTime(now);
                     var testIds = new HashSet<int>(request.Assignments.Select(a => a.TestId));
 
                     // Load all tests in memory first — avoids EF Core CTE syntax error with Contains()
@@ -133,12 +136,15 @@ namespace Service.Services
                     if (!tests.Any())
                         throw new Exception("No matching tests found.");
 
+                    // ── Instantiate running day service once for the whole batch ──────
+                    using var master = new MasterService(_branch);
+
                     foreach (var assignment in request.Assignments)
                     {
                         var test = tests.FirstOrDefault(t => t.Id == assignment.TestId);
                         if (test == null) continue;
 
-                        // Skip tests that are already Running or Released — do not overwrite
+                        // Skip tests that are already Running or Released
                         if (test.Status == "R" || test.Status == "X") continue;
 
                         test.UpdatedBy = request.UserID;
@@ -172,9 +178,18 @@ namespace Service.Services
                                     test.Assigned = null;
                                     break;
 
+                                // ── SRD — look up nearest configured running day ──────
                                 case "SRD":
+                                    var nearestDate = master.TestRunningDay
+                                        .GetNearestRunningDate(test.TestCode, today);
+
+                                    if (nearestDate == null)
+                                        throw new Exception(
+                                            $"Test '{test.TestCode}' has no running day configured. " +
+                                            $"Please set it up in Admin Settings → Running Days before using SRD.");
+
                                     test.ScheduleTag = "SRD";
-                                    test.RunningDate = null;
+                                    test.RunningDate = nearestDate;   // nearest day >= today
                                     test.Status = "S";
                                     test.AssignedRMT = assignment.AssignedRMT;
                                     test.Assigned = null;
@@ -199,20 +214,16 @@ namespace Service.Services
                                 test.Status = "P";
                                 test.AssignedRMT = null;
                                 test.Assigned = null;
-                                test.RunAt = null;
                             }
                         }
 
                         context.Specimen_Section_Test.Update(test);
                     }
 
-                    context.SaveChanges();
-
-                    // ── Save remarks per header ────────────────────────────────────
-                    if (request.SpecimenRemarks != null && request.SpecimenRemarks.Any())
+                    // Update specimen remarks
+                    if (request.SpecimenRemarks?.Any() == true)
                     {
-                        var headerIds = new HashSet<int>(request.SpecimenRemarks.Select(r => r.HeaderId));
-
+                        var headerIds = request.SpecimenRemarks.Select(r => r.HeaderId).ToHashSet();
                         var headers = context.Specimen_Section_Header
                             .ToList()
                             .Where(h => headerIds.Contains(h.Id))
@@ -220,44 +231,16 @@ namespace Service.Services
 
                         foreach (var remarkItem in request.SpecimenRemarks)
                         {
-                            var h = headers.FirstOrDefault(x => x.Id == remarkItem.HeaderId);
-                            if (h == null) continue;
-
-                            h.Remarks = remarkItem.Remarks;
-                            h.Updated = now;
-                            h.UpdatedBy = request.UserID;
-                            context.Specimen_Section_Header.Update(h);
+                            var header = headers.FirstOrDefault(h => h.Id == remarkItem.HeaderId);
+                            if (header == null) continue;
+                            header.Remarks = remarkItem.Remarks;
+                            header.UpdatedBy = request.UserID;
+                            header.Updated = now;
+                            context.Specimen_Section_Header.Update(header);
                         }
-
-                        context.SaveChanges();
                     }
 
-                    // ── Re-derive header status from all its children ──────────────
-                    var headerId = tests.First().HeaderId;
-
-                    var allTests = context.Specimen_Section_Test
-                        .ToList()
-                        .Where(t => t.HeaderId == headerId)
-                        .ToList();
-
-                    var header = context.Specimen_Section_Header
-                        .FirstOrDefault(h => h.Id == headerId);
-
-                    if (header != null)
-                    {
-                        if (allTests.All(t => t.Status == "X"))
-                            header.Status = "C";
-                        else if (allTests.All(t => t.Status == "S" || t.Status == "X" || t.Status == "R"))
-                            header.Status = "S";  // covers: all saved, all running, or any mix of S/R/X
-                        else
-                            header.Status = "P";
-
-                        header.Updated = now;
-                        header.UpdatedBy = request.UserID;
-                        context.Specimen_Section_Header.Update(header);
-                        context.SaveChanges();
-                    }
-
+                    context.SaveChanges();
                     tx.Commit();
                 }
                 catch
@@ -268,7 +251,6 @@ namespace Service.Services
             }
             catch { throw; }
         }
-
         // ── Get pending specimens ──────────────────────────────────────────
 
         public List<PendingSpecimenItem> GetPendingSpecimens(string sectionCode)

@@ -3,16 +3,56 @@
   "WorkspaceRootPath": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\sets.client\\src\\views\\admin\\adminsettings.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|solutionrelative:sets.client\\src\\views\\admin\\adminsettings.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+      "AbsoluteMoniker": "D:0:0:{3DB3CB0F-B33B-46A8-9666-EA421056EEEE}|Reposi\\Reposi.csproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\reposi\\context\\appdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{3DB3CB0F-B33B-46A8-9666-EA421056EEEE}|Reposi\\Reposi.csproj|solutionrelative:reposi\\context\\appdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BD9ED67C-9663-4A71-9490-22712D3ED118}|SETS.Server\\SETS.Server.csproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\sets.server\\controllers\\testrunningdaycontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{BD9ED67C-9663-4A71-9490-22712D3ED118}|SETS.Server\\SETS.Server.csproj|solutionrelative:sets.server\\controllers\\testrunningdaycontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C841152B-74B7-43B7-8E9A-E2B82C80289A}|Service\\Service.csproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\service\\services\\testrunningdayservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C841152B-74B7-43B7-8E9A-E2B82C80289A}|Service\\Service.csproj|solutionrelative:service\\services\\testrunningdayservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C841152B-74B7-43B7-8E9A-E2B82C80289A}|Service\\Service.csproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\service\\interfaces\\itestrunningdayservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C841152B-74B7-43B7-8E9A-E2B82C80289A}|Service\\Service.csproj|solutionrelative:service\\interfaces\\itestrunningdayservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C841152B-74B7-43B7-8E9A-E2B82C80289A}|Service\\Service.csproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\service\\services\\runnerservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C841152B-74B7-43B7-8E9A-E2B82C80289A}|Service\\Service.csproj|solutionrelative:service\\services\\runnerservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C841152B-74B7-43B7-8E9A-E2B82C80289A}|Service\\Service.csproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\service\\masterservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C841152B-74B7-43B7-8E9A-E2B82C80289A}|Service\\Service.csproj|solutionrelative:service\\masterservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{666FF8FA-BFC2-4505-B653-717D83C4AD5D}|HCLAB\\HCLAB.csproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\hclab\\hclabmaster.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{666FF8FA-BFC2-4505-B653-717D83C4AD5D}|HCLAB\\HCLAB.csproj|solutionrelative:hclab\\hclabmaster.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{3DB3CB0F-B33B-46A8-9666-EA421056EEEE}|Reposi\\Reposi.csproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\reposi\\unitofwork.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{3DB3CB0F-B33B-46A8-9666-EA421056EEEE}|Reposi\\Reposi.csproj|solutionrelative:reposi\\unitofwork.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{3DB3CB0F-B33B-46A8-9666-EA421056EEEE}|Reposi\\Reposi.csproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\reposi\\repositories\\testrunningdayrepo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{3DB3CB0F-B33B-46A8-9666-EA421056EEEE}|Reposi\\Reposi.csproj|solutionrelative:reposi\\repositories\\testrunningdayrepo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8846EF0D-E626-4817-8821-A132989DCA6B}|Model\\Model.csproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\model\\setsdb\\test_runningday.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8846EF0D-E626-4817-8821-A132989DCA6B}|Model\\Model.csproj|solutionrelative:model\\setsdb\\test_runningday.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{666FF8FA-BFC2-4505-B653-717D83C4AD5D}|HCLAB\\HCLAB.csproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\hclab\\queries.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{666FF8FA-BFC2-4505-B653-717D83C4AD5D}|HCLAB\\HCLAB.csproj|solutionrelative:hclab\\queries.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{BD9ED67C-9663-4A71-9490-22712D3ED118}|SETS.Server\\SETS.Server.csproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\sets.server\\controllers\\sectioncontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{BD9ED67C-9663-4A71-9490-22712D3ED118}|SETS.Server\\SETS.Server.csproj|solutionrelative:sets.server\\controllers\\sectioncontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{C841152B-74B7-43B7-8E9A-E2B82C80289A}|Service\\Service.csproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\service\\masterservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{C841152B-74B7-43B7-8E9A-E2B82C80289A}|Service\\Service.csproj|solutionrelative:service\\masterservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\sets.client\\src\\views\\admin\\adminsettings.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|solutionrelative:sets.client\\src\\views\\admin\\adminsettings.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{C841152B-74B7-43B7-8E9A-E2B82C80289A}|Service\\Service.csproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\service\\services\\testgroupservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -23,20 +63,12 @@
       "RelativeMoniker": "D:0:0:{C841152B-74B7-43B7-8E9A-E2B82C80289A}|Service\\Service.csproj|solutionrelative:service\\interfaces\\itestgroupservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{3DB3CB0F-B33B-46A8-9666-EA421056EEEE}|Reposi\\Reposi.csproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\reposi\\context\\appdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{3DB3CB0F-B33B-46A8-9666-EA421056EEEE}|Reposi\\Reposi.csproj|solutionrelative:reposi\\context\\appdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{3DB3CB0F-B33B-46A8-9666-EA421056EEEE}|Reposi\\Reposi.csproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\reposi\\repositories\\testgrouprepo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{3DB3CB0F-B33B-46A8-9666-EA421056EEEE}|Reposi\\Reposi.csproj|solutionrelative:reposi\\repositories\\testgrouprepo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{8846EF0D-E626-4817-8821-A132989DCA6B}|Model\\Model.csproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\model\\setsdb\\test_group.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{8846EF0D-E626-4817-8821-A132989DCA6B}|Model\\Model.csproj|solutionrelative:model\\setsdb\\test_group.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{C841152B-74B7-43B7-8E9A-E2B82C80289A}|Service\\Service.csproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\service\\services\\runnerservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{C841152B-74B7-43B7-8E9A-E2B82C80289A}|Service\\Service.csproj|solutionrelative:service\\services\\runnerservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{3DB3CB0F-B33B-46A8-9666-EA421056EEEE}|Reposi\\Reposi.csproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\reposi\\repositories\\specimensectiontestrepo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -50,7 +82,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 228,
-          "SelectedChildIndex": 10,
+          "SelectedChildIndex": 6,
           "Children": [
             {
               "$type": "Bookmark",
@@ -58,33 +90,46 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "SectionController.cs",
-              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\SETS.Server\\Controllers\\SectionController.cs",
-              "RelativeDocumentMoniker": "SETS.Server\\Controllers\\SectionController.cs",
-              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\SETS.Server\\Controllers\\SectionController.cs",
-              "RelativeToolTip": "SETS.Server\\Controllers\\SectionController.cs",
-              "ViewState": "AgIAADYBAAAAAAAAAAAYwFQBAAAkAAAAAAAAAA==",
+              "DocumentIndex": 8,
+              "Title": "TestRunningDayRepo.cs",
+              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Reposi\\Repositories\\TestRunningDayRepo.cs",
+              "RelativeDocumentMoniker": "Reposi\\Repositories\\TestRunningDayRepo.cs",
+              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Reposi\\Repositories\\TestRunningDayRepo.cs",
+              "RelativeToolTip": "Reposi\\Repositories\\TestRunningDayRepo.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABUAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-24T04:11:50.792Z",
+              "WhenOpened": "2026-04-24T08:02:16.409Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "MasterService.cs",
-              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Service\\MasterService.cs",
-              "RelativeDocumentMoniker": "Service\\MasterService.cs",
-              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Service\\MasterService.cs",
-              "RelativeToolTip": "Service\\MasterService.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABMAAAA3AAAAAAAAAA==",
+              "DocumentIndex": 9,
+              "Title": "Test_RunningDay.cs",
+              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Model\\SETSDB\\Test_RunningDay.cs",
+              "RelativeDocumentMoniker": "Model\\SETSDB\\Test_RunningDay.cs",
+              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Model\\SETSDB\\Test_RunningDay.cs",
+              "RelativeToolTip": "Model\\SETSDB\\Test_RunningDay.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABkAAAAmAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-24T04:10:33.138Z",
+              "WhenOpened": "2026-04-24T08:01:31.879Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 10,
+              "Title": "Queries.cs",
+              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\HCLAB\\Queries.cs",
+              "RelativeDocumentMoniker": "HCLAB\\Queries.cs",
+              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\HCLAB\\Queries.cs",
+              "RelativeToolTip": "HCLAB\\Queries.cs",
+              "ViewState": "AgIAAAoAAAAAAAAAAIA0wCEAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-24T07:03:18.6Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
               "Title": "TestGroupService.cs",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Service\\Services\\TestGroupService.cs",
               "RelativeDocumentMoniker": "Service\\Services\\TestGroupService.cs",
@@ -97,7 +142,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 14,
               "Title": "ITestGroupService.cs",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Service\\Interfaces\\ITestGroupService.cs",
               "RelativeDocumentMoniker": "Service\\Interfaces\\ITestGroupService.cs",
@@ -110,20 +155,20 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 0,
               "Title": "AppDbContext.cs",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Reposi\\Context\\AppDbContext.cs",
               "RelativeDocumentMoniker": "Reposi\\Context\\AppDbContext.cs",
               "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Reposi\\Context\\AppDbContext.cs",
               "RelativeToolTip": "Reposi\\Context\\AppDbContext.cs",
-              "ViewState": "AgIAAEQAAAAAAAAAAAAhwF8AAAAnAAAAAAAAAA==",
+              "ViewState": "AgIAADQAAAAAAAAAAAApwGsAAAA7AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-04-24T04:07:23.356Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 15,
               "Title": "TestGroupRepo.cs",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Reposi\\Repositories\\TestGroupRepo.cs",
               "RelativeDocumentMoniker": "Reposi\\Repositories\\TestGroupRepo.cs",
@@ -136,7 +181,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 16,
               "Title": "Test_Group.cs",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Model\\SETSDB\\Test_Group.cs",
               "RelativeDocumentMoniker": "Model\\SETSDB\\Test_Group.cs",
@@ -149,20 +194,20 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 8,
-              "Title": "RunnerService.cs",
-              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Service\\Services\\RunnerService.cs",
-              "RelativeDocumentMoniker": "Service\\Services\\RunnerService.cs",
-              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Service\\Services\\RunnerService.cs",
-              "RelativeToolTip": "Service\\Services\\RunnerService.cs",
-              "ViewState": "AgIAABUAAAAAAAAAAAASwCkAAABAAAAAAAAAAA==",
+              "DocumentIndex": 11,
+              "Title": "SectionController.cs",
+              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\SETS.Server\\Controllers\\SectionController.cs",
+              "RelativeDocumentMoniker": "SETS.Server\\Controllers\\SectionController.cs",
+              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\SETS.Server\\Controllers\\SectionController.cs",
+              "RelativeToolTip": "SETS.Server\\Controllers\\SectionController.cs",
+              "ViewState": "AgIAALkAAAAAAAAAAAAuwL0AAAA3AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-24T03:54:18.654Z",
+              "WhenOpened": "2026-04-24T04:11:50.792Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 9,
+              "DocumentIndex": 17,
               "Title": "SpecimenSectionTestRepo.cs",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Reposi\\Repositories\\SpecimenSectionTestRepo.cs",
               "RelativeDocumentMoniker": "Reposi\\Repositories\\SpecimenSectionTestRepo.cs",
@@ -175,15 +220,112 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 12,
               "Title": "AdminSettings.vue",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\admin\\AdminSettings.vue",
               "RelativeDocumentMoniker": "sets.client\\src\\views\\admin\\AdminSettings.vue",
               "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\admin\\AdminSettings.vue",
               "RelativeToolTip": "sets.client\\src\\views\\admin\\AdminSettings.vue",
-              "ViewState": "AgIAAG0IAAAAAAAAAAAQwN0IAAABAAAAAAAAAA==",
+              "ViewState": "AgIAAIMIAAAAAAAAAAAswIMIAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
               "WhenOpened": "2026-04-24T03:27:36.119Z",
+              "EditorCaption": ""
+            }
+          ]
+        },
+        {
+          "DockedWidth": 228,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "TestRunningDayController.cs",
+              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\SETS.Server\\Controllers\\TestRunningDayController.cs",
+              "RelativeDocumentMoniker": "SETS.Server\\Controllers\\TestRunningDayController.cs",
+              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\SETS.Server\\Controllers\\TestRunningDayController.cs",
+              "RelativeToolTip": "SETS.Server\\Controllers\\TestRunningDayController.cs",
+              "ViewState": "AgIAAFQAAAAAAAAAAAAmwKQAAABGAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-24T08:43:40.301Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "RunnerService.cs",
+              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Service\\Services\\RunnerService.cs",
+              "RelativeDocumentMoniker": "Service\\Services\\RunnerService.cs",
+              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Service\\Services\\RunnerService.cs",
+              "RelativeToolTip": "Service\\Services\\RunnerService.cs",
+              "ViewState": "AgIAAK0AAAAAAAAAAAAgwO8AAAAZAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-24T03:54:18.654Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "MasterService.cs",
+              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Service\\MasterService.cs",
+              "RelativeDocumentMoniker": "Service\\MasterService.cs",
+              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Service\\MasterService.cs",
+              "RelativeToolTip": "Service\\MasterService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAA3AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-24T08:36:51.403Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "UnitOfWork.cs",
+              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Reposi\\UnitOfWork.cs",
+              "RelativeDocumentMoniker": "Reposi\\UnitOfWork.cs",
+              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Reposi\\UnitOfWork.cs",
+              "RelativeToolTip": "Reposi\\UnitOfWork.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAADQAAAAbAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-24T08:07:26.465Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "TestRunningDayService.cs",
+              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Service\\Services\\TestRunningDayService.cs",
+              "RelativeDocumentMoniker": "Service\\Services\\TestRunningDayService.cs",
+              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Service\\Services\\TestRunningDayService.cs",
+              "RelativeToolTip": "Service\\Services\\TestRunningDayService.cs",
+              "ViewState": "AgIAAC0AAAAAAAAAAAAowHUAAAAwAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-24T08:03:39.474Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "ITestRunningDayService.cs",
+              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Service\\Interfaces\\ITestRunningDayService.cs",
+              "RelativeDocumentMoniker": "Service\\Interfaces\\ITestRunningDayService.cs",
+              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Service\\Interfaces\\ITestRunningDayService.cs",
+              "RelativeToolTip": "Service\\Interfaces\\ITestRunningDayService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABkAAABBAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-24T08:02:53.78Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "HclabMaster.cs",
+              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\HCLAB\\HclabMaster.cs",
+              "RelativeDocumentMoniker": "HCLAB\\HclabMaster.cs",
+              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\HCLAB\\HclabMaster.cs",
+              "RelativeToolTip": "HCLAB\\HclabMaster.cs",
+              "ViewState": "AgIAAEEAAAAAAAAAAAAwwKwAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-24T03:30:04.049Z",
               "EditorCaption": ""
             }
           ]

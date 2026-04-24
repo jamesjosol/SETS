@@ -71,6 +71,43 @@ namespace HCLAB
             }
         }
 
+        public static class HCLABTests
+        {
+            public async static Task<List<Model.HCLAB.Test>> GetTests(string conn, string param)
+            {
+                List<Model.HCLAB.Test> tests = new List<Model.HCLAB.Test>();
+                try
+                {
+                    using (var con = new OracleConnection(conn))
+                    using (var cmd = new OracleCommand(Queries.Test.Get_Tests, con))
+                    {
+                        cmd.Parameters.Add("p0", param);
+                        await con.OpenAsync();
+
+                        using (var reader = await cmd.ExecuteReaderAsync())
+                        {
+                            while (await reader.ReadAsync())
+                            {
+                                tests.Add(new Model.HCLAB.Test
+                                {
+                                    TestCode = reader["test_code"].ToString(),
+                                    TestName = reader["test_name"].ToString(),
+                                    TestGroup = reader["test_group"].ToString()
+                                });
+                            }
+                        }
+
+                        return tests;
+                    }
+                }
+                catch (Exception)
+                {
+
+                    throw;
+                }
+            }
+        }
+
         public static class HCLABTransactions
         {
             public async static Task<Ord_Hdr> GetOrd_Hdr(string conn, string labNo)

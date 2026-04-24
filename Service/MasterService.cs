@@ -19,6 +19,7 @@ namespace Service
         public SpecimenSectionService SpecimenSection { get; private set; }
         public SectionTestGroupService SectionTestGroup { get; set; }
         public TestGroupService TestGroup { get; set; }
+        public TestRunningDayService TestRunningDay { get; set; }
 
         private readonly AppDbContextFactory _factory;
         private readonly string _branch;
@@ -46,6 +47,7 @@ namespace Service
             SpecimenSection = new SpecimenSectionService(_factory, _branch);
             SectionTestGroup = new SectionTestGroupService(_factory, _branch);
             TestGroup = new TestGroupService(_factory, _branch);
+            TestRunningDay = new TestRunningDayService(_factory, _branch);
         }
 
         public void Dispose()
@@ -62,6 +64,7 @@ namespace Service
             Runner = null;
             SpecimenSection = null;
             TestGroup = null;
+            TestRunningDay = null;
         }
     }
 }

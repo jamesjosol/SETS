@@ -10,8 +10,6 @@ namespace HCLAB
 	{
 		public static class User
 		{
-
-
 			public static string Auth = @"	
 			        SELECT 
 	                count(*)
@@ -63,6 +61,19 @@ namespace HCLAB
 					SELECT os_spl_rcvd_flag 
 					FROM ord_spl
 					WHERE os_sno = :p0";
+
+        }
+		
+		public static class Test 
+		{
+			public static string Get_Tests = @"
+				SELECT ti_code AS test_code, ti_name AS test_name, ti_test_grp AS test_group
+				FROM test_item
+				WHERE ti_rec_flag = 'Y'
+				  AND (
+					UPPER(ti_code) LIKE '%' || UPPER(:p0) || '%'
+					OR UPPER(ti_name) LIKE '%' || UPPER(:p0) || '%'
+				  )";
 
         }
 	}

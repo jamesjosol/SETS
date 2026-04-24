@@ -24,6 +24,7 @@ namespace Reposi.Context
         public DbSet<Specimen_Section_Header> Specimen_Section_Header { get; set; }
         public DbSet<Specimen_Section_Test> Specimen_Section_Test { get; set; }
         public DbSet<Test_Group> Test_Group { get; set; }
+        public DbSet<Test_RunningDay> Test_RunningDay { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             // User_Master
@@ -148,6 +149,14 @@ namespace Reposi.Context
             // Test_Group
             modelBuilder.Entity<Test_Group>().ToTable("Test_Group");
             modelBuilder.Entity<Test_Group>().HasKey(r => r.Code);
+
+            // Test_RunningDay
+            modelBuilder.Entity<Test_RunningDay>().ToTable("Test_RunningDay");
+            modelBuilder.Entity<Test_RunningDay>().HasKey(t => t.Id);
+            modelBuilder.Entity<Test_RunningDay>()
+                .HasIndex(t => t.TestCode)
+                .IsUnique();
+
         }
     }
 }
