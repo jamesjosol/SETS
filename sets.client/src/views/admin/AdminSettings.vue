@@ -39,7 +39,7 @@
 
 
         <!-- ══════════════════════════════════════════════════════════
-       PC REGISTRATION
+  PC REGISTRATION
   ══════════════════════════════════════════════════════════ -->
         <div v-if="activeTab === 'pc'"
              class="rounded-2xl overflow-hidden"
@@ -162,8 +162,8 @@
         </div>
 
         <!-- ══════════════════════════════════════════════════════════
-       ADD PC MODAL
-  ══════════════════════════════════════════════════════════ -->
+  ADD PC MODAL
+   ══════════════════════════════════════════════════════════ -->
         <Teleport to="body">
           <Transition name="modal">
             <div v-if="pcModal.visible"
@@ -279,6 +279,874 @@
           </Transition>
         </Teleport>
 
+
+
+        <!-- ══════════════════════════════════════════════════════════
+       USER MANAGEMENT TAB
+       Replace the existing v-if="activeTab === 'users'" block
+       with this entire section.
+  ══════════════════════════════════════════════════════════ -->
+        <div v-if="activeTab === 'users'"
+             class="rounded-2xl overflow-hidden"
+             style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
+
+          <!-- Header -->
+          <div class="px-8 py-5 flex items-center justify-between" style="border-bottom: 1px solid var(--color-border);">
+            <div class="flex items-center gap-4">
+              <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                   style="background-color: var(--color-primary-soft);">
+                <span class="material-symbols-outlined text-base" style="color: var(--color-primary);">manage_accounts</span>
+              </div>
+              <div>
+                <h2 class="text-base font-extrabold tracking-tight" style="color: var(--color-text);">User Management</h2>
+                <p class="text-xs mt-0.5" style="color: var(--color-text-muted);">Manage user accounts, roles, and section access.</p>
+              </div>
+            </div>
+            <button class="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest transition-all active:scale-95 shadow"
+                    style="background: var(--color-primary-gradient); color: #ffffff;"
+                    @click="openAddUser">
+              <span class="material-symbols-outlined text-sm">person_add</span>
+              Add User
+            </button>
+          </div>
+
+          <div class="px-8 py-6 space-y-5">
+
+            <!-- Search -->
+            <div class="relative">
+              <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-base"
+                    style="color: var(--color-text-muted);">search</span>
+              <input v-model="userSearch"
+                     class="w-full pl-10 pr-4 py-2.5 rounded-xl text-sm font-medium outline-none transition-all"
+                     style="background-color: var(--color-surface-low); color: var(--color-text); border: 1.5px solid var(--color-border);"
+                     placeholder="Search by User ID or Name..."
+                     @focus="(e) => e.target.style.borderColor = 'var(--color-primary)'"
+                     @blur="(e) => e.target.style.borderColor = 'var(--color-border)'" />
+            </div>
+
+            <!-- Loading -->
+            <div v-if="usersLoading" class="flex items-center justify-center py-12 gap-3"
+                 style="color: var(--color-text-muted);">
+              <span class="material-symbols-outlined text-xl animate-spin">progress_activity</span>
+              <span class="text-sm font-medium">Loading users...</span>
+            </div>
+
+            <!-- Table -->
+            <table v-else class="w-full text-sm">
+              <thead>
+                <tr style="border-bottom: 1px solid var(--color-border);">
+                  <th class="text-left pb-3 text-[10px] font-bold uppercase tracking-widest pr-6"
+                      style="color: var(--color-text-muted);">User ID</th>
+                  <th class="text-left pb-3 text-[10px] font-bold uppercase tracking-widest pr-6"
+                      style="color: var(--color-text-muted);">Name</th>
+                  <th class="text-left pb-3 text-[10px] font-bold uppercase tracking-widest pr-6"
+                      style="color: var(--color-text-muted);">Sections & Roles</th>
+                  <th class="text-left pb-3 text-[10px] font-bold uppercase tracking-widest pr-6"
+                      style="color: var(--color-text-muted);">Admin</th>
+                  <th class="text-left pb-3 text-[10px] font-bold uppercase tracking-widest pr-6"
+                      style="color: var(--color-text-muted);">Status</th>
+                  <th class="pb-3"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-if="!filteredUsers.length">
+                  <td colspan="6" class="py-10 text-center text-sm" style="color: var(--color-text-muted);">
+                    No users found.
+                  </td>
+                </tr>
+                <tr v-for="user in filteredUsers" :key="user.userID"
+                    style="border-bottom: 1px solid var(--color-surface-low);">
+
+                  <!-- User ID -->
+                  <td class="py-3 pr-6">
+                    <span class="font-mono font-bold text-xs" style="color: var(--color-text);">{{ user.userID }}</span>
+                  </td>
+
+                  <!-- Name -->
+                  <td class="py-3 pr-6">
+                    <span class="font-medium" style="color: var(--color-text);">{{ user.userName }}</span>
+                  </td>
+
+                  <!-- Sections & Roles -->
+                  <td class="py-3 pr-6">
+                    <div class="flex flex-wrap gap-1">
+                      <span v-if="!user.sections.length"
+                            class="text-xs font-bold" style="color: var(--color-text-muted);">—</span>
+                      <span v-for="sec in user.sections" :key="sec.id"
+                            class="flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold"
+                            style="background-color: var(--color-primary-soft); color: var(--color-primary);">
+                        {{ sec.sectionName }}
+                        <span class="opacity-60">·</span>
+                        <span>{{ roleLabel(sec.roleID) }}</span>
+                      </span>
+                    </div>
+                  </td>
+
+                  <!-- Admin badge -->
+                  <td class="py-3 pr-6">
+                    <span v-if="user.isAdmin" class="material-symbols-outlined text-base"
+                          style="color: var(--color-primary);">verified_user</span>
+                    <span v-else class="text-[10px] font-bold" style="color: var(--color-text-muted);">—</span>
+                  </td>
+
+                  <!-- Status toggle -->
+                  <td class="py-3 pr-6">
+                    <button class="flex items-center gap-1.5 px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all"
+                            :style="user.active
+                      ? 'background-color: var(--color-primary-soft); color: var(--color-primary);'
+                      : 'background-color: var(--color-surface-low); color: var(--color-text-muted); border: 1px solid var(--color-border);'"
+                            @click="toggleUser(user)">
+                      <span class="material-symbols-outlined text-xs">
+                        {{ user.active ? 'check_circle' : 'cancel' }}
+                      </span>
+                      {{ user.active ? 'Active' : 'Inactive' }}
+                    </button>
+                  </td>
+
+                  <!-- Edit -->
+                  <td class="py-3">
+                    <button class="w-8 h-8 rounded-lg flex items-center justify-center transition-all"
+                            style="color: var(--color-text-muted);"
+                            title="Edit user"
+                            @mouseenter="(e) => e.currentTarget.style.backgroundColor = 'var(--color-surface-low)'"
+                            @mouseleave="(e) => e.currentTarget.style.backgroundColor = 'transparent'"
+                            @click="openEditUser(user)">
+                      <span class="material-symbols-outlined text-sm">edit</span>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+          </div>
+        </div>
+
+
+        <!-- ══════════════════════════════════════════════════════════
+       ADD / EDIT USER MODAL
+  ══════════════════════════════════════════════════════════ -->
+        <Teleport to="body">
+          <Transition name="modal">
+            <div v-if="userModal.visible"
+                 class="fixed inset-0 z-50 flex items-center justify-center"
+                 style="background-color: rgba(0,0,0,0.4);"
+                 @click.self="closeUserModal">
+
+              <div class="w-full max-w-lg rounded-2xl overflow-hidden flex flex-col"
+                   style="background-color: var(--color-surface); box-shadow: 0 8px 32px rgba(0,0,0,0.24); max-height: 90vh;">
+
+                <!-- Modal Header -->
+                <div class="px-6 py-4 flex items-center justify-between flex-shrink-0"
+                     style="border-bottom: 1px solid var(--color-border);">
+                  <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-lg flex items-center justify-center"
+                         style="background-color: var(--color-primary-soft);">
+                      <span class="material-symbols-outlined text-sm" style="color: var(--color-primary);">
+                        {{ userModal.mode === 'add' ? 'person_add' : 'manage_accounts' }}
+                      </span>
+                    </div>
+                    <h3 class="text-sm font-extrabold tracking-tight" style="color: var(--color-text);">
+                      {{ userModal.mode === 'add' ? 'Add New User' : 'Edit User' }}
+                    </h3>
+                  </div>
+                  <button class="w-8 h-8 rounded-lg flex items-center justify-center transition-all"
+                          style="color: var(--color-text-muted);"
+                          @mouseenter="(e) => e.currentTarget.style.backgroundColor = 'var(--color-surface-low)'"
+                          @mouseleave="(e) => e.currentTarget.style.backgroundColor = 'transparent'"
+                          @click="closeUserModal">
+                    <span class="material-symbols-outlined text-base">close</span>
+                  </button>
+                </div>
+
+                <!-- Modal Body -->
+                <div class="px-6 py-5 space-y-5 overflow-y-auto flex-1">
+
+                  <!-- User ID — searchable dropdown (add mode only) -->
+                  <div v-if="userModal.mode === 'add'" class="relative">
+                    <label class="block text-[10px] font-bold uppercase tracking-widest mb-1.5"
+                           style="color: var(--color-text-muted);">User ID *</label>
+
+                    <!-- Input wrapper -->
+                    <div class="relative">
+                      <input v-model="userModal.hclabSearch"
+                             ref="userIdInputRef"
+                             placeholder="Type 3+ characters to search..."
+                             class="w-full px-4 py-2.5 pr-10 rounded-xl text-sm font-medium outline-none transition-all"
+                             style="background-color: var(--color-surface-low); color: var(--color-text); border: 1.5px solid var(--color-border);"
+                             autocomplete="off"
+                             @input="onHclabSearchInput"
+                             @focus="onHclabSearchFocus"
+                             @keydown.down.prevent="hclabSelectNext"
+                             @keydown.up.prevent="hclabSelectPrev"
+                             @keydown.enter.prevent="hclabConfirmSelected"
+                             @keydown.escape="closeHclabDropdown"
+                             @focus.once="(e) => e.target.style.borderColor = 'var(--color-primary)'"
+                             @blur="(e) => {
+                      // delay so click on dropdown option registers first
+                      setTimeout(() => {
+                      e.target.style.borderColor = 'var(--color-border)'
+                      if (!userModal.form.userID) closeHclabDropdown()
+                      }, 150)
+                      }" />
+
+                      <!-- Right icon: spinner / clear / search -->
+                      <div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                        <span v-if="userModal.hclabLoading"
+                              class="material-symbols-outlined text-sm animate-spin"
+                              style="color: var(--color-text-muted);">progress_activity</span>
+                        <span v-else-if="userModal.form.userID"
+                              class="material-symbols-outlined text-sm pointer-events-auto cursor-pointer"
+                              style="color: var(--color-primary);"
+                              @click.stop="clearHclabSelection">check_circle</span>
+                        <span v-else
+                              class="material-symbols-outlined text-sm"
+                              style="color: var(--color-text-muted);">search</span>
+                      </div>
+                    </div>
+
+                    <!-- Selected user badge -->
+                    <div v-if="userModal.form.userID"
+                         class="mt-1.5 flex items-center gap-2 px-3 py-2 rounded-lg"
+                         style="background-color: var(--color-primary-soft);">
+                      <span class="material-symbols-outlined text-sm" style="color: var(--color-primary);">person</span>
+                      <div class="flex-1 min-w-0">
+                        <p class="text-xs font-bold truncate" style="color: var(--color-primary);">
+                          {{ userModal.form.userID }}
+                        </p>
+                        <p class="text-[10px] truncate" style="color: var(--color-text-muted);">
+                          {{ userModal.form.userName }}
+                        </p>
+                      </div>
+                      <button class="material-symbols-outlined text-sm flex-shrink-0 transition-all"
+                              style="color: var(--color-text-muted);"
+                              @click="clearHclabSelection">
+                        close
+                      </button>
+                    </div>
+
+                    <!-- Hint -->
+                    <p v-if="!userModal.form.userID && userModal.hclabSearch.length < 3 && !userModal.hclabResults.length"
+                       class="mt-1 text-[10px]" style="color: var(--color-text-muted);">
+                      Search by HCLAB's' User ID or name (min. 3 characters).
+                    </p>
+
+                    <!-- Dropdown -->
+                    <Teleport to="body">
+                      <div v-if="userModal.hclabDropdownOpen && (userModal.hclabResults.length || userModal.hclabNoResults)"
+                           ref="hclabDropdownRef"
+                           class="fixed z-[60] rounded-xl overflow-hidden shadow-xl"
+                           :style="`top: ${hclabDropdownPos.top}px; left: ${hclabDropdownPos.left}px; width: ${hclabDropdownPos.width}px;
+                  background-color: var(--color-surface); border: 1.5px solid var(--color-border);`">
+
+                        <!-- No results -->
+                        <div v-if="userModal.hclabNoResults"
+                             class="px-4 py-3 text-xs text-center"
+                             style="color: var(--color-text-muted);">
+                          No users found for "{{ userModal.hclabSearch }}".
+                        </div>
+
+                        <!-- Result rows -->
+                        <div v-else
+                             class="overflow-y-auto"
+                             style="max-height: 220px;">
+                          <div v-for="(u, idx) in userModal.hclabResults" :key="u.userID"
+                               class="flex items-center gap-3 px-4 py-2.5 cursor-pointer transition-all"
+                               :style="idx === userModal.hclabActiveIdx
+               ? 'background-color: var(--color-primary-soft);'
+               : 'border-bottom: 1px solid var(--color-surface-low);'"
+                               @mouseenter="userModal.hclabActiveIdx = idx"
+                               @mousedown.prevent="selectHclabUser(u)">
+                            <div class="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
+                                 style="background-color: var(--color-surface-low);">
+                              <span class="material-symbols-outlined text-sm" style="color: var(--color-text-muted);">person</span>
+                            </div>
+                            <div class="min-w-0">
+                              <p class="text-xs font-bold truncate" style="color: var(--color-text);">{{ u.userID }}</p>
+                              <p class="text-[10px] truncate" style="color: var(--color-text-muted);">{{ u.userName }}</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </Teleport>
+                  </div>
+
+
+                  <!-- Name -->
+                  <div>
+                    <label class="block text-[10px] font-bold uppercase tracking-widest mb-1.5"
+                           style="color: var(--color-text-muted);">Full Name *</label>
+                    <input v-model="userModal.form.userName"
+                           placeholder="e.g. Juan Dela Cruz"
+                           class="w-full px-4 py-2.5 rounded-xl text-sm font-medium outline-none transition-all"
+                           style="background-color: var(--color-surface-low); color: var(--color-text); border: 1.5px solid var(--color-border);"
+                           @focus="(e) => e.target.style.borderColor = 'var(--color-primary)'"
+                           @blur="(e) => e.target.style.borderColor = 'var(--color-border)'" />
+                  </div>
+
+                  <!-- Is Admin toggle -->
+                  <div class="flex items-center justify-between py-1">
+                    <div>
+                      <p class="text-sm font-bold" style="color: var(--color-text);">Administrator</p>
+                      <p class="text-xs mt-0.5" style="color: var(--color-text-muted);">
+                        Grants full access across all sections and settings.
+                      </p>
+                    </div>
+                    <button class="relative w-11 h-6 rounded-full transition-all flex-shrink-0"
+                            :style="userModal.form.isAdmin
+                      ? 'background-color: var(--color-primary);'
+                      : 'background-color: var(--color-border);'"
+                            @click="userModal.form.isAdmin = !userModal.form.isAdmin">
+                      <span class="absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-all"
+                            :style="userModal.form.isAdmin ? 'left: calc(100% - 1.375rem);' : 'left: 0.125rem;'"></span>
+                    </button>
+                  </div>
+
+                  <!-- Section Assignments -->
+                  <div>
+                    <div class="flex items-center justify-between mb-2">
+                      <label class="text-[10px] font-bold uppercase tracking-widest"
+                             style="color: var(--color-text-muted);">Section Access *</label>
+                      <span class="text-[10px] font-bold" style="color: var(--color-text-muted);">
+                        {{ userModal.form.sections.length }} selected
+                      </span>
+                    </div>
+
+                    <!-- Validation hint -->
+                    <p v-if="userModal.sectionError"
+                       class="mb-2 text-xs font-bold" style="color: #ba1a1a;">
+                      At least one section must be assigned.
+                    </p>
+
+                    <div class="rounded-xl overflow-hidden"
+                         style="border: 1.5px solid var(--color-border);">
+                      <div v-for="sec in availableSections" :key="sec.code">
+                        <!-- Section row header (click to toggle) -->
+                        <div class="flex items-center gap-3 px-4 py-2.5 cursor-pointer transition-all"
+                             :style="isUserSectionSelected(sec.code)
+                       ? 'background-color: var(--color-primary-soft);'
+                       : 'border-bottom: 1px solid var(--color-surface-low);'"
+                             @click="toggleUserSection(sec.code)">
+                          <div class="w-5 h-5 rounded-md flex items-center justify-center transition-all flex-shrink-0"
+                               :style="isUserSectionSelected(sec.code)
+                         ? 'background-color: var(--color-primary);'
+                         : 'border: 1.5px solid var(--color-border);'">
+                            <span v-if="isUserSectionSelected(sec.code)"
+                                  class="material-symbols-outlined text-xs" style="color: #ffffff;">check</span>
+                          </div>
+                          <span class="text-sm font-medium flex-1" style="color: var(--color-text);">
+                            {{ sec.name }}
+                          </span>
+                          <span class="text-[10px] font-bold uppercase tracking-widest"
+                                style="color: var(--color-text-muted);">{{ sec.category === '1' ? 'Endorser' : sec.category === '2' ? 'Receiver' : 'Runner' }}</span>
+                        </div>
+
+                        <!-- Role picker (shown when section is selected) -->
+                        <div v-if="isUserSectionSelected(sec.code)"
+                             class="flex items-center gap-2 px-4 py-2.5"
+                             style="background-color: var(--color-primary-soft); border-bottom: 1px solid rgba(0,0,0,0.06);"
+                             @click.stop>
+                          <span class="text-[10px] font-bold uppercase tracking-widest mr-1"
+                                style="color: var(--color-primary);">Role:</span>
+                          <button v-for="role in roles" :key="role.id"
+                                  class="px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all"
+                                  :style="getUserSectionRole(sec.code) === role.id
+                            ? 'background-color: var(--color-primary); color: #ffffff;'
+                            : 'background-color: rgba(255,255,255,0.6); color: var(--color-text-muted);'"
+                                  @click="setUserSectionRole(sec.code, role.id)">
+                            {{ role.label }}
+                          </button>
+                        </div>
+                      </div>
+
+                      <p v-if="!availableSections.length"
+                         class="px-4 py-3 text-xs text-center" style="color: var(--color-text-muted);">
+                        No sections available.
+                      </p>
+                    </div>
+                  </div>
+
+                  <!-- Error -->
+                  <p v-if="userModal.error" class="text-xs font-bold" style="color: #ba1a1a;">
+                    {{ userModal.error }}
+                  </p>
+                </div>
+
+                <!-- Modal Footer -->
+                <div class="px-6 py-4 flex justify-end gap-3 flex-shrink-0"
+                     style="border-top: 1px solid var(--color-border);">
+                  <button class="px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest transition-all"
+                          style="background-color: var(--color-surface-low); color: var(--color-text-muted);"
+                          @click="closeUserModal">
+                    Cancel
+                  </button>
+                  <button class="px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest transition-all active:scale-95 flex items-center gap-2 shadow"
+                          style="background: var(--color-primary-gradient); color: #ffffff;"
+                          :disabled="userModal.saving"
+                          @click="saveUserModal">
+                    <span v-if="userModal.saving" class="material-symbols-outlined text-sm animate-spin">progress_activity</span>
+                    <span class="material-symbols-outlined text-sm" v-else>save</span>
+                    {{ userModal.mode === 'add' ? 'Add User' : 'Save Changes' }}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </Transition>
+        </Teleport>
+
+        <!-- ══════════════════════════════════════════════════════════
+       SECTION MANAGEMENT TAB
+       Replace or add as v-if="activeTab === 'sections'" block.
+       Add to settingsTabs: { key: 'sections', label: 'Sections', icon: 'apartment' }
+  ══════════════════════════════════════════════════════════ -->
+        <div v-if="activeTab === 'sections'"
+             class="rounded-2xl overflow-hidden"
+             style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
+
+          <!-- Header -->
+          <div class="px-8 py-5 flex items-center justify-between"
+               style="border-bottom: 1px solid var(--color-border);">
+            <div class="flex items-center gap-4">
+              <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                   style="background-color: var(--color-primary-soft);">
+                <span class="material-symbols-outlined text-base" style="color: var(--color-primary);">apartment</span>
+              </div>
+              <div>
+                <h2 class="text-base font-extrabold tracking-tight" style="color: var(--color-text);">Section Management</h2>
+                <p class="text-xs mt-0.5" style="color: var(--color-text-muted);">
+                  Manage sections by branch. One Receiver is allowed per branch.
+                </p>
+              </div>
+            </div>
+            <button class="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest transition-all active:scale-95 shadow"
+                    style="background: var(--color-primary-gradient); color: #ffffff;"
+                    @click="openAddSection">
+              <span class="material-symbols-outlined text-sm">add</span>
+              Add Section
+            </button>
+          </div>
+
+          <div class="px-8 py-6 space-y-5">
+
+            <!-- Branch filter + search row -->
+            <div class="flex items-center gap-3">
+
+              <!-- Branch filter -->
+              <div class="flex gap-1.5 flex-wrap">
+                <button class="px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all"
+                        :style="sectionBranchFilter === 'ALL'
+                  ? 'background-color: var(--color-primary); color: #ffffff;'
+                  : 'background-color: var(--color-surface-low); color: var(--color-text-muted);'"
+                        @click="sectionBranchFilter = 'ALL'">
+                  All
+                </button>
+                <button v-for="b in availableBranches" :key="b.code"
+                        class="px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all"
+                        :style="sectionBranchFilter === b.code
+                  ? 'background-color: var(--color-primary); color: #ffffff;'
+                  : 'background-color: var(--color-surface-low); color: var(--color-text-muted);'"
+                        @click="sectionBranchFilter = b.code">
+                  {{ b.code }}
+                </button>
+              </div>
+
+              <!-- Search -->
+              <div class="relative flex-1 min-w-0">
+                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-sm"
+                      style="color: var(--color-text-muted);">search</span>
+                <input v-model="sectionSearch"
+                       class="w-full pl-9 pr-4 py-2 rounded-xl text-sm font-medium outline-none transition-all"
+                       style="background-color: var(--color-surface-low); color: var(--color-text); border: 1.5px solid var(--color-border);"
+                       placeholder="Search by code or name..."
+                       @focus="(e) => e.target.style.borderColor = 'var(--color-primary)'"
+                       @blur="(e) => e.target.style.borderColor = 'var(--color-border)'" />
+              </div>
+            </div>
+
+            <!-- Loading -->
+            <div v-if="sectionsLoading"
+                 class="flex items-center justify-center py-12 gap-3"
+                 style="color: var(--color-text-muted);">
+              <span class="material-symbols-outlined text-xl animate-spin">progress_activity</span>
+              <span class="text-sm font-medium">Loading sections...</span>
+            </div>
+
+            <!-- Grouped by category -->
+            <template v-else>
+              <div v-for="cat in sectionCategories" :key="cat.id" class="space-y-2">
+
+                <!-- Category header -->
+                <div class="flex items-center gap-2 pt-2">
+                  <div class="w-6 h-6 rounded-lg flex items-center justify-center"
+                       :style="`background-color: ${cat.softColor};`">
+                    <span class="material-symbols-outlined text-xs" :style="`color: ${cat.color};`">
+                      {{ cat.icon }}
+                    </span>
+                  </div>
+                  <span class="text-[10px] font-bold uppercase tracking-widest" :style="`color: ${cat.color};`">
+                    {{ cat.label }}
+                  </span>
+                  <span class="text-[10px] font-bold" style="color: var(--color-text-muted);">
+                    ({{ filteredSectionsByCategory(cat.id).length }})
+                  </span>
+                </div>
+
+                <!-- Empty state per category -->
+                <div v-if="!filteredSectionsByCategory(cat.id).length"
+                     class="px-4 py-3 rounded-xl text-xs text-center"
+                     style="background-color: var(--color-surface-low); color: var(--color-text-muted);">
+                  No {{ cat.label.toLowerCase() }} sections found.
+                </div>
+
+                <!-- Sections table -->
+                <div v-else class="rounded-xl overflow-hidden"
+                     style="border: 1px solid var(--color-border);">
+                  <table class="w-full text-sm">
+                    <thead>
+                      <tr style="border-bottom: 1px solid var(--color-border);">
+                        <th class="text-left px-4 py-2.5 text-[10px] font-bold uppercase tracking-widest"
+                            style="color: var(--color-text-muted); background-color: var(--color-surface-low);">Code</th>
+                        <th class="text-left px-4 py-2.5 text-[10px] font-bold uppercase tracking-widest"
+                            style="color: var(--color-text-muted); background-color: var(--color-surface-low);">Name</th>
+                        <th class="text-left px-4 py-2.5 text-[10px] font-bold uppercase tracking-widest"
+                            style="color: var(--color-text-muted); background-color: var(--color-surface-low);">Branch</th>
+                        <th class="text-left px-4 py-2.5 text-[10px] font-bold uppercase tracking-widest"
+                            style="color: var(--color-text-muted); background-color: var(--color-surface-low);">Auto No.</th>
+                        <th class="text-left px-4 py-2.5 text-[10px] font-bold uppercase tracking-widest"
+                            style="color: var(--color-text-muted); background-color: var(--color-surface-low);">Status</th>
+                        <th style="background-color: var(--color-surface-low);"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="sec in filteredSectionsByCategory(cat.id)" :key="sec.code"
+                          style="border-bottom: 1px solid var(--color-surface-low);">
+
+                        <!-- Code -->
+                        <td class="px-4 py-3">
+                          <span class="font-mono font-bold text-xs" style="color: var(--color-text);">
+                            {{ sec.code }}
+                          </span>
+                        </td>
+
+                        <!-- Name -->
+                        <td class="px-4 py-3">
+                          <span class="font-medium" style="color: var(--color-text);">{{ sec.name }}</span>
+                        </td>
+
+                        <!-- Branch -->
+                        <td class="px-4 py-3">
+                          <span class="px-2 py-0.5 rounded-lg text-[10px] font-bold"
+                                style="background-color: var(--color-surface-low); color: var(--color-text-muted);">
+                            {{ sec.branchCode }}
+                          </span>
+                        </td>
+
+                        <!-- AutoNo -->
+                        <td class="px-4 py-3">
+                          <span class="text-sm font-mono" style="color: var(--color-text-muted);">
+                            {{ sec.autoNo || '—' }}
+                          </span>
+                        </td>
+
+                        <!-- Status toggle -->
+                        <td class="px-4 py-3">
+                          <button class="flex items-center gap-1.5 px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all"
+                                  :style="sec.active
+                            ? 'background-color: var(--color-primary-soft); color: var(--color-primary);'
+                            : 'background-color: var(--color-surface-low); color: var(--color-text-muted); border: 1px solid var(--color-border);'"
+                                  @click="toggleSection(sec)">
+                            <span class="material-symbols-outlined text-xs">
+                              {{ sec.active ? 'check_circle' : 'cancel' }}
+                            </span>
+                            {{ sec.active ? 'Active' : 'Inactive' }}
+                          </button>
+                        </td>
+
+                        <!-- Edit -->
+                        <td class="px-4 py-3">
+                          <button class="w-8 h-8 rounded-lg flex items-center justify-center transition-all"
+                                  style="color: var(--color-text-muted);"
+                                  title="Edit section"
+                                  @mouseenter="(e) => e.currentTarget.style.backgroundColor = 'var(--color-surface-low)'"
+                                  @mouseleave="(e) => e.currentTarget.style.backgroundColor = 'transparent'"
+                                  @click="openEditSection(sec)">
+                            <span class="material-symbols-outlined text-sm">edit</span>
+                          </button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+              </div>
+
+              <!-- Empty overall -->
+              <div v-if="!filteredSections.length && !sectionsLoading"
+                   class="py-10 flex flex-col items-center gap-2" style="color: var(--color-text-muted);">
+                <span class="material-symbols-outlined text-3xl">apartment</span>
+                <p class="text-sm font-medium">No sections found.</p>
+              </div>
+            </template>
+
+          </div>
+        </div>
+
+
+        <!-- ══════════════════════════════════════════════════════════
+         ADD / EDIT SECTION MODAL
+    ══════════════════════════════════════════════════════════ -->
+        <Teleport to="body">
+          <Transition name="modal">
+            <div v-if="sectionModal.visible"
+                 class="fixed inset-0 z-50 flex items-center justify-center"
+                 style="background-color: rgba(0,0,0,0.4);"
+                 @click.self="closeSectionModal">
+
+              <div class="w-full max-w-md rounded-2xl overflow-hidden flex flex-col"
+                   style="background-color: var(--color-surface); box-shadow: 0 8px 32px rgba(0,0,0,0.24); max-height: 90vh;">
+
+                <!-- Header -->
+                <div class="px-6 py-4 flex items-center justify-between flex-shrink-0"
+                     style="border-bottom: 1px solid var(--color-border);">
+                  <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-lg flex items-center justify-center"
+                         style="background-color: var(--color-primary-soft);">
+                      <span class="material-symbols-outlined text-sm" style="color: var(--color-primary);">apartment</span>
+                    </div>
+                    <h3 class="text-sm font-extrabold tracking-tight" style="color: var(--color-text);">
+                      {{ sectionModal.mode === 'add' ? 'Add New Section' : 'Edit Section' }}
+                    </h3>
+                  </div>
+                  <button class="w-8 h-8 rounded-lg flex items-center justify-center transition-all"
+                          style="color: var(--color-text-muted);"
+                          @mouseenter="(e) => e.currentTarget.style.backgroundColor = 'var(--color-surface-low)'"
+                          @mouseleave="(e) => e.currentTarget.style.backgroundColor = 'transparent'"
+                          @click="closeSectionModal">
+                    <span class="material-symbols-outlined text-base">close</span>
+                  </button>
+                </div>
+
+                <!-- Body -->
+                <div class="px-6 py-5 space-y-4 overflow-y-auto flex-1">
+
+                  <!-- Section Code (add only) -->
+                  <div v-if="sectionModal.mode === 'add'">
+                    <label class="block text-[10px] font-bold uppercase tracking-widest mb-1.5"
+                           style="color: var(--color-text-muted);">Section Code *</label>
+                    <div class="relative">
+                      <input v-model="sectionModal.form.code"
+                             placeholder="e.g. HEM"
+                             maxlength="20"
+                             class="w-full px-4 py-2.5 pr-10 rounded-xl text-sm font-mono font-bold uppercase outline-none transition-all"
+                             :style="`background-color: var(--color-surface-low); color: var(--color-text);
+                       border: 1.5px solid ${sectionModal.codeStatus === 'taken' ? '#ba1a1a'
+                         : sectionModal.codeStatus === 'available' ? '#4caf50'
+                         : 'var(--color-border)'};`"
+                             @input="onCodeInput"
+                             @focus="(e) => { if (sectionModal.codeStatus === 'idle') e.target.style.borderColor = 'var(--color-primary)' }"
+                             @blur="(e) => { if (sectionModal.codeStatus === 'idle') e.target.style.borderColor = 'var(--color-border)' }" />
+                      <div class="absolute right-3 top-1/2 -translate-y-1/2">
+                        <span v-if="sectionModal.codeChecking"
+                              class="material-symbols-outlined text-sm animate-spin"
+                              style="color: var(--color-text-muted);">progress_activity</span>
+                        <span v-else-if="sectionModal.codeStatus === 'available'"
+                              class="material-symbols-outlined text-sm" style="color: #4caf50;">check_circle</span>
+                        <span v-else-if="sectionModal.codeStatus === 'taken'"
+                              class="material-symbols-outlined text-sm" style="color: #ba1a1a;">cancel</span>
+                      </div>
+                    </div>
+                    <p v-if="sectionModal.codeStatus === 'taken'" class="mt-1 text-xs font-bold" style="color: #ba1a1a;">
+                      This section code already exists.
+                    </p>
+                    <p v-else-if="sectionModal.codeStatus === 'available'" class="mt-1 text-xs font-bold" style="color: #4caf50;">
+                      Code is available.
+                    </p>
+                  </div>
+
+                  <!-- Section Code read-only (edit mode) -->
+                  <div v-else>
+                    <label class="block text-[10px] font-bold uppercase tracking-widest mb-1.5"
+                           style="color: var(--color-text-muted);">Section Code</label>
+                    <div class="px-4 py-2.5 rounded-xl text-sm font-mono font-bold"
+                         style="background-color: var(--color-surface-low); color: var(--color-text-muted);">
+                      {{ sectionModal.form.code }}
+                    </div>
+                  </div>
+
+                  <!-- Section Name -->
+                  <div>
+                    <label class="block text-[10px] font-bold uppercase tracking-widest mb-1.5"
+                           style="color: var(--color-text-muted);">Section Name *</label>
+                    <input v-model="sectionModal.form.name"
+                           placeholder="e.g. Hematology"
+                           class="w-full px-4 py-2.5 rounded-xl text-sm font-medium outline-none transition-all"
+                           style="background-color: var(--color-surface-low); color: var(--color-text); border: 1.5px solid var(--color-border);"
+                           @focus="(e) => e.target.style.borderColor = 'var(--color-primary)'"
+                           @blur="(e) => e.target.style.borderColor = 'var(--color-border)'" />
+                  </div>
+
+                  <!-- Branch (add only) -->
+                  <div v-if="sectionModal.mode === 'add'">
+                    <label class="block text-[10px] font-bold uppercase tracking-widest mb-2"
+                           style="color: var(--color-text-muted);">Branch *</label>
+                    <div class="rounded-xl overflow-hidden" style="border: 1.5px solid var(--color-border);">
+                      <div v-for="b in availableBranches" :key="b.code"
+                           class="flex items-center justify-between px-4 py-2.5 cursor-pointer transition-all"
+                           style="border-bottom: 1px solid var(--color-surface-low);"
+                           :style="sectionModal.form.branchCode === b.code ? 'background-color: var(--color-primary-soft);' : ''"
+                           @click="sectionModal.form.branchCode = b.code">
+                        <span class="text-sm font-medium" style="color: var(--color-text);">{{ b.name || b.code }}</span>
+                        <div class="w-5 h-5 rounded-full flex items-center justify-center"
+                             :style="sectionModal.form.branchCode === b.code
+                       ? 'background-color: var(--color-primary);'
+                       : 'border: 1.5px solid var(--color-border);'">
+                          <span v-if="sectionModal.form.branchCode === b.code"
+                                class="material-symbols-outlined text-xs" style="color: #ffffff;">check</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Category (add only) -->
+                  <div v-if="sectionModal.mode === 'add'">
+                    <label class="block text-[10px] font-bold uppercase tracking-widest mb-2"
+                           style="color: var(--color-text-muted);">Category *</label>
+                    <div class="grid grid-cols-3 gap-2">
+                      <button v-for="cat in sectionCategories" :key="cat.id"
+                              class="flex flex-col items-center gap-1.5 py-3 px-2 rounded-xl text-xs font-bold transition-all"
+                              :style="sectionModal.form.category === cat.id
+                        ? `background-color: ${cat.softColor}; color: ${cat.color}; border: 2px solid ${cat.color};`
+                        : 'background-color: var(--color-surface-low); color: var(--color-text-muted); border: 2px solid transparent;'"
+                              @click="sectionModal.form.category = cat.id">
+                        <span class="material-symbols-outlined text-base">{{ cat.icon }}</span>
+                        {{ cat.label }}
+                      </button>
+                    </div>
+
+                    <!-- Receiver warning -->
+                    <div v-if="sectionModal.form.category === '2' && sectionModal.form.branchCode && receiverExistsForBranch(sectionModal.form.branchCode)"
+                         class="mt-2 flex items-start gap-2 px-3 py-2.5 rounded-xl"
+                         style="background-color: rgba(186,26,26,0.08); border: 1px solid rgba(186,26,26,0.2);">
+                      <span class="material-symbols-outlined text-sm flex-shrink-0" style="color: #ba1a1a;">warning</span>
+                      <p class="text-xs font-bold" style="color: #ba1a1a;">
+                        A Receiver already exists for this branch. Only one Receiver is allowed per branch.
+                      </p>
+                    </div>
+                  </div>
+
+                  <!-- ── Auto No. — Endorser only ─────────────────────────────────── -->
+                  <div v-if="sectionModal.form.category === '1'">
+                    <label class="block text-[10px] font-bold uppercase tracking-widest mb-1.5"
+                           style="color: var(--color-text-muted);">Auto Number</label>
+                    <input v-model.number="sectionModal.form.autoNo"
+                           type="number" min="0"
+                           placeholder="0"
+                           class="w-full px-4 py-2.5 rounded-xl text-sm font-mono font-medium outline-none transition-all"
+                           style="background-color: var(--color-surface-low); color: var(--color-text); border: 1.5px solid var(--color-border);"
+                           @focus="(e) => e.target.style.borderColor = 'var(--color-primary)'"
+                           @blur="(e) => e.target.style.borderColor = 'var(--color-border)'" disabled/>
+                    <p class="mt-1 text-xs" style="color: var(--color-text-muted);">
+                      Used for batch number auto-incrementing.
+                    </p>
+                  </div>
+
+                  <!-- ── Test Groups — Laboratory only ────────────────────────────── -->
+                  <div v-if="sectionModal.form.category === '3'">
+                    <div class="flex items-center justify-between mb-2">
+                      <label class="text-[10px] font-bold uppercase tracking-widest"
+                             style="color: var(--color-text-muted);">Test Groups *</label>
+                      <span class="text-[10px] font-bold" style="color: var(--color-text-muted);">
+                        {{ sectionModal.form.testGroupCodes.length }} selected
+                      </span>
+                    </div>
+
+                    <!-- Validation hint -->
+                    <p v-if="sectionModal.testGroupError"
+                       class="mb-2 text-xs font-bold" style="color: #ba1a1a;">
+                      At least one test group must be assigned.
+                    </p>
+
+                    <!-- Loading -->
+                    <div v-if="testGroupsLoading"
+                         class="flex items-center gap-2 px-4 py-3 rounded-xl"
+                         style="background-color: var(--color-surface-low); color: var(--color-text-muted);">
+                      <span class="material-symbols-outlined text-sm animate-spin">progress_activity</span>
+                      <span class="text-xs">Loading test groups...</span>
+                    </div>
+
+                    <div v-else class="rounded-xl overflow-hidden" style="border: 1.5px solid var(--color-border);">
+                      <div v-for="tg in allTestGroups" :key="tg.code">
+                        <!-- Disabled: already assigned to a different section -->
+                        <div v-if="tg.assignedSectionCode && tg.assignedSectionCode !== sectionModal.originalCode"
+                             class="flex items-center gap-3 px-4 py-2.5 cursor-not-allowed"
+                             style="border-bottom: 1px solid var(--color-surface-low); opacity: 0.45;">
+                          <div class="w-5 h-5 rounded-md flex-shrink-0"
+                               style="border: 1.5px solid var(--color-border);"></div>
+                          <div class="flex-1 min-w-0">
+                            <span class="text-sm font-medium" style="color: var(--color-text);">{{ tg.name }}</span>
+                            <span class="ml-2 text-[10px] font-bold" style="color: var(--color-text-muted);">
+                              — assigned to {{ tg.assignedSectionCode }}
+                            </span>
+                          </div>
+                          <span class="material-symbols-outlined text-xs" style="color: var(--color-text-muted);">lock</span>
+                        </div>
+
+                        <!-- Selectable -->
+                        <div v-else
+                             class="flex items-center gap-3 px-4 py-2.5 cursor-pointer transition-all"
+                             style="border-bottom: 1px solid var(--color-surface-low);"
+                             :style="sectionModal.form.testGroupCodes.includes(tg.code)
+                       ? 'background-color: var(--color-primary-soft);' : ''"
+                             @click="toggleTestGroup(tg.code)">
+                          <div class="w-5 h-5 rounded-md flex items-center justify-center transition-all flex-shrink-0"
+                               :style="sectionModal.form.testGroupCodes.includes(tg.code)
+                         ? 'background-color: var(--color-primary);'
+                         : 'border: 1.5px solid var(--color-border);'">
+                            <span v-if="sectionModal.form.testGroupCodes.includes(tg.code)"
+                                  class="material-symbols-outlined text-xs" style="color: #ffffff;">check</span>
+                          </div>
+                          <span class="text-sm font-medium flex-1" style="color: var(--color-text);">{{ tg.name }}</span>
+                          <span class="font-mono text-[10px] font-bold" style="color: var(--color-text-muted);">
+                            {{ tg.code }}
+                          </span>
+                        </div>
+                      </div>
+
+                      <p v-if="!allTestGroups.length && !testGroupsLoading"
+                         class="px-4 py-3 text-xs text-center" style="color: var(--color-text-muted);">
+                        No test groups available.
+                      </p>
+                    </div>
+                  </div>
+
+                  <!-- Error -->
+                  <p v-if="sectionModal.error" class="text-xs font-bold" style="color: #ba1a1a;">
+                    {{ sectionModal.error }}
+                  </p>
+
+                </div>
+
+                <!-- Footer -->
+                <div class="px-6 py-4 flex justify-end gap-3 flex-shrink-0"
+                     style="border-top: 1px solid var(--color-border);">
+                  <button class="px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest transition-all"
+                          style="background-color: var(--color-surface-low); color: var(--color-text-muted);"
+                          @click="closeSectionModal">
+                    Cancel
+                  </button>
+                  <button class="px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest transition-all active:scale-95 flex items-center gap-2 shadow"
+                          style="background: var(--color-primary-gradient); color: #ffffff;"
+                          :disabled="sectionModal.saving || sectionModal.codeStatus === 'taken' || sectionModal.codeChecking"
+                          @click="saveSectionModal">
+                    <span v-if="sectionModal.saving" class="material-symbols-outlined text-sm animate-spin">progress_activity</span>
+                    <span class="material-symbols-outlined text-sm" v-else>save</span>
+                    {{ sectionModal.mode === 'add' ? 'Create Section' : 'Save Changes' }}
+                  </button>
+                </div>
+
+              </div>
+            </div>
+          </Transition>
+        </Teleport>
 
         <!-- ══════════════════════════════════════════════════════════
        TAT SET-UP
@@ -464,194 +1332,6 @@
                 <span class="material-symbols-outlined text-sm">save</span>Save Changes
               </button>
             </div>
-          </div>
-        </div>
-
-        <!-- ══════════════════════════════════════════════════════════
-       SECTION / LOCATION
-  ══════════════════════════════════════════════════════════ -->
-        <div v-if="activeTab === 'section'"
-             class="rounded-2xl overflow-hidden"
-             style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
-          <div class="px-8 py-5 flex items-center gap-4" style="border-bottom: 1px solid var(--color-border);">
-            <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style="background-color: var(--color-primary-soft);">
-              <span class="material-symbols-outlined text-base" style="color: var(--color-primary);">apartment</span>
-            </div>
-            <div>
-              <h2 class="text-base font-extrabold tracking-tight" style="color: var(--color-text);">Section / Location</h2>
-              <p class="text-xs mt-0.5" style="color: var(--color-text-muted);">Manage lab sections, cut-offs, and assignment eligibility.</p>
-            </div>
-          </div>
-          <div class="px-8 py-6 space-y-8">
-
-            <div>
-              <p class="text-[10px] font-bold uppercase tracking-widest mb-4" style="color: var(--color-text-muted);">Add New Section</p>
-              <div class="grid grid-cols-3 gap-3 mb-3">
-                <div>
-                  <label class="block text-[10px] font-bold uppercase tracking-widest mb-1.5" style="color: var(--color-text-muted);">Section Code</label>
-                  <input v-model="newSection.code" class="w-full px-4 py-2.5 rounded-xl text-sm font-medium outline-none transition-all"
-                         style="background-color: var(--color-surface-low); color: var(--color-text); border: 1.5px solid var(--color-border);"
-                         placeholder="e.g. HEM" maxlength="10"
-                         @focus="(e) => (e.target.style.borderColor = 'var(--color-primary)')"
-                         @blur="(e) => (e.target.style.borderColor = 'var(--color-border)')" />
-                </div>
-                <div class="col-span-2">
-                  <label class="block text-[10px] font-bold uppercase tracking-widest mb-1.5" style="color: var(--color-text-muted);">Section Name</label>
-                  <input v-model="newSection.name" class="w-full px-4 py-2.5 rounded-xl text-sm font-medium outline-none transition-all"
-                         style="background-color: var(--color-surface-low); color: var(--color-text); border: 1.5px solid var(--color-border);"
-                         placeholder="e.g. Hematology"
-                         @focus="(e) => (e.target.style.borderColor = 'var(--color-primary)')"
-                         @blur="(e) => (e.target.style.borderColor = 'var(--color-border)')" />
-                </div>
-              </div>
-              <div class="grid grid-cols-2 gap-3 mb-3">
-                <div>
-                  <label class="block text-[10px] font-bold uppercase tracking-widest mb-1.5" style="color: var(--color-text-muted);">Category</label>
-                  <select v-model="newSection.category" class="w-full px-4 py-2.5 rounded-xl text-sm font-medium outline-none"
-                          style="background-color: var(--color-surface-low); color: var(--color-text); border: 1.5px solid var(--color-border);">
-                    <option value="1">Phlebo / Send-In</option>
-                    <option value="2">Processing</option>
-                    <option value="3">Laboratory</option>
-                  </select>
-                </div>
-                <div>
-                  <label class="block text-[10px] font-bold uppercase tracking-widest mb-1.5" style="color: var(--color-text-muted);">Cut-Off Time</label>
-                  <input v-model="newSection.cutOff" type="time" class="w-full px-4 py-2.5 rounded-xl text-sm font-medium outline-none"
-                         style="background-color: var(--color-surface-low); color: var(--color-text); border: 1.5px solid var(--color-border);" />
-                </div>
-              </div>
-              <div class="flex gap-6 mb-4">
-                <div class="flex items-center gap-2 cursor-pointer" @click="newSection.includeInAssignRMT = !newSection.includeInAssignRMT">
-                  <div class="w-4 h-4 rounded flex items-center justify-center transition-all flex-shrink-0"
-                       :style="newSection.includeInAssignRMT ? 'background-color: var(--color-primary);' : 'border: 1.5px solid var(--color-border);'">
-                    <span v-if="newSection.includeInAssignRMT" class="material-symbols-outlined text-white" style="font-size: 11px;">check</span>
-                  </div>
-                  <span class="text-xs font-bold" style="color: var(--color-text-muted);">Include in Assign RMT</span>
-                </div>
-                <div class="flex items-center gap-2 cursor-pointer" @click="newSection.includeInReceiving = !newSection.includeInReceiving">
-                  <div class="w-4 h-4 rounded flex items-center justify-center transition-all flex-shrink-0"
-                       :style="newSection.includeInReceiving ? 'background-color: var(--color-primary);' : 'border: 1.5px solid var(--color-border);'">
-                    <span v-if="newSection.includeInReceiving" class="material-symbols-outlined text-white" style="font-size: 11px;">check</span>
-                  </div>
-                  <span class="text-xs font-bold" style="color: var(--color-text-muted);">Include in Section Receiving</span>
-                </div>
-              </div>
-              <button class="px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest transition-all active:scale-95 flex items-center gap-2"
-                      style="background: var(--color-primary-gradient); color: #ffffff;" @click="addSection">
-                <span class="material-symbols-outlined text-sm">add</span>Add Section
-              </button>
-            </div>
-
-            <div>
-              <p class="text-[10px] font-bold uppercase tracking-widest mb-4" style="color: var(--color-text-muted);">Existing Sections</p>
-              <div class="space-y-2">
-                <div v-for="sec in settings.sections" :key="sec.code"
-                     class="flex items-center gap-4 px-4 py-3 rounded-xl" style="background-color: var(--color-surface-low);">
-                  <div class="w-10 h-10 rounded-xl flex items-center justify-center text-xs font-extrabold flex-shrink-0"
-                       style="background-color: var(--color-primary-soft); color: var(--color-primary);">
-                    {{ sec.code.substring(0, 3) }}
-                  </div>
-                  <div class="flex-1">
-                    <p class="text-sm font-bold" style="color: var(--color-text);">{{ sec.name }}</p>
-                    <p class="text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">
-                      {{ sec.code }} · Cut-off {{ sec.cutOff || 'N/A' }}
-                    </p>
-                  </div>
-                  <div class="flex items-center gap-2">
-                    <span v-if="sec.includeInAssignRMT" class="px-2 py-1 rounded-lg text-[10px] font-bold"
-                          style="background-color: var(--color-primary-soft); color: var(--color-primary);">RMT</span>
-                    <span v-if="sec.includeInReceiving" class="px-2 py-1 rounded-lg text-[10px] font-bold"
-                          style="background-color: var(--color-primary-soft); color: var(--color-primary);">Receiving</span>
-                  </div>
-                  <button @click="sec.isActive = !sec.isActive"
-                          class="flex items-center gap-2 px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all"
-                          :style="sec.isActive
-                            ? 'background-color: var(--color-primary-soft); color: var(--color-primary);'
-                            : 'background-color: var(--color-surface); color: var(--color-text-muted); border: 1px solid var(--color-border);'">
-                    <span class="material-symbols-outlined text-xs">{{ sec.isActive ? 'check_circle' : 'cancel' }}</span>
-                    {{ sec.isActive ? 'Active' : 'Inactive' }}
-                  </button>
-                </div>
-                <p v-if="!settings.sections.length" class="py-8 text-center text-sm" style="color: var(--color-text-muted);">No sections configured yet.</p>
-              </div>
-            </div>
-
-            <div class="flex justify-end pt-4" style="border-top: 1px solid var(--color-border);">
-              <button class="px-6 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest transition-all active:scale-95 flex items-center gap-2 shadow-lg"
-                      style="background: var(--color-primary-gradient); color: #ffffff;" @click="save('Section')">
-                <span class="material-symbols-outlined text-sm">save</span>Save Changes
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- ══════════════════════════════════════════════════════════
-       USER MANAGEMENT
-  ══════════════════════════════════════════════════════════ -->
-        <div v-if="activeTab === 'users'"
-             class="rounded-2xl overflow-hidden"
-             style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
-          <div class="px-8 py-5 flex items-center gap-4" style="border-bottom: 1px solid var(--color-border);">
-            <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style="background-color: var(--color-primary-soft);">
-              <span class="material-symbols-outlined text-base" style="color: var(--color-primary);">manage_accounts</span>
-            </div>
-            <div>
-              <h2 class="text-base font-extrabold tracking-tight" style="color: var(--color-text);">User Management</h2>
-              <p class="text-xs mt-0.5" style="color: var(--color-text-muted);">Manage user accounts, roles, and section access.</p>
-            </div>
-          </div>
-          <div class="px-8 py-6 space-y-6">
-
-            <div class="relative">
-              <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-base" style="color: var(--color-text-muted);">search</span>
-              <input v-model="userSearch" class="w-full pl-10 pr-4 py-2.5 rounded-xl text-sm font-medium outline-none transition-all"
-                     style="background-color: var(--color-surface-low); color: var(--color-text); border: 1.5px solid var(--color-border);"
-                     placeholder="Search by User ID or Name..."
-                     @focus="(e) => (e.target.style.borderColor = 'var(--color-primary)')"
-                     @blur="(e) => (e.target.style.borderColor = 'var(--color-border)')" />
-            </div>
-
-            <table class="w-full text-sm">
-              <thead>
-                <tr style="border-bottom: 1px solid var(--color-border);">
-                  <th class="text-left pb-3 text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">User ID</th>
-                  <th class="text-left pb-3 text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Name</th>
-                  <th class="text-left pb-3 text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Sections</th>
-                  <th class="text-left pb-3 text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Admin</th>
-                  <th class="text-left pb-3 text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Theme</th>
-                  <th class="pb-3"></th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="user in filteredUsers" :key="user.userID" style="border-bottom: 1px solid var(--color-surface-low);">
-                  <td class="py-3 font-bold text-xs" style="color: var(--color-text);">{{ user.userID }}</td>
-                  <td class="py-3 font-medium" style="color: var(--color-text);">{{ user.userName }}</td>
-                  <td class="py-3">
-                    <div class="flex flex-wrap gap-1">
-                      <span v-for="sec in user.sections" :key="sec" class="px-2 py-0.5 rounded-lg text-[10px] font-bold"
-                            style="background-color: var(--color-primary-soft); color: var(--color-primary);">{{ sec }}</span>
-                    </div>
-                  </td>
-                  <td class="py-3">
-                    <span v-if="user.isAdmin" class="material-symbols-outlined text-base" style="color: var(--color-primary);">verified_user</span>
-                    <span v-else class="text-[10px] font-bold" style="color: var(--color-text-muted);">—</span>
-                  </td>
-                  <td class="py-3 text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">
-                    {{ ['Light', 'Dark', 'Dim'][user.theme] ?? 'Light' }}
-                  </td>
-                  <td class="py-3">
-                    <button class="px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all active:scale-95"
-                            style="background-color: var(--color-surface-low); color: var(--color-text-muted);" @click="openUserProfile(user)">
-                      Edit
-                    </button>
-                  </td>
-                </tr>
-                <tr v-if="!filteredUsers.length">
-                  <td colspan="6" class="py-8 text-center text-sm" style="color: var(--color-text-muted);">No users found.</td>
-                </tr>
-              </tbody>
-            </table>
-
           </div>
         </div>
 
@@ -867,9 +1547,11 @@
 </template>
 
 <script setup>
-  import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+  import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
   import { pcApi } from '@/api/pcApi'
   import { settingsApi } from '@/api/settingsApi'
+  import { userApi } from '@/api/userApi'
+  import { sectionApi } from '@/api/sectionApi'
   import AppLayout from '@/components/layout/AppLayout.vue'
 
   // ── Tabs ───────────────────────────────────────────────────────────────────
@@ -878,10 +1560,10 @@
 
   const settingsTabs = [
     { key: 'pc', label: 'PC Registration', icon: 'computer' },
+    { key: 'users', label: 'Users', icon: 'manage_accounts' },
+    { key: 'sections', label: 'Section', icon: 'apartment' },
     { key: 'tat', label: 'TAT Set-Up', icon: 'timer' },
     { key: 'branch', label: 'Branch', icon: 'location_city' },
-    { key: 'section', label: 'Section', icon: 'apartment' },
-    { key: 'users', label: 'Users', icon: 'manage_accounts' },
     { key: 'endorsement', label: 'Endorsement', icon: 'swap_horiz' },
     { key: 'archive', label: 'Archive', icon: 'archive' },
     { key: 'processing', label: 'Processing', icon: 'tune' },
@@ -967,30 +1649,6 @@
     newSection.value = { code: '', name: '', category: '3', cutOff: '', includeInAssignRMT: false, includeInReceiving: false }
   }
 
-  // ── Users ──────────────────────────────────────────────────────────────────
-
-  const userSearch = ref('')
-
-  const users = ref([
-    { userID: 'U001', userName: 'Juan Dela Cruz', sections: ['HEM', 'CHE'], isAdmin: false, theme: 0 },
-    { userID: 'U002', userName: 'Maria Santos', sections: ['URI'], isAdmin: false, theme: 1 },
-    { userID: 'U003', userName: 'Admin User', sections: [], isAdmin: true, theme: 0 },
-    { userID: 'U004', userName: 'Pedro Reyes', sections: ['MIC', 'HEM'], isAdmin: false, theme: 2 },
-  ])
-
-  const filteredUsers = computed(() => {
-    const q = userSearch.value.toLowerCase()
-    if (!q) return users.value
-    return users.value.filter(u =>
-      u.userID.toLowerCase().includes(q) || u.userName.toLowerCase().includes(q)
-    )
-  })
-
-  function openUserProfile(user) {
-    // TODO: open user edit modal / drawer
-    console.log('Edit user:', user)
-  }
-
   // ── Toast ──────────────────────────────────────────────────────────────────
 
   const toast = ref({ visible: false, message: '' })
@@ -1007,7 +1665,7 @@
     // TODO: call API endpoint
   }
 
-  // ── PC Registration state ────────────────────────────────────────────
+  // ── PC Registration state ────────────────────────────────────────────  PC 
   const pcList = ref([])
   const pcLoading = ref(false)
 
@@ -1123,6 +1781,510 @@
       showToast(err.response?.data?.message || 'Failed to update status.')
     }
   }
+
+  // ── Constants ──────────────────────────────────────────────────────── USER JS
+  const roles = [
+    { id: 1, label: 'Regular' },
+    { id: 2, label: 'Team Lead' },
+   /* { id: 3, label: 'Admin' },*/
+  ]
+
+  function roleLabel(roleID) {
+    return roles.find(r => r.id === roleID)?.label ?? 'Regular'
+  }
+
+  // ── Users state ──────────────────────────────────────────────────────
+  const usersList = ref([])
+  const usersLoading = ref(false)
+  const userSearch = ref('')
+  const userIdInputRef = ref(null)
+  const hclabDropdownRef = ref(null)
+  const hclabDropdownPos = ref({ top: 0, left: 0, width: 0 })
+
+  const filteredUsers = computed(() => {
+    const q = userSearch.value.toLowerCase()
+    if (!q) return usersList.value
+    return usersList.value.filter(u =>
+      u.userID.toLowerCase().includes(q) || u.userName.toLowerCase().includes(q)
+    )
+  })
+
+  async function loadUsers() {
+    usersLoading.value = true
+    try {
+      const res = await userApi.getAll()
+      usersList.value = res.data
+    } catch {
+      usersList.value = []
+    } finally {
+      usersLoading.value = false
+    }
+  }
+
+  // Load on mount (if users is default tab) or on tab switch
+  watch(activeTab, (val) => {
+    if (val === 'users' && !usersList.value.length) {
+      loadUsers()
+      loadSections()   // reuses availableSections from PC tab
+    }
+  })
+
+  // ── User modal ───────────────────────────────────────────────────────
+  const userModal = ref({
+    visible: false,
+    mode: 'add',      // 'add' | 'edit'
+    userID: null,
+    form: {
+      userID: '',
+      userName: '',
+      isAdmin: false,
+      sections: []    // [{ sectionCode, roleID }]
+    },
+    saving: false,
+    error: '',
+    sectionError: false
+  })
+
+  function isUserSectionSelected(code) {
+    return userModal.value.form.sections.some(s => s.sectionCode === code)
+  }
+
+  function getUserSectionRole(code) {
+    return userModal.value.form.sections.find(s => s.sectionCode === code)?.roleID ?? 1
+  }
+
+  function toggleUserSection(code) {
+    const idx = userModal.value.form.sections.findIndex(s => s.sectionCode === code)
+    if (idx === -1) {
+      userModal.value.form.sections.push({ sectionCode: code, roleID: 1 })
+    } else {
+      userModal.value.form.sections.splice(idx, 1)
+    }
+    userModal.value.sectionError = false
+  }
+
+  function setUserSectionRole(code, roleID) {
+    const entry = userModal.value.form.sections.find(s => s.sectionCode === code)
+    if (entry) entry.roleID = roleID
+  }
+
+  function openAddUser() {
+    userModal.value = {
+      visible: true, mode: 'add', userID: null,
+      form: { userID: '', userName: '', isAdmin: false, sections: [] },
+      hclabSearch: '',
+      hclabResults: [],
+      hclabLoading: false,
+      hclabDropdownOpen: false,
+      hclabNoResults: false,
+      hclabActiveIdx: -1,
+      saving: false, error: '', sectionError: false
+    }
+  }
+
+  function openEditUser(user) {
+    userModal.value = {
+      visible: true, mode: 'edit', userID: user.userID,
+      form: {
+        userID: user.userID,
+        userName: user.userName,
+        isAdmin: user.isAdmin,
+        sections: user.sections.map(s => ({ sectionCode: s.sectionCode, roleID: s.roleID }))
+      },
+      saving: false, error: '', sectionError: false
+    }
+  }
+
+  function closeUserModal() {
+    userModal.value.visible = false
+  }
+
+  async function saveUserModal() {
+    userModal.value.error = ''
+    userModal.value.sectionError = false
+
+    if (!userModal.value.form.sections.length) {
+      userModal.value.sectionError = true
+      return
+    }
+
+    userModal.value.saving = true
+    try {
+      if (userModal.value.mode === 'add') {
+        if (!userModal.value.form.userID.trim()) {
+          userModal.value.error = 'User ID is required.'
+          return
+        }
+        if (!userModal.value.form.userName.trim()) {
+          userModal.value.error = 'Full name is required.'
+          return
+        }
+        await userApi.add({
+          userID: userModal.value.form.userID.trim().toUpperCase(),
+          userName: userModal.value.form.userName.trim(),
+          isAdmin: userModal.value.form.isAdmin,
+          sections: userModal.value.form.sections
+        })
+        showToast('User added successfully.')
+      } else {
+        // Update info
+        await userApi.update(userModal.value.userID, {
+          userName: userModal.value.form.userName.trim(),
+          isAdmin: userModal.value.form.isAdmin,
+          active: usersList.value.find(u => u.userID === userModal.value.userID)?.active ?? true
+        })
+        // Update sections
+        await userApi.updateSections(userModal.value.userID, {
+          sections: userModal.value.form.sections
+        })
+        showToast('User updated successfully.')
+      }
+      closeUserModal()
+      await loadUsers()
+    } catch (err) {
+      userModal.value.error = err.response?.data?.message || 'An error occurred.'
+    } finally {
+      userModal.value.saving = false
+    }
+  }
+
+  async function toggleUser(user) {
+    try {
+      await userApi.toggle(user.userID)
+      user.active = !user.active
+    } catch (err) {
+      showToast(err.response?.data?.message || 'Failed to update status.')
+    }
+  }
+
+
+
+  // ── Extend userModal with HCLAB-specific state fields ────────────────
+
+  let hclabSearchTimer = null
+
+  function computeDropdownPos() {
+    const el = userIdInputRef.value
+    if (!el) return
+    const rect = el.getBoundingClientRect()
+    hclabDropdownPos.value = {
+      top: rect.bottom + 6,
+      left: rect.left,
+      width: rect.width
+    }
+  }
+
+  function onHclabSearchFocus() {
+    userIdInputRef.value?.style.setProperty('border-color', 'var(--color-primary)')
+    if (userModal.value.hclabResults.length) {
+      computeDropdownPos()
+      userModal.value.hclabDropdownOpen = true
+    }
+  }
+
+  function onHclabSearchInput() {
+    userModal.value.form.userID = ''       // clear selection on new input
+    userModal.value.form.userName = ''
+    userModal.value.hclabNoResults = false
+    userModal.value.hclabDropdownOpen = false
+    userModal.value.hclabActiveIdx = -1
+    clearTimeout(hclabSearchTimer)
+
+    const q = userModal.value.hclabSearch.trim()
+    if (q.length < 3) {
+      userModal.value.hclabResults = []
+      return
+    }
+
+    userModal.value.hclabLoading = true
+    hclabSearchTimer = setTimeout(async () => {
+      try {
+        const res = await userApi.getHCLABUsers(q)
+        userModal.value.hclabResults = res.data ?? []
+        userModal.value.hclabNoResults = userModal.value.hclabResults.length === 0
+        userModal.value.hclabDropdownOpen = true
+        await nextTick()
+        computeDropdownPos()
+        console.log(res)
+      } catch {
+        userModal.value.hclabResults = []
+        userModal.value.hclabNoResults = true
+      } finally {
+        userModal.value.hclabLoading = false
+      }
+    }, 350)
+  }
+
+  function selectHclabUser(u) {
+    userModal.value.form.userID = u.userID
+    userModal.value.form.userName = u.userName
+    userModal.value.hclabSearch = `${u.userID} — ${u.userName}`
+    userModal.value.hclabDropdownOpen = false
+    userModal.value.hclabActiveIdx = -1
+  }
+
+  function clearHclabSelection() {
+    userModal.value.form.userID = ''
+    userModal.value.form.userName = ''
+    userModal.value.hclabSearch = ''
+    userModal.value.hclabResults = []
+    userModal.value.hclabDropdownOpen = false
+    userModal.value.hclabActiveIdx = -1
+    nextTick(() => userIdInputRef.value?.focus())
+  }
+
+  function closeHclabDropdown() {
+    userModal.value.hclabDropdownOpen = false
+  }
+
+  // Keyboard navigation
+  function hclabSelectNext() {
+    if (!userModal.value.hclabResults.length) return
+    userModal.value.hclabActiveIdx =
+      (userModal.value.hclabActiveIdx + 1) % userModal.value.hclabResults.length
+  }
+
+  function hclabSelectPrev() {
+    if (!userModal.value.hclabResults.length) return
+    userModal.value.hclabActiveIdx =
+      (userModal.value.hclabActiveIdx - 1 + userModal.value.hclabResults.length)
+      % userModal.value.hclabResults.length
+  }
+
+  function hclabConfirmSelected() {
+    const idx = userModal.value.hclabActiveIdx
+    if (idx >= 0 && userModal.value.hclabResults[idx]) {
+      selectHclabUser(userModal.value.hclabResults[idx])
+    }
+  }
+
+
+  // ── Section categories definition ───────────────────────────────────
+const sectionCategories = [
+  { id: '1', label: 'Endorser',   icon: 'outbox',      color: '#2e7d9a', softColor: 'rgba(46,125,154,0.1)'  },
+  { id: '2', label: 'Receiver',   icon: 'move_to_inbox', color: '#6a4c93', softColor: 'rgba(106,76,147,0.1)' },
+  { id: '3', label: 'Laboratory', icon: 'science',     color: '#2e7d4f', softColor: 'rgba(46,125,79,0.1)'  },
+]
+
+ // ── Test groups state ────────────────────────────────────────────────
+const allTestGroups = ref([])       // [{ code, name, assignedSectionCode }]
+const testGroupsLoading = ref(false)
+ 
+async function loadTestGroups() {
+  testGroupsLoading.value = true
+  try {
+    const res = await sectionApi.getTestGroups()
+    allTestGroups.value = res.data
+  } catch {
+    allTestGroups.value = []
+  } finally {
+    testGroupsLoading.value = false
+  }
+}
+
+// ── Sections state ───────────────────────────────────────────────────
+const sectionsList = ref([])
+const sectionsLoading = ref(false)
+const sectionSearch = ref('')
+const sectionBranchFilter = ref('ALL')
+const availableBranches = ref([])   // loaded from settingsApi.getBranches()
+ 
+const filteredSections = computed(() => {
+  let list = sectionsList.value
+  if (sectionBranchFilter.value !== 'ALL')
+    list = list.filter(s => s.branchCode === sectionBranchFilter.value)
+  const q = sectionSearch.value.toLowerCase()
+  if (q) list = list.filter(s =>
+    s.code.toLowerCase().includes(q) || s.name.toLowerCase().includes(q)
+  )
+  return list
+})
+ 
+function filteredSectionsByCategory(catId) {
+  return filteredSections.value.filter(s => s.category === catId)
+}
+ 
+function receiverExistsForBranch(branchCode) {
+  return sectionsList.value.some(s => s.category === '2' && s.branchCode === branchCode)
+}
+ 
+async function loadSectionsList() {
+  sectionsLoading.value = true
+  try {
+    const res = await sectionApi.getAll()
+    sectionsList.value = res.data
+  } catch {
+    sectionsList.value = []
+  } finally {
+    sectionsLoading.value = false
+  }
+}
+ 
+async function loadBranches() {
+  try {
+    const res = await settingsApi.getBranches()
+    availableBranches.value = res.data.filter(b => b.active)
+  } catch {
+    availableBranches.value = []
+  }
+}
+ 
+watch(activeTab, (val) => {
+  if (val === 'sections' && !sectionsList.value.length) {
+    loadSectionsList()
+    loadBranches()
+  }
+})
+ 
+// ── Section modal ────────────────────────────────────────────────────
+let codeCheckTimer = null
+ 
+const sectionModal = ref({
+  visible: false,
+  mode: 'add',        // 'add' | 'edit'
+  originalCode: null,
+  form: { code: '', name: '', branchCode: '', category: '1', autoNo: 0 },
+  codeStatus: 'idle', // 'idle' | 'checking' | 'available' | 'taken'
+  codeChecking: false,
+  saving: false,
+  error: ''
+})
+ 
+function onCodeInput() {
+  sectionModal.value.form.code = sectionModal.value.form.code.toUpperCase()
+  sectionModal.value.codeStatus = 'idle'
+  clearTimeout(codeCheckTimer)
+ 
+  const code = sectionModal.value.form.code.trim()
+  if (!code) return
+ 
+  sectionModal.value.codeChecking = true
+  codeCheckTimer = setTimeout(async () => {
+    try {
+      const res = await sectionApi.checkCode(code)
+      sectionModal.value.codeStatus = res.data.exists ? 'taken' : 'available'
+    } catch {
+      sectionModal.value.codeStatus = 'idle'
+    } finally {
+      sectionModal.value.codeChecking = false
+    }
+  }, 400)
+}
+ 
+function openAddSection() {
+  sectionModal.value = {
+    visible: true, mode: 'add', originalCode: null,
+    form: {
+      code: '',
+      name: '',
+      branchCode: availableBranches.value[0]?.code ?? '',
+      category: '1',
+      autoNo: 0,
+      testGroupCodes: []
+    },
+    codeStatus: 'idle', codeChecking: false,
+    testGroupError: false,
+    saving: false, error: ''
+  }
+  // Always load fresh test group assignments when modal opens
+  loadTestGroups()
+}
+ 
+function openEditSection(sec) {
+  sectionModal.value = {
+    visible: true, mode: 'edit', originalCode: sec.code,
+    form: {
+      code: sec.code,
+      name: sec.name,
+      branchCode: sec.branchCode,
+      category: sec.category,
+      autoNo: sec.autoNo ?? 0,
+      testGroupCodes: sec.testGroups
+        ?.filter(tg => tg.active)
+        .map(tg => tg.testGroupCode) ?? []
+    },
+    codeStatus: 'idle', codeChecking: false,
+    testGroupError: false,
+    saving: false, error: ''
+  }
+  if (sec.category === '3') loadTestGroups()
+}
+ 
+function closeSectionModal() {
+  clearTimeout(codeCheckTimer)
+  sectionModal.value.visible = false
+}
+ 
+async function saveSectionModal() {
+  sectionModal.value.error = ''
+  sectionModal.value.testGroupError = false
+ 
+  const f = sectionModal.value.form
+ 
+  if (sectionModal.value.mode === 'add') {
+    if (!f.code.trim()) { sectionModal.value.error = 'Section code is required.'; return }
+    if (sectionModal.value.codeStatus === 'taken') { sectionModal.value.error = 'This section code already exists.'; return }
+    if (sectionModal.value.codeChecking) return
+    if (!f.branchCode) { sectionModal.value.error = 'Please select a branch.'; return }
+    if (!f.category) { sectionModal.value.error = 'Please select a category.'; return }
+    if (f.category === '2' && receiverExistsForBranch(f.branchCode)) {
+      sectionModal.value.error = 'A Receiver already exists for this branch.'
+      return
+    }
+  }
+ 
+  if (!f.name.trim()) { sectionModal.value.error = 'Section name is required.'; return }
+ 
+  if (f.category === '3' && !f.testGroupCodes.length) {
+    sectionModal.value.testGroupError = true
+    return
+  }
+ 
+  sectionModal.value.saving = true
+  try {
+    if (sectionModal.value.mode === 'add') {
+      await sectionApi.add({
+        code: f.code.trim().toUpperCase(),
+        name: f.name.trim(),
+        branchCode: f.branchCode,
+        category: f.category,
+        autoNo: f.category === '1' ? (f.autoNo ?? 0) : 0,
+        testGroupCodes: f.category === '3' ? f.testGroupCodes : []
+      })
+      showToast('Section created successfully.')
+    } else {
+      await sectionApi.update(sectionModal.value.originalCode, {
+        name: f.name.trim(),
+       /* autoNo: f.category === '1' ? (f.autoNo ?? 0) : 0,*/
+        testGroupCodes: f.category === '3' ? f.testGroupCodes : []
+      })
+      showToast('Section updated successfully.')
+    }
+    closeSectionModal()
+    await loadSectionsList()
+  } catch (err) {
+    sectionModal.value.error = err.response?.data?.message || 'An error occurred.'
+  } finally {
+    sectionModal.value.saving = false
+  }
+}
+ 
+async function toggleSection(sec) {
+  try {
+    await sectionApi.toggle(sec.code)
+    sec.active = !sec.active
+  } catch (err) {
+    showToast(err.response?.data?.message || 'Failed to update status.')
+  }
+}
+
+function toggleTestGroup(code) {
+  const idx = sectionModal.value.form.testGroupCodes.indexOf(code)
+  if (idx === -1) sectionModal.value.form.testGroupCodes.push(code)
+  else sectionModal.value.form.testGroupCodes.splice(idx, 1)
+  sectionModal.value.testGroupError = false
+}
+
 </script>
 
 <style scoped>

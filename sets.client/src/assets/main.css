@@ -120,6 +120,64 @@
   --color-warning-soft: rgba(217,119,6,0.08);
 }
 
+
+/* ── Accent: Purple (default) ─────────────────────────────────────────────── */
+[data-theme="light"][data-accent="purple"] {
+  --color-primary: #461599;
+  --color-primary-soft: rgba(70,21,153,0.08);
+  --color-primary-gradient: linear-gradient(135deg, #461599, #5e35b1);
+}
+
+[data-theme="dark"][data-accent="purple"],
+[data-theme="dim"][data-accent="purple"] {
+  --color-primary: #7c4dff;
+  --color-primary-soft: rgba(124,77,255,0.25);
+  --color-primary-gradient: linear-gradient(135deg, #7c4dff, #9c6fff);
+}
+
+/* ── Accent: Blue ─────────────────────────────────────────────────────────── */
+[data-theme="light"][data-accent="blue"] {
+  --color-primary: #1a6bcc;
+  --color-primary-soft: rgba(26,107,204,0.08);
+  --color-primary-gradient: linear-gradient(135deg, #1a6bcc, #3b82f6);
+}
+
+[data-theme="dark"][data-accent="blue"],
+[data-theme="dim"][data-accent="blue"] {
+  --color-primary: #4d9fff;
+  --color-primary-soft: rgba(77,159,255,0.25);
+  --color-primary-gradient: linear-gradient(135deg, #4d9fff, #74b8ff);
+}
+
+/* ── Accent: Teal ─────────────────────────────────────────────────────────── */
+[data-theme="light"][data-accent="teal"] {
+  --color-primary: #0f766e;
+  --color-primary-soft: rgba(15,118,110,0.08);
+  --color-primary-gradient: linear-gradient(135deg, #0f766e, #14b8a6);
+}
+
+[data-theme="dark"][data-accent="teal"],
+[data-theme="dim"][data-accent="teal"] {
+  --color-primary: #2dd4bf;
+  --color-primary-soft: rgba(45,212,191,0.25);
+  --color-primary-gradient: linear-gradient(135deg, #2dd4bf, #5eead4);
+}
+
+/* ── Accent: Rose ─────────────────────────────────────────────────────────── */
+[data-theme="light"][data-accent="rose"] {
+  --color-primary: #be123c;
+  --color-primary-soft: rgba(190,18,60,0.08);
+  --color-primary-gradient: linear-gradient(135deg, #be123c, #e11d48);
+}
+
+[data-theme="dark"][data-accent="rose"],
+[data-theme="dim"][data-accent="rose"] {
+  --color-primary: #fb7185;
+  --color-primary-soft: rgba(251,113,133,0.25);
+  --color-primary-gradient: linear-gradient(135deg, #fb7185, #fda4af);
+}
+
+
 /* ── Pikaday Calendar — theme-aware overrides ─────────────────────────────── */
 
 .pika-single {
@@ -212,19 +270,18 @@
 
 
 #nprogress .bar {
-  background: #461599 !important;
+  background: var(--color-primary) !important;
   height: 3px;
 }
 
 #nprogress .peg {
-  box-shadow: 0 0 10px #461599, 0 0 5px #461599 !important;
+  box-shadow: 0 0 10px var(--color-primary), 0 0 5px var(--color-primary) !important;
 }
 
 #nprogress .spinner-icon {
-  border-top-color: #461599 !important;
-  border-left-color: #461599 !important;
+  border-top-color: var(--color-primary) !important;
+  border-left-color: var(--color-primary) !important;
 }
-
 
 .expand-enter-active,
 .expand-leave-active {

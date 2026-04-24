@@ -4,11 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Model.HCLAB
+namespace Model.SETSDB
 {
-    public class User
+    public class Test_Group
     {
-        public string UserID { get; set; }
-        public string UserName { get; set; }
+        public string Code { get; set; }
+        public string Name { get; set; }
     }
 }

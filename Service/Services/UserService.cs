@@ -1,5 +1,6 @@
 ﻿using HCLAB;
 using Model.SETSDB;
+using Model.HCLAB;
 using Reposi;
 using Reposi.Context;
 using Service.Interfaces;
@@ -10,11 +11,13 @@ namespace Service.Services
     {
         private readonly AppDbContextFactory _factory;
         private readonly string _branch;
+        private readonly string _branch_raw;
 
         public UserService(AppDbContextFactory factory, string branch)
         {
             _factory = factory;
             _branch = SetsConnection.ConnectionString(branch);
+            _branch_raw = branch;
         }
 
         public bool Login(string userid, string password, string branch)
@@ -28,10 +31,16 @@ namespace Service.Services
                 );
                 return _auth != 0;
             }
-            catch
+            catch { throw; }
+        }
+
+        public async Task<List<Model.HCLAB.User>> GetHCLABUsers(string param)
+        {
+            try
             {
-                throw;
+                return await HclabMaster.HCLABUsers.GetUsers(HclabConnection.ConnectionString(_branch_raw), param);
             }
+            catch { throw; }
         }
 
         public User_Master GetUser(string userid, string branch)
@@ -42,10 +51,29 @@ namespace Service.Services
                 using var unit = new UnitOfWork(context);
                 return unit.Users.GetByUserID(userid);
             }
-            catch
+            catch { throw; }
+        }
+
+        public List<User_Master> GetAll()
+        {
+            try
             {
-                throw;
+                using var context = _factory.CreateContext(_branch);
+                using var unit = new UnitOfWork(context);
+                return unit.Users.GetAll().ToList();
             }
+            catch { throw; }
+        }
+
+        public void Add(User_Master user)
+        {
+            try
+            {
+                using var context = _factory.CreateContext(_branch);
+                using var unit = new UnitOfWork(context);
+                unit.Users.Add(user);
+            }
+            catch { throw; }
         }
 
         public void Update(User_Master user)
@@ -58,5 +86,7 @@ namespace Service.Services
             }
             catch { throw; }
         }
+
+
     }
 }

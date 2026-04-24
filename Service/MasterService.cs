@@ -17,6 +17,8 @@ namespace Service
         public HealthService Health { get; private set; }
         public RunnerService Runner { get; private set; }
         public SpecimenSectionService SpecimenSection { get; private set; }
+        public SectionTestGroupService SectionTestGroup { get; set; }
+        public TestGroupService TestGroup { get; set; }
 
         private readonly AppDbContextFactory _factory;
         private readonly string _branch;
@@ -42,6 +44,8 @@ namespace Service
             Health = new HealthService(_factory, _branch);
             Runner = new RunnerService(_factory, _branch);
             SpecimenSection = new SpecimenSectionService(_factory, _branch);
+            SectionTestGroup = new SectionTestGroupService(_factory, _branch);
+            TestGroup = new TestGroupService(_factory, _branch);
         }
 
         public void Dispose()
@@ -57,6 +61,7 @@ namespace Service
             Health = null;
             Runner = null;
             SpecimenSection = null;
+            TestGroup = null;
         }
     }
 }

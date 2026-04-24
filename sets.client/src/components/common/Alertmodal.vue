@@ -130,32 +130,32 @@ const props = defineProps({
 
 const emit = defineEmits(["confirm", "close"]);
 
-const typeConfig = {
-  error: {
-    iconBg: "rgba(186,26,26,0.1)",
-    iconColor: "#ba1a1a",
-    buttonBg: "#ba1a1a",
-    buttonColor: "#ffffff",
-  },
-  warning: {
-    iconBg: "rgba(255,179,113,0.2)",
-    iconColor: "#7b4200",
-    buttonBg: "#7b4200",
-    buttonColor: "#ffffff",
-  },
-  success: {
-    iconBg: "rgba(70,21,153,0.1)",
-    iconColor: "#461599",
-    buttonBg: "#461599",
-    buttonColor: "#ffffff",
-  },
-  info: {
-    iconBg: "rgba(74,98,109,0.1)",
-    iconColor: "#4a626d",
-    buttonBg: "#4a626d",
-    buttonColor: "#ffffff",
-  },
-};
+  const typeConfig = {
+    error: {
+      iconBg: "rgba(186,26,26,0.1)",
+      iconColor: "var(--color-error)",
+      buttonBg: "var(--color-error)",
+      buttonColor: "#ffffff",
+    },
+    warning: {
+      iconBg: "rgba(255,179,113,0.2)",
+      iconColor: "#7b4200",
+      buttonBg: "#7b4200",
+      buttonColor: "#ffffff",
+    },
+    success: {
+      iconBg: "var(--color-primary-soft)",
+      iconColor: "var(--color-primary)",
+      buttonBg: "var(--color-primary)",
+      buttonColor: "#ffffff",
+    },
+    info: {
+      iconBg: "rgba(74,98,109,0.1)",
+      iconColor: "#4a626d",
+      buttonBg: "#4a626d",
+      buttonColor: "#ffffff",
+    },
+  };
 
 const config = computed(() => typeConfig[props.type] || typeConfig.info);
 

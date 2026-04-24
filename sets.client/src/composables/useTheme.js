@@ -7,6 +7,13 @@ const themeMap = {
   2: 'dim'
 }
 
+const accentMap = {
+  0: 'purple',
+  1: 'blue',
+  2: 'teal',
+  3: 'rose'
+}
+
 export function useTheme() {
   const authStore = useAuthStore()
 
@@ -15,15 +22,18 @@ export function useTheme() {
     document.documentElement.setAttribute('data-theme', themeName)
   }
 
-  function initTheme() {
-    applyTheme(authStore.theme)
+  function applyAccent(accentValue) {
+    const accentName = accentMap[accentValue] ?? 'purple'
+    document.documentElement.setAttribute('data-accent', accentName)
   }
 
-  // watch for theme changes and apply automatically
-  watch(
-    () => authStore.theme,
-    (newTheme) => applyTheme(newTheme)
-  )
+  function initTheme() {
+    applyTheme(authStore.theme)
+    applyAccent(authStore.accentColor)
+  }
 
-  return { initTheme, applyTheme, themeMap }
+  watch(() => authStore.theme, (newTheme) => applyTheme(newTheme))
+  watch(() => authStore.accentColor, (newAccent) => applyAccent(newAccent))
+
+  return { initTheme, applyTheme, applyAccent, themeMap, accentMap }
 }

@@ -85,6 +85,7 @@ namespace SETS.Server.Controllers
                         SectionName = section?.Name ?? request.SectionCode,
                         RoleID = userSection.RoleID,
                         Theme = user.Theme,
+                        AccentColor = user.AccentColor,
                         SectionCategory = section?.Category ?? "1"
                     }
                 });

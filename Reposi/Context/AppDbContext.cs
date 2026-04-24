@@ -23,6 +23,7 @@ namespace Reposi.Context
         public DbSet<Section_TestGroup> Section_TestGroup { get; set; }
         public DbSet<Specimen_Section_Header> Specimen_Section_Header { get; set; }
         public DbSet<Specimen_Section_Test> Specimen_Section_Test { get; set; }
+        public DbSet<Test_Group> Test_Group { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             // User_Master
@@ -143,6 +144,10 @@ namespace Reposi.Context
                 .HasOne<Specimen_Section_Header>()
                 .WithMany()
                 .HasForeignKey(s => s.HeaderId);
+
+            // Test_Group
+            modelBuilder.Entity<Test_Group>().ToTable("Test_Group");
+            modelBuilder.Entity<Test_Group>().HasKey(r => r.Code);
         }
     }
 }

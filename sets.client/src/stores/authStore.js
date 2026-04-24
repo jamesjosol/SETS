@@ -6,9 +6,9 @@ export const useAuthStore = defineStore('auth', {
     branch: null,
     section: null,
     isAuthenticated: false,
-    theme: 0  // 0 = light, 1 = dark, 2 = dim
+    theme: 0,       // 0 = light, 1 = dark, 2 = dim
+    accentColor: 0  // 0 = purple, 1 = blue, 2 = teal, 3 = rose
   }),
-
   actions: {
     setUser(user, branch, section) {
       this.user = user
@@ -16,9 +16,13 @@ export const useAuthStore = defineStore('auth', {
       this.section = section
       this.isAuthenticated = true
       this.theme = user?.theme ?? 0
+      this.accentColor = user?.accentColor ?? 0
     },
     setTheme(theme) {
       this.theme = theme
+    },
+    setAccentColor(accentColor) {
+      this.accentColor = accentColor
     },
     logout() {
       this.user = null
@@ -26,9 +30,9 @@ export const useAuthStore = defineStore('auth', {
       this.section = null
       this.isAuthenticated = false
       this.theme = 0
+      this.accentColor = 0
     }
   },
-
   getters: {
     userID: (state) => state.user?.userID ?? '',
     userName: (state) => state.user?.userName ?? '',
@@ -38,12 +42,9 @@ export const useAuthStore = defineStore('auth', {
     roleID: (state) => state.section?.roleID ?? null,
     branchCode: (state) => state.branch ?? '',
     sectionCategory: (state) => state.section?.category ?? null,
-
-    // helper getters based on category code
     isEndorser: (state) => !state.user?.isAdmin && state.section?.category === '1',
     isReceiver: (state) => !state.user?.isAdmin && state.section?.category === '2',
     isRunner: (state) => !state.user?.isAdmin && state.section?.category === '3',
   },
-
   persist: true
 })

@@ -9,5 +9,6 @@ namespace Model.Main
     public class UpdateThemeRequest
     {
         public byte Theme { get; set; }
+        public byte AccentColor { get; set; }
     }
 }

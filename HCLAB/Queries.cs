@@ -21,6 +21,16 @@ namespace HCLAB
 	                AND user_id = :p0 
 	                AND password = :p1
 				";
+
+			public static string GetActiveUsers = @"
+					SELECT user_id, user_name 
+					FROM user_account
+					WHERE suspend = 'N'
+					  AND (
+						user_id   LIKE '%' || :p0 || '%'
+						OR user_name LIKE '%' || :p0 || '%'
+					  ) 
+				";
 		}
 
 

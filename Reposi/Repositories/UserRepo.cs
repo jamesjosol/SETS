@@ -9,5 +9,6 @@ namespace Reposi.Repositories
 
         public User_Master? GetByUserID(string userid)
             => dbSet.FirstOrDefault(u => u.UserID == userid);
+
     }
 }

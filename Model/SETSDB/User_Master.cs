@@ -13,6 +13,7 @@ namespace Model.SETSDB
         public bool IsAdmin { get; set; }
         public bool Active { get; set; }
         public byte Theme { get; set; }
+        public byte AccentColor { get; set; }
         public DateTime Created { get; set; }
         public string CreatedBy { get; set; }
         public DateTime? Updated { get; set; }

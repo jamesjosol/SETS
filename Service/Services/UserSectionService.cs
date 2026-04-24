@@ -27,6 +27,17 @@ namespace Service.Services
             catch { throw; }
         }
 
+        public List<User_Section> GetAllByUserID(string userID)
+        {
+            try
+            {
+                using var context = _factory.CreateContext(_branch);
+                using var unit = new UnitOfWork(context);
+                return unit.UserSections.GetAllByUserID(userID);
+            }
+            catch { throw; }
+        }
+
         public User_Section? GetByUserAndSection(string userID, string sectionCode)
         {
             try

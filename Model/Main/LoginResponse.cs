@@ -24,6 +24,7 @@ namespace Model.Main
         public string SectionName { get; set; }
         public int RoleID { get; set; }
         public byte Theme { get; set; }
+        public byte AccentColor { get; set; }
         public string SectionCategory { get; set; }
     }
 }

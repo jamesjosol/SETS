@@ -232,7 +232,7 @@
   import { useTheme } from '@/composables/useTheme'
 
 
-  const { applyTheme } = useTheme()
+  const { applyTheme, applyAccent } = useTheme()
   const router = useRouter();
   const authStore = useAuthStore();
 
@@ -339,7 +339,8 @@
           userID: data.data.userID,
           userName: data.data.userName,
           isAdmin: data.data.isAdmin,
-          theme: data.data.theme 
+          theme: data.data.theme,
+          accentColor: data.data.accentColor
         },
         data.data.branchCode,
         {
@@ -352,7 +353,8 @@
       )
 
       console.log(authStore.section)
-      applyTheme(data.data.theme) 
+      applyTheme(data.data.theme)
+      applyAccent(data.data.accentColor)
       router.push(getDefaultRoute(authStore))
 
     } catch (err) {

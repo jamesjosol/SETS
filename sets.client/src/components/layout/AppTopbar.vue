@@ -75,18 +75,39 @@
 
             <!-- Theme Switcher -->
             <div class="px-4 py-3" style="border-top: 1px solid var(--color-border); border-bottom: 1px solid var(--color-border);">
-              <p class="text-[10px] font-bold uppercase tracking-widest mb-2" style="color: var(--color-text-muted);">Theme</p>
-              <div class="flex items-center gap-2">
+
+              <!-- Mode -->
+              <p class="text-[10px] font-bold uppercase tracking-widest mb-2" style="color: var(--color-text-muted);">Mode</p>
+              <div class="flex items-center gap-2 mb-3">
                 <button v-for="t in themes"
                         :key="t.value"
                         class="flex-1 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all"
                         :style="authStore.theme === t.value
-                    ? 'background-color: var(--color-primary); color: #ffffff;'
-                    : 'background-color: var(--color-surface-low); color: var(--color-text-muted);'"
+              ? 'background-color: var(--color-primary); color: #ffffff;'
+              : 'background-color: var(--color-surface-low); color: var(--color-text-muted);'"
                         @click="handleThemeChange(t.value)">
                   {{ t.label }}
                 </button>
               </div>
+
+              <!-- Accent -->
+              <p class="text-[10px] font-bold uppercase tracking-widest mb-2" style="color: var(--color-text-muted);">Accent</p>
+              <div class="flex items-center gap-2">
+                <button v-for="a in accents"
+                        :key="a.value"
+                        class="flex-1 h-7 rounded-xl transition-all relative"
+                        :style="`background: ${a.gradient};`"
+                        :title="a.label"
+                        @click="handleAccentChange(a.value)">
+                  <!-- checkmark if selected -->
+                  <span v-if="authStore.accentColor === a.value"
+                        class="material-symbols-outlined text-white absolute inset-0 flex items-center justify-center text-sm"
+                        style="font-size: 14px; display: flex; align-items: center; justify-content: center;">
+                    check
+                  </span>
+                </button>
+              </div>
+
             </div>
 
             <!-- Logout -->
@@ -118,7 +139,7 @@
   import { useTheme } from "@/composables/useTheme";
   import { themeApi } from "@/api/themeApi";
 
-  const { applyTheme } = useTheme();
+  const { applyTheme, applyAccent } = useTheme();
   const authStore = useAuthStore();
   const router = useRouter();
   const searchQuery = ref("");
@@ -129,6 +150,13 @@
     { value: 0, label: "☀️ Light" },
     { value: 1, label: "🌙 Dark" },
     { value: 2, label: "🌫️ Dim" },
+  ];
+
+  const accents = [
+    { value: 0, label: "Purple", gradient: "linear-gradient(135deg, #461599, #5e35b1)" },
+    { value: 1, label: "Blue", gradient: "linear-gradient(135deg, #1a6bcc, #3b82f6)" },
+    { value: 2, label: "Teal", gradient: "linear-gradient(135deg, #0f766e, #14b8a6)" },
+    { value: 3, label: "Rose", gradient: "linear-gradient(135deg, #be123c, #e11d48)" },
   ];
 
   const userInitials = computed(() => {
@@ -154,10 +182,16 @@
     authStore.setTheme(themeValue);
     applyTheme(themeValue);
     try {
-      await themeApi.update(themeValue);
-    } catch {
-      // silently fail
-    }
+      await themeApi.update(themeValue, authStore.accentColor);
+    } catch { }
+  }
+
+  async function handleAccentChange(accentValue) {
+    authStore.setAccentColor(accentValue);
+    applyAccent(accentValue);
+    try {
+      await themeApi.update(authStore.theme, accentValue);
+    } catch { }
   }
 
   async function handleLogout() {

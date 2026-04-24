@@ -4,6 +4,7 @@ using Oracle.ManagedDataAccess.Client;
 using System.Diagnostics;
 using static HCLAB.Queries;
 using Model.Main;
+using Model.HCLAB;
 using System.Reflection.Emit;
 
 namespace HCLAB
@@ -36,10 +37,38 @@ namespace HCLAB
                 return _count;
             }
 
-            //public static List<User> GetUsers(string conn)
-            //{
-            //    return null;
-            //}
+            public async static Task<List<Model.HCLAB.User>> GetUsers(string conn, string param)
+            {
+                List<Model.HCLAB.User> users = new List<Model.HCLAB.User>();
+                try
+                {
+                    using (var con = new OracleConnection(conn))
+                    using (var cmd = new OracleCommand(Queries.User.GetActiveUsers, con))
+                    {
+                        cmd.Parameters.Add("p0", param);
+                        await con.OpenAsync();
+
+                        using (var reader = await cmd.ExecuteReaderAsync())
+                        {
+                            while (await reader.ReadAsync())
+                            {
+                                users.Add(new Model.HCLAB.User
+                                {
+                                    UserID = reader["user_id"].ToString(),
+                                    UserName = reader["user_name"].ToString()
+                                });
+                            }
+                        }
+
+                        return users;
+                    }
+                }
+                catch (Exception)
+                {
+
+                    throw;
+                }
+            }
         }
 
         public static class HCLABTransactions
