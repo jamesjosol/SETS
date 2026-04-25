@@ -13,5 +13,7 @@ namespace Model.HCLAB
         public string TESTNAME { get; set; }
         public string SAMPLETYPECODE { get; set; }
         public string TESTGROUP { get; set; }
+        public string ITEM_TYPE { get; set; }     
+        public DateTime? RELEASE_ON { get; set; }
     }
 }

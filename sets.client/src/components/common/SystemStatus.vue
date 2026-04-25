@@ -1,15 +1,17 @@
 <template>
-  <div class="rounded-2xl p-6"
+  <div class="rounded-2xl p-6 overflow-visible isolate"
        style="background-color: var(--color-surface-low); box-shadow: 0 1px 3px var(--color-shadow);">
 
     <h2 class="text-xs font-bold uppercase tracking-widest mb-5" style="color: var(--color-text);">
       System Status
     </h2>
 
-    <div class="space-y-3 overflow-visible">
+    <div class="space-y-3">
       <div v-for="status in systemStatus" :key="status.label"
-           class="flex items-center justify-between p-3 rounded-xl relative group"
-           style="background-color: var(--color-surface);">
+           class="flex items-center justify-between p-3 rounded-xl relative"
+           style="background-color: var(--color-surface);"
+           @mouseenter="(e) => showTooltip(e, status)"
+           @mouseleave="hideTooltip">
 
         <!-- Left: icon + label -->
         <div class="flex items-center gap-3">
@@ -32,32 +34,29 @@
           </span>
         </div>
 
-        <!-- Hover tooltip — middleware task detail only -->
-        <div v-if="status.tasks && status.tasks.length > 0"
-             class="absolute right-0 top-full mt-1 z-50 min-w-56 rounded-xl p-3 shadow-xl pointer-events-none
-                    opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-             style="background-color: var(--color-surface-high); border: 1px solid var(--color-border);">
-          <p class="text-[9px] font-bold uppercase tracking-widest mb-2"
-             style="color: var(--color-text-muted);">Tasks</p>
-          <div v-for="task in status.tasks" :key="task.name" class="flex items-start gap-2 py-1">
-            <span class="w-1.5 h-1.5 rounded-full flex-shrink-0 mt-1"
-                  :style="task.running
-                    ? 'background-color: var(--color-success)'
-                    : 'background-color: var(--color-error)'">
-            </span>
-            <div class="min-w-0">
-              <p class="text-[10px] font-bold truncate" style="color: var(--color-text);">
-                {{ task.name }}
-              </p>
-              <p class="text-[9px] truncate" style="color: var(--color-text-muted);">
-                {{ task.lastRun }}
-              </p>
-            </div>
-          </div>
-        </div>
-
       </div>
     </div>
+
+    <!-- Single teleported tooltip -->
+    <Teleport to="body">
+      <div v-if="activeTooltip"
+           class="fixed z-[999] min-w-56 rounded-xl p-3 shadow-xl pointer-events-none transition-opacity duration-200"
+           :style="`top: ${tooltipY}px; right: ${tooltipRight}px; transform: translateY(-100%); background-color: var(--color-surface-high); border: 1px solid var(--color-border);`">
+        <p class="text-[9px] font-bold uppercase tracking-widest mb-2"
+           style="color: var(--color-text-muted);">Tasks<span class="material-symbols-outlined ps-1" style="font-size: 15px;">manufacturing</span></p>
+        <div v-for="task in activeTooltip.tasks" :key="task.name" class="flex items-start gap-2 py-1">
+          <span class="w-1.5 h-1.5 rounded-full flex-shrink-0 mt-1"
+                :style="task.running
+              ? 'background-color: var(--color-success)'
+              : 'background-color: var(--color-error)'">
+          </span>
+          <div class="min-w-0">
+            <p class="text-[10px] font-bold truncate" style="color: var(--color-text);">{{ task.name }}</p>
+            <p class="text-[9px] truncate" style="color: var(--color-text-muted);">{{ task.lastRun }}</p>
+          </div>
+        </div>
+      </div>
+    </Teleport>
 
     <!-- Footer: last checked -->
     <div class="mt-5 pt-4 flex justify-between text-[10px] font-bold uppercase tracking-widest"
@@ -154,6 +153,22 @@ async function fetchSystemStatus() {
     hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true
   })
 }
+
+  const activeTooltip = ref(null)
+  const tooltipY = ref(0)
+  const tooltipRight = ref(0)
+
+  function showTooltip(e, status) {
+    if (!status.tasks || status.tasks.length === 0) return
+    const rect = e.currentTarget.getBoundingClientRect()
+    tooltipY.value = rect.top + 10
+    tooltipRight.value = window.innerWidth - rect.right
+    activeTooltip.value = status
+  }
+
+  function hideTooltip() {
+    activeTooltip.value = null
+  }
 
 // ── Lifecycle ──────────────────────────────────────────────────────────────
 

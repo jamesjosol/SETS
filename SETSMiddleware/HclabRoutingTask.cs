@@ -20,12 +20,12 @@ namespace SETSMiddleware.Tasks
     {
         private readonly string _branch;
 
-        public HclabRoutingTask(string branch)
+        public HclabRoutingTask(string branch, int intervalSeconds = 30)
         {
             _branch = branch;
             TaskName = "HCLAB Routing Checker";
             Description = "Checks Oracle ord_spl for unrouted specimens and flips IsHclabRouted once OS_SPL_RCVD_FLAG = 'Y'.";
-            IntervalSeconds = 30;
+            IntervalSeconds = intervalSeconds;
         }
 
         protected override async Task ExecuteAsync()

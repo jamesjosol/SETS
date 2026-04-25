@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
+using Microsoft.Extensions.Configuration;
 using SETSMiddleware.Tasks;
 
 namespace SETSMiddleware
@@ -28,13 +29,15 @@ namespace SETSMiddleware
         private TaskBase _selectedTask;
         private TaskRow _selectedRow;
         private MiddlewareHttpServer _httpServer;
+        private readonly IConfiguration _config;
 
         // ── Log buffer per task ───────────────────────────────────────────────────
         private readonly Dictionary<string, List<(string message, TaskBase.LogLevel level, DateTime time)>> _logs = new();
 
-        public MiddlewareForm(string branch)
+        public MiddlewareForm(string branch, IConfiguration config)
         {
             _branch = branch;
+            _config = config;
             InitializeComponent();
             SetupTheme();
             RegisterTasks();
@@ -52,9 +55,19 @@ namespace SETSMiddleware
 
         private void RegisterTasks()
         {
-            var hclabTask = new HclabRoutingTask(_branch);
-            _tasks.Add(hclabTask);
-            _logs[hclabTask.TaskName] = new List<(string, TaskBase.LogLevel, DateTime)>();
+            int hclabInterval = int.TryParse(_config["TaskIntervals:HclabRouting"], out var v1) ? v1 : 30;
+            int schedInterval = int.TryParse(_config["TaskIntervals:ScheduledSpecimenRelease"], out var v2) ? v2 : 120;
+            int releaseInterval = int.TryParse(_config["TaskIntervals:TestResultRelease"], out var v3) ? v3 : 60;
+
+            var hclabTask = new HclabRoutingTask(_branch, hclabInterval);
+            var schedTask = new ScheduledSpecimenReleaseTask(_branch, schedInterval);
+            var releaseTask = new TestResultReleaseTask(_branch, releaseInterval);
+
+            foreach (var task in new TaskBase[] { hclabTask, schedTask, releaseTask })
+            {
+                _tasks.Add(task);
+                _logs[task.TaskName] = new List<(string, TaskBase.LogLevel, DateTime)>();
+            }
 
             foreach (var task in _tasks)
             {
@@ -104,6 +117,8 @@ namespace SETSMiddleware
             lblTaskTitle.Text = task.TaskName;
             lblTaskDescription.Text = task.Description;
             lblInterval.Text = $"Interval: {task.IntervalSeconds}s";
+            lblInterval.BringToFront();
+            lblInterval.Refresh();
             lblLastRun.Text = task.LastRun.HasValue
                 ? $"Last run: {task.LastRun.Value:HH:mm:ss}"
                 : "Last run: Never";

@@ -30,7 +30,7 @@ namespace SETSMiddleware
             // Each branch runs its own instance of SETSMiddleware.
             const string BRANCH = "WES";
 
-            Application.Run(new MiddlewareForm(BRANCH));
+            Application.Run(new MiddlewareForm(BRANCH, config));
         }
     }
 }

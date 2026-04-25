@@ -54,5 +54,20 @@ namespace Reposi.Repositories
                 .Where(h => h.SpecimenNo == specimenNo && !h.IsHclabRouted)
                 .ExecuteUpdate(s => s.SetProperty(h => h.IsHclabRouted, true));
         }
+
+        /// <summary>
+        /// Checks if all tests under a header are "X" (Released),
+        /// and if so flips the header Status to "C" (Completed).
+        /// </summary>
+        public void CompleteHeaderIfAllReleased(int headerId)
+        {
+            var allDone = !dbSet
+                .Any(h => h.Id == headerId); // just to get the header — see below
+
+            // Check child tests via context
+            // We need access to Specimen_Section_Test — do this in the service layer instead
+            // (see SpecimenSectionService.TryCompleteHeader)
+        }
+
     }
 }

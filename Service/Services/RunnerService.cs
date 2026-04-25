@@ -660,7 +660,7 @@ namespace Service.Services
                     var scheduled = GetScheduledSpecimens(section.Code);
                     var due = scheduled.Where(s =>
                         s.Tests.Any(t =>
-                            (t.ScheduleTag == "END" || t.ScheduleTag == "CRD") &&
+                            (t.ScheduleTag == "END" || t.ScheduleTag == "CRD" || t.ScheduleTag == "SRD") &&
                             t.RunningDate == todayStr
                         )).ToList();
 

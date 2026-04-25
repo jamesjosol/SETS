@@ -46,6 +46,16 @@ namespace SETSMiddleware.Tasks
             OnStateChanged?.Invoke();
             Log($"{TaskName} stopped.", LogLevel.Warning);
         }
+        protected void SetLastRun(DateTime value)
+        {
+            LastRun = value;
+        }
+
+        protected void RaiseStateChanged()
+        {
+            OnStateChanged?.Invoke();
+        }
+
 
         public async Task RunNowAsync()
         {
@@ -55,7 +65,7 @@ namespace SETSMiddleware.Tasks
             OnStateChanged?.Invoke();
         }
 
-        private async Task RunLoopAsync(CancellationToken token)
+        protected virtual async Task RunLoopAsync(CancellationToken token)
         {
             while (!token.IsCancellationRequested)
             {

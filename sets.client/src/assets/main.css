@@ -7,6 +7,11 @@
 @import "nprogress/nprogress.css";
 @import "pikaday/css/pikaday.css";
 
+html, body, #app {
+  height: auto !important;
+  min-height: 0 !important;
+}
+
 @font-face {
   font-family: "Manrope";
   src: url("/fonts/Manrope-ExtraLight.ttf") format("truetype");

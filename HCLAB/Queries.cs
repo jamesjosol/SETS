@@ -62,9 +62,18 @@ namespace HCLAB
 					FROM ord_spl
 					WHERE os_sno = :p0";
 
+            public static string Check_Test_Released = @"
+				SELECT od_item_type, od_release_on
+				FROM ord_dtl
+				WHERE od_tno = :p0
+				  AND od_order_ti = :p1
+				  AND od_item_type = 'U'
+				";
+
         }
-		
-		public static class Test 
+
+  
+        public static class Test 
 		{
 			public static string Get_Tests = @"
 				SELECT ti_code AS test_code, ti_name AS test_name, ti_test_grp AS test_group

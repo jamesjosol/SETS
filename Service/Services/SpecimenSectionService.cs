@@ -187,6 +187,92 @@ namespace Service.Services
             }
             catch { throw; }
         }
+        public List<Specimen_Section_Test> GetDueScheduledTests(DateOnly today)
+        {
+            try
+            {
+                using var context = _factory.CreateContext(_branch);
+                using var unit = new UnitOfWork(context);
+                return unit.SpecimenSectionTests.GetDueScheduledTests(today);
+            }
+            catch { throw; }
+        }
 
+        public void ReleaseScheduledHeaders(List<int> headerIds)
+        {
+            try
+            {
+                using var context = _factory.CreateContext(_branch);
+                using var unit = new UnitOfWork(context);
+                foreach (var h in headerIds)
+                {
+                    var _s = unit.SpecimenSectionHeaders.Get(h);
+                    if (_s == null || _s.Status == "P") continue;
+                    _s.Status = "P";
+                    unit.SpecimenSectionHeaders.Update(_s);
+                }
+            }
+            catch { throw; }
+        }
+
+        public List<Specimen_Section_Test> GetAllRunningTests()
+        {
+            try
+            {
+                using var context = _factory.CreateContext(_branch);
+                using var unit = new UnitOfWork(context);
+                return unit.SpecimenSectionTests.GetAllRunningTests();
+            }
+            catch { throw; }
+        }
+
+        public void MarkTestReleased(int testId)
+        {
+            try
+            {
+                using var context = _factory.CreateContext(_branch);
+                using var unit = new UnitOfWork(context);
+                var test = unit.SpecimenSectionTests.Get(testId);
+                if (test == null) return;
+                test.Status = "X";
+                unit.SpecimenSectionTests.Update(test);
+            }
+            catch { throw; }
+        }
+
+        /// <summary>
+        /// Checks all tests under a header — if every one is "X", flips Header to "C".
+        /// </summary>
+        public void TryCompleteHeader(int headerId)
+        {
+            try
+            {
+                using var context = _factory.CreateContext(_branch);
+
+                var allReleased = !context.Specimen_Section_Test
+                    .Where(t => t.HeaderId == headerId)
+                    .Any(t => t.Status != "X");
+
+                if (!allReleased) return;
+
+                var header = context.Specimen_Section_Header.Find(headerId);
+                if (header == null || header.Status == "C") return;
+
+                header.Status = "C";
+                header.Updated = DateTime.Now;
+                context.SaveChanges();
+            }
+            catch { throw; }
+        }
+
+        public Specimen_Section_Header? GetHeaderById(int id)
+        {
+            try
+            {
+                using var context = _factory.CreateContext(_branch);
+                return context.Specimen_Section_Header.Find(id);
+            }
+            catch { throw; }
+        }
     }
 }

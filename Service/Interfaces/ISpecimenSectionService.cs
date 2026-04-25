@@ -17,6 +17,7 @@ namespace Service.Interfaces
         bool HeaderExists(string specimenNo, string testGroupCode);
         void AddHeader(Specimen_Section_Header header);
         void UpdateHeader(Specimen_Section_Header header);
+        Specimen_Section_Header? GetHeaderById(int id);
 
         // Tests
         List<Specimen_Section_Test> GetTestsByHeaderId(int headerId);
@@ -28,7 +29,12 @@ namespace Service.Interfaces
 
 
         // Middleware
+        void ReleaseScheduledHeaders(List<int> headerId);
         List<string> GetUnroutedSpecimenNos();
         void FlipHclabRouted(string specimenNo);
+        List<Specimen_Section_Test> GetAllRunningTests();
+        void MarkTestReleased(int testId);
+        void TryCompleteHeader(int headerId);
+
     }
 }

@@ -229,6 +229,40 @@ namespace HCLAB
                     throw;
                 }
             }
+
+            /// <summary>
+            /// Checks if a test (including profiles) is fully released in HCLAB.
+            /// For profiles: all child rows (od_item_type = 'U') must have a non-null od_release_on.
+            /// For single tests: the single 'U' row must have a non-null od_release_on.
+            /// Returns true if released, false if not yet.
+            /// </summary>
+            public static async Task<bool> CheckTestReleased(string conn, string labNo, string testCode)
+            {
+                try
+                {
+                    using var con = new OracleConnection(conn);
+                    using var cmd = new OracleCommand(Queries.Transaction.Check_Test_Released, con);
+                    cmd.Parameters.Add("p0", labNo);
+                    cmd.Parameters.Add("p1", testCode);
+                    await con.OpenAsync();
+
+                    var children = new List<DateTime?>();
+
+                    using var reader = await cmd.ExecuteReaderAsync();
+                    while (await reader.ReadAsync())
+                    {
+                        var releaseOn = reader["od_release_on"];
+                        children.Add(releaseOn == DBNull.Value ? null : Convert.ToDateTime(releaseOn));
+                    }
+
+                    // No child rows found — can't confirm release
+                    if (children.Count == 0) return false;
+
+                    // All children must have a release date
+                    return children.All(r => r.HasValue);
+                }
+                catch { throw; }
+            }
         }
         
         public static class MISC

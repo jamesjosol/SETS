@@ -177,7 +177,7 @@
                 <span class="material-symbols-outlined text-base" style="color: var(--color-primary);">today</span>
                 <h2 class="text-sm font-bold uppercase tracking-widest" style="color: var(--color-text);">Due Today</h2>
               </div>
-              <router-link to="/runner/scheduled" class="text-xs font-bold uppercase tracking-widest" style="color: var(--color-primary);">View All →</router-link>
+              <router-link to="/runner/pending" class="text-xs font-bold uppercase tracking-widest" style="color: var(--color-primary);">View All →</router-link>
             </div>
             <div v-if="scheduledLoading" class="p-6 flex flex-col gap-3">
               <div v-for="i in 3" :key="i" class="h-12 rounded-xl animate-pulse" style="background-color: var(--color-surface-low);"></div>
@@ -625,7 +625,7 @@
   const dueToday = computed(() =>
     scheduledSpecimens.value.filter(s =>
       s.tests.some(t =>
-        (t.scheduleTag === 'END' || t.scheduleTag === 'CRD') && t.runningDate === todayStr
+        (t.scheduleTag === 'END' || t.scheduleTag === 'CRD' || 'SRD') && t.runningDate === todayStr
       )
     )
   )
