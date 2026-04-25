@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics.Metrics;
 using System.Linq;
+using System.Reflection.PortableExecutable;
 using System.Text;
 using System.Threading.Tasks;
 using Model.Main;
@@ -16,11 +17,13 @@ namespace Service.Services
     {
         private readonly AppDbContextFactory _factory;
         private readonly string _branch;
+        private readonly string _branch_raw;
 
         public RunnerService(AppDbContextFactory factory, string branch)
         {
             _factory = factory;
             _branch = SetsConnection.ConnectionString(branch);
+            _branch_raw = branch;
         }
 
         // ── Scan specimen ──────────────────────────────────────────────────
@@ -69,6 +72,14 @@ namespace Service.Services
 
                     tx.Commit();
 
+                    var testCodes = tests.Select(t => t.TestCode).ToList();
+                    var testCodesWithRunningDay = context.Test_RunningDay
+                        .ToList()
+                        .Where(r => testCodes.Contains(r.TestCode))
+                        .Select(r => r.TestCode)
+                        .ToHashSet();
+
+
                     var sampleTypeName = context.Sample_Type
                         .FirstOrDefault(s => s.Code == header.SampleTypeCode)?.Name;
 
@@ -95,7 +106,8 @@ namespace Service.Services
                             RunningDate = t.RunningDate,
                             AssignedRMT = t.AssignedRMT,
                             Assigned = t.Assigned,
-                            RunAt = t.RunAt
+                            RunAt = t.RunAt,
+                            HasRunningDay = testCodesWithRunningDay.Contains(t.TestCode)
                         }).ToList()
                     };
                 }
@@ -137,7 +149,7 @@ namespace Service.Services
                         throw new Exception("No matching tests found.");
 
                     // ── Instantiate running day service once for the whole batch ──────
-                    using var master = new MasterService(_branch);
+                    using var master = new MasterService(_branch_raw);
 
                     foreach (var assignment in request.Assignments)
                     {
@@ -224,16 +236,54 @@ namespace Service.Services
                     if (request.SpecimenRemarks?.Any() == true)
                     {
                         var headerIds = request.SpecimenRemarks.Select(r => r.HeaderId).ToHashSet();
-                        var headers = context.Specimen_Section_Header
+                        var _headers = context.Specimen_Section_Header
                             .ToList()
                             .Where(h => headerIds.Contains(h.Id))
                             .ToList();
 
+
                         foreach (var remarkItem in request.SpecimenRemarks)
                         {
-                            var header = headers.FirstOrDefault(h => h.Id == remarkItem.HeaderId);
+                            var header = _headers.FirstOrDefault(h => h.Id == remarkItem.HeaderId);
                             if (header == null) continue;
                             header.Remarks = remarkItem.Remarks;
+                            header.UpdatedBy = request.UserID;
+                            header.Updated = now;
+                            context.Specimen_Section_Header.Update(header);
+                        }
+                    }
+
+                    var affectedHeaderIds = tests
+                        .Where(t => request.Assignments.Any(a => a.TestId == t.Id))
+                        .Select(t => t.HeaderId)
+                        .Distinct()
+                        .ToList();
+
+                    var allTestsForHeaders = context.Specimen_Section_Test
+                        .ToList()
+                        .Where(t => affectedHeaderIds.Contains(t.HeaderId))
+                        .ToList();
+
+                    var headers = context.Specimen_Section_Header
+                        .ToList()
+                        .Where(h => affectedHeaderIds.Contains(h.Id))
+                        .ToList();
+
+                    foreach (var header in headers)
+                    {
+                        var headerTests = allTestsForHeaders.Where(t => t.HeaderId == header.Id).ToList();
+
+                        string newStatus;
+                        if (headerTests.All(t => t.Status == "X"))
+                            newStatus = "C";
+                        else if (headerTests.Any(t => t.Status == "R" || t.Status == "S" || t.Status == "X"))
+                            newStatus = "S";
+                        else
+                            newStatus = "P";
+
+                        if (header.Status != newStatus)
+                        {
+                            header.Status = newStatus;
                             header.UpdatedBy = request.UserID;
                             header.Updated = now;
                             context.Specimen_Section_Header.Update(header);

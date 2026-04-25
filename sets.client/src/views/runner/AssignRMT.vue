@@ -217,11 +217,17 @@
                             <!-- Schedule tag pills: Today / END / CRD / SRD -->
                             <td class="px-4 py-3">
                               <div class="flex items-center gap-1.5 flex-wrap">
+                  
+
                                 <label v-for="tag in scheduleTags" :key="tag.value"
-                                       class="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest cursor-pointer px-2.5 py-1 rounded-lg transition-all select-none"
-                                       :style="test.scheduleTag === tag.value
-                                       ? scheduleTagActiveStyle(tag.value)
-                                       : 'color: var(--color-text-muted); background-color: var(--color-surface-low);'">
+                                       class="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-lg transition-all select-none"
+                                       :class="tag.value === 'SRD' && !test.hasRunningDay ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'"
+                                       :style="(tag.value === 'SRD' && !test.hasRunningDay)
+                                       ? 'color: var(--color-text-muted); background-color: var(--color-surface-low); pointer-events: none;'
+                                       : test.scheduleTag === tag.value
+                                         ? scheduleTagActiveStyle(tag.value)
+                                         : 'color: var(--color-text-muted); background-color: var(--color-surface-low);'"
+                                                                     @click.prevent="tag.value === 'SRD' && !test.hasRunningDay ? null : test.scheduleTag = tag.value">
                                   <input type="radio"
                                          :name="`tag-${test.id}`"
                                          :value="tag.value"
@@ -380,22 +386,19 @@
         remarks: result.data.remarks ?? '', 
         tests: tests.map(t => {
           const today = new Date().toISOString().split('T')[0]
-          const runningDateStr = t.runningDate ?? null  // DateOnly from backend e.g. "2026-04-22"
+          const runningDateStr = t.runningDate ?? null
 
-          // Determine initial schedule tag:
-          // - If test already has a tag but running date is today or past → NOW
-          // - If test has a tag and running date is future → keep the tag
-          // - If no tag → NOW (default for new/pending tests)
           let initialTag = 'NOW'
           if (t.scheduleTag && runningDateStr && runningDateStr > today) {
-            initialTag = t.scheduleTag  // future END/CRD/SRD — preserve
+            initialTag = t.scheduleTag       // future END/CRD/SRD — preserve
           } else if (t.scheduleTag === 'SRD' && !runningDateStr) {
-            initialTag = 'SRD'  // SRD has no running date — keep as SRD
+            initialTag = 'SRD'               // existing SRD with no date — keep
+          } else if (!t.scheduleTag && t.hasRunningDay) {
+            initialTag = 'SRD'               // ← NEW: fresh scan, has running day → default to SRD
           }
 
           return {
             ...t,
-            //selectedRMT: t.assignedRMT ?? authStore.userID,
             selectedRMT: authStore.userID,
             scheduleTag: initialTag,
             runningDate: initialTag === t.scheduleTag ? runningDateStr : null,

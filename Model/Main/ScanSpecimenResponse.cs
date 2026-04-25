@@ -32,6 +32,7 @@ namespace Model.Main
         public DateOnly? RunningDate { get; set; }
         public string? AssignedRMT { get; set; }
         public DateTime? Assigned { get; set; }
-        public DateTime? RunAt { get; set; } 
+        public DateTime? RunAt { get; set; }
+        public bool HasRunningDay { get; set; }
     }
 }

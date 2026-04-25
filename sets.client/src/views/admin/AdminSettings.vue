@@ -425,13 +425,7 @@
                              @keydown.enter.prevent="hclabConfirmSelected"
                              @keydown.escape="closeHclabDropdown"
                              @focus.once="(e) => e.target.style.borderColor = 'var(--color-primary)'"
-                             @blur="(e) => {
-                      // delay so click on dropdown option registers first
-                      setTimeout(() => {
-                      e.target.style.borderColor = 'var(--color-border)'
-                      if (!userModal.form.userID) closeHclabDropdown()
-                      }, 150)
-                      }" />
+                            @blur="onHclabSearchBlur" />
 
                       <!-- Right icon: spinner / clear / search -->
                       <div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
@@ -1135,20 +1129,6 @@
                      @blur="(e) => e.target.style.borderColor = 'var(--color-border)'" />
             </div>
 
-            <!-- Loading -->
-            <div v-if="rdLoading" class="flex items-center justify-center py-12 gap-3"
-                 style="color: var(--color-text-muted);">
-              <span class="material-symbols-outlined text-xl animate-spin">progress_activity</span>
-              <span class="text-sm font-medium">Loading setups...</span>
-            </div>
-
-            <!-- Empty -->
-            <div v-else-if="!filteredRd.length"
-                 class="py-12 flex flex-col items-center gap-2" style="color: var(--color-text-muted);">
-              <span class="material-symbols-outlined text-3xl">calendar_month</span>
-              <p class="text-sm font-medium">No running day setups yet.</p>
-            </div>
-
             <AppTable :rows="filteredRd"
                       :columns="rdColumns"
                       row-key="id"
@@ -1259,7 +1239,7 @@
                              @keydown.enter.prevent="rdConfirmSelected"
                              @keydown.escape="rdModal.dropdownOpen = false"
                              @focus="(e) => e.target.style.borderColor = 'var(--color-primary)'"
-                             @blur="(e) => { setTimeout(() => { e.target.style.borderColor = 'var(--color-border)' }, 150) }" />
+                             @blur="onRdTestBlur" />
                       <div class="absolute right-3 top-1/2 -translate-y-1/2">
                         <span v-if="rdModal.testLoading"
                               class="material-symbols-outlined text-sm animate-spin"
@@ -2260,7 +2240,13 @@ const filteredPCs = computed(() => {
     }
   }
 
-
+  function onHclabSearchBlur(e) {
+    setTimeout(() => {
+      e.target.style.borderColor = 'var(--color-border)'
+      if (!userModal.value.hclabDropdownOpen) return
+      if (!userModal.value.form.userID) closeHclabDropdown()
+    }, 150)
+  }
 
   // ── Extend userModal with HCLAB-specific state fields ────────────────
 
@@ -2818,6 +2804,12 @@ async function executeDeleteRd() {
   } catch (err) {
     showToast(err.response?.data?.message || 'Failed to remove setup.')
   }
+}
+
+function onRdTestBlur(e) {
+  setTimeout(() => {
+    e.target.style.borderColor = 'var(--color-border)'
+  }, 150)
 }
 
 </script>

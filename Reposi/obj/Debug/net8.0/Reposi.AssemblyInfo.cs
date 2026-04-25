@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Reposi")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+3fd5554c7f9fca82101907208c6289f6dc9de2ab")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c810699c098ff05f1cb006b2653ac516bc2f71d8")]
 [assembly: System.Reflection.AssemblyProductAttribute("Reposi")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Reposi")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
