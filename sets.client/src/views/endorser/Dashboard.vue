@@ -110,7 +110,68 @@
         </div>
       </div>
     </div>
+    <!-- TAT Countdown Bar — Endorser only -->
+    <div v-if="!authStore.isAdmin && tatCycle.hasOpenCycle"
+         class="mb-6 flex items-center gap-4 px-5 py-3 rounded-xl"
+         style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
 
+      <!-- Icon + Label -->
+      <div class="flex items-center gap-2 flex-shrink-0">
+        <span class="material-symbols-outlined text-base"
+              :class="tatExceeded ? 'animate-pulse' : ''"
+              :style="tatColorStyle">
+          {{ tatExceeded ? 'timer_off' : 'timer' }}
+        </span>
+        <p class="text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">
+          Next Endorsement Due
+        </p>
+      </div>
+
+      <!-- Progress bar -->
+      <div class="flex-1 h-1 rounded-full overflow-hidden" style="background-color: var(--color-surface-low);">
+        <div class="h-full rounded-full transition-all duration-1000"
+             :style="`width: ${tatProgressPct}%; ${tatBarStyle}`"></div>
+      </div>
+
+      <!-- Countdown -->
+      <p class="text-xs font-extrabold font-mono flex-shrink-0 tabular-nums" :style="tatColorStyle">
+        {{ tatExceeded ? 'EXCEEDED' : tatCountdown }}
+      </p>
+
+      <!-- Divider -->
+      <div class="h-4 w-px flex-shrink-0" style="background-color: var(--color-border);"></div>
+
+      <!-- Appeal Button -->
+      <button v-if="tatCycle.canAppeal"
+              class="flex-shrink-0 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest transition-all active:scale-95"
+              :class="tatLoading ? 'opacity-60 pointer-events-none' : ''"
+              style="color: var(--color-text-muted);"
+              @mouseenter="e => e.currentTarget.style.color = 'var(--color-text)'"
+              @mouseleave="e => e.currentTarget.style.color = 'var(--color-text-muted)'"
+              @click="confirmAppeal">
+        <span class="material-symbols-outlined text-sm">do_not_disturb_on</span>
+        Nothing to Endorse
+      </button>
+
+      <!-- Appeal not available hint -->
+      <p v-else
+         class="flex-shrink-0 text-[10px] font-bold uppercase tracking-widest"
+         style="color: var(--color-text-muted);">
+        Appeal after TAT breach
+      </p>
+
+    </div>
+
+    <!-- Appeal Confirm Modal -->
+    <ConfirmModal :isVisible="appealConfirm.visible"
+                  type="warning"
+                  icon="do_not_disturb_on"
+                  title="Nothing to Endorse?"
+                  message="This will log an appeal and reset the TAT timer. Only proceed if there are genuinely no specimens to endorse at this time."
+                  confirmText="Yes, Submit Appeal"
+                  cancelText="Cancel"
+                  @confirm="handleAppeal"
+                  @close="appealConfirm.visible = false" />
     <!-- Main Grid -->
     <div class="grid grid-cols-12 gap-6">
 
@@ -247,7 +308,7 @@
 
         <!-- System Status -->
         <div class="col-span-12 lg:col-span-4">
-          <SystemStatus/>
+          <SystemStatus />
         </div>
 
 
@@ -277,9 +338,11 @@
   import { useAuthStore } from '@/stores/authStore'
   import { batchApi } from '@/api/batchApi'
   import { healthApi } from '@/api/healthApi'
+  import { tatApi } from '@/api/tatApi'
   import AlertModal from '@/components/common/AlertModal.vue'
   import SystemStatus from '@/components/common/SystemStatus.vue'
   import BatchDetailDrawer from '@/components/common/BatchDetailDrawer.vue'
+  import ConfirmModal from '@/components/common/ConfirmModal.vue'
 
   const authStore = useAuthStore()
   const router = useRouter()
@@ -384,11 +447,17 @@
 
     // Start silent refresh every 5 seconds
     refreshInterval = setInterval(silentRefresh, 5000)
+
+    // Tick every second for the countdown
+    tickInterval = setInterval(() => { nowTick.value = Date.now() }, 1000)
+
+    // Silent refresh every 5 seconds
+    refreshInterval = setInterval(silentRefresh, 5000)
   })
 
   onUnmounted(() => {
     clearInterval(refreshInterval)
-    
+    clearInterval(tickInterval)
   })
 
 
@@ -440,7 +509,7 @@
 
   // Silent refresh — no spinners touched
   async function silentRefresh() {
-    await Promise.all([fetchKPIs(), fetchTableData()])
+    await Promise.all([fetchKPIs(), fetchTableData(), loadTatCycle()])
   }
 
 
@@ -486,6 +555,88 @@
       day: d.day,
     }))
   })
+
+  // ── TAT Countdown ─────────────────────────────────────────────────────────
+
+  const tatCycle = ref({ hasOpenCycle: false, cycleStart: null, thresholdMins: null, canAppeal: false })
+  const nowTick = ref(Date.now())
+  const tatLoading = ref(false)
+  let tickInterval = null
+
+  async function loadTatCycle() {
+    if (authStore.isAdmin) return
+    try {
+      tatCycle.value = await tatApi.getOpenCycle(authStore.sectionCode)
+    } catch {
+      tatCycle.value = { hasOpenCycle: false, cycleStart: null, thresholdMins: null, canAppeal: false }
+    }
+  }
+
+  const appealConfirm = ref({ visible: false })
+
+  function confirmAppeal() {
+    appealConfirm.value.visible = true
+  }
+
+  async function handleAppeal() {
+    if (tatLoading.value) return
+    tatLoading.value = true
+    try {
+      await tatApi.appeal(authStore.sectionCode)
+      await loadTatCycle()
+    } catch (err) {
+      console.error('Appeal failed:', err)
+    } finally {
+      tatLoading.value = false
+    }
+  }
+
+  const tatSecondsRemaining = computed(() => {
+    if (!tatCycle.value.hasOpenCycle || !tatCycle.value.cycleStart || !tatCycle.value.thresholdMins) return null
+    const start = new Date(tatCycle.value.cycleStart).getTime()
+    const threshold = tatCycle.value.thresholdMins * 60 * 1000
+    const elapsed = nowTick.value - start
+    return Math.floor((threshold - elapsed) / 1000)
+  })
+
+  const tatCountdown = computed(() => {
+    const secs = tatSecondsRemaining.value
+    if (secs === null) return null
+    if (secs <= 0) return 'EXCEEDED'
+    const h = Math.floor(secs / 3600)
+    const m = Math.floor((secs % 3600) / 60)
+    const s = secs % 60
+    if (h > 0) return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+    return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+  })
+
+  const tatProgressPct = computed(() => {
+    if (!tatCycle.value.thresholdMins || tatSecondsRemaining.value === null) return 0
+    const total = tatCycle.value.thresholdMins * 60
+    const remaining = Math.max(tatSecondsRemaining.value, 0)
+    return Math.round((remaining / total) * 100)
+  })
+
+  // green → orange (≤25%) → red (exceeded)
+  const tatColorStyle = computed(() => {
+    const secs = tatSecondsRemaining.value
+    if (secs === null) return ''
+    if (secs <= 0) return 'color: var(--color-error);'
+    const pct = tatProgressPct.value
+    if (pct <= 25) return 'color: var(--color-warning);'
+    return 'color: var(--color-success);'
+  })
+
+  const tatBarStyle = computed(() => {
+    const secs = tatSecondsRemaining.value
+    if (secs === null) return ''
+    if (secs <= 0) return 'background-color: var(--color-error);'
+    const pct = tatProgressPct.value
+    if (pct <= 25) return 'background-color: var(--color-warning);'
+    return 'background-color: var(--color-success);'
+  })
+
+  const tatExceeded = computed(() => tatSecondsRemaining.value !== null && tatSecondsRemaining.value <= 0)
 
 </script>
 

@@ -52,20 +52,21 @@ namespace SETSMiddleware
         }
 
         // ── Task Registration ─────────────────────────────────────────────────────
-
         private void RegisterTasks()
         {
             int hclabInterval = int.TryParse(_config["TaskIntervals:HclabRouting"], out var v1) ? v1 : 30;
             int schedInterval = int.TryParse(_config["TaskIntervals:ScheduledSpecimenRelease"], out var v2) ? v2 : 120;
             int releaseInterval = int.TryParse(_config["TaskIntervals:TestResultRelease"], out var v3) ? v3 : 60;
             int syncInterval = int.TryParse(_config["TaskIntervals:HclabReferenceSync"], out var v4) ? v4 : 43200;
+            int tatResetInterval = int.TryParse(_config["TaskIntervals:EndorsementTatReset"], out var v5) ? v5 : 60;
 
             var hclabTask = new HclabRoutingTask(_branch, hclabInterval);
             var schedTask = new ScheduledSpecimenReleaseTask(_branch, schedInterval);
             var releaseTask = new TestResultReleaseTask(_branch, releaseInterval);
             var syncTask = new HclabReferenceSyncTask(_branch, syncInterval);
+            var tatResetTask = new EndorsementTatResetTask(_branch, tatResetInterval);
 
-            foreach (var task in new TaskBase[] { hclabTask, schedTask, releaseTask, syncTask })
+            foreach (var task in new TaskBase[] { hclabTask, schedTask, releaseTask, syncTask, tatResetTask })
             {
                 _tasks.Add(task);
                 _logs[task.TaskName] = new List<(string, TaskBase.LogLevel, DateTime)>();

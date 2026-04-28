@@ -30,6 +30,8 @@ namespace Reposi
         public SpecimenSectionTestRepo SpecimenSectionTests { get; private set; }
         public TestGroupRepo TestGroups { get; set; }
         public TestRunningDayRepo TestRunningDays { get; set; }
+        public TatSectionRepo TatSections { get; private set; }
+        public TatCycleLogRepo TatCycleLogs { get; private set; }
 
         public UnitOfWork(AppDbContext context)
         {
@@ -51,6 +53,8 @@ namespace Reposi
             SpecimenSectionTests = new SpecimenSectionTestRepo(_context);
             TestGroups = new TestGroupRepo(_context);
             TestRunningDays = new TestRunningDayRepo(_context);
+            TatSections = new TatSectionRepo(_context);
+            TatCycleLogs = new TatCycleLogRepo(_context);
         }
 
         public void Dispose()

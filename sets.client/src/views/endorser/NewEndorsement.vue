@@ -1,13 +1,35 @@
 <template>
   <AppLayout>
     <!-- Page Header -->
-    <div class="mb-6 flex items-center justify-between">
-      <div>
-        <h1 class="text-2xl font-extrabold tracking-tight" style="color: var(--color-text);">New Endorsement</h1>
-        <p class="text-sm mt-1" style="color: var(--color-text-muted);">
-          {{ authStore.sectionName }} · {{ authStore.branchCode }}
-        </p>
+    <div class="flex items-center gap-3 mb-1">
+
+      <!-- TAT Badge -->
+      <div v-if="tatCycle.hasOpenCycle"
+           class="flex items-center gap-2.5 px-4 py-2 rounded-xl transition-all"
+           :style="`background-color: var(--color-surface);
+           border: 1.5px solid ${tatExceeded ? 'var(--color-error)' : tatProgressPct <= 25 ? 'var(--color-warning)' : 'var(--color-success)'};
+                box-shadow: 0 1px 3px var(--color-shadow);`">
+    <span class="material-symbols-outlined text-sm"
+          :class="tatExceeded ? 'animate-pulse' : ''"
+          :style="tatColorStyle">
+      {{ tatExceeded ? 'timer_off' : 'timer' }}
+    </span>
+    <div>
+      <p class="text-[9px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Next Due In</p>
+      <p class="text-xs font-extrabold font-mono leading-none mt-0.5" :style="tatColorStyle">
+        {{ tatCountdown }}
+      </p>
+    </div>
+    <!-- Mini progress bar -->
+    <div class="w-16 h-1 rounded-full overflow-hidden ml-1" style="background-color: var(--color-surface-low);">
+      <div class="h-full rounded-full transition-all duration-1000"
+           :style="`width: ${tatProgressPct}%;
+                    background-color: ${tatExceeded ? 'var(--color-error)' : tatProgressPct <= 25 ? 'var(--color-warning)' : 'var(--color-success)'};`">
       </div>
+    </div>
+  </div>
+
+      <!-- Back Button -->
       <router-link to="/dashboard"
                    class="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all"
                    style="color: var(--color-text-muted); background-color: var(--color-surface-low);"
@@ -16,8 +38,8 @@
         <span class="material-symbols-outlined text-sm">arrow_back</span>
         Back
       </router-link>
-    </div>
 
+    </div>
     <!-- Endorsement Card -->
     <div class="rounded-2xl overflow-hidden" style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
 
@@ -352,13 +374,14 @@
 </template>
 
 <script setup>
-import { ref, nextTick } from 'vue'
+  import { ref, nextTick, onMounted, onUnmounted, computed } from 'vue'
 import AppLayout from '@/components/layout/AppLayout.vue'
 import AlertModal from '@/components/common/AlertModal.vue'
 import RemarkModal from '@/components/common/RemarkModal.vue'
 import ConfirmModal from '@/components/common/ConfirmModal.vue'
 import { useAuthStore } from '@/stores/authStore'
 import { transactionApi } from '@/api/transactionApi'
+import { tatApi } from '@/api/tatApi'
 import NProgress from 'nprogress'
 
 const authStore = useAuthStore()
@@ -392,6 +415,16 @@ const remarkModal = ref({
   required: false,
   resolve: null  // ← for programmatic use
 })
+  onMounted(async () => {
+    await loadTatCycle()
+    tatTick = setInterval(() => { nowTick.value = Date.now() }, 1000)
+    tatRefreshInterval = setInterval(loadTatCycle, 5000)
+  })
+
+  onUnmounted(() => {
+    clearInterval(tatTick)
+    clearInterval(tatRefreshInterval)
+  })
 
   function openRequiredRemarkModal(template) {
     return new Promise((resolve) => {
@@ -657,7 +690,8 @@ async function handleEndorse() {
         batchNo.value = response.data.batchNo
         isEndorsed.value = true   // ← lock the form
 
-        showAlert('success', 'Endorsement Successful', `Batch ${batchNo.value} has been created.`)
+      showAlert('success', 'Endorsement Successful', `Batch ${batchNo.value} has been created.`)
+      await loadTatCycle()
 
     } catch (err) {
         if (err.response?.status === 401) {
@@ -695,6 +729,55 @@ function handleConfirmNo() {
   confirmPrompt.value.visible = false
   confirmPrompt.value.resolve(false)
 }
+
+  // ── TAT Countdown ─────────────────────────────────────────────────────────
+
+  const tatCycle = ref({ hasOpenCycle: false, cycleStart: null, thresholdMins: null, canAppeal: false })
+  const nowTick = ref(Date.now())
+  let tatTick = null
+  let tatRefreshInterval = null
+
+  async function loadTatCycle() {
+    try {
+      tatCycle.value = await tatApi.getOpenCycle(authStore.sectionCode)
+    } catch {
+      tatCycle.value = { hasOpenCycle: false, cycleStart: null, thresholdMins: null, canAppeal: false }
+    }
+  }
+
+  const tatSecondsRemaining = computed(() => {
+    if (!tatCycle.value.hasOpenCycle || !tatCycle.value.cycleStart || !tatCycle.value.thresholdMins) return null
+    const start = new Date(tatCycle.value.cycleStart).getTime()
+    const threshold = tatCycle.value.thresholdMins * 60 * 1000
+    const elapsed = nowTick.value - start
+    return Math.floor((threshold - elapsed) / 1000)
+  })
+
+  const tatCountdown = computed(() => {
+    const secs = tatSecondsRemaining.value
+    if (secs === null) return null
+    if (secs <= 0) return 'TAT EXCEEDED'
+    const h = Math.floor(secs / 3600)
+    const m = Math.floor((secs % 3600) / 60)
+    const s = secs % 60
+    if (h > 0) return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+    return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+  })
+
+  const tatProgressPct = computed(() => {
+    if (!tatCycle.value.thresholdMins || tatSecondsRemaining.value === null) return 0
+    const total = tatCycle.value.thresholdMins * 60
+    return Math.round((Math.max(tatSecondsRemaining.value, 0) / total) * 100)
+  })
+
+  const tatExceeded = computed(() => tatSecondsRemaining.value !== null && tatSecondsRemaining.value <= 0)
+  const tatColorStyle = computed(() => {
+    const secs = tatSecondsRemaining.value
+    if (secs === null) return ''
+    if (secs <= 0) return 'color: var(--color-error);'
+    if (tatProgressPct.value <= 25) return 'color: var(--color-warning);'
+    return 'color: var(--color-success);'
+  })
 </script>
 
 <style scoped>

@@ -695,7 +695,7 @@ namespace Service.Services
 
                 foreach (var section in sections)
                 {
-                    var completed = GetCompletedToday(section.Code);  // ← was GetPendingSpecimens
+                    var completed = GetCompletedToday(section.Code); 
                     if (!completed.Any()) continue;
 
                     result.Add(new SectionPendingGroup

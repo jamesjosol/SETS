@@ -1,4 +1,5 @@
 ﻿using Reposi.Context;
+using Service.Interfaces;
 using Service.Services;
 
 namespace Service
@@ -20,6 +21,7 @@ namespace Service
         public SectionTestGroupService SectionTestGroup { get; set; }
         public TestGroupService TestGroup { get; set; }
         public TestRunningDayService TestRunningDay { get; set; }
+        public TatService Tat { get; private set; }
 
         private readonly AppDbContextFactory _factory;
         private readonly string _branch;
@@ -48,6 +50,7 @@ namespace Service
             SectionTestGroup = new SectionTestGroupService(_factory, _branch);
             TestGroup = new TestGroupService(_factory, _branch);
             TestRunningDay = new TestRunningDayService(_factory, _branch);
+            Tat = new TatService(_factory, _branch);
         }
 
         public void Dispose()
@@ -65,6 +68,7 @@ namespace Service
             SpecimenSection = null;
             TestGroup = null;
             TestRunningDay = null;
+            Tat = null;
         }
     }
 }

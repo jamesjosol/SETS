@@ -39,8 +39,8 @@
 
 
         <!-- ══════════════════════════════════════════════════════════
-      PC REGISTRATION
-      ══════════════════════════════════════════════════════════ -->
+  PC REGISTRATION
+  ══════════════════════════════════════════════════════════ -->
         <div v-if="activeTab === 'pc'"
              class="rounded-2xl overflow-hidden"
              style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
@@ -140,8 +140,8 @@
         </div>
 
         <!-- ══════════════════════════════════════════════════════════
-      ADD PC MODAL
-       ══════════════════════════════════════════════════════════ -->
+  ADD PC MODAL
+   ══════════════════════════════════════════════════════════ -->
         <Teleport to="body">
           <Transition name="modal">
             <div v-if="pcModal.visible"
@@ -260,8 +260,8 @@
 
 
         <!-- ══════════════════════════════════════════════════════════
-           USER MANAGEMENT TAB
-      ══════════════════════════════════════════════════════════ -->
+       USER MANAGEMENT TAB
+  ══════════════════════════════════════════════════════════ -->
         <div v-if="activeTab === 'users'"
              class="rounded-2xl overflow-hidden"
              style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
@@ -367,8 +367,8 @@
 
 
         <!-- ══════════════════════════════════════════════════════════
-           ADD / EDIT USER MODAL
-      ══════════════════════════════════════════════════════════ -->
+       ADD / EDIT USER MODAL
+  ══════════════════════════════════════════════════════════ -->
         <Teleport to="body">
           <Transition name="modal">
             <div v-if="userModal.visible"
@@ -425,7 +425,7 @@
                              @keydown.enter.prevent="hclabConfirmSelected"
                              @keydown.escape="closeHclabDropdown"
                              @focus.once="(e) => e.target.style.borderColor = 'var(--color-primary)'"
-                            @blur="onHclabSearchBlur" />
+                             @blur="onHclabSearchBlur" />
 
                       <!-- Right icon: spinner / clear / search -->
                       <div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
@@ -632,8 +632,8 @@
         </Teleport>
 
         <!-- ══════════════════════════════════════════════════════════
-           SECTION MANAGEMENT TAB
-      ══════════════════════════════════════════════════════════ -->
+       SECTION MANAGEMENT TAB
+  ══════════════════════════════════════════════════════════ -->
         <div v-if="activeTab === 'sections'"
              class="rounded-2xl overflow-hidden"
              style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
@@ -828,8 +828,8 @@
 
 
         <!-- ══════════════════════════════════════════════════════════
-           ADD / EDIT SECTION MODAL
-      ══════════════════════════════════════════════════════════ -->
+       ADD / EDIT SECTION MODAL
+  ══════════════════════════════════════════════════════════ -->
         <Teleport to="body">
           <Transition name="modal">
             <div v-if="sectionModal.visible"
@@ -1085,8 +1085,8 @@
         </Teleport>
 
         <!-- ══════════════════════════════════════════════════════════
-           RUNNING DAYS TAB
-      ══════════════════════════════════════════════════════════ -->
+       RUNNING DAYS TAB
+  ══════════════════════════════════════════════════════════ -->
 
         <div v-if="activeTab === 'runningDays'"
              class="rounded-2xl overflow-hidden"
@@ -1185,8 +1185,8 @@
 
 
         <!-- ══════════════════════════════════════════════════════════
-           ADD / EDIT RUNNING DAY MODAL
-      ══════════════════════════════════════════════════════════ -->
+       ADD / EDIT RUNNING DAY MODAL
+  ══════════════════════════════════════════════════════════ -->
         <Teleport to="body">
           <Transition name="modal">
             <div v-if="rdModal.visible"
@@ -1393,115 +1393,144 @@
         </Teleport>
 
         <!-- ══════════════════════════════════════════════════════════
-           TAT SET-UP
-      ══════════════════════════════════════════════════════════ -->
+       TAT SET-UP
+  ══════════════════════════════════════════════════════════ -->
+        <!-- ══════════════════════════════════════════════════════════
+       TAT SET-UP
+  ══════════════════════════════════════════════════════════ -->
         <div v-if="activeTab === 'tat'"
              class="rounded-2xl overflow-hidden"
              style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
-          <div class="px-8 py-5 flex items-center gap-4" style="border-bottom: 1px solid var(--color-border);">
-            <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style="background-color: var(--color-primary-soft);">
+
+          <!-- Header -->
+          <div class="px-8 py-5 flex items-center gap-4"
+               style="border-bottom: 1px solid var(--color-border);">
+            <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                 style="background-color: var(--color-primary-soft);">
               <span class="material-symbols-outlined text-base" style="color: var(--color-primary);">timer</span>
             </div>
             <div>
               <h2 class="text-base font-extrabold tracking-tight" style="color: var(--color-text);">TAT Set-Up</h2>
-              <p class="text-xs mt-0.5" style="color: var(--color-text-muted);">Configure turnaround time thresholds for each workflow stage.</p>
+              <p class="text-xs mt-0.5" style="color: var(--color-text-muted);">
+                Configure turnaround time thresholds per endorsing section.
+              </p>
             </div>
           </div>
-          <div class="px-8 py-6 space-y-8">
 
-            <div>
-              <p class="text-[10px] font-bold uppercase tracking-widest mb-4" style="color: var(--color-text-muted);">Batch Endorsement (Endorsing Section)</p>
-              <div class="flex items-center justify-between gap-6">
-                <div>
-                  <p class="text-sm font-bold" style="color: var(--color-text);">TAT Threshold</p>
-                  <p class="text-xs mt-0.5" style="color: var(--color-text-muted);">Time from branch dispatch to branch endorsement</p>
-                </div>
-                <div class="flex items-center gap-2">
-                  <input v-model.number="settings.tat.batchEndorsement.hours" type="number" min="0"
-                         class="w-16 px-3 py-2 rounded-xl text-sm font-bold text-center outline-none"
-                         style="background-color: var(--color-surface-low); color: var(--color-text); border: 1.5px solid var(--color-border);" />
-                  <span class="text-xs font-bold" style="color: var(--color-text-muted);">hr</span>
-                  <input v-model.number="settings.tat.batchEndorsement.minutes" type="number" min="0" max="59"
-                         class="w-16 px-3 py-2 rounded-xl text-sm font-bold text-center outline-none"
-                         style="background-color: var(--color-surface-low); color: var(--color-text); border: 1.5px solid var(--color-border);" />
-                  <span class="text-xs font-bold" style="color: var(--color-text-muted);">min</span>
-                </div>
-              </div>
+          <!-- Body -->
+          <div class="px-8 py-6">
+
+            <!-- Loading -->
+            <div v-if="tatLoading" class="flex items-center justify-center py-16 gap-3">
+              <span class="material-symbols-outlined animate-spin text-xl" style="color: var(--color-primary);">progress_activity</span>
+              <p class="text-xs font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Loading...</p>
             </div>
 
-            <div>
-              <p class="text-[10px] font-bold uppercase tracking-widest mb-4" style="color: var(--color-text-muted);">Batch Completion (Processing)</p>
-              <div class="space-y-4">
-                <div class="flex items-center justify-between gap-6">
+            <!-- Empty -->
+            <div v-else-if="!tatList.length"
+                 class="flex flex-col items-center justify-center py-16 gap-2">
+              <span class="material-symbols-outlined text-3xl" style="color: var(--color-text-muted);">timer_off</span>
+              <p class="text-xs font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">
+                No active endorsing sections found.
+              </p>
+            </div>
+
+            <!-- Table -->
+            <template v-else>
+              <div class="rounded-xl overflow-hidden"
+                   style="border: 1px solid var(--color-border);">
+
+                <!-- Column headers -->
+                <div class="grid grid-cols-[1fr_160px_160px_180px] px-5 py-3 text-[10px] font-bold uppercase tracking-widest"
+                     style="background-color: var(--color-surface-low); color: var(--color-text-muted); border-bottom: 1px solid var(--color-border);">
+                  <span>Section</span>
+                  <span class="text-center">TAT Threshold</span>
+                  <span class="text-center">Appeal Window</span>
+                  <span></span>
+                </div>
+
+                <!-- Rows -->
+                <div v-for="(row, idx) in tatList"
+                     :key="row.sectionCode"
+                     class="grid grid-cols-[1fr_160px_160px_180px] items-center px-5 py-4 gap-4"
+                     :style="idx < tatList.length - 1 ? 'border-bottom: 1px solid var(--color-border);' : ''">
+
+                  <!-- Section name -->
                   <div>
-                    <p class="text-sm font-bold" style="color: var(--color-text);">Within TAT Display Color</p>
-                    <p class="text-xs mt-0.5" style="color: var(--color-text-muted);">Color shown when batch is within TAT</p>
+                    <p class="text-sm font-bold" style="color: var(--color-text);">{{ row.name }}</p>
+                    <p class="text-[10px] mt-0.5 font-mono" style="color: var(--color-text-muted);">{{ row.sectionCode }}</p>
                   </div>
-                  <div class="flex items-center gap-2">
-                    <div class="w-4 h-4 rounded-full" style="background-color: #3b82f6;"></div>
-                    <span class="text-xs font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Blue</span>
-                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-lg" style="background-color: var(--color-surface-low); color: var(--color-text-muted);">Fixed</span>
+
+                  <!-- Hours + Minutes -->
+                  <div class="flex items-center justify-center gap-1.5">
+                    <input v-model.number="row.hours"
+                           type="number" min="0" max="23"
+                           class="w-14 px-2 py-2 rounded-xl text-sm font-bold text-center outline-none"
+                           style="background-color: var(--color-surface-low); color: var(--color-text); border: 1.5px solid var(--color-border);" />
+                    <span class="text-[10px] font-bold" style="color: var(--color-text-muted);">hr</span>
+                    <input v-model.number="row.minutes"
+                           type="number" min="0" max="59"
+                           class="w-14 px-2 py-2 rounded-xl text-sm font-bold text-center outline-none"
+                           style="background-color: var(--color-surface-low); color: var(--color-text); border: 1.5px solid var(--color-border);" />
+                    <span class="text-[10px] font-bold" style="color: var(--color-text-muted);">min</span>
                   </div>
-                </div>
-                <div class="flex items-center justify-between gap-6">
+
+                  <!-- Appeal Window toggle -->
+                  <div class="flex items-center justify-center">
+                    <div class="flex rounded-xl overflow-hidden"
+                         style="border: 1.5px solid var(--color-border);">
+                      <button class="px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest transition-all"
+                              :style="row.appealWindow === 'Before'
+                        ? 'background-color: var(--color-primary); color: #ffffff;'
+                        : 'background-color: var(--color-surface-low); color: var(--color-text-muted);'"
+                              @click="row.appealWindow = 'Before'">
+                        Before
+                      </button>
+                      <button class="px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest transition-all"
+                              :style="row.appealWindow === 'After'
+                        ? 'background-color: var(--color-primary); color: #ffffff;'
+                        : 'background-color: var(--color-surface-low); color: var(--color-text-muted);'"
+                              @click="row.appealWindow = 'After'">
+                        After
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Appeal Window hint -->
                   <div>
-                    <p class="text-sm font-bold" style="color: var(--color-text);">Outside TAT Display Color</p>
-                    <p class="text-xs mt-0.5" style="color: var(--color-text-muted);">Color shown when batch is outside TAT</p>
+                    <p class="text-[10px]" style="color: var(--color-text-muted);">
+                      <template v-if="row.appealWindow === 'Before'">
+                        Endorser can appeal
+                        <span class="font-bold" style="color: var(--color-text);">anytime</span> while the timer is still running.
+                      </template>
+                      <template v-else>
+                        Endorser can only appeal
+                        <span class="font-bold" style="color: var(--color-text);">after</span> the TAT has already been breached.
+                      </template>
+                    </p>
                   </div>
-                  <div class="flex items-center gap-2">
-                    <div class="w-4 h-4 rounded-full" style="background-color: #ef4444;"></div>
-                    <span class="text-xs font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Red</span>
-                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-lg" style="background-color: var(--color-surface-low); color: var(--color-text-muted);">Fixed</span>
-                  </div>
-                </div>
-                <div class="flex items-center justify-between gap-6">
-                  <p class="text-sm font-bold" style="color: var(--color-text);">TAT Threshold</p>
-                  <div class="flex items-center gap-2">
-                    <input v-model.number="settings.tat.batchCompletion.hours" type="number" min="0"
-                           class="w-16 px-3 py-2 rounded-xl text-sm font-bold text-center outline-none"
-                           style="background-color: var(--color-surface-low); color: var(--color-text); border: 1.5px solid var(--color-border);" />
-                    <span class="text-xs font-bold" style="color: var(--color-text-muted);">hr</span>
-                    <input v-model.number="settings.tat.batchCompletion.minutes" type="number" min="0" max="59"
-                           class="w-16 px-3 py-2 rounded-xl text-sm font-bold text-center outline-none"
-                           style="background-color: var(--color-surface-low); color: var(--color-text); border: 1.5px solid var(--color-border);" />
-                    <span class="text-xs font-bold" style="color: var(--color-text-muted);">min</span>
-                  </div>
+
                 </div>
               </div>
-            </div>
 
-            <div>
-              <p class="text-[10px] font-bold uppercase tracking-widest mb-4" style="color: var(--color-text-muted);">Specimen Receipt (Section)</p>
-              <div class="flex items-center justify-between gap-6">
-                <div>
-                  <p class="text-sm font-bold" style="color: var(--color-text);">TAT Threshold</p>
-                  <p class="text-xs mt-0.5" style="color: var(--color-text-muted);">Time from processing receipt to section receipt</p>
-                </div>
-                <div class="flex items-center gap-2">
-                  <input v-model.number="settings.tat.specimenReceipt.hours" type="number" min="0"
-                         class="w-16 px-3 py-2 rounded-xl text-sm font-bold text-center outline-none"
-                         style="background-color: var(--color-surface-low); color: var(--color-text); border: 1.5px solid var(--color-border);" />
-                  <span class="text-xs font-bold" style="color: var(--color-text-muted);">hr</span>
-                  <input v-model.number="settings.tat.specimenReceipt.minutes" type="number" min="0" max="59"
-                         class="w-16 px-3 py-2 rounded-xl text-sm font-bold text-center outline-none"
-                         style="background-color: var(--color-surface-low); color: var(--color-text); border: 1.5px solid var(--color-border);" />
-                  <span class="text-xs font-bold" style="color: var(--color-text-muted);">min</span>
-                </div>
+              <!-- Save -->
+              <div class="flex justify-end pt-5" style="border-top: 1px solid var(--color-border); margin-top: 1.5rem;">
+                <button class="px-6 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest transition-all active:scale-95 flex items-center gap-2 shadow-lg"
+                        :class="tatSaving ? 'opacity-60 pointer-events-none' : ''"
+                        style="background: var(--color-primary-gradient); color: #ffffff;"
+                        @click="saveTat">
+                  <span class="material-symbols-outlined text-sm">{{ tatSaving ? 'progress_activity' : 'save' }}</span>
+                  {{ tatSaving ? 'Saving...' : 'Save Changes' }}
+                </button>
               </div>
-            </div>
+            </template>
 
-            <div class="flex justify-end pt-4" style="border-top: 1px solid var(--color-border);">
-              <button class="px-6 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest transition-all active:scale-95 flex items-center gap-2 shadow-lg"
-                      style="background: var(--color-primary-gradient); color: #ffffff;" @click="save('TAT')">
-                <span class="material-symbols-outlined text-sm">save</span>Save Changes
-              </button>
-            </div>
           </div>
         </div>
 
         <!-- ══════════════════════════════════════════════════════════
-           BRANCH
-      ══════════════════════════════════════════════════════════ -->
+       BRANCH
+  ══════════════════════════════════════════════════════════ -->
         <div v-if="activeTab === 'branch'"
              class="rounded-2xl overflow-hidden"
              style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
@@ -1580,8 +1609,8 @@
         </div>
 
         <!-- ══════════════════════════════════════════════════════════
-           ENDORSEMENT SET-UP
-      ══════════════════════════════════════════════════════════ -->
+       ENDORSEMENT SET-UP
+  ══════════════════════════════════════════════════════════ -->
         <div v-if="activeTab === 'endorsement'"
              class="rounded-2xl overflow-hidden"
              style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
@@ -1666,8 +1695,8 @@
         </div>
 
         <!-- ══════════════════════════════════════════════════════════
-           ARCHIVE
-      ══════════════════════════════════════════════════════════ -->
+       ARCHIVE
+  ══════════════════════════════════════════════════════════ -->
         <div v-if="activeTab === 'archive'"
              class="rounded-2xl overflow-hidden"
              style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
@@ -1731,8 +1760,8 @@
         </div>
 
         <!-- ══════════════════════════════════════════════════════════
-           PROCESSING OPTIONS
-      ══════════════════════════════════════════════════════════ -->
+       PROCESSING OPTIONS
+  ══════════════════════════════════════════════════════════ -->
         <div v-if="activeTab === 'processing'"
              class="rounded-2xl overflow-hidden"
              style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
@@ -1807,6 +1836,7 @@
   import { userApi } from '@/api/userApi'
   import { sectionApi } from '@/api/sectionApi'
   import { testRunningDayApi } from '@/api/testRunningDayApi'
+  import { tatApi } from '@/api/tatApi'
   import AppLayout from '@/components/layout/AppLayout.vue'
   import ConfirmModal from '@/components/common/ConfirmModal.vue'
   import AppTable from '@/components/common/AppTable.vue'
@@ -2364,10 +2394,7 @@ async function loadTestGroups() {
   try {
     const res = await sectionApi.getTestGroups()
     allTestGroups.value = res.data
-    console.log('called')
-    console.log(res)
   } catch(e) {
-    console.log(e)
     allTestGroups.value = []
   } finally {
     testGroupsLoading.value = false
@@ -2814,6 +2841,62 @@ function onRdTestBlur(e) {
     e.target.style.borderColor = 'var(--color-border)'
   }, 150)
 }
+
+  // ── TAT Set-Up ────────────────────────────────────────────────────────────
+
+  const tatList = ref([])   // [{ sectionCode, name, hours, minutes, appealWindow }]
+  const tatLoading = ref(false)
+  const tatSaving = ref(false)
+
+  async function loadTat() {
+    tatLoading.value = true
+    try {
+      const [sectionsRes, tatRes] = await Promise.all([
+        sectionApi.getAll(),
+        tatApi.getAll()
+      ])
+
+      // Only endorsing sections (category === '1')
+      const endorsers = sectionsRes.data.filter(s => s.category === '1' && s.active)
+
+      tatList.value = endorsers.map(s => {
+        const existing = tatRes.find(t => t.sectionCode === s.code)
+        return {
+          sectionCode: s.code,
+          name: s.name,
+          hours: existing?.hours ?? 0,
+          minutes: existing?.minutes ?? 30,
+          appealWindow: existing?.appealWindow ?? 'Before'
+        }
+      })
+    } catch {
+      tatList.value = []
+    } finally {
+      tatLoading.value = false
+    }
+  }
+
+  async function saveTat() {
+    tatSaving.value = true
+    try {
+      const payload = tatList.value.map(t => ({
+        sectionCode: t.sectionCode,
+        hours: t.hours ?? 0,
+        minutes: t.minutes ?? 0,
+        appealWindow: t.appealWindow ?? 'Before'
+      }))
+      await tatApi.upsert(payload)
+      showToast('TAT settings saved.')
+    } catch (err) {
+      showToast(err.response?.data?.message || 'Failed to save TAT settings.')
+    } finally {
+      tatSaving.value = false
+    }
+  }
+
+  watch(activeTab, (val) => {
+    if (val === 'tat' && !tatList.value.length) loadTat()
+  })
 
 </script>
 

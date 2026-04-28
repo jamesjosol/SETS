@@ -10,11 +10,13 @@ namespace Service.Services
     {
         private readonly AppDbContextFactory _factory;
         private readonly string _branch;
+        private readonly string _branch_raw;
 
         public BatchService(AppDbContextFactory factory, string branch)
         {
             _factory = factory;
             _branch = SetsConnection.ConnectionString(branch);
+            _branch_raw = branch;
         }
 
         public string Endorse(EndorseRequest request)
@@ -93,6 +95,27 @@ namespace Service.Services
                     context.SaveChanges();
                     tx.Commit();
 
+                    try
+                    {
+                        using var master = new MasterService(_branch_raw);
+                        bool isOutsideTat = master.Tat.EvaluateAndCycle(request.SectionCode, batchNo, now);
+
+                        if (isOutsideTat)
+                        {
+                            var committed = context.Batch_Header
+                                .FirstOrDefault(h => h.BatchNo == batchNo);
+                            if (committed != null)
+                            {
+                                committed.IsOutsideTat = true;
+                                context.SaveChanges();
+                            }
+                        }
+                    }
+                    catch (Exception tatEx)
+                    {
+                        Console.WriteLine($"[TAT] EvaluateAndCycle failed for {batchNo}: {tatEx.Message}");
+                    }
+
                     return batchNo;
                 }
                 catch
@@ -135,7 +158,7 @@ namespace Service.Services
                     // C = all specimens received
                     Received = batches.Count(b => b.Status == "C"),
                     // TAT setup deferred — always 0 for now
-                    OutsideTAT = 0
+                    OutsideTAT = batches.Count(b => b.IsOutsideTat)
                 };
             }
             catch { throw; }
@@ -421,7 +444,8 @@ namespace Service.Services
                     Endorsed = b.Endorsed,
                     EndorsedBy = b.EndorsedBy,
                     Destination = sections.TryGetValue(b.ProcDestination, out var dest) ? dest : b.ProcDestination,
-                    Status = b.Status
+                    Status = b.Status,
+                    IsOutsideTat = b.IsOutsideTat
                 }).ToList();
             }
             catch { throw; }
@@ -454,7 +478,8 @@ namespace Service.Services
                     Endorsed = b.Endorsed,
                     EndorsedBy = b.EndorsedBy,
                     Destination = sections.TryGetValue(b.ProcDestination, out var dest) ? dest : b.ProcDestination,
-                    Status = b.Status
+                    Status = b.Status,
+                    IsOutsideTat = b.IsOutsideTat
                 }).ToList();
             }
             catch { throw; }

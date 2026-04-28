@@ -14,5 +14,6 @@ namespace Model.Main
         public string EndorsedBy { get; set; }
         public string Destination { get; set; }       // processing section full name
         public string Status { get; set; }
+        public bool IsOutsideTat { get; set; }
     }
 }

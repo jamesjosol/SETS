@@ -138,7 +138,19 @@
 
               <td class="px-4 py-4 text-sm"
                   style="color: var(--color-text-muted);">
-                {{ formatDateTime(batch.endorsed) }}
+                <div class="flex items-center gap-2">
+                  <span>{{ formatDateTime(batch.endorsed) }}</span>
+                  <div v-if="batch.isOutsideTat"
+                       class="relative flex-shrink-0"
+                       style="--tooltip-content: 'Outside TAT';">
+                    <span class="material-symbols-outlined text-sm peer cursor-default"
+                          style="color: var(--color-error);">timer_off</span>
+                    <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2.5 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest whitespace-nowrap shadow-lg pointer-events-none opacity-0 peer-hover:opacity-100 transition-opacity z-50"
+                         style="background-color: var(--color-error); color: #ffffff;">
+                      Outside TAT
+                    </div>
+                  </div>
+                </div>
               </td>
 
               <td class="px-4 py-4 text-sm font-bold"

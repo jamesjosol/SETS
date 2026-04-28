@@ -19,5 +19,6 @@ namespace Model.SETSDB
         public string? Temp { get; set; }
         public string? TempRemarks { get; set; }
         public string? BagNo { get; set; }
+        public bool IsOutsideTat { get; set; }
     }
 }
