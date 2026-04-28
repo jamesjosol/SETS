@@ -84,6 +84,12 @@ namespace HCLAB
 					OR UPPER(ti_name) LIKE '%' || UPPER(:p0) || '%'
 				  )";
 
+
+			public static string Get_Sample_Types = @"
+				select st_code as code, st_name as name from sample_type";
+
+			public static string Get_Test_Groups = @"
+				select tg_code as code, tg_name as name from test_group";
         }
 	}
 }

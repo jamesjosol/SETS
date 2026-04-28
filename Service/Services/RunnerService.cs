@@ -10,6 +10,7 @@ using Model.SETSDB;
 using Reposi;
 using Reposi.Context;
 using Service.Interfaces;
+using static System.Collections.Specialized.BitVector32;
 
 namespace Service.Services
 {
@@ -694,8 +695,7 @@ namespace Service.Services
 
                 foreach (var section in sections)
                 {
-                    var all = GetPendingSpecimens(section.Code);
-                    var completed = all.Where(s => s.Status == "C").ToList();
+                    var completed = GetCompletedToday(section.Code);  // ← was GetPendingSpecimens
                     if (!completed.Any()) continue;
 
                     result.Add(new SectionPendingGroup
@@ -709,6 +709,51 @@ namespace Service.Services
                 return result;
             }
             catch { throw; }
+        }
+
+        public List<PendingSpecimenItem> GetCompletedToday(string sectionCode)
+        {
+            using var context = _factory.CreateContext(_branch);
+
+            var today = DateOnly.FromDateTime(DateTime.Today);
+
+            var headers = context.Specimen_Section_Header
+                .Where(h => h.SectionCode == sectionCode
+                         && h.Status == "C"
+                         && h.Updated.HasValue
+                         && DateOnly.FromDateTime(h.Updated.Value) == today)
+                .OrderByDescending(h => h.Updated)
+                .ToList();
+
+            if (!headers.Any()) return new List<PendingSpecimenItem>();
+
+            var specimenNos = headers.Select(h => h.SpecimenNo).ToList();
+            var batchSpecimens = context.Batch_Specimen
+                .ToList()
+                .Where(b => specimenNos.Contains(b.SpecimenNo))
+                .ToDictionary(b => b.SpecimenNo, b => b);
+
+            return headers.Select(h =>
+            {
+                batchSpecimens.TryGetValue(h.SpecimenNo, out var bs);
+                return new PendingSpecimenItem
+                {
+                    Id = h.Id,
+                    SpecimenNo = h.SpecimenNo,
+                    SectionCode = h.SectionCode,
+                    TestGroupCode = h.TestGroupCode,
+                    SampleTypeCode = h.SampleTypeCode,
+                    SampleTypeName = bs?.SampleTypeName ?? h.SampleTypeCode,
+                    Status = h.Status,
+                    RoutedBy = h.RoutedBy,
+                    Routed = h.Routed,
+                    ReceivedBy = h.ReceivedBy,
+                    Received = h.Received,
+                    Remarks = h.Remarks,
+                    PatientName = bs?.PatientName,
+                    PatientID = bs?.PID,
+                };
+            }).ToList();
         }
 
         // for admin

@@ -21,5 +21,5 @@ export const sectionApi = {
   checkCode: (code) =>
     api.get(`/api/section/check-code/${code}`),
 
-  getTestGroups: () => axios.get('/api/section/test-groups'),
+  getTestGroups: () => api.get('/api/section/test-groups'),
 }

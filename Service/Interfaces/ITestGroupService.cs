@@ -11,5 +11,6 @@ namespace Service.Interfaces
     {
         List<Test_Group> GetAll();
         Test_Group? GetByCode(string code);
+        void UpsertFromHclab(List<Model.HCLAB.Ref_Tables> records);
     }
 }

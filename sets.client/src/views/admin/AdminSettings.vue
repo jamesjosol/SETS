@@ -2364,7 +2364,10 @@ async function loadTestGroups() {
   try {
     const res = await sectionApi.getTestGroups()
     allTestGroups.value = res.data
-  } catch {
+    console.log('called')
+    console.log(res)
+  } catch(e) {
+    console.log(e)
     allTestGroups.value = []
   } finally {
     testGroupsLoading.value = false

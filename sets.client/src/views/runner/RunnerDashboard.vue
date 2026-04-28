@@ -260,22 +260,30 @@
               <span class="material-symbols-outlined text-base" style="color: var(--color-success, #16a34a);">check_circle</span>
               <h2 class="text-sm font-bold uppercase tracking-widest" style="color: var(--color-text);">Completed Today</h2>
             </div>
-            <div v-if="pendingLoading" class="p-6 flex flex-col gap-3">
+            <div v-if="completedTodayLoading" class="p-6 flex flex-col gap-3">
               <div v-for="i in 3" :key="i" class="h-10 rounded-xl animate-pulse" style="background-color: var(--color-surface-low);"></div>
             </div>
-            <div v-else-if="!completedToday.length" class="p-8 flex flex-col items-center gap-2">
-              <span class="material-symbols-outlined text-3xl" style="color: var(--color-text-muted);">inbox</span>
+            <div v-else-if="!completedTodayList.length" class="p-8 flex flex-col items-center gap-2">
+              <span class="material-symbols-outlined text-3xl" style="color: var(--color-text-muted);">check_circle</span>
               <p class="text-xs font-bold" style="color: var(--color-text-muted);">None completed yet</p>
             </div>
             <div v-else>
-              <div v-for="item in completedToday" :key="item.id"
+              <div v-for="item in completedTodayList" :key="item.id"
                    class="px-6 py-3 flex items-center justify-between gap-3" style="border-bottom: 1px solid var(--color-border);">
-                <div class="min-w-0">
-                  <p class="text-xs font-bold font-mono truncate" style="color: var(--color-text);">{{ item.specimenNo }}</p>
-                  <p class="text-[10px] truncate" style="color: var(--color-text-muted);">{{ item.patientName ?? '—' }}</p>
+                <div class="flex items-center gap-3 min-w-0">
+                  <div class="p-2 rounded-xl flex-shrink-0" style="background-color: rgba(22,163,74,0.1);">
+                    <span class="material-symbols-outlined text-sm" style="color: var(--color-success, #16a34a);">check_circle</span>
+                  </div>
+                  <div class="min-w-0">
+                    <p class="text-xs font-bold font-mono truncate" style="color: var(--color-text);">{{ item.specimenNo }}</p>
+                    <p class="text-[10px] truncate" style="color: var(--color-text-muted);">{{ item.patientName ?? '—' }}</p>
+                  </div>
                 </div>
-                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold flex-shrink-0"
-                      style="background-color: rgba(22,163,74,0.1); color: var(--color-success, #16a34a);">Done</span>
+                <div class="flex flex-col items-end flex-shrink-0 gap-0.5">
+                  <span class="text-xs font-semibold" style="color: var(--color-text);">{{ item.sampleTypeName }}</span>
+                  <span class="px-2 py-0.5 rounded-full text-[10px] font-bold"
+                        style="background-color: rgba(22,163,74,0.1); color: var(--color-success, #16a34a);">Released</span>
+                </div>
               </div>
             </div>
           </div>
@@ -519,7 +527,7 @@
                     <p class="text-[10px] truncate" style="color: var(--color-text-muted);">{{ item.patientName ?? '—' }}</p>
                   </div>
                   <span class="px-2 py-0.5 rounded-full text-[10px] font-bold flex-shrink-0"
-                        style="background-color: rgba(22,163,74,0.1); color: var(--color-success, #16a34a);">Done</span>
+                        style="background-color: rgba(22,163,74,0.1); color: var(--color-success, #16a34a);">Released</span>
                 </div>
               </div>
             </div>
@@ -625,12 +633,23 @@
   const dueToday = computed(() =>
     scheduledSpecimens.value.filter(s =>
       s.tests.some(t =>
-        (t.scheduleTag === 'END' || t.scheduleTag === 'CRD' || 'SRD') && t.runningDate === todayStr
+        (t.scheduleTag === 'END' || t.scheduleTag === 'CRD' ||  t.scheduleTag === 'SRD') && t.runningDate === todayStr
       )
     )
   )
   const recentlyRouted = computed(() => allPending.value.filter(s => !s.receivedBy).slice(0, 8))
-  const completedToday = computed(() => allPending.value.filter(s => s.status === 'C').slice(0, 8))
+
+  const completedTodayList = ref([])
+  const completedTodayLoading = ref(true)
+
+  async function fetchCompletedToday() {
+    try { const d = await runnerApi.getCompletedToday(authStore.sectionCode); completedTodayList.value = Array.isArray(d) ? d : []
+
+      console.log(d)
+      console.log('called')
+    }
+    catch (e) { if (e?.response?.status !== 401) showAlert('error', 'Error', 'Unable to load completed today.') }
+  }
 
   const displayedRunning = computed(() =>
     runningView.value === 'self'
@@ -709,7 +728,7 @@
   // ══════════════════════════════════════════════════════════════════════════
 
   async function silentRefreshRegular() {
-    await Promise.all([fetchSummary(), fetchRunning(), fetchScheduled(), fetchPending()])
+    await Promise.all([fetchSummary(), fetchRunning(), fetchScheduled(), fetchPending(), fetchCompletedToday()])
   }
   async function silentRefreshAdmin() {
     await Promise.all([
@@ -727,6 +746,7 @@
       await fetchRunning(); runningLoading.value = false
       await fetchScheduled(); scheduledLoading.value = false
       await fetchPending(); pendingLoading.value = false
+      await fetchCompletedToday(); completedTodayLoading.value = false
       dataInterval = setInterval(silentRefreshRegular, 10000)
     } else {
       await fetchAdminSummary(); adminSummaryLoading.value = false

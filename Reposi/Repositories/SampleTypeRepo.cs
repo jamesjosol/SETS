@@ -12,5 +12,6 @@ namespace Reposi.Repositories
 
         public List<Sample_Type> GetActive()
             => dbSet.Where(s => s.Active == true).ToList();
+
     }
 }

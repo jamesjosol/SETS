@@ -26,5 +26,30 @@ namespace Service.Services
             using var unit = new UnitOfWork(context);
             return unit.SampleTypes.GetByCode(code);
         }
+
+        public void UpsertFromHclab(List<Model.HCLAB.Ref_Tables> records)
+        {
+            using var context = _factory.CreateContext(_branch);
+            using var unit = new UnitOfWork(context);
+
+            foreach (var record in records)
+            {
+                var existing = unit.SampleTypes.GetByCode(record.Code);
+                if (existing == null)
+                {
+                    unit.SampleTypes.Add(new Model.SETSDB.Sample_Type
+                    {
+                        Code = record.Code,
+                        Name = record.Name,
+                        Active = true
+                    });
+                }
+                else
+                {
+                    existing.Name = record.Name;
+                    unit.SampleTypes.Update(existing);
+                }
+            }
+        }
     }
 }

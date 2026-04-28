@@ -106,6 +106,70 @@ namespace HCLAB
                     throw;
                 }
             }
+
+            public async static Task<List<Model.HCLAB.Ref_Tables>> GetSampleTypes(string conn)
+            {
+                List<Model.HCLAB.Ref_Tables> sampleTypes = new List<Model.HCLAB.Ref_Tables>();
+                try
+                {
+                    using (var con = new OracleConnection(conn))
+                    using (var cmd = new OracleCommand(Queries.Test.Get_Sample_Types, con))
+                    {
+                        await con.OpenAsync();
+
+                        using (var reader = await cmd.ExecuteReaderAsync())
+                        {
+                            while (await reader.ReadAsync())
+                            {
+                                sampleTypes.Add(new Model.HCLAB.Ref_Tables
+                                {
+                                    Code = reader["code"].ToString(),
+                                    Name = reader["name"].ToString(),
+                                });
+                            }
+                        }
+
+                        return sampleTypes;
+                    }
+                }
+                catch (Exception)
+                {
+
+                    throw;
+                }
+            }
+
+            public async static Task<List<Model.HCLAB.Ref_Tables>> GetTestGroups(string conn)
+            {
+                List<Model.HCLAB.Ref_Tables> testGroups = new List<Model.HCLAB.Ref_Tables>();
+                try
+                {
+                    using (var con = new OracleConnection(conn))
+                    using (var cmd = new OracleCommand(Queries.Test.Get_Test_Groups, con))
+                    {
+                        await con.OpenAsync();
+
+                        using (var reader = await cmd.ExecuteReaderAsync())
+                        {
+                            while (await reader.ReadAsync())
+                            {
+                                testGroups.Add(new Model.HCLAB.Ref_Tables
+                                {
+                                    Code = reader["code"].ToString(),
+                                    Name = reader["name"].ToString(),
+                                });
+                            }
+                        }
+
+                        return testGroups;
+                    }
+                }
+                catch (Exception)
+                {
+
+                    throw;
+                }
+            }
         }
 
         public static class HCLABTransactions

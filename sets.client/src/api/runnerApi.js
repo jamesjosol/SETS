@@ -13,6 +13,7 @@ export const runnerApi = {
   // Assign RMT / Section Receiving
   scanSpecimen: (payload) => api.post(`${BASE_URL}/scan`, payload).then(r => r.data),
   saveAssignments: (payload) => api.post(`${BASE_URL}/assign`, payload),
+  getCompletedToday: (sectionCode) => api.get(`${BASE_URL}/completed-today`, { params: { sectionCode } }).then(r => r.data),
 
   getDashboardSummary: (sectionCode) => api.get(`${BASE_URL}/dashboard-summary`, { params: { sectionCode } }).then(r => r.data),
   getAllSectionsSummary: () => api.get(`${BASE_URL}/dashboard-summary/all`).then(r => r.data),// Admin endpoints

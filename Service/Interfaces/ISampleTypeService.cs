@@ -10,5 +10,6 @@ namespace Service.Interfaces
     public interface ISampleTypeService
     {
         Sample_Type? GetSampleType(string code);
+        void UpsertFromHclab(List<Model.HCLAB.Ref_Tables> records);
     }
 }

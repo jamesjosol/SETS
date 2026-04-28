@@ -42,5 +42,29 @@ namespace Service.Services
             }
             catch { throw; }
         }
+
+        public void UpsertFromHclab(List<Model.HCLAB.Ref_Tables> records)
+        {
+            using var context = _factory.CreateContext(_branch);
+            using var unit = new UnitOfWork(context);
+
+            foreach (var record in records)
+            {
+                var existing = unit.TestGroups.GetByCode(record.Code);
+                if (existing == null)
+                {
+                    unit.TestGroups.Add(new Model.SETSDB.Test_Group
+                    {
+                        Code = record.Code,
+                        Name = record.Name
+                    });
+                }
+                else
+                {
+                    existing.Name = record.Name;
+                    unit.TestGroups.Update(existing);
+                }
+            }
+        }
     }
 }

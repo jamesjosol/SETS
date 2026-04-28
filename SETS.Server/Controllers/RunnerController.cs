@@ -200,6 +200,25 @@ namespace SETS.Server.Controllers
             }
         }
 
+        // GET api/runner/completed-today?sectionCode=
+        [HttpGet("completed-today")]
+        public IActionResult GetCompletedToday([FromQuery] string sectionCode)
+        {
+            try
+            {
+                var branch = HttpContext.Session.GetString("BranchCode");
+                if (string.IsNullOrEmpty(branch))
+                    return Unauthorized(new { message = "Session expired." });
+
+                using var master = new MasterService(branch);
+                return Ok(master.Runner.GetCompletedToday(sectionCode));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+
         [HttpGet("admin/running")]
         public IActionResult GetAllSectionsRunning()
         {
