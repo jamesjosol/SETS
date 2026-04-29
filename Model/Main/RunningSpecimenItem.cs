@@ -18,6 +18,7 @@ namespace Model.Main
         public string? Remarks { get; set; }
         public DateTime? Received { get; set; }
         public List<RunningTestItem> Tests { get; set; } = new();
+        public bool IsOnSite { get; set; }
     }
 
     public class RunningTestItem

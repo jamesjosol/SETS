@@ -22,6 +22,8 @@ namespace Service
         public TestGroupService TestGroup { get; set; }
         public TestRunningDayService TestRunningDay { get; set; }
         public TatService Tat { get; private set; }
+        public OnSiteService OnSite { get; private set; }
+        public OnSiteSettingsService OnSiteSettings { get; private set; }
 
         private readonly AppDbContextFactory _factory;
         private readonly string _branch;
@@ -51,6 +53,8 @@ namespace Service
             TestGroup = new TestGroupService(_factory, _branch);
             TestRunningDay = new TestRunningDayService(_factory, _branch);
             Tat = new TatService(_factory, _branch);
+            OnSite = new OnSiteService(_factory, _branch);
+            OnSiteSettings = new OnSiteSettingsService(_factory, _branch);
         }
 
         public void Dispose()
@@ -69,6 +73,8 @@ namespace Service
             TestGroup = null;
             TestRunningDay = null;
             Tat = null;
+            OnSite = null;
+            OnSiteSettings = null;
         }
     }
 }

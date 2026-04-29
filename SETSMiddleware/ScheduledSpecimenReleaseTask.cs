@@ -42,24 +42,42 @@ namespace SETSMiddleware.Tasks
 
             using var master = new MasterService(_branch);
 
+            // ── Standard specimens ─────────────────────────────────────────
             var dueTests = master.SpecimenSection.GetDueScheduledTests(today);
-
-            if (dueTests.Count == 0)
+            if (dueTests.Count > 0)
             {
-                Log("No scheduled specimens due today or past.", LogLevel.Info);
-                LastStatus = $"Last run: {DateTime.Now:HH:mm:ss} — nothing to release";
-                return;
+                var headerIds = dueTests.Select(t => t.HeaderId).Distinct().ToList();
+                master.SpecimenSection.ReleaseScheduledHeaders(headerIds);
+                Log($"Standard: Released {headerIds.Count} header(s) — {dueTests.Count} test(s).", LogLevel.Success);
+            }
+            else
+            {
+                Log("Standard: No scheduled specimens due.", LogLevel.Info);
             }
 
-            Log($"Found {dueTests.Count} due test(s) across " +
-                $"{dueTests.Select(t => t.HeaderId).Distinct().Count()} header(s).", LogLevel.Info);
+            // ── On-Site specimens ──────────────────────────────────────────
+            var onSiteDueTests = master.OnSite.GetDueScheduledTests(today);
+            if (onSiteDueTests.Count > 0)
+            {
+                var onSiteHeaderIds = onSiteDueTests.Select(t => t.HeaderId).Distinct().ToList();
+                master.OnSite.ReleaseScheduledHeaders(onSiteHeaderIds);
+                Log($"On-Site: Released {onSiteHeaderIds.Count} header(s) — {onSiteDueTests.Count} test(s).", LogLevel.Success);
+            }
+            else
+            {
+                Log("On-Site: No scheduled specimens due.", LogLevel.Info);
+            }
 
-            var headerIds = dueTests.Select(t => t.HeaderId).Distinct().ToList();
-            master.SpecimenSection.ReleaseScheduledHeaders(headerIds);
+            int totalHeaders = dueTests.Select(t => t.HeaderId).Distinct().Count()
+                             + onSiteDueTests.Select(t => t.HeaderId).Distinct().Count();
+            int totalTests = dueTests.Count + onSiteDueTests.Count;
 
-            string summary = $"Released {headerIds.Count} header(s) — {dueTests.Count} test(s) due";
+            string summary = totalTests > 0
+                ? $"Released {totalHeaders} header(s) — {totalTests} test(s) due"
+                : "Nothing to release";
+
             LastStatus = $"Last run: {DateTime.Now:HH:mm:ss} — {summary}";
-            Log(summary, LogLevel.Success);
+            Log(summary, totalTests > 0 ? LogLevel.Success : LogLevel.Info);
 
             await Task.CompletedTask;
         }

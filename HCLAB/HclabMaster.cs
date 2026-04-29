@@ -327,6 +327,48 @@ namespace HCLAB
                 }
                 catch { throw; }
             }
+
+            public async static Task<List<OnSite_Specimen>> GetOnSiteSpecimen(string conn, string specimenNo)
+            {
+                var result = new List<OnSite_Specimen>();
+                try
+                {
+                    using (var con = new OracleConnection(conn))
+                    using (var cmd = new OracleCommand(Queries.Transaction.Get_OnSite_Specimen, con))
+                    {
+                        cmd.Parameters.Add("p0", specimenNo);
+                        await con.OpenAsync();
+
+                        using (var reader = await cmd.ExecuteReaderAsync())
+                        {
+                            while (await reader.ReadAsync())
+                            {
+                                DateTime? trxDate = null;
+                                if (reader["trxDate"] != DBNull.Value)
+                                    DateTime.TryParse(reader["trxDate"].ToString(), out var parsed);
+
+                                result.Add(new OnSite_Specimen
+                                {
+                                    SpecimenNo = reader["specimenNo"].ToString(),
+                                    LabNo = reader["labNo"].ToString(),
+                                    SampleTypeCode = reader["sampleTypeCode"].ToString(),
+                                    PatientName = reader["patientName"]?.ToString(),
+                                    PID = reader["pid"]?.ToString(),
+                                    TrxDate = reader["trxDate"] != DBNull.Value
+                                        ? Convert.ToDateTime(reader["trxDate"])
+                                        : null,
+                                    TestCode = reader["testCode"]?.ToString(),
+                                    TestName = reader["testName"]?.ToString(),
+                                    TestGroup = reader["testGroup"]?.ToString(),
+                                });
+                            }
+                        }
+
+                        return result;
+                    }
+                }
+                catch { throw; }
+            }
         }
         
         public static class MISC

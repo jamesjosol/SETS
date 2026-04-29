@@ -79,7 +79,17 @@
                       chevron_right
                     </span>
                   </td>
-                  <td class="px-4 py-3"><span class="font-semibold font-mono" style="color: var(--color-text);">{{ item.specimenNo }}</span></td>
+                  <td class="px-4 py-3">
+                    <div class="flex items-center gap-1.5">
+                      <span class="font-bold font-mono" style="color: var(--color-text);">{{ item.specimenNo }}</span>
+                      <span v-if="item.isOnSite"
+                            class="material-symbols-outlined cursor-default"
+                            style="color: var(--color-warning); font-size: 16px;"
+                            title="On-Site / Mission">
+                        location_on
+                      </span>
+                    </div>
+                  </td>
                   <td class="px-4 py-3">
                     <p class="font-semibold text-xs" style="color: var(--color-text);">{{ item.patientName ?? '—' }}</p>
                     <p v-if="item.patientID" class="text-[10px]" style="color: var(--color-text-muted);">{{ item.patientID }}</p>
@@ -210,7 +220,17 @@
                           chevron_right
                         </span>
                       </td>
-                      <td class="px-4 py-3"><span class="font-bold font-mono text-xs" style="color: var(--color-text);">{{ item.specimenNo }}</span></td>
+                      <td class="px-4 py-3">
+                        <div class="flex items-center gap-1.5">
+                          <p class="font-bold font-mono text-xs" style="color: var(--color-text);">{{ item.specimenNo }}</p>
+                          <span v-if="item.isOnSite"
+                                class="material-symbols-outlined cursor-default"
+                                style="color: var(--color-warning); font-size: 16px;"
+                                title="On-Site / Mission">
+                            location_on
+                          </span>
+                        </div>
+                      </td>
                       <td class="px-4 py-3">
                         <p class="font-semibold text-xs" style="color: var(--color-text);">{{ item.patientName ?? '—' }}</p>
                         <p v-if="item.patientID" class="text-[10px]" style="color: var(--color-text-muted);">{{ item.patientID }}</p>

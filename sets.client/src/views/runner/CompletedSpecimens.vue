@@ -103,7 +103,15 @@
                     </span>
                   </td>
                   <td class="px-4 py-3">
-                    <span class="font-bold font-mono" style="color: var(--color-text);">{{ item.specimenNo }}</span>
+                    <div class="flex items-center gap-1.5">
+                      <span class="font-bold font-mono text-xs" style="color: var(--color-text);">{{ item.specimenNo }}</span>
+                      <span v-if="item.isOnSite"
+                            class="material-symbols-outlined cursor-default"
+                            style="color: var(--color-warning); font-size: 14px;"
+                            title="On-Site / Mission">
+                        location_on
+                      </span>
+                    </div>
                   </td>
                   <td class="px-4 py-3">
                     <p class="font-semibold text-xs" style="color: var(--color-text);">{{ item.patientName || '—' }}</p>
@@ -272,7 +280,15 @@
                         </span>
                       </td>
                       <td class="px-4 py-3">
-                        <span class="font-bold font-mono text-xs" style="color: var(--color-text);">{{ item.specimenNo }}</span>
+                        <div class="flex items-center gap-1.5">
+                          <span class="font-bold font-mono text-xs" style="color: var(--color-text);">{{ item.specimenNo }}</span>
+                          <span v-if="item.isOnSite"
+                                class="material-symbols-outlined cursor-default"
+                                style="color: var(--color-warning); font-size: 14px;"
+                                title="On-Site / Mission">
+                            location_on
+                          </span>
+                        </div>
                       </td>
                       <td class="px-4 py-3">
                         <p class="font-semibold text-xs" style="color: var(--color-text);">{{ item.patientName || '—' }}</p>

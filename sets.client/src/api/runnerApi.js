@@ -25,4 +25,13 @@ export const runnerApi = {
   getAdminCompletedToday: () => api.get(`${BASE_URL}/admin/completed-today`).then(r => r.data),
   getAdminPending: () => api.get(`${BASE_URL}/admin/pending`).then(r => r.data),
   getAdminScheduled: () => api.get(`${BASE_URL}/admin/scheduled`).then(r => r.data),
+
+  // On-Site Settings
+  getOnSiteSettings: () => api.get(`${BASE_URL}/onsite/settings`).then(r => r.data),
+  toggleOnSite: (isEnabled) => api.patch(`${BASE_URL}/onsite/settings/toggle`, { isEnabled }),
+  addAllowedLabNo: (data) => api.post(`${BASE_URL}/onsite/allowed-labnos`, data),
+  toggleAllowedLabNo: (id) => api.patch(`${BASE_URL}/onsite/allowed-labnos/${id}/toggle`),
+  deleteAllowedLabNo: (id) => api.delete(`${BASE_URL}/onsite/allowed-labnos/${id}`),
+  scanOnSiteSpecimen: (payload) => api.post(`${BASE_URL}/onsite/scan`, payload).then(r => r.data),
+  saveOnSiteAssignments: (payload) => api.post(`${BASE_URL}/onsite/assign`, payload),
 }

@@ -19,6 +19,7 @@ namespace Model.Main
         public string? ReceivedBy { get; set; }
         public DateTime? Received { get; set; }
         public List<ScheduledTestItem> Tests { get; set; } = new();
+        public bool IsOnSite { get; set; }
     }
 
     public class ScheduledTestItem

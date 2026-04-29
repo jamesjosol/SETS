@@ -22,5 +22,6 @@ namespace Model.Main
         public string? Remarks { get; set; }
         public string? PatientName { get; set; }
         public string? PatientID { get; set; }
+        public bool IsOnSite { get; set; }
     }
 }

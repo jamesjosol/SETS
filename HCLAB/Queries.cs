@@ -70,6 +70,28 @@ namespace HCLAB
 				  AND od_item_type = 'U'
 				";
 
+            public static string Get_OnSite_Specimen = @"
+				 SELECT 
+						os.os_sno as specimenNo,
+						oh.oh_tno as labNo,
+						os.os_spl_type as sampleTypeCode,
+						oh.oh_last_name as patientName,
+						oh.oh_pid as PID,
+						oh.oh_trx_dt as trxDate,
+						od.od_testcode as testCode,
+						ti.ti_name as testName,
+						od.od_test_grp as testGroup
+					FROM ord_spl os
+					LEFT JOIN ord_hdr oh ON oh.oh_tno = os.os_tno
+					LEFT JOIN ord_dtl od ON od.od_tno = os.os_tno 
+						AND od.od_spl_type = os.os_spl_type
+						AND od.od_testcode = od.od_order_ti
+					LEFT JOIN test_item ti ON ti.ti_code = od.od_order_ti
+					WHERE os.os_sno = :p0
+				";
+
+
+
         }
 
   

@@ -31,64 +31,105 @@ namespace SETSMiddleware.Tasks
         protected override async Task ExecuteAsync()
         {
             using var master = new MasterService(_branch);
-
-            // Step 1 — Get all running tests across all sections
-            var runningTests = master.SpecimenSection.GetAllRunningTests();
-
-            if (runningTests.Count == 0)
-            {
-                Log("No running tests to check.", LogLevel.Info);
-                LastStatus = $"Last run: {DateTime.Now:HH:mm:ss} — nothing running";
-                return;
-            }
-
-            Log($"Checking {runningTests.Count} running test(s)...", LogLevel.Info);
-
             var oracleConn = HclabConnection.ConnectionString(_branch);
             int releasedCount = 0;
 
-            foreach (var test in runningTests)
+            // ── Standard specimens ─────────────────────────────────────────
+            var runningTests = master.SpecimenSection.GetAllRunningTests();
+
+            if (runningTests.Count > 0)
             {
-                try
-                {
-                    // Step 2 — Derive lab number: first 10 chars of SpecimenNo
-                    // SpecimenNo lives on the header — load it
-                    var specimenNo = master.SpecimenSection
-                        .GetHeaderById(test.HeaderId)?.SpecimenNo;
+                Log($"Checking {runningTests.Count} standard running test(s)...", LogLevel.Info);
 
-                    if (string.IsNullOrEmpty(specimenNo))
+                foreach (var test in runningTests)
+                {
+                    try
                     {
-                        Log($"Header {test.HeaderId} not found — skipping.", LogLevel.Warning);
-                        continue;
+                        var specimenNo = master.SpecimenSection
+                            .GetHeaderById(test.HeaderId)?.SpecimenNo;
+
+                        if (string.IsNullOrEmpty(specimenNo))
+                        {
+                            Log($"Header {test.HeaderId} not found — skipping.", LogLevel.Warning);
+                            continue;
+                        }
+
+                        var labNo = specimenNo.Length >= 10
+                            ? specimenNo.Substring(0, 10)
+                            : specimenNo;
+
+                        bool isReleased = await HclabMaster.HCLABTransactions
+                            .CheckTestReleased(oracleConn, labNo, test.TestCode);
+
+                        if (!isReleased) continue;
+
+                        master.SpecimenSection.MarkTestReleased(test.Id);
+                        master.SpecimenSection.TryCompleteHeader(test.HeaderId);
+                        Log($"Standard released: {specimenNo} — {test.TestCode}", LogLevel.Success);
+                        releasedCount++;
                     }
-
-                    var labNo = specimenNo.Length >= 10
-                        ? specimenNo.Substring(0, 10)
-                        : specimenNo;
-
-                    // Step 3 — Ask Oracle if this test is fully released
-                    bool isReleased = await HclabMaster.HCLABTransactions
-                        .CheckTestReleased(oracleConn, labNo, test.TestCode);
-
-                    if (!isReleased) continue;
-
-                    // Step 4 — Mark test as released
-                    master.SpecimenSection.MarkTestReleased(test.Id);
-                    Log($"Released: {specimenNo} — {test.TestCode}", LogLevel.Success);
-                    releasedCount++;
-
-                    // Step 5 — Check if header is now fully complete
-                    master.SpecimenSection.TryCompleteHeader(test.HeaderId);
-                }
-                catch (Exception ex)
-                {
-                    Log($"Error on test {test.Id} ({test.TestCode}): {ex.Message}", LogLevel.Error);
+                    catch (Exception ex)
+                    {
+                        Log($"Error on standard test {test.Id} ({test.TestCode}): {ex.Message}", LogLevel.Error);
+                    }
                 }
             }
+            else
+            {
+                Log("Standard: No running tests to check.", LogLevel.Info);
+            }
 
-            string summary = releasedCount > 0
-                ? $"Checked {runningTests.Count} — Released {releasedCount}"
-                : $"Checked {runningTests.Count} — None released yet";
+            // ── On-Site specimens ──────────────────────────────────────────
+            var onSiteRunningTests = master.OnSite.GetAllRunningTests();
+
+            if (onSiteRunningTests.Count > 0)
+            {
+                Log($"Checking {onSiteRunningTests.Count} On-Site running test(s)...", LogLevel.Info);
+
+                foreach (var test in onSiteRunningTests)
+                {
+                    try
+                    {
+                        var specimenNo = master.OnSite
+                            .GetHeaderById(test.HeaderId)?.SpecimenNo;
+
+                        if (string.IsNullOrEmpty(specimenNo))
+                        {
+                            Log($"On-Site header {test.HeaderId} not found — skipping.", LogLevel.Warning);
+                            continue;
+                        }
+
+                        var labNo = specimenNo.Length >= 10
+                            ? specimenNo.Substring(0, 10)
+                            : specimenNo;
+
+                        bool isReleased = await HclabMaster.HCLABTransactions
+                            .CheckTestReleased(oracleConn, labNo, test.TestCode);
+
+                        if (!isReleased) continue;
+
+                        master.OnSite.MarkTestReleased(test.Id);
+                        master.OnSite.TryCompleteHeader(test.HeaderId);
+                        Log($"On-Site released: {specimenNo} — {test.TestCode}", LogLevel.Success);
+                        releasedCount++;
+                    }
+                    catch (Exception ex)
+                    {
+                        Log($"Error on On-Site test {test.Id} ({test.TestCode}): {ex.Message}", LogLevel.Error);
+                    }
+                }
+            }
+            else
+            {
+                Log("On-Site: No running tests to check.", LogLevel.Info);
+            }
+
+            int totalChecked = runningTests.Count + onSiteRunningTests.Count;
+            string summary = totalChecked == 0
+                ? "Nothing running"
+                : releasedCount > 0
+                    ? $"Checked {totalChecked} — Released {releasedCount}"
+                    : $"Checked {totalChecked} — None released yet";
 
             LastStatus = $"Last run: {DateTime.Now:HH:mm:ss} — {summary}";
             Log(summary, releasedCount > 0 ? LogLevel.Success : LogLevel.Info);

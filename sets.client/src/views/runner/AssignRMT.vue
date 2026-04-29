@@ -10,28 +10,70 @@
       </div>
     </div>
 
-    <!-- Barcode scan field -->
-    <div class="mb-5 rounded-2xl p-5 flex items-center gap-4"
+    <!-- Mode toggle + Barcode scan field -->
+    <div class="mb-5 rounded-2xl p-5 space-y-4"
          style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
-      <div class="p-3 rounded-xl" style="background-color: var(--color-primary-soft);">
-        <span class="material-symbols-outlined text-lg" style="color: var(--color-primary);">barcode_scanner</span>
-      </div>
-      <div class="flex-1">
-        <p class="text-[10px] font-bold uppercase tracking-widest mb-1" style="color: var(--color-text-muted);">Scan Barcode</p>
-        <div class="flex items-center gap-2">
-          <input ref="scanInput"
-                 v-model="scanValue"
-                 type="text"
-                 placeholder="Scan or enter specimen no. here..."
-                 class="flex-1 px-3 py-2 rounded-xl text-sm outline-none transition-all"
-                 style="background-color: var(--color-surface-low); border: 1.5px solid var(--color-border); color: var(--color-text);"
-                 @keydown.enter="scanSpecimen" />
-          <button class="px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest transition-all active:scale-[0.97] whitespace-nowrap"
-                  style="background: var(--color-primary-gradient); color: #fff;"
-                  :disabled="scanning || !scanValue.trim()"
-                  @click="scanSpecimen">
-            {{ scanning ? 'Scanning...' : 'Add' }}
+
+      <!-- On-Site toggle — only shown if enabled globally -->
+      <div v-if="onSiteEnabled" class="flex items-center gap-3">
+        <span class="text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Scan Mode</span>
+        <div class="flex rounded-xl overflow-hidden"
+             style="border: 1.5px solid var(--color-border); background-color: var(--color-surface-low);">
+          <button class="px-4 py-1.5 text-[11px] font-bold uppercase tracking-widest transition-all"
+                  :style="scanMode === 'standard'
+                ? 'background: var(--color-primary-gradient); color: #fff;'
+                : 'color: var(--color-text-muted);'"
+                  @click="scanMode = 'standard'; specimenGroups = []; expandedSpecimen = null">
+            Standard
           </button>
+          <button class="px-4 py-1.5 text-[11px] font-bold uppercase tracking-widest transition-all"
+                  :style="scanMode === 'onsite'
+                ? 'background: var(--color-primary-gradient); color: #fff;'
+                : 'color: var(--color-text-muted);'"
+                  @click="scanMode = 'onsite'; specimenGroups = []; expandedSpecimen = null">
+            <span class="flex items-center gap-1">
+              <span class="material-symbols-outlined text-xs">location_on</span>
+              On-Site
+            </span>
+          </button>
+        </div>
+        <span v-if="scanMode === 'onsite'"
+              class="text-[10px] font-bold px-2.5 py-1 rounded-full"
+              style="background-color: rgba(217,119,6,0.12); color: var(--color-warning);">
+          On-Site / Mission Mode
+        </span>
+      </div>
+
+      <!-- Barcode scan input -->
+      <div class="flex items-center gap-4">
+        <div class="p-3 rounded-xl flex-shrink-0"
+             :style="scanMode === 'onsite'
+           ? 'background-color: rgba(217,119,6,0.12);'
+           : 'background-color: var(--color-primary-soft);'">
+          <span class="material-symbols-outlined text-lg"
+                :style="scanMode === 'onsite'
+              ? 'color: var(--color-warning);'
+              : 'color: var(--color-primary);'">
+            barcode_scanner
+          </span>
+        </div>
+        <div class="flex-1">
+          <p class="text-[10px] font-bold uppercase tracking-widest mb-1" style="color: var(--color-text-muted);">Scan Barcode</p>
+          <div class="flex items-center gap-2">
+            <input ref="scanInput"
+                   v-model="scanValue"
+                   type="text"
+                   placeholder="Scan or enter specimen no. here..."
+                   class="flex-1 px-3 py-2 rounded-xl text-sm outline-none transition-all"
+                   style="background-color: var(--color-surface-low); border: 1.5px solid var(--color-border); color: var(--color-text);"
+                   @keydown.enter="scanSpecimen" />
+            <button class="px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest transition-all active:scale-[0.97] whitespace-nowrap"
+                    style="background: var(--color-primary-gradient); color: #fff;"
+                    :disabled="scanning || !scanValue.trim()"
+                    @click="scanSpecimen">
+              {{ scanning ? 'Scanning...' : 'Add' }}
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -197,7 +239,7 @@
 
                             <!-- Assigned RMT — auto-filled to current user, editable -->
                             <td class="px-4 py-3">
-             
+
                               <template v-if="test.status === 'R' || test.status === 'X'">
                                 <span class="text-xs font-semibold" style="color: var(--color-text);">
                                   {{ test.assignedRMT ?? '—' }}
@@ -217,7 +259,7 @@
                             <!-- Schedule tag pills: Today / END / CRD / SRD -->
                             <td class="px-4 py-3">
                               <div class="flex items-center gap-1.5 flex-wrap">
-                  
+
 
                                 <label v-for="tag in scheduleTags" :key="tag.value"
                                        class="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-lg transition-all select-none"
@@ -227,7 +269,7 @@
                                        : test.scheduleTag === tag.value
                                          ? scheduleTagActiveStyle(tag.value)
                                          : 'color: var(--color-text-muted); background-color: var(--color-surface-low);'"
-                                                                     @click.prevent="tag.value === 'SRD' && !test.hasRunningDay ? null : test.scheduleTag = tag.value">
+                                       @click.prevent="tag.value === 'SRD' && !test.hasRunningDay ? null : test.scheduleTag = tag.value">
                                   <input type="radio"
                                          :name="`tag-${test.id}`"
                                          :value="tag.value"
@@ -300,7 +342,7 @@
 </template>
 
 <script setup>
-  import { ref, onMounted, nextTick } from 'vue'
+  import { ref, onMounted, nextTick, computed } from 'vue'
   import AppLayout from '@/components/layout/AppLayout.vue'
   import AlertModal from '@/components/common/AlertModal.vue'
   import RemarkModal from '@/components/common/RemarkModal.vue'
@@ -321,6 +363,8 @@
   const expandedSpecimen = ref(null)
   const specimenGroups = ref([])
   const availableRMTs = ref([])
+  const onSiteEnabled = ref(false)
+  const scanMode = ref('standard') // 'standard' | 'onsite'
 
   // Schedule tag options
   // TODAY = no tag in DB, test runs today → status R
@@ -344,7 +388,6 @@
     const val = scanValue.value.trim()
     if (!val) return
 
-    // Block duplicate scan in same session
     if (specimenGroups.value.some(g => g.specimenNo === val)) {
       showAlert('warning', 'Already Scanned', `Specimen ${val} is already in the list.`)
       scanValue.value = ''
@@ -355,11 +398,15 @@
 
     scanning.value = true
     try {
-      const result = await runnerApi.scanSpecimen({
+      const payload = {
         specimenNo: val,
         sectionCode: authStore.sectionCode,
         userID: authStore.userID,
-      })
+      }
+
+      const result = scanMode.value === 'onsite'
+        ? await runnerApi.scanOnSiteSpecimen(payload)
+        : await runnerApi.scanSpecimen(payload)
 
       const {
         firstScan, tests, specimenNo,
@@ -372,8 +419,6 @@
         return
       }
 
-      // Build group entry
-      // Auto-assign current user as RMT, default schedule = Today
       specimenGroups.value.unshift({
         specimenNo,
         headerId: result.data.headerId,
@@ -383,19 +428,21 @@
         firstScan,
         received,
         receivedBy,
-        remarks: result.data.remarks ?? '', 
+        remarks: result.data.remarks ?? '',
+        isOnSite: scanMode.value === 'onsite',
         tests: tests.map(t => {
           const today = new Date().toISOString().split('T')[0]
           const runningDateStr = t.runningDate ?? null
 
           let initialTag = 'NOW'
           if (t.scheduleTag && runningDateStr && runningDateStr > today) {
-            initialTag = t.scheduleTag       // future END/CRD/SRD — preserve
+            initialTag = t.scheduleTag
           } else if (t.scheduleTag === 'SRD' && !runningDateStr) {
-            initialTag = 'SRD'               // existing SRD with no date — keep
+            initialTag = 'SRD'
           } else if (!t.scheduleTag && t.hasRunningDay) {
-            initialTag = 'SRD'               // ← NEW: fresh scan, has running day → default to SRD
+            initialTag = 'SRD'
           }
+          // On-Site: always default to NOW, no SRD
 
           return {
             ...t,
@@ -406,12 +453,7 @@
         })
       })
 
-      // Auto-expand newly scanned specimen
       expandedSpecimen.value = specimenNo
-      //hidden, they decide that no prompt on first scan
-      //if (firstScan) {
-      //  showAlert('success', 'Received', `Specimen ${val} marked as received by section.`)
-      //}
 
     } catch (e) {
       showAlert('error', 'Scan Failed', e?.response?.data?.message ?? 'Could not scan specimen.')
@@ -440,18 +482,16 @@
   async function saveAssignments() {
     saving.value = true
     try {
-      // Flatten all groups into one assignments array
-      // TODAY → scheduleTag = null (runs today, will become status R if RMT set)
       const assignments = specimenGroups.value.flatMap(g =>
         g.tests.map(t => ({
           testId: t.id,
           assignedRMT: t.selectedRMT || null,
           scheduleTag: t.scheduleTag === 'NOW' ? null : (t.scheduleTag || null),
           runningDate: t.scheduleTag === 'CRD' ? (t.runningDate || null) : null,
-          runAt: t.scheduleTag === 'NOW' ? (t.runAt || null) : null,  // ← only for NOW
+          runAt: t.scheduleTag === 'NOW' ? (t.runAt || null) : null,
         }))
       )
-      // Inside saveAssignments(), before the API call:
+
       for (const group of specimenGroups.value) {
         for (const test of group.tests) {
           if (test.scheduleTag === 'CRD' && !test.runningDate) {
@@ -462,14 +502,32 @@
           }
         }
       }
-      await runnerApi.saveAssignments({
+
+      // Check if mixed — all must be same mode
+      const hasStandard = specimenGroups.value.some(g => !g.isOnSite)
+      const hasOnSite = specimenGroups.value.some(g => g.isOnSite)
+
+      if (hasStandard && hasOnSite) {
+        showAlert('warning', 'Mixed Specimens',
+          'Cannot save Standard and On-Site specimens together. Please save them separately.')
+        saving.value = false
+        return
+      }
+
+      const payload = {
         userID: authStore.userID,
         assignments,
         specimenRemarks: specimenGroups.value.map(g => ({
-          headerId: g.headerId, 
+          headerId: g.headerId,
           remarks: g.remarks || null,
         }))
-      })
+      }
+
+      if (hasOnSite) {
+        await runnerApi.saveOnSiteAssignments(payload)
+      } else {
+        await runnerApi.saveAssignments(payload)
+      }
 
       showAlert('success', 'Saved', 'Assignments saved successfully.')
       specimenGroups.value = []
@@ -540,12 +598,18 @@
   // ── Mount ──────────────────────────────────────────────────────────────────
 
   onMounted(async () => {
-    // Seed dropdown with current user for now
-    // Replace with API call when RMT list endpoint is ready
     availableRMTs.value = [{
       userID: authStore.userID,
       fullName: authStore.userName ?? authStore.userID,
     }]
+
+    // Check if On-Site scanning is enabled globally
+    try {
+      const data = await runnerApi.getOnSiteSettings()
+      onSiteEnabled.value = data.isEnabled ?? false
+    } catch {
+      onSiteEnabled.value = false
+    }
 
     await nextTick()
     scanInput.value?.focus()

@@ -32,6 +32,10 @@ namespace Reposi
         public TestRunningDayRepo TestRunningDays { get; set; }
         public TatSectionRepo TatSections { get; private set; }
         public TatCycleLogRepo TatCycleLogs { get; private set; }
+        public OnSiteSectionHeaderRepo OnSiteSectionHeaders { get; private set; }
+        public OnSiteSectionTestRepo OnSiteSectionTests { get; private set; }
+        public OnSiteAllowedLabNoRepo OnSiteAllowedLabNos { get; private set; }
+        public OnSiteSettingsRepo OnSiteSettings { get; private set; }
 
         public UnitOfWork(AppDbContext context)
         {
@@ -55,6 +59,10 @@ namespace Reposi
             TestRunningDays = new TestRunningDayRepo(_context);
             TatSections = new TatSectionRepo(_context);
             TatCycleLogs = new TatCycleLogRepo(_context);
+            OnSiteSectionHeaders = new OnSiteSectionHeaderRepo(_context);
+            OnSiteSectionTests = new OnSiteSectionTestRepo(_context);
+            OnSiteAllowedLabNos = new OnSiteAllowedLabNoRepo(_context);
+            OnSiteSettings = new OnSiteSettingsRepo(_context);
         }
 
         public void Dispose()

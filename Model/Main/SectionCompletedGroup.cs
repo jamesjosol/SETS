@@ -25,6 +25,7 @@ namespace Model.Main
         public DateTime? Completed { get; set; }
         public string? CompletedBy { get; set; }
         public List<CompletedTestItem> Tests { get; set; }
+        public bool IsOnSite { get; set; }
     }
 
     public class CompletedTestItem

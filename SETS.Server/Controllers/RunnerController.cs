@@ -371,5 +371,208 @@ namespace SETS.Server.Controllers
                 return StatusCode(500, new { message = ex.Message });
             }
         }
+
+        // ─────────────────────────────────────────────────────────────────────────────────────────────────────────── ON-SITE ENDPOINTS ─────────────────────────────────────────────────────────────────────────────────────────
+
+        // POST api/runner/onsite/scan
+        [HttpPost("onsite/scan")]
+        public async Task<IActionResult> ScanOnSiteSpecimen([FromBody] ScanOnSiteSpecimenRequest request)
+        {
+            try
+            {
+                var branch = HttpContext.Session.GetString("BranchCode");
+                if (string.IsNullOrEmpty(branch))
+                    return Unauthorized(new { message = "Session expired." });
+
+                if (string.IsNullOrEmpty(request.SpecimenNo))
+                    return BadRequest(new { message = "Specimen number is required." });
+
+                if (string.IsNullOrEmpty(request.SectionCode))
+                    return BadRequest(new { message = "Section code is required." });
+
+                if (string.IsNullOrEmpty(request.UserID))
+                    return BadRequest(new { message = "User ID is required." });
+
+                using var master = new MasterService(branch);
+                var result = await master.OnSite.ScanSpecimen(request);
+
+                return Ok(new { success = true, data = result });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(400, new { message = ex.Message });
+            }
+        }
+
+        // POST api/runner/onsite/assign
+        [HttpPost("onsite/assign")]
+        public IActionResult SaveOnSiteAssignments([FromBody] SaveAssignmentsRequest request)
+        {
+            try
+            {
+                var branch = HttpContext.Session.GetString("BranchCode");
+                if (string.IsNullOrEmpty(branch))
+                    return Unauthorized(new { message = "Session expired." });
+
+                if (string.IsNullOrEmpty(request.UserID))
+                    return BadRequest(new { message = "User ID is required." });
+
+                if (request.Assignments == null || !request.Assignments.Any())
+                    return BadRequest(new { message = "No assignments provided." });
+
+                using var master = new MasterService(branch);
+                master.OnSite.SaveAssignments(request);
+
+                return Ok(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(400, new { message = ex.Message });
+            }
+        }
+
+        // GET api/runner/onsite/settings
+        [HttpGet("onsite/settings")]
+        public IActionResult GetOnSiteSettings()
+        {
+            try
+            {
+                var branch = HttpContext.Session.GetString("BranchCode");
+                if (string.IsNullOrEmpty(branch))
+                    return Unauthorized(new { message = "Session expired." });
+
+                using var master = new MasterService(branch);
+                var settings = master.OnSiteSettings.GetSettings();
+                var labNos = master.OnSiteSettings.GetAllAllowedLabNos();
+
+                return Ok(new
+                {
+                    isEnabled = settings?.IsEnabled ?? false,
+                    allowedLabNos = labNos.Select(l => new
+                    {
+                        id = l.Id,
+                        prefix = l.Prefix,
+                        description = l.Description,
+                        active = l.Active,
+                        created = l.Created,
+                        createdBy = l.CreatedBy,
+                    })
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+
+        // PATCH api/runner/onsite/settings/toggle
+        [HttpPatch("onsite/settings/toggle")]
+        public IActionResult ToggleOnSite([FromBody] ToggleOnSiteRequest request)
+        {
+            try
+            {
+                var branch = HttpContext.Session.GetString("BranchCode");
+                var userID = HttpContext.Session.GetString("UserID");
+                var isAdmin = HttpContext.Session.GetString("IsAdmin") == "True";
+
+                if (string.IsNullOrEmpty(branch))
+                    return Unauthorized(new { message = "Session expired." });
+
+                if (!isAdmin)
+                    return Unauthorized(new { message = "Administrator access required." });
+
+                using var master = new MasterService(branch);
+                master.OnSiteSettings.SetEnabled(request.IsEnabled, userID);
+
+                return Ok(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+
+        // POST api/runner/onsite/allowed-labnos
+        [HttpPost("onsite/allowed-labnos")]
+        public IActionResult AddAllowedLabNo([FromBody] AddAllowedLabNoRequest request)
+        {
+            try
+            {
+                var branch = HttpContext.Session.GetString("BranchCode");
+                var userID = HttpContext.Session.GetString("UserID");
+                var isAdmin = HttpContext.Session.GetString("IsAdmin") == "True";
+
+                if (string.IsNullOrEmpty(branch))
+                    return Unauthorized(new { message = "Session expired." });
+
+                if (!isAdmin)
+                    return Unauthorized(new { message = "Administrator access required." });
+
+                if (string.IsNullOrEmpty(request.Prefix))
+                    return BadRequest(new { message = "Prefix is required." });
+
+                using var master = new MasterService(branch);
+                master.OnSiteSettings.AddAllowedLabNo(request.Prefix, request.Description, userID);
+
+                return Ok(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(400, new { message = ex.Message });
+            }
+        }
+
+        // PATCH api/runner/onsite/allowed-labnos/{id}/toggle
+        [HttpPatch("onsite/allowed-labnos/{id}/toggle")]
+        public IActionResult ToggleAllowedLabNo(int id)
+        {
+            try
+            {
+                var branch = HttpContext.Session.GetString("BranchCode");
+                var userID = HttpContext.Session.GetString("UserID");
+                var isAdmin = HttpContext.Session.GetString("IsAdmin") == "True";
+
+                if (string.IsNullOrEmpty(branch))
+                    return Unauthorized(new { message = "Session expired." });
+
+                if (!isAdmin)
+                    return Unauthorized(new { message = "Administrator access required." });
+
+                using var master = new MasterService(branch);
+                master.OnSiteSettings.ToggleAllowedLabNo(id, userID);
+
+                return Ok(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(400, new { message = ex.Message });
+            }
+        }
+
+        // DELETE api/runner/onsite/allowed-labnos/{id}
+        [HttpDelete("onsite/allowed-labnos/{id}")]
+        public IActionResult DeleteAllowedLabNo(int id)
+        {
+            try
+            {
+                var branch = HttpContext.Session.GetString("BranchCode");
+                var isAdmin = HttpContext.Session.GetString("IsAdmin") == "True";
+
+                if (string.IsNullOrEmpty(branch))
+                    return Unauthorized(new { message = "Session expired." });
+
+                if (!isAdmin)
+                    return Unauthorized(new { message = "Administrator access required." });
+
+                using var master = new MasterService(branch);
+                master.OnSiteSettings.DeleteAllowedLabNo(id);
+
+                return Ok(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(400, new { message = ex.Message });
+            }
+        }
     }
 }

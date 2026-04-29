@@ -27,6 +27,10 @@ namespace Reposi.Context
         public DbSet<Test_RunningDay> Test_RunningDay { get; set; }
         public DbSet<Tat_Section> Tat_Section { get; set; }
         public DbSet<Tat_Cycle_Log> Tat_Cycle_Log { get; set; }
+        public DbSet<OnSite_Section_Header> OnSite_Section_Header { get; set; }
+        public DbSet<OnSite_Section_Test> OnSite_Section_Test { get; set; }
+        public DbSet<OnSite_AllowedLabNo> OnSite_AllowedLabNo { get; set; }
+        public DbSet<OnSite_Settings> OnSite_Settings { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             // User_Master
@@ -166,6 +170,59 @@ namespace Reposi.Context
             // Tat_Cycle_Log
             modelBuilder.Entity<Tat_Cycle_Log>().ToTable("Tat_Cycle_Log");
             modelBuilder.Entity<Tat_Cycle_Log>().HasKey(r => r.Id);
+
+            // OnSite_Section_Header
+            modelBuilder.Entity<OnSite_Section_Header>(entity =>
+            {
+                entity.ToTable("OnSite_Section_Header");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.SpecimenNo).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.SectionCode).IsRequired().HasMaxLength(20);
+                entity.Property(e => e.TestGroupCode).IsRequired().HasMaxLength(20);
+                entity.Property(e => e.SampleTypeCode).IsRequired().HasMaxLength(20);
+                entity.Property(e => e.PatientName).HasMaxLength(200);
+                entity.Property(e => e.PID).HasMaxLength(50);
+                entity.Property(e => e.Status).IsRequired().HasMaxLength(5);
+                entity.Property(e => e.Remarks).HasMaxLength(200);
+                entity.Property(e => e.ReceivedBy).HasMaxLength(50);
+                entity.Property(e => e.CreatedBy).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.UpdatedBy).HasMaxLength(50);
+            });
+
+            // OnSite_Section_Test
+            modelBuilder.Entity<OnSite_Section_Test>(entity =>
+            {
+                entity.ToTable("OnSite_Section_Test");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.TestCode).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.TestName).IsRequired().HasMaxLength(200);
+                entity.Property(e => e.Status).IsRequired().HasMaxLength(5);
+                entity.Property(e => e.ScheduleTag).HasMaxLength(10);
+                entity.Property(e => e.AssignedRMT).HasMaxLength(50);
+                entity.Property(e => e.UpdatedBy).HasMaxLength(50);
+                entity.HasOne<OnSite_Section_Header>()
+                      .WithMany()
+                      .HasForeignKey(e => e.HeaderId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // OnSite_AllowedLabNo
+            modelBuilder.Entity<OnSite_AllowedLabNo>(entity =>
+            {
+                entity.ToTable("OnSite_AllowedLabNo");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Prefix).IsRequired().HasMaxLength(10);
+                entity.Property(e => e.Description).HasMaxLength(200);
+                entity.Property(e => e.CreatedBy).IsRequired().HasMaxLength(50);
+            });
+
+            // OnSite_Settings
+            modelBuilder.Entity<OnSite_Settings>(entity =>
+            {
+                entity.ToTable("OnSite_Settings");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.UpdatedBy).HasMaxLength(50);
+            });
 
         }
     }
