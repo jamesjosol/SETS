@@ -14,6 +14,8 @@ export const runnerApi = {
   scanSpecimen: (payload) => api.post(`${BASE_URL}/scan`, payload).then(r => r.data),
   saveAssignments: (payload) => api.post(`${BASE_URL}/assign`, payload),
   getCompletedToday: (sectionCode) => api.get(`${BASE_URL}/completed-today`, { params: { sectionCode } }).then(r => r.data),
+  getCompletedSpecimens: (from, to) => api.get(`${BASE_URL}/completed`, { params: { from, to } }).then(r => r.data),
+  getAdminCompleted: (from, to) => api.get(`${BASE_URL}/admin/completed`, { params: { from, to } }).then(r => r.data),
 
   getDashboardSummary: (sectionCode) => api.get(`${BASE_URL}/dashboard-summary`, { params: { sectionCode } }).then(r => r.data),
   getAllSectionsSummary: () => api.get(`${BASE_URL}/dashboard-summary/all`).then(r => r.data),// Admin endpoints

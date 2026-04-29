@@ -832,5 +832,102 @@ namespace Service.Services
             }
             catch { throw; }
         }
+
+        public List<CompletedSpecimenItem> GetCompletedSpecimens(string sectionCode, DateTime from, DateTime to)
+        {
+            try
+            {
+                using var context = _factory.CreateContext(_branch);
+
+                var toInclusive = to.Date.AddDays(1);
+
+                var headers = context.Specimen_Section_Header
+                    .Where(h => h.SectionCode == sectionCode
+                             && h.Status == "C"
+                             && h.Updated >= from.Date
+                             && h.Updated < toInclusive)
+                    .OrderByDescending(h => h.Updated)
+                    .ToList();
+
+                if (!headers.Any()) return new List<CompletedSpecimenItem>();
+
+                var headerIds = headers.Select(h => h.Id).ToList();
+                var specimenNos = headers.Select(h => h.SpecimenNo).ToList();
+
+                var tests = context.Specimen_Section_Test
+                    .ToList()
+                    .Where(t => headerIds.Contains(t.HeaderId)).ToList();
+
+                var allSpecimens = context.Batch_Specimen
+                    .Where(s => s.TrxDate >= from.Date.AddMonths(-3))
+                    .ToList();
+                var specimens = allSpecimens
+                    .Where(s => specimenNos.Contains(s.SpecimenNo))
+                    .ToDictionary(s => s.SpecimenNo);
+
+                return headers.Select(h =>
+                {
+                    specimens.TryGetValue(h.SpecimenNo, out var bs);
+
+                    return new CompletedSpecimenItem
+                    {
+                        HeaderId = h.Id,
+                        SpecimenNo = h.SpecimenNo,
+                        PID = bs?.PID ?? string.Empty,
+                        PatientName = bs?.PatientName ?? string.Empty,
+                        SampleTypeCode = bs?.SampleTypeCode ?? string.Empty,
+                        SampleTypeName = bs?.SampleTypeName ?? string.Empty,
+                        Received = h.Received,
+                        ReceivedBy = h.ReceivedBy,
+                        Completed = h.Updated,
+                        CompletedBy = h.UpdatedBy,
+                        Tests = tests
+                            .Where(t => t.HeaderId == h.Id)
+                            .Select(t => new CompletedTestItem
+                            {
+                                Id = t.Id,
+                                TestCode = t.TestCode,
+                                TestName = t.TestName,
+                                AssignedRMT = t.AssignedRMT,
+                                RunAt = t.RunAt,
+                                Assigned = t.Assigned,
+                            })
+                            .ToList()
+                    };
+                }).ToList();
+            }
+            catch { throw; }
+        }
+
+        public List<SectionCompletedGroup> GetAllSectionsCompleted(DateTime from, DateTime to)
+        {
+            try
+            {
+                using var context = _factory.CreateContext(_branch);
+
+                var sections = context.Section_Master
+                    .Where(s => s.Category == "3" && s.Active)
+                    .OrderBy(s => s.Name)
+                    .ToList();
+
+                var result = new List<SectionCompletedGroup>();
+
+                foreach (var section in sections)
+                {
+                    var specimens = GetCompletedSpecimens(section.Code, from, to);
+                    if (!specimens.Any()) continue;
+
+                    result.Add(new SectionCompletedGroup
+                    {
+                        SectionCode = section.Code,
+                        SectionName = section.Name,
+                        Specimens = specimens,
+                    });
+                }
+
+                return result;
+            }
+            catch { throw; }
+        }
     }
 }

@@ -1530,7 +1530,7 @@
 
         <!-- ══════════════════════════════════════════════════════════
        BRANCH
-  ══════════════════════════════════════════════════════════ -->
+         ══════════════════════════════════════════════════════════ -->
         <div v-if="activeTab === 'branch'"
              class="rounded-2xl overflow-hidden"
              style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">

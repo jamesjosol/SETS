@@ -143,7 +143,7 @@
 
       <!-- Appeal Button -->
       <button v-if="tatCycle.canAppeal"
-              class="flex-shrink-0 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest transition-all active:scale-95"
+              class="flex-shrink-0 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest transition-all active:scale-95 cursor-pointer"
               :class="tatLoading ? 'opacity-60 pointer-events-none' : ''"
               style="color: var(--color-text-muted);"
               @mouseenter="e => e.currentTarget.style.color = 'var(--color-text)'"

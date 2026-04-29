@@ -215,6 +215,7 @@
     { name: 'Pending Specimens', path: '/runner/pending', icon: 'pending_actions' },
     { name: 'Scheduled Specimens', path: '/runner/scheduled', icon: 'event_available' },
     { name: 'Running Specimens', path: '/runner/running', icon: 'labs' },
+    { name: 'Completed Specimens', path: '/runner/completed', icon: 'task_alt' },
     { name: 'Audit Trail', path: '/runner/audit-trail', icon: 'manage_search' },
   ]
 

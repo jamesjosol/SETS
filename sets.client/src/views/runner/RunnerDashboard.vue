@@ -73,22 +73,23 @@
           </div>
         </router-link>
 
-        <div class="rounded-2xl p-6 relative overflow-hidden group transition-all hover:-translate-y-0.5"
-             style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
-          <div class="flex justify-between items-start mb-4">
-            <div class="p-2 rounded-xl" style="background-color: rgba(22,163,74,0.1);">
-              <span class="material-symbols-outlined" style="color: var(--color-success, #16a34a);">check_circle</span>
+        <router-link to="/runner/completed" class="block">
+          <div class="rounded-2xl p-6 relative overflow-hidden group cursor-pointer transition-all hover:-translate-y-0.5"
+               style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
+            <div class="flex justify-between items-start mb-4">
+              <div class="p-2 rounded-xl" style="background-color: rgba(22,163,74,0.1);">
+                <span class="material-symbols-outlined" style="color: var(--color-success, #16a34a);">check_circle</span>
+              </div>
+              <span class="text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-success, #16a34a);">Today</span>
             </div>
-            <span class="text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-success, #16a34a);">Today</span>
+            <h3 class="text-4xl font-extrabold mb-1" style="color: var(--color-success, #16a34a);">
+              <span v-if="summaryLoading" class="block h-9 w-16 rounded-lg animate-pulse" style="background-color: var(--color-surface-low);"></span>
+              <span v-else>{{ summary.completedToday }}</span>
+            </h3>
+            <p class="text-xs font-bold uppercase tracking-tighter" style="color: var(--color-text-muted);">Completed</p>
+            <div class="absolute bottom-0 left-0 w-full h-0.5 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-500" style="background-color: var(--color-success, #16a34a);"></div>
           </div>
-          <h3 class="text-4xl font-extrabold mb-1" style="color: var(--color-success, #16a34a);">
-            <span v-if="summaryLoading" class="block h-9 w-16 rounded-lg animate-pulse" style="background-color: var(--color-surface-low);"></span>
-            <span v-else>{{ summary.completedToday }}</span>
-          </h3>
-          <p class="text-xs font-bold uppercase tracking-tighter" style="color: var(--color-text-muted);">Completed</p>
-          <div class="absolute bottom-0 left-0 w-full h-0.5 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-500" style="background-color: var(--color-success, #16a34a);"></div>
-        </div>
-
+        </router-link>
       </div>
 
       <!-- Regular Bottom Grid -->

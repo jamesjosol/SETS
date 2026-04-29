@@ -327,5 +327,49 @@ namespace SETS.Server.Controllers
                 return StatusCode(500, new { message = ex.Message });
             }
         }
+
+        // GET api/runner/completed?from=2026-04-01&to=2026-04-28
+        [HttpGet("completed")]
+        public IActionResult GetCompletedSpecimens([FromQuery] DateTime from, [FromQuery] DateTime to)
+        {
+            try
+            {
+                var branch = HttpContext.Session.GetString("BranchCode");
+                if (string.IsNullOrEmpty(branch))
+                    return Unauthorized(new { message = "Session expired." });
+
+                var sectionCode = HttpContext.Session.GetString("SectionCode");
+                if (string.IsNullOrEmpty(sectionCode))
+                    return BadRequest(new { message = "Section not found in session." });
+
+                using var master = new MasterService(branch);
+                var result = master.Runner.GetCompletedSpecimens(sectionCode, from, to);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+
+        // GET api/runner/admin/completed?from=2026-04-01&to=2026-04-28
+        [HttpGet("admin/completed")]
+        public IActionResult GetAllSectionsCompleted([FromQuery] DateTime from, [FromQuery] DateTime to)
+        {
+            try
+            {
+                var branch = HttpContext.Session.GetString("BranchCode");
+                if (string.IsNullOrEmpty(branch))
+                    return Unauthorized(new { message = "Session expired." });
+
+                using var master = new MasterService(branch);
+                var result = master.Runner.GetAllSectionsCompleted(from, to);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
     }
 }

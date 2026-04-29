@@ -84,6 +84,12 @@ const routes = [
     component: () => import('../views/runner/RunningSpecimens.vue'),
     meta: { requiresAuth: true, category: '3' }
   },
+  {
+    path: '/runner/completed',
+    name: 'CompletedSpecimens',
+    component: () => import('../views/runner/CompletedSpecimens.vue'),
+    meta: { requiresAuth: true, category: '3' }
+  },
   // - admin
   {
     path: '/admin/settings',
@@ -116,6 +122,10 @@ router.beforeEach((to, from, next) => {
   // 2. Protected routes — redirect to login if not authenticated
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
     return next('/')
+  }
+
+  if (to.meta.requiresAdmin && !authStore.isAdmin) {
+    return next(getDefaultRoute(authStore))
   }
 
   // 3. Category guard — admin bypasses, others must match

@@ -24,5 +24,7 @@ namespace Service.Interfaces
         List<SectionPendingGroup> GetAllSectionsCompletedToday();
         List<SectionPendingGroup> GetAllSectionsPending();
         List<SectionScheduledGroup> GetAllSectionsScheduled();
+        List<CompletedSpecimenItem> GetCompletedSpecimens(string sectionCode, DateTime from, DateTime to);
+        List<SectionCompletedGroup> GetAllSectionsCompleted(DateTime from, DateTime to);
     }
 }
