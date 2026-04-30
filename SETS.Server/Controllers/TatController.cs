@@ -185,6 +185,67 @@ namespace SETS.Server.Controllers
                 return StatusCode(500, new { message = ex.Message });
             }
         }
+
+        // ── GET api/tat/processing ────────────────────────────────────────────────
+        // Get the processing TAT setting for the current branch
+        [HttpGet("processing")]
+        public IActionResult GetProcessingTat()
+        {
+            try
+            {
+                if (!IsAdmin) return RequireAdmin();
+
+                var branch = Branch;
+                if (string.IsNullOrEmpty(branch))
+                    return Unauthorized(new { message = "Session expired." });
+
+                using var master = new MasterService(branch);
+                var item = master.Tat.GetProcessingTat();
+
+                return Ok(new
+                {
+                    hours = item?.Hours ?? 0,
+                    minutes = item?.Minutes ?? 30,
+                    updatedBy = item?.UpdatedBy,
+                    updated = item?.Updated
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+
+        // ── PUT api/tat/processing ────────────────────────────────────────────────
+        // Upsert the processing TAT setting for the current branch
+        [HttpPut("processing")]
+        public IActionResult UpsertProcessingTat([FromBody] ProcessingTatUpsertRequest request)
+        {
+            try
+            {
+                if (!IsAdmin) return RequireAdmin();
+
+                var branch = Branch;
+                if (string.IsNullOrEmpty(branch))
+                    return Unauthorized(new { message = "Session expired." });
+
+                var userID = CurrentUserID;
+                if (string.IsNullOrEmpty(userID))
+                    return Unauthorized(new { message = "Session expired." });
+
+                if (request.Hours < 0 || request.Minutes < 0 || request.Minutes > 59)
+                    return BadRequest(new { message = "Invalid time values." });
+
+                using var master = new MasterService(branch);
+                master.Tat.UpsertProcessingTat(request.Hours, request.Minutes, userID);
+
+                return Ok(new { message = "Processing TAT saved." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
     }
 
 }

@@ -22,5 +22,8 @@ namespace Model.Main
         public string Status { get; set; }
         public string? Remarks { get; set; }             // endorsement remarks
         public string? ReceivingRemarks { get; set; }    // receiving remarks
+        public string? CancelReason { get; set; }
+        public string? CancelledBy { get; set; }
+        public DateTime? CancelledAt { get; set; }
     }
 }

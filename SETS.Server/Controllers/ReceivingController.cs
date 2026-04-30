@@ -86,6 +86,39 @@ namespace SETS.Server.Controllers
             }
         }
 
+        // PATCH api/receiving/specimen-cancel
+        [HttpPatch("specimen-cancel")]
+        public IActionResult CancelSpecimen([FromBody] CancelSpecimenRequest request)
+        {
+            try
+            {
+                var branch = HttpContext.Session.GetString("BranchCode");
+                if (string.IsNullOrEmpty(branch))
+                    return Unauthorized(new { message = "Session expired." });
+
+                if (string.IsNullOrEmpty(request.SpecimenNo))
+                    return BadRequest(new { message = "Specimen number is required." });
+
+                if (string.IsNullOrEmpty(request.BatchNo))
+                    return BadRequest(new { message = "Batch number is required." });
+
+                if (string.IsNullOrEmpty(request.CancelReason))
+                    return BadRequest(new { message = "Cancel reason is required." });
+
+                if (string.IsNullOrEmpty(request.UserID))
+                    return BadRequest(new { message = "User ID is required." });
+
+                using var master = new MasterService(branch);
+                master.Receiving.CancelSpecimen(request);
+
+                return Ok(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(400, new { message = ex.Message });
+            }
+        }
+
         // POST api/receiving/nonbarcoded
         [HttpPost("nonbarcoded")]
         public IActionResult ReceiveNonBarcoded([FromBody] ReceiveNonBarcodedRequest request)
@@ -209,7 +242,12 @@ namespace SETS.Server.Controllers
                     return StatusCode(500, new { message = "No active Processing section found for this branch." });
 
                 var data = master.Receiving.GetMonitoringDashboard(resolvedCode, DateTime.Today);
-                return Ok(data);
+                var procTat = master.Tat.GetProcessingTat();
+                return Ok(new
+                {
+                    thresholdMins = procTat != null ? procTat.Hours * 60 + procTat.Minutes : (int?)null,
+                    sections = data
+                });
             }
             catch (Exception ex)
             {

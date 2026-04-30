@@ -382,9 +382,10 @@ const summary = ref({ totalEndorsed: 0, pending: 0, received: 0, outsideTAT: 0 }
 
 // ── Monitoring ─────────────────────────────────────────────────────────────
 
-const monitoringLoading = ref(true)
-const monitoringData = ref([])
-const viewMode = ref('pending')  // 'pending' | 'all'
+  const monitoringLoading = ref(true)
+  const monitoringData = ref([])
+  const viewMode = ref('pending')  // 'pending' | 'all'
+  const procTatThresholdMins = ref(null)
 
 const visibleSections = computed(() => {
   if (viewMode.value === 'all') return monitoringData.value
@@ -395,21 +396,50 @@ const visibleSections = computed(() => {
   )
 })
 
-function getVisibleBatches(section) {
-  if (viewMode.value === 'all') return section.batches
-  return section.batches.filter(b => b.status !== 'C')
-}
+  function getVisibleBatches(section) {
+    const batches = viewMode.value === 'all'
+      ? section.batches
+      : section.batches.filter(b => b.status !== 'C')
 
-function getBatchCellStyle(batch) {
-  if (batch.status === 'C') {
-    return 'background-color: var(--color-surface-low); color: var(--color-text-muted); opacity: 0.5;'
+    return [...batches].sort((a, b) => {
+      const priority = (batch) => {
+        if (batch.status === 'C') return 2  // completed — always stays at bottom, original order
+        if (batch.status === 'PA' && procTatThresholdMins.value != null && batch.procReceived) {
+          const elapsedMins = (Date.now() - new Date(batch.procReceived).getTime()) / 60000
+          if (elapsedMins > procTatThresholdMins.value) return 0  // partial + outside TAT — top
+        }
+        return 1  // P or PA within TAT
+      }
+      return priority(a) - priority(b)
+    })
   }
-  if (batch.status === 'PA') {
+
+  function getBatchCellStyle(batch) {
+    // Completed — use the stored flag
+    if (batch.status === 'C') {
+      if (batch.isOutsideProcTat) {
+        return 'background-color: rgba(239,68,68,0.08); color: #ef4444; opacity: 0.6;'
+      }
+      return 'background-color: rgba(37,99,235,0.06); color: #2563eb; opacity: 0.6;'
+    }
+
+    // Pending (P) — no specimen received yet, no timer started
+    if (batch.status === 'P') {
+      return 'background-color: var(--color-surface-low); color: var(--color-text);'
+    }
+
+    // Partial (PA) — timer started from ProcReceived, compute live
+    if (batch.status === 'PA' && batch.procReceived && procTatThresholdMins.value != null) {
+      const elapsedMins = (Date.now() - new Date(batch.procReceived).getTime()) / 60000
+      if (elapsedMins > procTatThresholdMins.value) {
+        return 'background-color: rgba(239,68,68,0.08); color: #ef4444;'
+      }
+      return 'background-color: rgba(37,99,235,0.08); color: #2563eb;'
+    }
+
+    // PA but no threshold configured — default blue
     return 'background-color: rgba(37,99,235,0.08); color: #2563eb;'
   }
-  // P — pending, no specimen received
-  return 'background-color: var(--color-surface-low); color: var(--color-text);'
-}
 
   // ── Fetch ──────────────────────────────────────────────────────────────────
 
@@ -427,7 +457,9 @@ function getBatchCellStyle(batch) {
 
   async function fetchMonitoring() {
     try {
-      monitoringData.value = await receivingApi.getMonitoringDashboard(authStore.sectionCode)
+      const res = await receivingApi.getMonitoringDashboard(authStore.sectionCode)
+      monitoringData.value = res.sections ?? []
+      procTatThresholdMins.value = res.thresholdMins ?? null
     } catch (err) {
       if (err.response?.status === 401) {
         showAlert('error', 'Session Expired', 'Your session has expired. Please log in again.')

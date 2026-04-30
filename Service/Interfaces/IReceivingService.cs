@@ -23,6 +23,7 @@ namespace Service.Interfaces
         List<IncomingBatchItem> GetIncomingBatches(string procSectionCode);
         List<IncomingSpecimenItem> GetIncomingSpecimens(string procSectionCode);
         List<ReceivedBatchItem> GetReceivedBatches(string? sectionCode, DateTime dateFrom, DateTime dateTo);
+        void CancelSpecimen(CancelSpecimenRequest request);
 
     }
 }

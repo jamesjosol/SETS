@@ -24,6 +24,7 @@ namespace Service
         public TatService Tat { get; private set; }
         public OnSiteService OnSite { get; private set; }
         public OnSiteSettingsService OnSiteSettings { get; private set; }
+        public ProcessingOptionsService ProcessingOptions { get; private set; }
 
         private readonly AppDbContextFactory _factory;
         private readonly string _branch;
@@ -55,6 +56,7 @@ namespace Service
             Tat = new TatService(_factory, _branch);
             OnSite = new OnSiteService(_factory, _branch);
             OnSiteSettings = new OnSiteSettingsService(_factory, _branch);
+            ProcessingOptions = new ProcessingOptionsService(_factory, _branch);
         }
 
         public void Dispose()
@@ -75,6 +77,7 @@ namespace Service
             Tat = null;
             OnSite = null;
             OnSiteSettings = null;
+            ProcessingOptions = null;
         }
     }
 }

@@ -321,9 +321,13 @@ namespace Service.Services
 
                 var specimenNos = headers.Select(h => h.SpecimenNo).ToList();
                 var batchSpecimens = context.Batch_Specimen
-                    .ToList()
-                    .Where(b => specimenNos.Contains(b.SpecimenNo))
-                    .ToDictionary(b => b.SpecimenNo, b => b);
+                                  .ToList()
+                                  .Where(b => specimenNos.Contains(b.SpecimenNo))
+                                  .GroupBy(b => b.SpecimenNo)
+                                  .ToDictionary(
+                                      g => g.Key,
+                                      g => g.OrderBy(b => b.Status == "X" ? 1 : 0).First()
+                                  );
 
                 var standard = headers.Select(h =>
                 {

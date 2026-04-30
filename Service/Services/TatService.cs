@@ -14,11 +14,13 @@ namespace Service.Services
     {
         private readonly AppDbContextFactory _factory;
         private readonly string _branch;
+        private readonly string _branch_raw;  
 
         public TatService(AppDbContextFactory factory, string branch)
         {
             _factory = factory;
             _branch = SetsConnection.ConnectionString(branch);
+            _branch_raw = branch;
         }
 
         // ── Settings ─────────────────────────────────────────────────────────
@@ -252,6 +254,73 @@ namespace Service.Services
                     CycleStart = appealedAt,
                     Created = DateTime.Now
                 });
+            }
+            catch { throw; }
+        }
+
+        // ── Processing TAT ────────────────────────────────────────────────────────
+
+        public Tat_Processing? GetProcessingTat()
+        {
+            try
+            {
+                using var context = _factory.CreateContext(_branch);
+                using var unit = new UnitOfWork(context);
+                return unit.TatProcessing.Get(_branch_raw);
+            }
+            catch { throw; }
+        }
+
+        public void UpsertProcessingTat(int hours, int minutes, string userID)
+        {
+            try
+            {
+                using var context = _factory.CreateContext(_branch);
+                using var unit = new UnitOfWork(context);
+
+                // _branch here is the full connection string — we need the raw branch code
+                // MasterService stores the raw branch code separately; use the overload
+                var existing = unit.TatProcessing.Get(_branch_raw);
+                if (existing == null)
+                {
+                    unit.TatProcessing.Add(new Tat_Processing
+                    {
+                        BranchCode = _branch_raw,
+                        Hours = hours,
+                        Minutes = minutes,
+                        UpdatedBy = userID,
+                        Updated = DateTime.Now
+                    });
+                }
+                else
+                {
+                    existing.Hours = hours;
+                    existing.Minutes = minutes;
+                    existing.UpdatedBy = userID;
+                    existing.Updated = DateTime.Now;
+                    unit.TatProcessing.Update(existing);
+                }
+
+                context.SaveChanges();
+            }
+            catch { throw; }
+        }
+
+        public bool EvaluateProcessingTat(string batchNo, DateTime procReceived, DateTime completed)
+        {
+            try
+            {
+                using var context = _factory.CreateContext(_branch);
+                using var unit = new UnitOfWork(context);
+
+                var setting = unit.TatProcessing.Get(_branch_raw);
+
+                // No setting configured — not flagged
+                if (setting == null) return false;
+
+                var threshold = TimeSpan.FromMinutes(setting.Hours * 60 + setting.Minutes);
+                var elapsed = completed - procReceived;
+                return elapsed > threshold;
             }
             catch { throw; }
         }

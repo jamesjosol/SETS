@@ -28,5 +28,10 @@ namespace Service.Interfaces
         // ── Appeal ────────────────────────────────────────────────────────────
         bool CanAppeal(string sectionCode);
         void Appeal(string sectionCode, string userID, DateTime appealedAt);
+
+        // ── Processing TAT ────────────────────────────────────────────────────────
+        Tat_Processing? GetProcessingTat();
+        void UpsertProcessingTat(int hours, int minutes, string userID);
+        bool EvaluateProcessingTat(string batchNo, DateTime procReceived, DateTime completed);
     }
 }

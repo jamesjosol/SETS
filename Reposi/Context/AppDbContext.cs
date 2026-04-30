@@ -31,6 +31,9 @@ namespace Reposi.Context
         public DbSet<OnSite_Section_Test> OnSite_Section_Test { get; set; }
         public DbSet<OnSite_AllowedLabNo> OnSite_AllowedLabNo { get; set; }
         public DbSet<OnSite_Settings> OnSite_Settings { get; set; }
+        public DbSet<Tat_Processing> Tat_Processing { get; set; }
+        public DbSet<Processing_Options> Processing_Options { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             // User_Master
@@ -224,6 +227,13 @@ namespace Reposi.Context
                 entity.Property(e => e.UpdatedBy).HasMaxLength(50);
             });
 
+            // Tat_Processing
+            modelBuilder.Entity<Tat_Processing>().ToTable("Tat_Processing");
+            modelBuilder.Entity<Tat_Processing>().HasKey(t => t.BranchCode);
+
+            // Processing_Options
+            modelBuilder.Entity<Processing_Options>().ToTable("Processing_Options");
+            modelBuilder.Entity<Processing_Options>().HasKey(p => p.BranchCode);
         }
     }
 }

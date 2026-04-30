@@ -286,7 +286,9 @@
     <BatchDetailDrawer :isOpen="drawerOpen"
                        :loading="drawerLoading"
                        :data="drawerData"
-                       @close="closeDrawer" />
+                       :allowCancel="true"
+                       @close="closeDrawer"
+                       @specimen-cancelled="onSpecimenCancelled" />
 
     <!-- Alert Modal -->
     <AlertModal :isVisible="alert.isVisible"
@@ -463,6 +465,13 @@ function closeDrawer() {
   drawerOpen.value = false
   drawerData.value = null
 }
+
+  async function onSpecimenCancelled({ batchNo }) {
+    // Silently refresh the drawer with updated data
+    try {
+      drawerData.value = await batchApi.getBatchDetail(batchNo)
+    } catch { /* silent */ }
+  }
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 

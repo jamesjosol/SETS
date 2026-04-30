@@ -36,9 +36,11 @@ namespace Service.Services
                 {
                     var now = DateTime.Now;
 
-                    // 1. Find the specimen — must exist and be pending
+                    // 1. Find the specimen — prefer the pending re-endorsed row over any cancelled row
                     var specimen = context.Batch_Specimen
-                        .FirstOrDefault(s => s.SpecimenNo == request.SpecimenNo)
+                        .Where(s => s.SpecimenNo == request.SpecimenNo && s.Status != "X")
+                        .OrderByDescending(s => s.Endorsed)
+                        .FirstOrDefault()
                         ?? throw new Exception($"Specimen '{request.SpecimenNo}' was not endorsed.");
 
                     // 2. Batch restriction — if a current batch is active, block different batch
@@ -52,11 +54,11 @@ namespace Service.Services
                         );
                     }
 
-                    // 3. Check if already received
+                    // 3. Check if already received — but only block if specimen is not cancelled
                     bool alreadyReceived = context.Batch_Specimen_Receiving
                         .Any(r => r.SpecimenNo == request.SpecimenNo && r.BatchNo == specimen.BatchNo);
 
-                    if (alreadyReceived)
+                    if (alreadyReceived && specimen.Status != "X")
                         throw new Exception($"Specimen '{request.SpecimenNo}' has already been received.");
 
 
@@ -91,8 +93,22 @@ namespace Service.Services
                     string newBatchStatus = ResolveBatchStatus(context, specimen.BatchNo);
                     header.Status = newBatchStatus;
 
-                    if (newBatchStatus == "C")
-                        header.Completed = now;
+                    if (newBatchStatus == "C" && header.ProcReceived != null)
+                    {
+                        try
+                        {
+                            using var master = new MasterService(_branch_raw);
+                            bool isOutsideProcTat = master.Tat.EvaluateProcessingTat(
+                                header.BatchNo, header.ProcReceived.Value, now);
+
+                            if (isOutsideProcTat)
+                                header.IsOutsideProcTat = true;
+                        }
+                        catch (Exception tatEx)
+                        {
+                            Console.WriteLine($"[TAT] EvaluateProcessingTat failed for {header.BatchNo}: {tatEx.Message}");
+                        }
+                    }
 
                     var sections = context.Section_Master
                         .ToDictionary(s => s.Code, s => s.Name);
@@ -222,8 +238,22 @@ namespace Service.Services
                     string newBatchStatus = ResolveBatchStatus(context, batchNo);
                     header.Status = newBatchStatus;
 
-                    if (newBatchStatus == "C")
-                        header.Completed = now;
+                    if (newBatchStatus == "C" && header.ProcReceived != null)
+                    {
+                        try
+                        {
+                            using var master = new MasterService(_branch_raw);
+                            bool isOutsideProcTat = master.Tat.EvaluateProcessingTat(
+                                header.BatchNo, header.ProcReceived.Value, now);
+
+                            if (isOutsideProcTat)
+                                header.IsOutsideProcTat = true;
+                        }
+                        catch (Exception tatEx)
+                        {
+                            Console.WriteLine($"[TAT] EvaluateProcessingTat failed for {header.BatchNo}: {tatEx.Message}");
+                        }
+                    }
 
                     context.Batch_Header.Update(header);
                     context.SaveChanges();
@@ -323,14 +353,19 @@ namespace Service.Services
             var allNonBarcoded = context.Batch_NonBarcoded
                 .Where(n => n.BatchNo == batchNo).ToList();
 
-            bool allSpecimensReceived = allSpecimens.All(s => s.Status == "R");
-            bool allNonBarcodedReceived = allNonBarcoded.All(n => n.Status == "R");
+            // Cancelled specimens (X) are excluded — only P and R are active
+            var activeSpecimens = allSpecimens.Where(s => s.Status != "X").ToList();
+            var activeNonBarcoded = allNonBarcoded.Where(n => n.Status != "X").ToList();
+
+            // If everything active has been received (or there's nothing active), mark complete
+            bool allSpecimensReceived = activeSpecimens.Count == 0 || activeSpecimens.All(s => s.Status == "R");
+            bool allNonBarcodedReceived = activeNonBarcoded.Count == 0 || activeNonBarcoded.All(n => n.Status == "R");
 
             if (allSpecimensReceived && allNonBarcodedReceived)
                 return "C";
 
-            bool anyReceived = allSpecimens.Any(s => s.Status == "R")
-                            || allNonBarcoded.Any(n => n.Status == "R");
+            bool anyReceived = activeSpecimens.Any(s => s.Status == "R")
+                            || activeNonBarcoded.Any(n => n.Status == "R");
 
             return anyReceived ? "PA" : "P";
         }
@@ -394,16 +429,17 @@ namespace Service.Services
                 {
                     var sectionBatches = batches
                         .Where(b => b.Location == section.Code)
-                        .OrderBy(b => b.Endorsed)
-                        .Select(b => new MonitoringBatchItem
-                        {
-                            BatchNo = b.BatchNo,
-                            Status = b.Status,
-                            Endorsed = b.Endorsed,
-                            EndorsedBy = b.EndorsedBy,
-                            TotalSpecimens = specimenCounts.TryGetValue(b.BatchNo, out var c) ? c.Total : 0,
-                            ReceivedSpecimens = specimenCounts.TryGetValue(b.BatchNo, out var c2) ? c2.Received : 0
-                        })
+                         .Select(b => new MonitoringBatchItem
+                         {
+                             BatchNo = b.BatchNo,
+                             Status = b.Status,
+                             Endorsed = b.Endorsed,
+                             EndorsedBy = b.EndorsedBy,
+                             ProcReceived = b.ProcReceived,
+                             IsOutsideProcTat = b.IsOutsideProcTat,
+                             TotalSpecimens = specimenCounts.TryGetValue(b.BatchNo, out var c) ? c.Total : 0,
+                             ReceivedSpecimens = specimenCounts.TryGetValue(b.BatchNo, out var c2) ? c2.Received : 0
+                         })
                         .ToList();
 
                     return new MonitoringDashboardSection
@@ -722,6 +758,84 @@ namespace Service.Services
             }
 
             context.SaveChanges();
+        }
+
+        public void CancelSpecimen(CancelSpecimenRequest request)
+        {
+            try
+            {
+                using var context = _factory.CreateContext(_branch);
+                using var tx = context.Database.BeginTransaction();
+
+                try
+                {
+                    var now = DateTime.Now;
+
+                    // 1. Find the specimen — must exist in this batch and be received
+                    var specimen = context.Batch_Specimen
+                        .FirstOrDefault(s => s.SpecimenNo == request.SpecimenNo
+                                          && s.BatchNo == request.BatchNo)
+                        ?? throw new Exception($"Specimen '{request.SpecimenNo}' not found in batch '{request.BatchNo}'.");
+
+                    if (specimen.Status != "R" && specimen.Status != "P")
+                        throw new Exception($"Only pending or received specimens can be cancelled.");
+
+                    // 2. Cancel the specimen
+                    specimen.Status = "X";
+                    specimen.CancelReason = request.CancelReason;
+                    specimen.CancelledBy = request.UserID;
+                    specimen.CancelledAt = now;
+                    context.Batch_Specimen.Update(specimen);
+
+                    // 3. Mark linked Specimen_Section_Header(s) as cancelled
+                    //    There may be more than one if the specimen was routed to multiple groups
+                    var headers = context.Specimen_Section_Header
+                        .Where(h => h.SpecimenNo == request.SpecimenNo)
+                        .ToList();
+
+                    foreach (var header in headers)
+                    {
+                        header.Status = "X";
+                        context.Specimen_Section_Header.Update(header);
+
+                        // 4. Cancel all child tests under this header
+                        var tests = context.Specimen_Section_Test
+                            .Where(t => t.HeaderId == header.Id)
+                            .ToList();
+
+                        foreach (var test in tests)
+                        {
+                            test.Status = "X";
+                            context.Specimen_Section_Test.Update(test);
+                        }
+                    }
+
+                    // 5. Re-evaluate batch header status now that this specimen is no longer "R"
+                    context.SaveChanges();
+
+                    var batchHeader = context.Batch_Header
+                        .FirstOrDefault(b => b.BatchNo == request.BatchNo)
+                        ?? throw new Exception($"Batch '{request.BatchNo}' not found.");
+
+                    string newBatchStatus = ResolveBatchStatus(context, request.BatchNo);
+                    batchHeader.Status = newBatchStatus;
+
+                    // If batch was completed but is no longer, clear the Completed timestamp
+                    if (newBatchStatus != "C")
+                        batchHeader.Completed = null;
+
+                    context.Batch_Header.Update(batchHeader);
+                    context.SaveChanges();
+
+                    tx.Commit();
+                }
+                catch
+                {
+                    tx.Rollback();
+                    throw;
+                }
+            }
+            catch { throw; }
         }
     }
 }

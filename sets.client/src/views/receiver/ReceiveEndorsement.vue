@@ -69,8 +69,7 @@
           </div>
 
           <!-- Temp / BagNo Fields — shown only when active batch is set -->
-          <!-- Temp / BagNo Fields — shown only when active batch is set -->
-          <div v-if="activeBatchNo"
+          <div v-if="activeBatchNo && showBatchDetails"
                class="mb-6 rounded-xl overflow-hidden"
                style="background-color: var(--color-surface-low); border: 1px solid var(--color-border);">
 
@@ -91,7 +90,7 @@
               <div class="grid grid-cols-3 gap-4 mb-4">
 
                 <!-- Temperature -->
-                <div>
+                <div v-if="procOptions.showTemperature">
                   <label class="block text-[11px] font-bold uppercase tracking-widest mb-2"
                          style="color: var(--color-text-muted);">Temperature (°C)</label>
                   <input v-model="temp"
@@ -104,7 +103,7 @@
                 </div>
 
                 <!-- Temp Remarks -->
-                <div>
+                <div v-if="procOptions.showTempRemarks || tempRemarks">
                   <label class="block text-[11px] font-bold uppercase tracking-widest mb-2"
                          style="color: var(--color-text-muted);">Temp Remarks</label>
                   <input v-model="tempRemarks"
@@ -117,7 +116,7 @@
                 </div>
 
                 <!-- Bag No -->
-                <div>
+                <div v-if="procOptions.showBagNo">
                   <label class="block text-[11px] font-bold uppercase tracking-widest mb-2"
                          style="color: var(--color-text-muted);">Bag No.</label>
                   <input v-model="bagNo"
@@ -514,6 +513,7 @@ import AlertModal from '@/components/common/AlertModal.vue'
 import RemarkModal from '@/components/common/RemarkModal.vue'
 import { useAuthStore } from '@/stores/authStore'
 import { receivingApi } from '@/api/receivingApi'
+import { processingOptionsApi } from '@/api/processingOptionsApi'
 import NProgress from 'nprogress'
 
 const authStore = useAuthStore()
@@ -782,6 +782,15 @@ async function handleReceiveNonBarcoded() {
   const isSavingTemp = ref(false)
   const batchDetailsExpanded = ref(true)
 
+  const procOptions = ref({ showTemperature: true, showTempRemarks: true, showBagNo: true })
+
+  const showBatchDetails = computed(() =>
+    procOptions.value.showTemperature ||
+    procOptions.value.showTempRemarks ||
+    procOptions.value.showBagNo ||
+    temp.value || tempRemarks.value || bagNo.value  // always show if data already exists
+  )
+
   async function handleSaveTemp() {
     if (!activeBatchNo.value) return
 
@@ -801,10 +810,31 @@ async function handleReceiveNonBarcoded() {
     }
   }
 
+  async function loadProcessingOptions() {
+    nonBarcodedLoading.value = true
+    try {
+      const data = await processingOptionsApi.get()
+      procOptions.value = {
+        showTemperature: data.showTemperature,
+        showTempRemarks: data.showTempRemarks,
+        showBagNo: data.showBagNo
+      }
+    } catch (err) {
+      if (err.response?.status === 401) {
+        showAlert('error', 'Session Expired', 'Your session has expired. Please log in again.')
+      } else {
+        showAlert('error', 'Load Failed', 'Unable to load processing options.')
+      }
+    } finally {
+      nonBarcodedLoading.value = false
+    }
+  }
+
 // ── Lifecycle ──────────────────────────────────────────────────────────────
 
 onMounted(async () => {
   await loadPendingNonBarcoded()
+  await loadProcessingOptions()
   await nextTick()
   specimenInput.value?.focus()
 })

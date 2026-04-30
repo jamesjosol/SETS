@@ -21,5 +21,7 @@ namespace Model.Main
         public string EndorsedBy { get; set; }
         public int TotalSpecimens { get; set; }
         public int ReceivedSpecimens { get; set; }
+        public bool IsOutsideProcTat { get; set; }
+        public DateTime? ProcReceived { get; set; }
     }
 }

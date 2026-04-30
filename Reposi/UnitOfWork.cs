@@ -36,6 +36,8 @@ namespace Reposi
         public OnSiteSectionTestRepo OnSiteSectionTests { get; private set; }
         public OnSiteAllowedLabNoRepo OnSiteAllowedLabNos { get; private set; }
         public OnSiteSettingsRepo OnSiteSettings { get; private set; }
+        public TatProcessingRepo TatProcessing { get; private set; }
+        public ProcessingOptionsRepo ProcessingOptions { get; private set; }
 
         public UnitOfWork(AppDbContext context)
         {
@@ -63,6 +65,8 @@ namespace Reposi
             OnSiteSectionTests = new OnSiteSectionTestRepo(_context);
             OnSiteAllowedLabNos = new OnSiteAllowedLabNoRepo(_context);
             OnSiteSettings = new OnSiteSettingsRepo(_context);
+            TatProcessing = new TatProcessingRepo(_context);
+            ProcessingOptions = new ProcessingOptionsRepo(_context);
         }
 
         public void Dispose()

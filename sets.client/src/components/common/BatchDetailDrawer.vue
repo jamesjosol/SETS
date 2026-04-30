@@ -97,6 +97,7 @@
                 {{ getBatchStatusLabel(data.status) }}
               </span>
             </div>
+
             <!-- Temp / TempRemarks / BagNo — subtle hover icons, only shown if value exists -->
             <div v-if="data.temp || data.tempRemarks || data.bagNo"
                  class="col-span-2">
@@ -174,18 +175,36 @@
               <div v-for="sp in visibleSpecimens"
                    :key="sp.id"
                    class="rounded-xl p-4"
-                   style="background-color: var(--color-surface-low);">
+                   :style="sp.status === 'X'
+                     ? 'background-color: var(--color-surface-low); opacity: 0.6;'
+                     : 'background-color: var(--color-surface-low);'">
 
-                <!-- Top row: specimen no + status -->
+                <!-- Top row: specimen no + status badge + cancel button -->
                 <div class="flex justify-between items-start mb-2">
                   <p class="text-xs font-bold font-mono"
-                     style="color: var(--color-primary);">{{ sp.specimenNo }}</p>
-                  <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase"
-                        :style="sp.status === 'R'
-            ? 'background-color: var(--color-success-soft); color: var(--color-success);'
-            : 'background-color: var(--color-warning-soft); color: var(--color-warning);'">
-                    {{ sp.status === 'R' ? 'Received' : 'Pending' }}
-                  </span>
+                     :style="sp.status === 'X'
+                       ? 'color: var(--color-text-muted); text-decoration: line-through;'
+                       : 'color: var(--color-primary);'">
+                    {{ sp.specimenNo }}
+                  </p>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase"
+                          :style="sp.status === 'R'
+                            ? 'background-color: var(--color-success-soft); color: var(--color-success);'
+                            : sp.status === 'X'
+                            ? 'background-color: var(--color-surface); color: var(--color-text-muted); border: 1px solid var(--color-border);'
+                            : 'background-color: var(--color-warning-soft); color: var(--color-warning);'">
+                      {{ sp.status === 'R' ? 'Received' : sp.status === 'X' ? 'Cancelled' : 'Pending' }}
+                    </span>
+                    <!-- Cancel button — TL or admin only, received specimens only -->
+                    <button v-if="allowCancel && (sp.status === 'R' || sp.status === 'P') && (authStore.roleID === 2 || authStore.isAdmin)"
+                            class="w-5 h-5 rounded-full flex items-center justify-center transition-all opacity-20 hover:opacity-60"
+                            style="color: var(--color-text-muted);"
+                            title="Cancel receiving"
+                            @click.stop="openCancelModal(sp)">
+                      <span class="material-symbols-outlined" style="font-size: 13px;">cancel</span>
+                    </button>
+                  </div>
                 </div>
 
                 <!-- Patient name -->
@@ -244,6 +263,22 @@
                     </div>
 
                   </div>
+                </div>
+
+                <!-- Cancelled info strip -->
+                <div v-if="sp.status === 'X'"
+                     class="mt-2 pt-2"
+                     style="border-top: 1px solid var(--color-border);">
+                  <p class="text-[10px] font-bold uppercase tracking-widest mb-0.5"
+                     style="color: var(--color-text-muted);">Cancelled</p>
+                  <p class="text-[10px]" style="color: var(--color-text-muted);">
+                    {{ sp.cancelledBy }} · {{ formatDateTime(sp.cancelledAt) }}
+                  </p>
+                  <p v-if="sp.cancelReason"
+                     class="text-[10px] italic mt-0.5"
+                     style="color: var(--color-text-muted);">
+                    "{{ sp.cancelReason }}"
+                  </p>
                 </div>
 
               </div>
@@ -337,68 +372,185 @@
 
     </div>
   </transition>
+
+  <!-- ── Cancel Specimen Modal ──────────────────────────────────────────── -->
+  <transition name="fade">
+    <div v-if="cancelModal.visible"
+         class="fixed inset-0 z-[90] flex items-center justify-center"
+         style="background-color: rgba(0,0,0,0.5);">
+      <div class="rounded-2xl p-6 w-80 flex flex-col gap-4"
+           style="background-color: var(--color-surface); border: 1px solid var(--color-border); box-shadow: 0 8px 32px rgba(0,0,0,0.2);">
+
+        <!-- Header -->
+        <div class="flex items-center gap-3">
+          <span class="material-symbols-outlined text-xl"
+                style="color: var(--color-text-muted);">cancel</span>
+          <div>
+            <p class="text-sm font-extrabold" style="color: var(--color-text);">Cancel Receiving</p>
+            <p class="text-[10px] font-mono" style="color: var(--color-text-muted);">
+              {{ cancelModal.specimenNo }}
+            </p>
+          </div>
+        </div>
+
+        <!-- Reason input -->
+        <div>
+          <label class="block text-[10px] font-bold uppercase tracking-widest mb-1.5"
+                 style="color: var(--color-text-muted);">
+            Reason <span style="color: var(--color-warning);">*</span>
+          </label>
+          <textarea v-model="cancelModal.reason"
+                    rows="3"
+                    placeholder="State the reason for cancelling..."
+                    class="w-full rounded-xl px-3 py-2 text-xs outline-none resize-none"
+                    style="background-color: var(--color-surface-low); color: var(--color-text); border: 1px solid var(--color-border);" />
+          <p v-if="cancelModal.error"
+             class="text-[10px] mt-1"
+             style="color: var(--color-warning);">
+            {{ cancelModal.error }}
+          </p>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex gap-2">
+          <button class="flex-1 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest transition-all"
+                  style="background-color: var(--color-surface-low); color: var(--color-text-muted);"
+                  :disabled="cancelModal.saving"
+                  @click="cancelModal.visible = false">
+            Dismiss
+          </button>
+          <button class="flex-1 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-1.5"
+                  style="background-color: var(--color-surface-low); color: var(--color-text-muted); border: 1px solid var(--color-border);"
+                  :disabled="cancelModal.saving"
+                  @click="confirmCancel">
+            <span v-if="cancelModal.saving"
+                  class="material-symbols-outlined text-sm animate-spin">progress_activity</span>
+            {{ cancelModal.saving ? 'Cancelling...' : 'Confirm' }}
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </transition>
+
 </template>
 
 <script setup>
-import { ref, watch, computed } from 'vue'
+  import { ref, watch, computed } from 'vue'
+  import { useAuthStore } from '@/stores/authStore'
+  import { receivingApi } from '@/api/receivingApi'
 
-const props = defineProps({
-  isOpen:      { type: Boolean, default: false },
-  loading:     { type: Boolean, default: false },
-  data:        { type: Object,  default: null  },
-  pendingOnly: { type: Boolean, default: false }, // ← add
-})
-
-defineEmits(['close'])
-
-const activeTab = ref('Specimens')
-
-
-const visibleSpecimens = computed(() => {
-  if (!props.data?.specimens) return []
-  if (props.pendingOnly) return props.data.specimens.filter(s => s.status !== 'R')
-  return props.data.specimens
-})
-
-const visibleNonBarcoded = computed(() => {
-  if (!props.data?.nonBarcoded) return []
-  if (props.pendingOnly) return props.data.nonBarcoded.filter(n => n.status !== 'R')
-  return props.data.nonBarcoded
-})
-
-// Reset tab when drawer opens
-watch(() => props.isOpen, (val) => {
-  if (val) activeTab.value = 'Specimens'
-})
-
-// ── Helpers ────────────────────────────────────────────────────────────────
-
-function formatDateTime(dt) {
-  if (!dt) return '—'
-  return new Date(dt).toLocaleString('en-US', {
-    month: 'short', day: 'numeric',
-    hour: '2-digit', minute: '2-digit', hour12: true
+  const props = defineProps({
+    isOpen: { type: Boolean, default: false },
+    loading: { type: Boolean, default: false },
+    data: { type: Object, default: null },
+    pendingOnly: { type: Boolean, default: false },
+    allowCancel: { type: Boolean, default: false },
   })
-}
 
-function getBatchStatusLabel(status) {
-  const map = { P: 'Pending', PA: 'Partial', C: 'Completed' }
-  return map[status] ?? status
-}
+  const emit = defineEmits(['close', 'specimen-cancelled'])
 
-function getBatchStatusStyle(status) {
-  const map = {
-    P:  'background-color: var(--color-warning-soft); color: var(--color-warning);',
-    PA: 'background-color: rgba(37,99,235,0.08); color: #2563eb;',
-    C:  'background-color: var(--color-success-soft); color: var(--color-success);',
+  const authStore = useAuthStore()
+
+  const activeTab = ref('Specimens')
+
+  const visibleSpecimens = computed(() => {
+    if (!props.data?.specimens) return []
+    if (props.pendingOnly) return props.data.specimens.filter(s => s.status !== 'R' && s.status !== 'X')
+    return props.data.specimens
+  })
+
+  const visibleNonBarcoded = computed(() => {
+    if (!props.data?.nonBarcoded) return []
+    if (props.pendingOnly) return props.data.nonBarcoded.filter(n => n.status !== 'R')
+    return props.data.nonBarcoded
+  })
+
+  // Reset tab when drawer opens
+  watch(() => props.isOpen, (val) => {
+    if (val) activeTab.value = 'Specimens'
+  })
+
+  // ── Cancel ─────────────────────────────────────────────────────────────────
+
+  const cancelModal = ref({
+    visible: false,
+    specimenNo: null,
+    batchNo: null,
+    reason: '',
+    saving: false,
+    error: ''
+  })
+
+  function openCancelModal(sp) {
+    cancelModal.value = {
+      visible: true,
+      specimenNo: sp.specimenNo,
+      batchNo: sp.batchNo,
+      reason: '',
+      saving: false,
+      error: ''
+    }
   }
-  return map[status] ?? 'background-color: var(--color-surface-low); color: var(--color-text-muted);'
-}
 
-function getBatchStatusDot(status) {
-  const map = { P: 'var(--color-warning)', PA: '#2563eb', C: 'var(--color-success)' }
-  return map[status] ?? 'var(--color-text-muted)'
-}
+  async function confirmCancel() {
+    if (!cancelModal.value.reason.trim()) {
+      cancelModal.value.error = 'Please provide a reason.'
+      return
+    }
+
+    cancelModal.value.saving = true
+    cancelModal.value.error = ''
+
+    try {
+      await receivingApi.cancelSpecimen({
+        specimenNo: cancelModal.value.specimenNo,
+        batchNo: cancelModal.value.batchNo,
+        cancelReason: cancelModal.value.reason.trim(),
+        userID: authStore.userID
+      })
+
+      emit('specimen-cancelled', {
+        specimenNo: cancelModal.value.specimenNo,
+        batchNo: cancelModal.value.batchNo
+      })
+
+      cancelModal.value.visible = false
+    } catch (err) {
+      cancelModal.value.error = err.response?.data?.message || 'An error occurred.'
+    } finally {
+      cancelModal.value.saving = false
+    }
+  }
+
+  // ── Helpers ────────────────────────────────────────────────────────────────
+
+  function formatDateTime(dt) {
+    if (!dt) return '—'
+    return new Date(dt).toLocaleString('en-US', {
+      month: 'short', day: 'numeric',
+      hour: '2-digit', minute: '2-digit', hour12: true
+    })
+  }
+
+  function getBatchStatusLabel(status) {
+    const map = { P: 'Pending', PA: 'Partial', C: 'Completed' }
+    return map[status] ?? status
+  }
+
+  function getBatchStatusStyle(status) {
+    const map = {
+      P: 'background-color: var(--color-warning-soft); color: var(--color-warning);',
+      PA: 'background-color: rgba(37,99,235,0.08); color: #2563eb;',
+      C: 'background-color: var(--color-success-soft); color: var(--color-success);',
+    }
+    return map[status] ?? 'background-color: var(--color-surface-low); color: var(--color-text-muted);'
+  }
+
+  function getBatchStatusDot(status) {
+    const map = { P: 'var(--color-warning)', PA: '#2563eb', C: 'var(--color-success)' }
+    return map[status] ?? 'var(--color-text-muted)'
+  }
 </script>
 
 <style scoped>

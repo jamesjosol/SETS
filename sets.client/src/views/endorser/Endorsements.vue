@@ -131,7 +131,7 @@
                 @mouseleave="e => e.currentTarget.style.backgroundColor = 'transparent'"
                 @click="openDrawer(batch.batchNo)">
 
-              <td class="px-8 py-4 font-mono text-xs font-bold"
+              <td class="px-8 py-4 font-mono text-sm font-bold"
                   style="color: var(--color-primary);">
                 {{ batch.batchNo }}
               </td>
@@ -153,7 +153,7 @@
                 </div>
               </td>
 
-              <td class="px-4 py-4 text-sm font-bold"
+              <td class="px-4 py-4 text-xs font-bold"
                   style="color: var(--color-text);">
                 {{ batch.endorsedBy }}
               </td>

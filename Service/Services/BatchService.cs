@@ -331,7 +331,11 @@ namespace Service.Services
                         EndorsedBy = s.EndorsedBy,
                         Status = s.Status,
                         Remarks = s.Remarks,
-                        ReceivingRemarks = receivingRecords.TryGetValue(s.SpecimenNo, out var rr) ? rr : null
+                        ReceivingRemarks = receivingRecords.TryGetValue(s.SpecimenNo, out var rr) ?
+                            rr : null,
+                        CancelReason = s.CancelReason,
+                        CancelledBy = s.CancelledBy,
+                        CancelledAt = s.CancelledAt
                     }).ToList(),
                     NonBarcoded = nonBarcoded
                 };
