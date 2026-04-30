@@ -25,6 +25,7 @@ namespace Service
         public OnSiteService OnSite { get; private set; }
         public OnSiteSettingsService OnSiteSettings { get; private set; }
         public ProcessingOptionsService ProcessingOptions { get; private set; }
+        public AuditService Audit { get; private set; }
 
         private readonly AppDbContextFactory _factory;
         private readonly string _branch;
@@ -57,6 +58,7 @@ namespace Service
             OnSite = new OnSiteService(_factory, _branch);
             OnSiteSettings = new OnSiteSettingsService(_factory, _branch);
             ProcessingOptions = new ProcessingOptionsService(_factory, _branch);
+            Audit = new AuditService(_factory, _branch);
         }
 
         public void Dispose()
@@ -78,6 +80,7 @@ namespace Service
             OnSite = null;
             OnSiteSettings = null;
             ProcessingOptions = null;
+            Audit = null;
         }
     }
 }

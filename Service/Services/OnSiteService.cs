@@ -358,6 +358,19 @@ namespace Service.Services
             catch { throw; }
         }
 
+        public List<OnSite_Section_Test> GetTestsByHeaderId(int headerId)
+        {
+            try
+            {
+                using var context = _factory.CreateContext(_branch);
+                return context.OnSite_Section_Test
+                    .Where(t => t.HeaderId == headerId)
+                    .OrderBy(t => t.TestCode)
+                    .ToList();
+            }
+            catch { throw; }
+        }
+
         // ── Scheduled ──────────────────────────────────────────────────────────
         public List<ScheduledSpecimenItem> GetScheduledSpecimens(string sectionCode)
         {

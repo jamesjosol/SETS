@@ -23,5 +23,6 @@ namespace Service.Interfaces
         OnSite_Section_Header? GetHeaderById(int id);
         void MarkTestReleased(int testId);
         void TryCompleteHeader(int headerId);
+        List<OnSite_Section_Test> GetTestsByHeaderId(int headerId);
     }
 }

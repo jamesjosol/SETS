@@ -459,7 +459,7 @@
     expandedTests.value = []
     testsLoading.value = true
     try {
-      expandedTests.value = await runnerApi.getTestsByHeader(item.id)
+      expandedTests.value = await runnerApi.getTestsByHeader(item.id, item.isOnSite)
     } catch (e) {
       showAlert('error', 'Load Failed', e?.response?.data?.message ?? 'Could not load tests.')
     } finally {
@@ -525,7 +525,7 @@
     adminExpandedTests.value = []
     adminTestsLoading.value = true
     try {
-      adminExpandedTests.value = await runnerApi.getTestsByHeader(item.id)
+      adminExpandedTests.value = await runnerApi.getTestsByHeader(item.id, item.isOnSite)
     } catch (e) {
       showAlert('error', 'Load Failed', e?.response?.data?.message ?? 'Could not load tests.')
     } finally {

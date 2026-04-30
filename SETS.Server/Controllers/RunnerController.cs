@@ -112,9 +112,9 @@ namespace SETS.Server.Controllers
             }
         }
 
-        // GET api/runner/tests/{headerId}
+        // GET api/runner/tests/{headerId}?isOnSite=false
         [HttpGet("tests/{headerId}")]
-        public IActionResult GetTestsByHeader(int headerId)
+        public IActionResult GetTestsByHeader(int headerId, [FromQuery] bool isOnSite = false)
         {
             try
             {
@@ -123,6 +123,10 @@ namespace SETS.Server.Controllers
                     return Unauthorized(new { message = "Session expired." });
 
                 using var master = new MasterService(branch);
+
+                if (isOnSite)
+                    return Ok(master.OnSite.GetTestsByHeaderId(headerId));
+
                 return Ok(master.Runner.GetTestsByHeader(headerId));
             }
             catch (Exception ex)

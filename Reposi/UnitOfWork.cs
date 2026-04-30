@@ -38,6 +38,7 @@ namespace Reposi
         public OnSiteSettingsRepo OnSiteSettings { get; private set; }
         public TatProcessingRepo TatProcessing { get; private set; }
         public ProcessingOptionsRepo ProcessingOptions { get; private set; }
+        public AuditLogRepo AuditLogs { get; private set; }
 
         public UnitOfWork(AppDbContext context)
         {
@@ -67,6 +68,7 @@ namespace Reposi
             OnSiteSettings = new OnSiteSettingsRepo(_context);
             TatProcessing = new TatProcessingRepo(_context);
             ProcessingOptions = new ProcessingOptionsRepo(_context);
+            AuditLogs = new AuditLogRepo(_context);
         }
 
         public void Dispose()

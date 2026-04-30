@@ -179,17 +179,7 @@ namespace Reposi.Context
             {
                 entity.ToTable("OnSite_Section_Header");
                 entity.HasKey(e => e.Id);
-                entity.Property(e => e.SpecimenNo).IsRequired().HasMaxLength(50);
-                entity.Property(e => e.SectionCode).IsRequired().HasMaxLength(20);
-                entity.Property(e => e.TestGroupCode).IsRequired().HasMaxLength(20);
-                entity.Property(e => e.SampleTypeCode).IsRequired().HasMaxLength(20);
-                entity.Property(e => e.PatientName).HasMaxLength(200);
-                entity.Property(e => e.PID).HasMaxLength(50);
-                entity.Property(e => e.Status).IsRequired().HasMaxLength(5);
-                entity.Property(e => e.Remarks).HasMaxLength(200);
-                entity.Property(e => e.ReceivedBy).HasMaxLength(50);
-                entity.Property(e => e.CreatedBy).IsRequired().HasMaxLength(50);
-                entity.Property(e => e.UpdatedBy).HasMaxLength(50);
+
             });
 
             // OnSite_Section_Test
@@ -197,12 +187,7 @@ namespace Reposi.Context
             {
                 entity.ToTable("OnSite_Section_Test");
                 entity.HasKey(e => e.Id);
-                entity.Property(e => e.TestCode).IsRequired().HasMaxLength(50);
-                entity.Property(e => e.TestName).IsRequired().HasMaxLength(200);
-                entity.Property(e => e.Status).IsRequired().HasMaxLength(5);
-                entity.Property(e => e.ScheduleTag).HasMaxLength(10);
-                entity.Property(e => e.AssignedRMT).HasMaxLength(50);
-                entity.Property(e => e.UpdatedBy).HasMaxLength(50);
+
                 entity.HasOne<OnSite_Section_Header>()
                       .WithMany()
                       .HasForeignKey(e => e.HeaderId)
@@ -214,9 +199,7 @@ namespace Reposi.Context
             {
                 entity.ToTable("OnSite_AllowedLabNo");
                 entity.HasKey(e => e.Id);
-                entity.Property(e => e.Prefix).IsRequired().HasMaxLength(10);
-                entity.Property(e => e.Description).HasMaxLength(200);
-                entity.Property(e => e.CreatedBy).IsRequired().HasMaxLength(50);
+
             });
 
             // OnSite_Settings
@@ -224,7 +207,6 @@ namespace Reposi.Context
             {
                 entity.ToTable("OnSite_Settings");
                 entity.HasKey(e => e.Id);
-                entity.Property(e => e.UpdatedBy).HasMaxLength(50);
             });
 
             // Tat_Processing
@@ -234,6 +216,10 @@ namespace Reposi.Context
             // Processing_Options
             modelBuilder.Entity<Processing_Options>().ToTable("Processing_Options");
             modelBuilder.Entity<Processing_Options>().HasKey(p => p.BranchCode);
+
+            // Audit_Log
+            modelBuilder.Entity<Audit_Log>().ToTable("Audit_Log");
+            modelBuilder.Entity<Audit_Log>().HasKey(a => a.Id);
         }
     }
 }

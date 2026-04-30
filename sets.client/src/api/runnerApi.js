@@ -5,7 +5,7 @@ const BASE_URL = '/api/Runner'
 export const runnerApi = {
   // Pending Specimens
   getPendingSpecimens: (sectionCode) => api.get(`${BASE_URL}/pending`, { params: { sectionCode } }).then(r => r.data),
-  getTestsByHeader: (headerId) => api.get(`${BASE_URL}/tests/${headerId}`).then(r => r.data),
+  getTestsByHeader: (headerId, isOnSite = false) => api.get(`${BASE_URL}/tests/${headerId}`, { params: { isOnSite } }).then(r => r.data),
   // Scheduled Specimens
   getScheduledSpecimens: (sectionCode) => api.get(`${BASE_URL}/scheduled`, { params: { sectionCode } }).then(r => r.data),
   rescheduleTest: (payload) => api.patch(`${BASE_URL}/reschedule`, payload),

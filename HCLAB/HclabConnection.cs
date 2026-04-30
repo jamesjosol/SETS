@@ -22,6 +22,13 @@ namespace HCLAB
             return _constring;
         }
 
-        
+        public static List<string> GetKnownBranches()
+        {
+            var settings = hclab.Default;
+            return settings.Properties
+                .Cast<System.Configuration.SettingsProperty>()
+                .Select(p => p.Name)
+                .ToList();
+        }
     }
 }
