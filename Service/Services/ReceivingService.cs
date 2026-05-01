@@ -92,13 +92,13 @@ namespace Service.Services
 
                     string newBatchStatus = ResolveBatchStatus(context, specimen.BatchNo);
                     header.Status = newBatchStatus;
-
+                    bool isOutsideProcTat = false;
                     if (newBatchStatus == "C" && header.ProcReceived != null)
                     {
                         try
                         {
                             using var master = new MasterService(_branch_raw);
-                            bool isOutsideProcTat = master.Tat.EvaluateProcessingTat(
+                            isOutsideProcTat = master.Tat.EvaluateProcessingTat(
                                 header.BatchNo, header.ProcReceived.Value, now);
 
                             if (isOutsideProcTat)
@@ -120,6 +120,22 @@ namespace Service.Services
                     await RouteToLabSections(context, specimen, request.UserID, now);
 
                     tx.Commit();
+
+                    // ── Audit Logging ─────────────────────────────────────────────────────
+                    try
+                    {
+                        using var auditMaster = new MasterService(_branch_raw);
+                        auditMaster.Audit.Log(Audit_Log.ProcReceived(
+                            specimen,
+                            header.Location,
+                            header.ProcDestination,
+                            request.UserID,
+                            header.IsOutsideProcTat));
+                    }
+                    catch (Exception auditEx)
+                    {
+                        Console.WriteLine($"[AUDIT] Logging failed for specimen {specimen.SpecimenNo}: {auditEx.Message}");
+                    }
 
                     return new ReceiveSpecimenResponse
                     {
@@ -828,6 +844,25 @@ namespace Service.Services
                     context.SaveChanges();
 
                     tx.Commit();
+
+                    // ── Audit Logging ─────────────────────────────────────────────────────
+                    try
+                    {
+                        using var auditMaster = new MasterService(_branch_raw);
+                        auditMaster.Audit.Log(Audit_Log.SpecimenCancelled(
+                            specimen.SpecimenNo,
+                            request.BatchNo,
+                            specimen.PatientName,
+                            specimen.PID,
+                            batchHeader.Location,
+                            batchHeader.ProcDestination,
+                            request.CancelReason,
+                            request.UserID));
+                    }
+                    catch (Exception auditEx)
+                    {
+                        Console.WriteLine($"[AUDIT] Logging failed for specimen {specimen.SpecimenNo}: {auditEx.Message}");
+                    }
                 }
                 catch
                 {

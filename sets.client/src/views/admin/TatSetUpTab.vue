@@ -184,7 +184,7 @@ async function loadProcTat() {
   procTatLoading.value = true;
   try {
     const data = await tatApi.getProcessing();
-    procTat.value = { hours: data.hours ?? 0, minutes: data.minutes ?? 30 };
+    procTat.value = { hours: data.data.hours ?? 0, minutes: data.data.minutes ?? 30 };
   } catch { procTat.value = { hours: 0, minutes: 30 }; }
   finally { procTatLoading.value = false; }
 }

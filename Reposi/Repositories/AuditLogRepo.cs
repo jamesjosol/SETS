@@ -13,19 +13,23 @@ namespace Reposi.Repositories
         public AuditLogRepo(AppDbContext context) : base(context) { }
 
         public List<Audit_Log> GetByUser(string userID, DateTime dateFrom, DateTime dateTo)
-            => dbSet.Where(a => a.UserID == userID
-                             && a.LoggedAt >= dateFrom
-                             && a.LoggedAt < dateTo.AddDays(1))
-                    .OrderByDescending(a => a.LoggedAt)
-                    .ToList();
+         => dbSet.ToList()
+                 .Where(a => a.UserID == userID
+                          && a.LoggedAt >= dateFrom
+                          && a.LoggedAt < dateTo.AddDays(1))
+                 .OrderByDescending(a => a.LoggedAt)
+                 .ToList();
 
         public List<Audit_Log> GetBySpecimenNo(string specimenNo)
-            => dbSet.Where(a => a.SpecimenNo == specimenNo)
+            => dbSet.ToList()
+                    .Where(a => a.SpecimenNo == specimenNo
+                             || (a.SpecimenNo != null && a.SpecimenNo.StartsWith(specimenNo)))
                     .OrderByDescending(a => a.LoggedAt)
                     .ToList();
 
         public List<Audit_Log> GetByBatchNo(string batchNo)
-            => dbSet.Where(a => a.BatchNo == batchNo)
+            => dbSet.ToList()
+                    .Where(a => a.BatchNo == batchNo)
                     .OrderByDescending(a => a.LoggedAt)
                     .ToList();
     }

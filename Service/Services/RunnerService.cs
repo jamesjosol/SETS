@@ -73,6 +73,29 @@ namespace Service.Services
 
                     tx.Commit();
 
+                    // ── Audit Logging ─────────────────────────────────────────────────────
+                    if (firstScan)
+                    {
+                        try
+                        {
+                            using var master = new MasterService(_branch_raw);
+                            var temp = context.Batch_Specimen.FirstOrDefault(a => a.SpecimenNo == header.SpecimenNo);
+                            string? loc = null;
+                            if (temp != null) {
+                                loc = context.Batch_Header.FirstOrDefault(a => a.BatchNo == temp.BatchNo)?.ProcDestination;
+                            }
+                            master.Audit.Log(Audit_Log.SectionReceived(
+                                request.SpecimenNo,
+                                loc ?? "SYSTEM",
+                                request.SectionCode,
+                                request.UserID));
+                        }
+                        catch (Exception auditEx)
+                        {
+                            Console.WriteLine($"[AUDIT] Logging failed for specimen {request.SpecimenNo}: {auditEx.Message}");
+                        }
+                    }
+
                     var testCodes = tests.Select(t => t.TestCode).ToList();
                     var testCodesWithRunningDay = context.Test_RunningDay
                         .ToList()
@@ -149,7 +172,11 @@ namespace Service.Services
                     if (!tests.Any())
                         throw new Exception("No matching tests found.");
 
-                    // ── Instantiate running day service once for the whole batch ──────
+                    // ── Track tests actually flipped to Running this save ──────────
+                    var justRunTests = new List<(Specimen_Section_Test Test, string AssignedRMT)>();
+                    var justScheduledTests = new List<(Specimen_Section_Test Test, string? PreviousTag)>();
+
+                    // ── Instantiate running day service once for the whole batch ───
                     using var master = new MasterService(_branch_raw);
 
                     foreach (var assignment in request.Assignments)
@@ -159,6 +186,7 @@ namespace Service.Services
 
                         // Skip tests that are already Running or Released
                         if (test.Status == "R" || test.Status == "X") continue;
+                        var previousTag = test.ScheduleTag;
 
                         test.UpdatedBy = request.UserID;
                         test.Updated = now;
@@ -173,6 +201,7 @@ namespace Service.Services
                                     test.Status = "S";
                                     test.AssignedRMT = assignment.AssignedRMT;
                                     test.Assigned = null;
+                                    justScheduledTests.Add((test, previousTag));
                                     break;
 
                                 case "CRD":
@@ -189,9 +218,9 @@ namespace Service.Services
                                     test.Status = "S";
                                     test.AssignedRMT = assignment.AssignedRMT;
                                     test.Assigned = null;
+                                    justScheduledTests.Add((test, previousTag));
                                     break;
 
-                                // ── SRD — look up nearest configured running day ──────
                                 case "SRD":
                                     var nearestDate = master.TestRunningDay
                                         .GetNearestRunningDate(test.TestCode, today);
@@ -202,10 +231,11 @@ namespace Service.Services
                                             $"Please set it up in Admin Settings → Running Days before using SRD.");
 
                                     test.ScheduleTag = "SRD";
-                                    test.RunningDate = nearestDate;   // nearest day >= today
+                                    test.RunningDate = nearestDate;
                                     test.Status = "S";
                                     test.AssignedRMT = assignment.AssignedRMT;
                                     test.Assigned = null;
+                                    justScheduledTests.Add((test, previousTag));
                                     break;
                             }
                         }
@@ -220,7 +250,10 @@ namespace Service.Services
                                 test.Status = "R";
                                 test.AssignedRMT = assignment.AssignedRMT;
                                 test.Assigned = now;
-                                test.RunAt = DateTime.Now;
+                                test.RunAt = now;
+
+                                // ← Track this test as just run
+                                justRunTests.Add((test, assignment.AssignedRMT));
                             }
                             else
                             {
@@ -241,7 +274,6 @@ namespace Service.Services
                             .ToList()
                             .Where(h => headerIds.Contains(h.Id))
                             .ToList();
-
 
                         foreach (var remarkItem in request.SpecimenRemarks)
                         {
@@ -293,6 +325,86 @@ namespace Service.Services
 
                     context.SaveChanges();
                     tx.Commit();
+
+                    // ── Audit Logging ──────────────────────────────────────────────────────
+                    try
+                    {
+                        using var auditMaster = new MasterService(_branch_raw);
+
+                        // ── TEST_RUN — one entry per specimen for tests flipped to R ──────
+                        var runGroups = justRunTests
+                            .GroupBy(x => x.Test.HeaderId)
+                            .ToList();
+
+                        foreach (var group in runGroups)
+                        {
+                            var header = headers.FirstOrDefault(h => h.Id == group.Key);
+                            if (header == null) continue;
+
+                            var testNames = string.Join(",", group.Select(x => $"{x.Test.TestCode}:{x.Test.TestName}"));
+                            var rmtUserID = group.First().AssignedRMT;
+
+                            auditMaster.Audit.Log(Audit_Log.TestRun(
+                                header.SpecimenNo,
+                                header.SectionCode,
+                                testNames,
+                                rmtUserID,
+                                request.UserID,
+                                now));
+                        }
+
+                        // ── SPECIMEN_STORED / TEST_SCHEDULED / TEST_RESCHEDULED ───────────
+                        // Group scheduled assignments by header for SPECIMEN_STORED
+                        var scheduledByHeader = justScheduledTests
+                            .GroupBy(x => x.Test.HeaderId)
+                            .ToList();
+
+                        foreach (var group in scheduledByHeader)
+                        {
+                            var header = headers.FirstOrDefault(h => h.Id == group.Key);
+                            if (header == null) continue;
+
+                            // Fire SPECIMEN_STORED once per specimen
+                            auditMaster.Audit.Log(Audit_Log.SpecimenStored(
+                                header.SpecimenNo,
+                                header.SectionCode,
+                                request.UserID));
+
+                            // Fire TEST_SCHEDULED or TEST_RESCHEDULED per test
+                            foreach (var item in group)
+                            {
+                                var runningDate = item.Test.RunningDate.HasValue
+                                    ? item.Test.RunningDate.Value.ToDateTime(TimeOnly.MinValue)
+                                    : DateTime.Today;
+                                var testEntry = $"{item.Test.TestCode}:{item.Test.TestName}";
+                                if (item.PreviousTag == null)
+                                {
+                                    auditMaster.Audit.Log(Audit_Log.TestScheduled(
+                                        header.SpecimenNo,
+                                        header.SectionCode,
+                                        testEntry,
+                                        item.Test.ScheduleTag!,
+                                        runningDate,
+                                        request.UserID));
+                                }
+                                else if (item.PreviousTag != item.Test.ScheduleTag)
+                                {
+                                    auditMaster.Audit.Log(Audit_Log.TestRescheduled(
+                                        header.SpecimenNo,
+                                        header.SectionCode,
+                                        testEntry,
+                                        item.PreviousTag,
+                                        item.Test.ScheduleTag!,
+                                        runningDate,
+                                        request.UserID));
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception auditEx)
+                    {
+                        Console.WriteLine($"[AUDIT] Logging failed in SaveAssignments: {auditEx.Message}");
+                    }
                 }
                 catch
                 {
@@ -302,6 +414,7 @@ namespace Service.Services
             }
             catch { throw; }
         }
+
         // ── Get pending specimens ──────────────────────────────────────────
 
         public List<PendingSpecimenItem> GetPendingSpecimens(string sectionCode)
@@ -406,10 +519,20 @@ namespace Service.Services
                 var relevantHeaders = headers.Where(h => relevantHeaderIds.Contains(h.Id)).ToList();
 
                 var specimenNos = relevantHeaders.Select(h => h.SpecimenNo).ToList();
+                //var batchSpecimens = context.Batch_Specimen
+                //    .ToList()
+                //    .Where(b => specimenNos.Contains(b.SpecimenNo))
+                //    .ToDictionary(b => b.SpecimenNo, b => b);
+
+
                 var batchSpecimens = context.Batch_Specimen
-                    .ToList()
-                    .Where(b => specimenNos.Contains(b.SpecimenNo))
-                    .ToDictionary(b => b.SpecimenNo, b => b);
+                       .ToList()
+                       .Where(b => specimenNos.Contains(b.SpecimenNo))
+                       .GroupBy(b => b.SpecimenNo)
+                       .ToDictionary(
+                           g => g.Key,
+                           g => g.OrderBy(b => b.Status == "X" ? 1 : 0).First()
+                       );
 
                 var standard = relevantHeaders.Select(h =>
                 {
@@ -527,10 +650,19 @@ namespace Service.Services
                 var relevantHeaders = headers.Where(h => relevantHeaderIds.Contains(h.Id)).ToList();
 
                 var specimenNos = relevantHeaders.Select(h => h.SpecimenNo).ToList();
+                //var batchSpecimens = context.Batch_Specimen
+                //    .ToList()
+                //    .Where(b => specimenNos.Contains(b.SpecimenNo))
+                //    .ToDictionary(b => b.SpecimenNo, b => b);
+
                 var batchSpecimens = context.Batch_Specimen
-                    .ToList()
-                    .Where(b => specimenNos.Contains(b.SpecimenNo))
-                    .ToDictionary(b => b.SpecimenNo, b => b);
+                       .ToList()
+                       .Where(b => specimenNos.Contains(b.SpecimenNo))
+                       .GroupBy(b => b.SpecimenNo)
+                       .ToDictionary(
+                           g => g.Key,
+                           g => g.OrderBy(b => b.Status == "X" ? 1 : 0).First()
+                       );
 
                 var standard = relevantHeaders.Select(h =>
                 {
@@ -987,7 +1119,7 @@ namespace Service.Services
                 }
 
                 return result;
-            }
+            }   
             catch { throw; }
         }
 

@@ -118,6 +118,24 @@ namespace Service.Services
                     }
                 }
 
+                // ── Audit Logging ─────────────────────────────────────────────────────
+                if (firstScan)
+                {
+                    try
+                    {
+                        using var auditMaster = new MasterService(_branch_raw);
+                        auditMaster.Audit.Log(Audit_Log.SectionReceived(
+                            header.SpecimenNo,
+                            request.UserID,
+                            request.SectionCode,
+                            request.UserID));
+                    }
+                    catch (Exception auditEx)
+                    {
+                        Console.WriteLine($"[AUDIT] Logging failed for specimen {header.SpecimenNo}: {auditEx.Message}");
+                    }
+                }
+
                 // 6. Return response — same shape as standard ScanSpecimenResponse
                 var tests = unit.OnSiteSectionTests.GetByHeaderId(header.Id);
 
@@ -166,6 +184,8 @@ namespace Service.Services
                 try
                 {
                     var now = DateTime.Now;
+                    var justRunTests = new List<(OnSite_Section_Test Test, string AssignedRMT)>();
+                    var justScheduledTests = new List<(OnSite_Section_Test Test, string? PreviousTag)>();
                     var testIds = new HashSet<int>(request.Assignments.Select(a => a.TestId));
                     var today = DateOnly.FromDateTime(now);
                     var tests = context.OnSite_Section_Test
@@ -184,7 +204,7 @@ namespace Service.Services
                         if (test == null) continue;
 
                         if (test.Status == "R" || test.Status == "X") continue;
-
+                        var previousTag = test.ScheduleTag;
                         test.UpdatedBy = request.UserID;
                         test.Updated = now;
 
@@ -198,6 +218,7 @@ namespace Service.Services
                                     test.Status = "S";
                                     test.AssignedRMT = assignment.AssignedRMT;
                                     test.Assigned = null;
+                                    justScheduledTests.Add((test, previousTag));
                                     break;
 
                                 case "CRD":
@@ -214,6 +235,7 @@ namespace Service.Services
                                     test.Status = "S";
                                     test.AssignedRMT = assignment.AssignedRMT;
                                     test.Assigned = null;
+                                    justScheduledTests.Add((test, previousTag));
                                     break;
 
                                 case "SRD":
@@ -230,6 +252,7 @@ namespace Service.Services
                                     test.Status = "S";
                                     test.AssignedRMT = assignment.AssignedRMT;
                                     test.Assigned = null;
+                                    justScheduledTests.Add((test, previousTag));
                                     break;
                             }
                         }
@@ -244,6 +267,7 @@ namespace Service.Services
                                 test.AssignedRMT = assignment.AssignedRMT;
                                 test.Assigned = now;
                                 test.RunAt = now;
+                                justRunTests.Add((test, assignment.AssignedRMT));
                             }
                             else
                             {
@@ -303,6 +327,85 @@ namespace Service.Services
 
                     context.SaveChanges();
                     tx.Commit();
+
+                    // ── Audit Logging ──────────────────────────────────────────────────────
+                    try
+                    {
+                        using var auditMaster = new MasterService(_branch_raw);
+
+                        // TEST_RUN
+                        var runGroups = justRunTests
+                            .GroupBy(x => x.Test.HeaderId)
+                            .ToList();
+
+                        foreach (var group in runGroups)
+                        {
+                            var header = context.OnSite_Section_Header.Find(group.Key);
+                            if (header == null) continue;
+
+                            var testNames = string.Join(",", group.Select(x => $"{x.Test.TestCode}:{x.Test.TestName}"));
+                            var rmtUserID = group.First().AssignedRMT;
+
+                            auditMaster.Audit.Log(Audit_Log.TestRun(
+                                header.SpecimenNo,
+                                header.SectionCode,
+                                testNames,
+                                rmtUserID,
+                                request.UserID,
+                                now));
+                        }
+
+                        // SPECIMEN_STORED / TEST_SCHEDULED / TEST_RESCHEDULED
+                        var scheduledGroups = justScheduledTests
+                            .GroupBy(x => x.Test.HeaderId)
+                            .ToList();
+
+                        foreach (var group in scheduledGroups)
+                        {
+                            var header = context.OnSite_Section_Header.Find(group.Key);
+                            if (header == null) continue;
+
+                            auditMaster.Audit.Log(Audit_Log.SpecimenStored(
+                                header.SpecimenNo,
+                                header.SectionCode,
+                                request.UserID));
+
+                            foreach (var item in group)
+                            {
+                                var runningDate = item.Test.RunningDate.HasValue
+                                    ? item.Test.RunningDate.Value.ToDateTime(TimeOnly.MinValue)
+                                    : DateTime.Today;
+
+                                var testEntry = $"{item.Test.TestCode}:{item.Test.TestName}";
+
+                                if (item.PreviousTag == null)
+                                {
+                                    auditMaster.Audit.Log(Audit_Log.TestScheduled(
+                                        header.SpecimenNo,
+                                        header.SectionCode,
+                                        testEntry,
+                                        item.Test.ScheduleTag!,
+                                        runningDate,
+                                        request.UserID));
+                                }
+                                else if (item.PreviousTag != item.Test.ScheduleTag)
+                                {
+                                    auditMaster.Audit.Log(Audit_Log.TestRescheduled(
+                                        header.SpecimenNo,
+                                        header.SectionCode,
+                                        testEntry,
+                                        item.PreviousTag,
+                                        item.Test.ScheduleTag!,
+                                        runningDate,
+                                        request.UserID));
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception auditEx)
+                    {
+                        Console.WriteLine($"[AUDIT] Logging failed in OnSite SaveAssignments: {auditEx.Message}");
+                    }
                 }
                 catch
                 {

@@ -585,7 +585,9 @@ function showAlert(type, title, message) {
         patientName: data.patientName,
         sampleTypeCode: data.sampleTypeCode,
         sampleType: data.sampleTypeName,
-        remarks: finalRemarks
+        remarks: finalRemarks,
+        isBeyond14Days: isBeyond14,        
+        isDuplicate: isPreviouslyEndorsed
       })
 
       specimenNoInput.value = ''
@@ -677,7 +679,9 @@ async function handleEndorse() {
                 patientName: i.patientName,
                 sampleTypeCode: i.sampleTypeCode,
                 sampleTypeName: i.sampleType,
-                remarks: i.remarks || null
+                remarks: i.remarks || null,
+                isBeyond14Days: i.isBeyond14Days ?? false, 
+                isDuplicate: i.isDuplicate ?? false 
             })),
             nonBarcoded: nonBarcodedItems.value.map(i => ({
                 description: i.description,

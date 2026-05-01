@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Model.SETSDB;
 using Service;
 
 namespace SETSMiddleware.Tasks
@@ -34,7 +35,6 @@ namespace SETSMiddleware.Tasks
         /// Calculates the delay to the next 00:00:00, waits, runs, then repeats every 24 h.
         /// Manual "Run Now" still works independently via RunNowAsync().
         /// </summary>
-
         protected override async Task ExecuteAsync()
         {
             var today = DateOnly.FromDateTime(DateTime.Today);
@@ -47,8 +47,44 @@ namespace SETSMiddleware.Tasks
             if (dueTests.Count > 0)
             {
                 var headerIds = dueTests.Select(t => t.HeaderId).Distinct().ToList();
-                master.SpecimenSection.ReleaseScheduledHeaders(headerIds);
-                Log($"Standard: Released {headerIds.Count} header(s) — {dueTests.Count} test(s).", LogLevel.Success);
+
+                // ── Capture headers that are actually still S before release ──
+                var headersToRelease = headerIds
+                    .Select(id => master.SpecimenSection.GetHeaderById(id))
+                    .Where(h => h != null && h.Status == "S")
+                    .ToList();
+
+                var actualHeaderIds = headersToRelease.Select(h => h!.Id).ToList();
+
+                if (actualHeaderIds.Any())
+                    master.SpecimenSection.ReleaseScheduledHeaders(actualHeaderIds);
+
+                // ── Audit — only tests under headers that were actually S ─────
+                try
+                {
+                    var releasedHeaderIdSet = actualHeaderIds.ToHashSet();
+                    foreach (var test in dueTests.Where(t => releasedHeaderIdSet.Contains(t.HeaderId)))
+                    {
+                        var header = headersToRelease.FirstOrDefault(h => h!.Id == test.HeaderId);
+                        if (header == null) continue;
+
+                        master.Audit.Log(Audit_Log.ScheduleDue(
+                            header.SpecimenNo,
+                            header.SectionCode,
+                            test.TestCode,
+                            test.TestName,
+                            test.ScheduleTag ?? string.Empty,
+                            test.RunningDate.HasValue
+                                ? test.RunningDate.Value.ToDateTime(TimeOnly.MinValue)
+                                : DateTime.Today));
+                    }
+                }
+                catch (Exception auditEx)
+                {
+                    Log($"[AUDIT] Logging failed: {auditEx.Message}", LogLevel.Warning);
+                }
+
+                Log($"Standard: Released {actualHeaderIds.Count} header(s) — {dueTests.Count} test(s).", LogLevel.Success);
             }
             else
             {
@@ -60,8 +96,44 @@ namespace SETSMiddleware.Tasks
             if (onSiteDueTests.Count > 0)
             {
                 var onSiteHeaderIds = onSiteDueTests.Select(t => t.HeaderId).Distinct().ToList();
-                master.OnSite.ReleaseScheduledHeaders(onSiteHeaderIds);
-                Log($"On-Site: Released {onSiteHeaderIds.Count} header(s) — {onSiteDueTests.Count} test(s).", LogLevel.Success);
+
+                // ── Capture headers that are actually still S before release ──
+                var onSiteHeadersToRelease = onSiteHeaderIds
+                    .Select(id => master.OnSite.GetHeaderById(id))
+                    .Where(h => h != null && h.Status == "S")
+                    .ToList();
+
+                var actualOnSiteHeaderIds = onSiteHeadersToRelease.Select(h => h!.Id).ToList();
+
+                if (actualOnSiteHeaderIds.Any())
+                    master.OnSite.ReleaseScheduledHeaders(actualOnSiteHeaderIds);
+
+                // ── Audit ──────────────────────────────────────────────────────
+                try
+                {
+                    var releasedOnSiteHeaderIdSet = actualOnSiteHeaderIds.ToHashSet();
+                    foreach (var test in onSiteDueTests.Where(t => releasedOnSiteHeaderIdSet.Contains(t.HeaderId)))
+                    {
+                        var onSiteHeader = onSiteHeadersToRelease.FirstOrDefault(h => h!.Id == test.HeaderId);
+                        if (onSiteHeader == null) continue;
+
+                        master.Audit.Log(Audit_Log.ScheduleDue(
+                            onSiteHeader.SpecimenNo,
+                            onSiteHeader.SectionCode,
+                            test.TestCode,
+                            test.TestName,
+                            test.ScheduleTag ?? string.Empty,
+                            test.RunningDate.HasValue
+                                ? test.RunningDate.Value.ToDateTime(TimeOnly.MinValue)
+                                : DateTime.Today));
+                    }
+                }
+                catch (Exception auditEx)
+                {
+                    Log($"[AUDIT] On-Site logging failed: {auditEx.Message}", LogLevel.Warning);
+                }
+
+                Log($"On-Site: Released {actualOnSiteHeaderIds.Count} header(s) — {onSiteDueTests.Count} test(s).", LogLevel.Success);
             }
             else
             {

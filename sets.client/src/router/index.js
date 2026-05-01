@@ -90,6 +90,25 @@ const routes = [
     component: () => import('../views/runner/CompletedSpecimens.vue'),
     meta: { requiresAuth: true, category: '3' }
   },
+  // ── Shared ────────────────────────────────────────────────────────────
+  {
+    path: '/audit-trail',
+    name: 'AuditTrail',
+    component: () => import('../views/shared/AuditTrail.vue'),
+    meta: { requiresAuth: true, category: '1' }
+  },
+  {
+    path: '/receiver/audit-trail',
+    name: 'ReceiverAuditTrail',
+    component: () => import('../views/shared/AuditTrail.vue'),
+    meta: { requiresAuth: true, category: '2' }
+  },
+  {
+    path: '/runner/audit-trail',
+    name: 'RunnerAuditTrail',
+    component: () => import('../views/shared/AuditTrail.vue'),
+    meta: { requiresAuth: true, category: '3' }
+  },
   // - admin
   {
     path: '/admin/settings',

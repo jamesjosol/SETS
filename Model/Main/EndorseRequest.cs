@@ -25,6 +25,8 @@ namespace Model.Main
         public string SampleTypeCode { get; set; }
         public string SampleTypeName { get; set; }
         public string? Remarks { get; set; }
+        public bool IsBeyond14Days { get; set; }
+        public bool IsDuplicate { get; set; }
     }
 
     public class EndorseNonBarcoded

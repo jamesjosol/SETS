@@ -15,8 +15,10 @@ namespace Model.SETSDB
         public const string SpecimenCancelled = "SPECIMEN_CANCELLED";
         public const string SectionReceived = "SECTION_RECEIVED";
         public const string SpecimenStored = "SPECIMEN_STORED";
+        public const string TestScheduled = "TEST_SCHEDULED";
         public const string TestRescheduled = "TEST_RESCHEDULED";
+        public const string TestRun = "TEST_RUN";
         public const string ResultReleased = "RESULT_RELEASED";
-        public const string SpecimenReleased = "SPECIMEN_RELEASED";
+        public const string ScheduleDue = "SCHEDULE_DUE";
     }
 }

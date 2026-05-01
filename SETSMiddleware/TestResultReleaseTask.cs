@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using HCLAB;
+using Model.SETSDB;
 using Service;
 
 namespace SETSMiddleware.Tasks
@@ -45,8 +46,8 @@ namespace SETSMiddleware.Tasks
                 {
                     try
                     {
-                        var specimenNo = master.SpecimenSection
-                            .GetHeaderById(test.HeaderId)?.SpecimenNo;
+                        var header = master.SpecimenSection.GetHeaderById(test.HeaderId);
+                        var specimenNo = header?.SpecimenNo;
 
                         if (string.IsNullOrEmpty(specimenNo))
                         {
@@ -65,6 +66,21 @@ namespace SETSMiddleware.Tasks
 
                         master.SpecimenSection.MarkTestReleased(test.Id);
                         master.SpecimenSection.TryCompleteHeader(test.HeaderId);
+
+                        // ── Audit ──────────────────────────────────────────
+                        try
+                        {
+                            master.Audit.Log(Audit_Log.ResultReleased(
+                                specimenNo,
+                                header!.SectionCode,
+                                test.TestCode,
+                                test.TestName));
+                        }
+                        catch (Exception auditEx)
+                        {
+                            Log($"[AUDIT] Failed for {specimenNo} — {test.TestCode}: {auditEx.Message}", LogLevel.Warning);
+                        }
+
                         Log($"Standard released: {specimenNo} — {test.TestCode}", LogLevel.Success);
                         releasedCount++;
                     }
@@ -90,8 +106,8 @@ namespace SETSMiddleware.Tasks
                 {
                     try
                     {
-                        var specimenNo = master.OnSite
-                            .GetHeaderById(test.HeaderId)?.SpecimenNo;
+                        var header = master.OnSite.GetHeaderById(test.HeaderId);
+                        var specimenNo = header?.SpecimenNo;
 
                         if (string.IsNullOrEmpty(specimenNo))
                         {
@@ -110,6 +126,21 @@ namespace SETSMiddleware.Tasks
 
                         master.OnSite.MarkTestReleased(test.Id);
                         master.OnSite.TryCompleteHeader(test.HeaderId);
+
+                        // ── Audit ──────────────────────────────────────────
+                        try
+                        {
+                            master.Audit.Log(Audit_Log.ResultReleased(
+                               specimenNo,
+                               header!.SectionCode,
+                               test.TestCode,
+                               test.TestName));
+                        }
+                        catch (Exception auditEx)
+                        {
+                            Log($"[AUDIT] Failed for {specimenNo} — {test.TestCode}: {auditEx.Message}", LogLevel.Warning);
+                        }
+
                         Log($"On-Site released: {specimenNo} — {test.TestCode}", LogLevel.Success);
                         releasedCount++;
                     }

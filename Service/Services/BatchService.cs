@@ -95,10 +95,11 @@ namespace Service.Services
                     context.SaveChanges();
                     tx.Commit();
 
+                    bool isOutsideTat = false;
                     try
                     {
                         using var master = new MasterService(_branch_raw);
-                        bool isOutsideTat = master.Tat.EvaluateAndCycle(request.SectionCode, batchNo, now);
+                        isOutsideTat = master.Tat.EvaluateAndCycle(request.SectionCode, batchNo, now);
 
                         if (isOutsideTat)
                         {
@@ -114,6 +115,18 @@ namespace Service.Services
                     catch (Exception tatEx)
                     {
                         Console.WriteLine($"[TAT] EvaluateAndCycle failed for {batchNo}: {tatEx.Message}");
+                    }
+
+                    // ── Audit Logging ─────────────────────────────────────────────────────
+                    try
+                    {
+                        using var master = new MasterService(_branch_raw);
+                        foreach (var s in request.Specimens)
+                            master.Audit.Log(Audit_Log.Endorsed(s, batchNo, request.SectionCode, request.ProcDestination, request.UserID, isOutsideTat));
+                    }
+                    catch (Exception auditEx)
+                    {
+                        Console.WriteLine($"[AUDIT] Logging failed for batch {batchNo}: {auditEx.Message}");
                     }
 
                     return batchNo;
