@@ -246,6 +246,68 @@ namespace SETS.Server.Controllers
                 return StatusCode(500, new { message = ex.Message });
             }
         }
+
+        // ── GET api/tat/cycle-logs ────────────────────────────────────────────────
+        // Endorser: returns cycle logs for their own section.
+        // Admin: returns all sections, optionally filtered by sectionCode query param.
+        [HttpGet("cycle-logs")]
+        public IActionResult GetCycleLogs([FromQuery] string? sectionCode,
+                                           [FromQuery] string? dateFrom,
+                                           [FromQuery] string? dateTo)
+        {
+            try
+            {
+                var branch = Branch;
+                if (string.IsNullOrEmpty(branch))
+                    return Unauthorized(new { message = "Session expired." });
+
+                var from = DateTime.TryParse(dateFrom, out var df) ? df : DateTime.Today;
+                var to = DateTime.TryParse(dateTo, out var dt) ? dt : DateTime.Today;
+
+                using var master = new MasterService(branch);
+
+                // Load all active endorsing sections for name resolution
+                var sections = master.Section.GetActive()
+                    .ToDictionary(s => s.Code, s => s.Name);
+
+                List<Model.SETSDB.Tat_Cycle_Log> logs;
+
+                if (IsAdmin)
+                {
+                    logs = string.IsNullOrWhiteSpace(sectionCode)
+                        ? master.Tat.GetAllCycleLogsByDateRange(from, to)
+                        : master.Tat.GetCycleLogsByDateRange(sectionCode, from, to);
+                }
+                else
+                {
+                    // Endorser — use their own session section
+                    var sessionSection = HttpContext.Session.GetString("SectionCode");
+                    if (string.IsNullOrEmpty(sessionSection))
+                        return Unauthorized(new { message = "Session expired." });
+
+                    logs = master.Tat.GetCycleLogsByDateRange(sessionSection, from, to);
+                }
+
+                var result = logs.Select(c => new
+                {
+                    id = c.Id,
+                    sectionCode = c.SectionCode,
+                    sectionName = sections.TryGetValue(c.SectionCode, out var sn) ? sn : c.SectionCode,
+                    cycleStart = c.CycleStart,
+                    cycleEnd = c.CycleEnd,
+                    elapsedMinutes = c.ElapsedMinutes,
+                    result = c.Result,
+                    batchNo = c.BatchNo,
+                    appealedBy = c.AppealedBy,
+                }).ToList();
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
     }
 
 }

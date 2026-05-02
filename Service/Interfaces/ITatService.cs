@@ -19,6 +19,8 @@ namespace Service.Interfaces
         void OpenCycle(string sectionCode, DateTime cycleStart);
         void CloseCycle(string sectionCode, DateTime cycleEnd, string result, string? batchNo, string? appealedBy);
         void ResetOvernight(string sectionCode);
+        List<Tat_Cycle_Log> GetCycleLogsByDateRange(string sectionCode, DateTime dateFrom, DateTime dateTo);
+        List<Tat_Cycle_Log> GetAllCycleLogsByDateRange(DateTime dateFrom, DateTime dateTo);
 
         // ── Batch hook ────────────────────────────────────────────────────────
         // Called when a batch is endorsed — evaluates TAT, closes current cycle,

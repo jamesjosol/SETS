@@ -8,6 +8,7 @@ export const tatApi = {
   upsert: (items) => api.put(`${BASE_URL}`, items).then(r => r.data),
   getOpenCycle: (sectionCode) => api.get(`${BASE_URL}/${sectionCode}/cycle`).then(r => r.data),
   appeal: (sectionCode) => api.post(`${BASE_URL}/${sectionCode}/appeal`).then(r => r.data),
+  getCycleLogs: (params) => api.get(`${BASE_URL}/cycle-logs`, { params }).then(r => r.data),
   getProcessing: () => api.get('/api/tat/processing'),
   upsertProcessing: (data) =>  api.put('/api/tat/processing', data),
 }

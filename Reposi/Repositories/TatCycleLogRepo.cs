@@ -24,5 +24,22 @@ namespace Reposi.Repositories
             => dbSet.Where(c => c.SectionCode == sectionCode && c.CycleEnd != null)
                     .OrderByDescending(c => c.CycleEnd)
                     .FirstOrDefault();
+
+        // In TatCycleLogRepo.cs — add after GetLastClosed()
+
+        public List<Tat_Cycle_Log> GetByDateRange(string sectionCode, DateTime dateFrom, DateTime dateTo)
+            => dbSet.ToList()
+                    .Where(c => c.SectionCode == sectionCode
+                             && c.CycleStart >= dateFrom
+                             && c.CycleStart < dateTo.AddDays(1))
+                    .OrderByDescending(c => c.CycleStart)
+                    .ToList();
+
+        public List<Tat_Cycle_Log> GetAllByDateRange(DateTime dateFrom, DateTime dateTo)
+            => dbSet.ToList()
+                    .Where(c => c.CycleStart >= dateFrom
+                             && c.CycleStart < dateTo.AddDays(1))
+                    .OrderByDescending(c => c.CycleStart)
+                    .ToList();
     }
 }

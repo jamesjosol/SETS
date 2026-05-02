@@ -55,6 +55,12 @@ const routes = [
     component: () => import('../views/receiver/ReceivedBatches.vue'),
     meta: { requiresAuth: true, category: '2' }
   },
+  {
+    path: '/receiver/issues-log',
+    name: 'SpecimenIssuesLog',
+    component: () => import('../views/receiver/SpecimenIssuesLog.vue'),
+    meta: { requiresAuth: true, category: '2' }
+  },
   // ── Runner ───────────────────────────────────
   {
     path: '/runner/dashboard',

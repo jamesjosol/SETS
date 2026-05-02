@@ -39,6 +39,11 @@ namespace Reposi
         public TatProcessingRepo TatProcessing { get; private set; }
         public ProcessingOptionsRepo ProcessingOptions { get; private set; }
         public AuditLogRepo AuditLogs { get; private set; }
+        public IssueIncidentTypeRepo IssueIncidentTypes { get; private set; }
+        public IssueSubCategoryRepo IssueSubCategories { get; private set; }
+        public IssueTagRepo IssueTags { get; private set; }
+        public IssueLabEntryRepo IssueLabEntries { get; private set; }
+        public IssueCommentRepo IssueComments { get; private set; }
 
         public UnitOfWork(AppDbContext context)
         {
@@ -69,6 +74,11 @@ namespace Reposi
             TatProcessing = new TatProcessingRepo(_context);
             ProcessingOptions = new ProcessingOptionsRepo(_context);
             AuditLogs = new AuditLogRepo(_context);
+            IssueIncidentTypes = new IssueIncidentTypeRepo(_context);
+            IssueSubCategories = new IssueSubCategoryRepo(_context);
+            IssueTags = new IssueTagRepo(_context);
+            IssueLabEntries = new IssueLabEntryRepo(_context);
+            IssueComments = new IssueCommentRepo(_context);
         }
 
         public void Dispose()

@@ -82,7 +82,6 @@
                 <p class="font-bold" style="color: #191c1d">{{ selectedSection?.name ?? 'Select Section' }}</p>
               </div>
               <div class="ml-auto opacity-40">
-                <!-- Show chevron if multiple sections, lock if single -->
                 <span class="material-symbols-outlined text-sm" style="color: #191c1d">
                   {{ pcInfo.sections.length > 1 ? 'expand_more' : 'lock' }}
                 </span>
@@ -219,10 +218,87 @@
               :message="alert.message"
               @close="alert.isVisible = false"
               @confirm="alert.isVisible = false" />
+
+  <!-- Login Splash Overlay -->
+  <Teleport to="body">
+    <div ref="splashRef"
+         class="fixed inset-0 z-[9999] flex flex-col items-center justify-center gap-3"
+         style="background-color: #0d0d14; display: none;">
+
+      <!-- rings -->
+      <div ref="splashRing2Ref" class="absolute rounded-full"
+           style="width:240px;height:240px;border:1px solid rgba(124,58,237,0.1);opacity:0;"></div>
+      <div ref="splashRing1Ref" class="absolute rounded-full"
+           style="width:160px;height:160px;border:1.5px solid rgba(124,58,237,0.2);opacity:0;"></div>
+
+      <!-- dots -->
+      <div ref="splashDot1Ref" class="absolute rounded-full"
+           style="width:6px;height:6px;background:#7c3aed;top:37%;left:62%;opacity:0;"></div>
+      <div ref="splashDot2Ref" class="absolute rounded-full"
+           style="width:4px;height:4px;background:#7c3aed;top:63%;left:36%;opacity:0;"></div>
+      <div ref="splashDot3Ref" class="absolute rounded-full"
+           style="width:5px;height:5px;background:#7c3aed;top:33%;left:38%;opacity:0;"></div>
+
+      <!-- logo icon -->
+      <svg ref="splashIconRef"
+           width="64" height="60"
+           viewBox="0 0 60 52"
+           fill="none"
+           xmlns="http://www.w3.org/2000/svg"
+           style="opacity:0;position:relative;z-index:2;">
+        <!-- tube 1 (shortest) -->
+        <path d="M4 8 L4 36 Q4 46 10 46 Q16 46 16 36 L16 8"
+              stroke="#a78bfa" stroke-width="2" fill="none" />
+        <line x1="2" y1="8" x2="18" y2="8"
+              stroke="#a78bfa" stroke-width="2.5" stroke-linecap="round" />
+        <path ref="splashFill1Ref"
+              d="M4 36 L4 36 Q4 46 10 46 Q16 46 16 36 L16 36 Z"
+              fill="#a78bfa" opacity="0.45" />
+
+        <!-- tube 2 (tallest, with bubbles) -->
+        <path d="M22 4 L22 36 Q22 46 28 46 Q34 46 34 36 L34 4"
+              stroke="#a78bfa" stroke-width="2" fill="none" />
+        <line x1="20" y1="4" x2="36" y2="4"
+              stroke="#a78bfa" stroke-width="2.5" stroke-linecap="round" />
+        <path ref="splashFill2Ref"
+              d="M22 36 L22 36 Q22 46 28 46 Q34 46 34 36 L34 36 Z"
+              fill="#a78bfa" opacity="0.45" />
+        <circle ref="splashBubble1Ref" cx="26" cy="30" r="1.5" fill="#a78bfa" opacity="0" />
+        <circle ref="splashBubble2Ref" cx="30" cy="35" r="1" fill="#a78bfa" opacity="0" />
+
+        <!-- tube 3 (medium) -->
+        <path d="M40 10 L40 36 Q40 46 46 46 Q52 46 52 36 L52 10"
+              stroke="#a78bfa" stroke-width="2" fill="none" />
+        <line x1="38" y1="10" x2="54" y2="10"
+              stroke="#a78bfa" stroke-width="2.5" stroke-linecap="round" />
+        <path ref="splashFill3Ref"
+              d="M40 36 L40 36 Q40 46 46 46 Q52 46 52 36 L52 36 Z"
+              fill="#a78bfa" opacity="0.45" />
+      </svg>
+
+      <!-- wordmark -->
+      <div style="position:relative;z-index:2;text-align:center;">
+        <div ref="splashLogoRef"
+             style="font-size:32px;font-weight:700;color:#ffffff;letter-spacing:-0.5px;opacity:0;">
+          SETS
+        </div>
+        <div ref="splashTagRef"
+             style="font-size:9px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-top:4px;opacity:0;">
+          Specimen Endorsement &amp; Tracking System
+        </div>
+      </div>
+
+      <!-- progress bar -->
+      <div style="position:absolute;bottom:0;left:0;width:100%;height:2px;background:rgba(124,58,237,0.15);">
+        <div ref="splashBarRef" style="height:100%;background:#7c3aed;width:0%;"></div>
+      </div>
+    </div>
+  </Teleport>
 </template>
 
 <script setup>
-  import { ref, computed, onMounted } from "vue";
+  import { ref, computed, onMounted, nextTick } from "vue";
+  import { gsap } from "gsap";
   import { useRouter } from "vue-router";
   import NProgress from "nprogress";
   import { authApi } from "@/api/authApi";
@@ -231,6 +307,21 @@
   import AlertModal from "@/components/common/AlertModal.vue";
   import { useTheme } from '@/composables/useTheme'
 
+  const splashRef = ref(null)
+  const splashLogoRef = ref(null)
+  const splashTagRef = ref(null)
+  const splashRing1Ref = ref(null)
+  const splashRing2Ref = ref(null)
+  const splashDot1Ref = ref(null)
+  const splashDot2Ref = ref(null)
+  const splashDot3Ref = ref(null)
+  const splashIconRef = ref(null)
+  const splashFill1Ref = ref(null)
+  const splashFill2Ref = ref(null)
+  const splashFill3Ref = ref(null)
+  const splashBubble1Ref = ref(null)
+  const splashBubble2Ref = ref(null)
+  const splashBarRef = ref(null)
 
   const { applyTheme, applyAccent } = useTheme()
   const router = useRouter();
@@ -261,7 +352,6 @@
     password: "",
   });
 
-  // Branch field style based on PC status
   const branchFieldStyle = computed(() => {
     if (pcLoading.value) return "background-color: #f3f4f5;";
     if (!pcInfo.value.isRegistered) return "background-color: rgba(186,26,26,0.08); border: 1.5px solid rgba(186,26,26,0.3);";
@@ -282,7 +372,6 @@
     selectedSection.value = section;
   }
 
-  // Load PC info on mount
   onMounted(async () => {
     try {
       const response = await authApi.getPCInfo();
@@ -322,7 +411,7 @@
       const response = await authApi.login({
         userID: form.value.userID.toUpperCase(),
         password: form.value.password,
-        branch: selectedSection.value.branchCode, 
+        branch: selectedSection.value.branchCode,
         sectionCode: selectedSection.value.code,
       });
 
@@ -352,10 +441,19 @@
         }
       )
 
-      console.log(authStore.section)
       applyTheme(data.data.theme)
       applyAccent(data.data.accentColor)
+
+      // play splash — does NOT fade out on its own anymore
+      //await playLoginSplash()
+
+      // push route while splash is still covering the screen
       router.push(getDefaultRoute(authStore))
+
+      // wait for the new route to fully mount, then hide splash
+      await nextTick()
+      await nextTick()
+      if (splashRef.value) splashRef.value.style.display = 'none'
 
     } catch (err) {
       if (err.response) {
@@ -368,6 +466,104 @@
     } finally {
       isLoading.value = false;
     }
+  }
+
+  function playLoginSplash() {
+    return new Promise((resolve) => {
+      const splash = splashRef.value
+      const ring1 = splashRing1Ref.value
+      const ring2 = splashRing2Ref.value
+      const dots = [splashDot1Ref.value, splashDot2Ref.value, splashDot3Ref.value]
+      const icon = splashIconRef.value
+      const fill1 = splashFill1Ref.value
+      const fill2 = splashFill2Ref.value
+      const fill3 = splashFill3Ref.value
+      const bubble1 = splashBubble1Ref.value
+      const bubble2 = splashBubble2Ref.value
+      const logo = splashLogoRef.value
+      const tag = splashTagRef.value
+      const bar = splashBarRef.value
+
+      splash.style.display = 'flex'
+
+      const tl = gsap.timeline({ onComplete: resolve })
+
+      // 1. backdrop fades in
+      tl.fromTo(splash,
+        { opacity: 0 },
+        { opacity: 1, duration: 0.2, ease: 'power2.out' }
+      )
+
+        // 2. rings expand outward
+        .fromTo(ring2,
+          { opacity: 0, scale: 0.5 },
+          { opacity: 1, scale: 1, duration: 0.35, ease: 'power2.out' },
+          '-=0.1'
+        )
+        .fromTo(ring1,
+          { opacity: 0, scale: 0.5 },
+          { opacity: 1, scale: 1, duration: 0.3, ease: 'power2.out' },
+          '-=0.3'
+        )
+
+        // 3. ambient dots pop in
+        .fromTo(dots,
+          { opacity: 0, scale: 0 },
+          { opacity: 1, scale: 1, duration: 0.2, stagger: 0.05, ease: 'back.out(2)' },
+          '-=0.2'
+        )
+
+        // 4. icon fades in
+        .fromTo(icon,
+          { opacity: 0, y: 10 },
+          { opacity: 1, y: 0, duration: 0.25, ease: 'power3.out' },
+          '-=0.1'
+        )
+
+        // 5. tubes fill up
+        .to(fill1,
+          { attr: { d: 'M4 28 L4 36 Q4 46 10 46 Q16 46 16 36 L16 28 Z' }, duration: 0.35, ease: 'power2.out' },
+          '-=0.05'
+        )
+        .to(fill2,
+          { attr: { d: 'M22 20 L22 36 Q22 46 28 46 Q34 46 34 36 L34 20 Z' }, duration: 0.35, ease: 'power2.out' },
+          '-=0.3'
+        )
+        .to(fill3,
+          { attr: { d: 'M40 22 L40 36 Q40 46 46 46 Q52 46 52 36 L52 22 Z' }, duration: 0.35, ease: 'power2.out' },
+          '-=0.3'
+        )
+
+        // 6. bubbles appear
+        .fromTo([bubble1, bubble2],
+          { attr: { opacity: 0 } },
+          { attr: { opacity: 0.7 }, duration: 0.2, stagger: 0.07, ease: 'power2.out' },
+          '-=0.1'
+        )
+
+        // 7. wordmark fades up
+        .fromTo(logo,
+          { opacity: 0, y: 10 },
+          { opacity: 1, y: 0, duration: 0.25, ease: 'power3.out' },
+          '-=0.1'
+        )
+        .fromTo(tag,
+          { opacity: 0 },
+          { opacity: 1, duration: 0.2 },
+          '-=0.2'
+        )
+
+        // 8. hold
+        .to({}, { duration: 0.25 })
+
+        // 9. progress bar sweeps — timeline resolves here, NO fade out
+        .fromTo(bar,
+          { width: '0%' },
+          { width: '100%', duration: 0.45, ease: 'power2.inOut' }
+        )
+
+      // resolve fires after bar completes — router push happens while splash still visible
+    })
   }
 </script>
 

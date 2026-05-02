@@ -5,7 +5,21 @@
     <!-- Logo -->
     <div class="px-6 py-5 flex items-center gap-3"
          style="border-bottom: 1px solid var(--color-border);">
-      <img src="/SETSLOGO.png" alt="SETS Logo" class="w-10 h-10 object-contain" />
+      <svg width="36" height="36" viewBox="0 0 60 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M4 8 L4 36 Q4 46 10 46 Q16 46 16 36 L16 8" stroke="var(--color-primary)" stroke-width="2" fill="none" />
+        <line x1="2" y1="8" x2="18" y2="8" stroke="var(--color-primary)" stroke-width="2.5" stroke-linecap="round" />
+        <path d="M4 28 L4 36 Q4 46 10 46 Q16 46 16 36 L16 28 Z" fill="var(--color-primary)" opacity="0.4" />
+
+        <path d="M22 4 L22 36 Q22 46 28 46 Q34 46 34 36 L34 4" stroke="var(--color-primary)" stroke-width="2" fill="none" />
+        <line x1="20" y1="4" x2="36" y2="4" stroke="var(--color-primary)" stroke-width="2.5" stroke-linecap="round" />
+        <path d="M22 20 L22 36 Q22 46 28 46 Q34 46 34 36 L34 20 Z" fill="var(--color-primary)" opacity="0.4" />
+        <circle cx="26" cy="30" r="1.5" fill="var(--color-primary)" opacity="0.7" />
+        <circle cx="30" cy="35" r="1" fill="var(--color-primary)" opacity="0.5" />
+
+        <path d="M40 10 L40 36 Q40 46 46 46 Q52 46 52 36 L52 10" stroke="var(--color-primary)" stroke-width="2" fill="none" />
+        <line x1="38" y1="10" x2="54" y2="10" stroke="var(--color-primary)" stroke-width="2.5" stroke-linecap="round" />
+        <path d="M40 22 L40 36 Q40 46 46 46 Q52 46 52 36 L52 22 Z" fill="var(--color-primary)" opacity="0.4" />
+      </svg>
       <div>
         <p class="font-extrabold tracking-tighter text-lg" style="color: var(--color-primary);">SETS</p>
         <p class="text-[9px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">
@@ -202,6 +216,7 @@
     { name: 'Incoming Specimens', path: '/receiver/incoming', icon: 'move_to_inbox' },
     { name: 'Received Batches', path: '/receiver/received-batches', icon: 'inventory_2' },
     { name: 'Audit Trail', path: '/receiver/audit-trail', icon: 'manage_search' },
+    { name: 'Issues Log', path: '/receiver/issues-log', icon: 'folder_special' },
     { name: 'Contingency', path: '/receiver/contingency', icon: 'offline_bolt' },
   ]
 

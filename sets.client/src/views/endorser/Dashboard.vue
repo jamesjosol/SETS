@@ -445,6 +445,8 @@
     await fetchTableData()
     tableLoading.value = false
 
+    await loadTatCycle()
+
     // Start silent refresh every 5 seconds
     refreshInterval = setInterval(silentRefresh, 5000)
 

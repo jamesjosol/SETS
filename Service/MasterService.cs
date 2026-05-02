@@ -26,6 +26,7 @@ namespace Service
         public OnSiteSettingsService OnSiteSettings { get; private set; }
         public ProcessingOptionsService ProcessingOptions { get; private set; }
         public AuditService Audit { get; private set; }
+        public SpecimenIssueService SpecimenIssue { get; private set; }
 
         private readonly AppDbContextFactory _factory;
         private readonly string _branch;
@@ -59,6 +60,7 @@ namespace Service
             OnSiteSettings = new OnSiteSettingsService(_factory, _branch);
             ProcessingOptions = new ProcessingOptionsService(_factory, _branch);
             Audit = new AuditService(_factory, _branch);
+            SpecimenIssue = new SpecimenIssueService(_factory, _branch);
         }
 
         public void Dispose()
@@ -81,6 +83,7 @@ namespace Service
             OnSiteSettings = null;
             ProcessingOptions = null;
             Audit = null;
+            SpecimenIssue = null;
         }
     }
 }

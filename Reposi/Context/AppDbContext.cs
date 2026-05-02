@@ -33,6 +33,11 @@ namespace Reposi.Context
         public DbSet<OnSite_Settings> OnSite_Settings { get; set; }
         public DbSet<Tat_Processing> Tat_Processing { get; set; }
         public DbSet<Processing_Options> Processing_Options { get; set; }
+        public DbSet<Issue_IncidentType> Issue_IncidentTypes { get; set; }
+        public DbSet<Issue_SubCategory> Issue_SubCategories { get; set; }
+        public DbSet<Issue_Tag> Issue_Tags { get; set; }
+        public DbSet<Issue_LabEntry> Issue_LabEntries { get; set; }
+        public DbSet<Issue_Comment> Issue_Comments { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -220,6 +225,13 @@ namespace Reposi.Context
             // Audit_Log
             modelBuilder.Entity<Audit_Log>().ToTable("Audit_Log");
             modelBuilder.Entity<Audit_Log>().HasKey(a => a.Id);
+
+            // Specimen Issues Log
+            modelBuilder.Entity<Issue_IncidentType>().ToTable("Issue_IncidentType").HasKey(i => i.Id);
+            modelBuilder.Entity<Issue_SubCategory>().ToTable("Issue_SubCategory").HasKey(s => s.Id);
+            modelBuilder.Entity<Issue_Tag>().ToTable("Issue_Tag").HasKey(t => t.Id);
+            modelBuilder.Entity<Issue_LabEntry>().ToTable("Issue_LabEntry").HasKey(e => e.Id);
+            modelBuilder.Entity<Issue_Comment>().ToTable("Issue_Comment").HasKey(c => c.Id);
         }
     }
 }

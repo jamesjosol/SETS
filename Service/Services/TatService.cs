@@ -144,6 +144,28 @@ namespace Service.Services
             catch { throw; }
         }
 
+        public List<Tat_Cycle_Log> GetCycleLogsByDateRange(string sectionCode, DateTime dateFrom, DateTime dateTo)
+        {
+            try
+            {
+                using var context = _factory.CreateContext(_branch);
+                using var unit = new UnitOfWork(context);
+                return unit.TatCycleLogs.GetByDateRange(sectionCode, dateFrom, dateTo);
+            }
+            catch { throw; }
+        }
+
+        public List<Tat_Cycle_Log> GetAllCycleLogsByDateRange(DateTime dateFrom, DateTime dateTo)
+        {
+            try
+            {
+                using var context = _factory.CreateContext(_branch);
+                using var unit = new UnitOfWork(context);
+                return unit.TatCycleLogs.GetAllByDateRange(dateFrom, dateTo);
+            }
+            catch { throw; }
+        }
+
         // ── Batch hook ────────────────────────────────────────────────────────
 
         public bool EvaluateAndCycle(string sectionCode, string batchNo, DateTime endorsedAt)
