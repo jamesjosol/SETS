@@ -18,8 +18,10 @@ namespace Model.Main
         public DateTime ProcReceived { get; set; }
         public string ProcReceivedBy { get; set; }
         public string BatchStatus { get; set; }
+        public string? EndorsementRemarks { get; set; }
         public string? Temp { get; set; }           // ← add
         public string? TempRemarks { get; set; }    // ← add
         public string? BagNo { get; set; }          // ← add
+
     }
 }

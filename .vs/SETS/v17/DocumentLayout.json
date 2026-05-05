@@ -3,6 +3,18 @@
   "WorkspaceRootPath": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\sets.client\\src\\views\\receiver\\receiveendorsement.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|solutionrelative:sets.client\\src\\views\\receiver\\receiveendorsement.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C841152B-74B7-43B7-8E9A-E2B82C80289A}|Service\\Service.csproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\service\\services\\receivingservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C841152B-74B7-43B7-8E9A-E2B82C80289A}|Service\\Service.csproj|solutionrelative:service\\services\\receivingservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BD9ED67C-9663-4A71-9490-22712D3ED118}|SETS.Server\\SETS.Server.csproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\sets.server\\controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{BD9ED67C-9663-4A71-9490-22712D3ED118}|SETS.Server\\SETS.Server.csproj|solutionrelative:sets.server\\controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{1E05344D-E1EC-4DBC-B24B-6E177E94DC79}|SETSMiddleware\\SETSMiddleware.csproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\setsmiddleware\\endorsementtatresettask.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{1E05344D-E1EC-4DBC-B24B-6E177E94DC79}|SETSMiddleware\\SETSMiddleware.csproj|solutionrelative:setsmiddleware\\endorsementtatresettask.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
@@ -11,20 +23,12 @@
       "RelativeMoniker": "D:0:0:{C841152B-74B7-43B7-8E9A-E2B82C80289A}|Service\\Service.csproj|solutionrelative:service\\services\\specimenissueservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{BD9ED67C-9663-4A71-9490-22712D3ED118}|SETS.Server\\SETS.Server.csproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\sets.server\\controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{BD9ED67C-9663-4A71-9490-22712D3ED118}|SETS.Server\\SETS.Server.csproj|solutionrelative:sets.server\\controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{BD9ED67C-9663-4A71-9490-22712D3ED118}|SETS.Server\\SETS.Server.csproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\sets.server\\controllers\\specimenissuecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{BD9ED67C-9663-4A71-9490-22712D3ED118}|SETS.Server\\SETS.Server.csproj|solutionrelative:sets.server\\controllers\\specimenissuecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\sets.client\\src\\views\\receiver\\specimenissueslog.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}",
       "RelativeMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|solutionrelative:sets.client\\src\\views\\receiver\\specimenissueslog.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\sets.client\\src\\api\\specimenissueapi.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
-      "RelativeMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|solutionrelative:sets.client\\src\\api\\specimenissueapi.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\sets.client\\src\\components\\layout\\appsidebar.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}",
@@ -99,10 +103,6 @@
       "RelativeMoniker": "D:0:0:{C841152B-74B7-43B7-8E9A-E2B82C80289A}|Service\\Service.csproj|solutionrelative:service\\interfaces\\itatservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{C841152B-74B7-43B7-8E9A-E2B82C80289A}|Service\\Service.csproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\service\\services\\runnerservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{C841152B-74B7-43B7-8E9A-E2B82C80289A}|Service\\Service.csproj|solutionrelative:service\\services\\runnerservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\sets.client\\src\\views\\admin\\tatsetuptab.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}",
       "RelativeMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|solutionrelative:sets.client\\src\\views\\admin\\tatsetuptab.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
@@ -137,10 +137,6 @@
     {
       "AbsoluteMoniker": "D:0:0:{8846EF0D-E626-4817-8821-A132989DCA6B}|Model\\Model.csproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\model\\main\\auditlogdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{8846EF0D-E626-4817-8821-A132989DCA6B}|Model\\Model.csproj|solutionrelative:model\\main\\auditlogdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{C841152B-74B7-43B7-8E9A-E2B82C80289A}|Service\\Service.csproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\service\\services\\receivingservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{C841152B-74B7-43B7-8E9A-E2B82C80289A}|Service\\Service.csproj|solutionrelative:service\\services\\receivingservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{3DB3CB0F-B33B-46A8-9666-EA421056EEEE}|Reposi\\Reposi.csproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\reposi\\repositories\\specimensectiontestrepo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -178,7 +174,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 233,
-          "SelectedChildIndex": 1,
+          "SelectedChildIndex": 7,
           "Children": [
             {
               "$type": "Bookmark",
@@ -192,39 +188,14 @@
               "RelativeDocumentMoniker": "SETS.Server\\Controllers\\AuthController.cs",
               "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\SETS.Server\\Controllers\\AuthController.cs",
               "RelativeToolTip": "SETS.Server\\Controllers\\AuthController.cs",
-              "ViewState": "AgIAACQAAAAAAAAAAAAowD4AAABFAAAAAAAAAA==",
+              "ViewState": "AgIAACQAAAAAAAAAAAAowDEAAABLAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-05-02T06:27:27.848Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 36,
-              "Title": "SampleTypeRepo.cs",
-              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Reposi\\Repositories\\SampleTypeRepo.cs",
-              "RelativeDocumentMoniker": "Reposi\\Repositories\\SampleTypeRepo.cs",
-              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Reposi\\Repositories\\SampleTypeRepo.cs",
-              "RelativeToolTip": "Reposi\\Repositories\\SampleTypeRepo.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-01T06:51:44.713Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 5,
-              "Title": "specimenIssueApi.js",
-              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\api\\specimenIssueApi.js",
-              "RelativeDocumentMoniker": "sets.client\\src\\api\\specimenIssueApi.js",
-              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\api\\specimenIssueApi.js",
-              "RelativeToolTip": "sets.client\\src\\api\\specimenIssueApi.js",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAB0AAAABAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2026-05-02T05:48:30.872Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 35,
+              "DocumentIndex": 34,
               "Title": "SpecimenSectionTestRepo.cs",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Reposi\\Repositories\\SpecimenSectionTestRepo.cs",
               "RelativeDocumentMoniker": "Reposi\\Repositories\\SpecimenSectionTestRepo.cs",
@@ -236,7 +207,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 39,
+              "DocumentIndex": 38,
               "Title": "AuditLogRepo.cs",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Reposi\\Repositories\\AuditLogRepo.cs",
               "RelativeDocumentMoniker": "Reposi\\Repositories\\AuditLogRepo.cs",
@@ -248,7 +219,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 10,
+              "DocumentIndex": 11,
               "Title": "TatCycleLogRepo.cs",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Reposi\\Repositories\\TatCycleLogRepo.cs",
               "RelativeDocumentMoniker": "Reposi\\Repositories\\TatCycleLogRepo.cs",
@@ -256,12 +227,11 @@
               "RelativeToolTip": "Reposi\\Repositories\\TatCycleLogRepo.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAAdAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-01T06:51:48.248Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-01T06:51:48.248Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 8,
               "Title": "index.js",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\router\\index.js",
               "RelativeDocumentMoniker": "sets.client\\src\\router\\index.js",
@@ -269,12 +239,11 @@
               "RelativeToolTip": "sets.client\\src\\router\\index.js",
               "ViewState": "AgIAAA8AAAAAAAAAAAApwB0AAABCAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2026-05-01T01:23:29.085Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-01T01:23:29.085Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 40,
+              "DocumentIndex": 39,
               "Title": "auditApi.js",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\api\\auditApi.js",
               "RelativeDocumentMoniker": "sets.client\\src\\api\\auditApi.js",
@@ -282,19 +251,21 @@
               "RelativeToolTip": "sets.client\\src\\api\\auditApi.js",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2026-05-01T01:23:19.061Z"
+              "WhenOpened": "2026-05-01T01:23:19.061Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 34,
+              "DocumentIndex": 1,
               "Title": "ReceivingService.cs",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Service\\Services\\ReceivingService.cs",
               "RelativeDocumentMoniker": "Service\\Services\\ReceivingService.cs",
               "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Service\\Services\\ReceivingService.cs",
               "RelativeToolTip": "Service\\Services\\ReceivingService.cs",
-              "ViewState": "AgIAADcAAAAAAAAAAAAgwH8AAAAYAAAAAAAAAA==",
+              "ViewState": "AgIAAF0AAAAAAAAAAAAowJcAAABLAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-01T00:53:22.004Z"
+              "WhenOpened": "2026-05-01T00:53:22.004Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -306,11 +277,24 @@
               "RelativeToolTip": "Service\\Services\\BatchService.cs",
               "ViewState": "AgIAAEAAAAAAAAAAAAAIwFQAAAAuAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-01T00:24:25.6Z"
+              "WhenOpened": "2026-05-01T00:24:25.6Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 20,
+              "DocumentIndex": 35,
+              "Title": "SampleTypeRepo.cs",
+              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Reposi\\Repositories\\SampleTypeRepo.cs",
+              "RelativeDocumentMoniker": "Reposi\\Repositories\\SampleTypeRepo.cs",
+              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Reposi\\Repositories\\SampleTypeRepo.cs",
+              "RelativeToolTip": "Reposi\\Repositories\\SampleTypeRepo.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-01T06:51:44.713Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 21,
               "Title": "TatService.cs",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Service\\Services\\TatService.cs",
               "RelativeDocumentMoniker": "Service\\Services\\TatService.cs",
@@ -318,25 +302,11 @@
               "RelativeToolTip": "Service\\Services\\TatService.cs",
               "ViewState": "AgIAAFcAAAAAAAAAAAAswFoAAAAJAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-01T06:52:26.415Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-01T06:52:26.415Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 24,
-              "Title": "RunnerService.cs",
-              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Service\\Services\\RunnerService.cs",
-              "RelativeDocumentMoniker": "Service\\Services\\RunnerService.cs",
-              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Service\\Services\\RunnerService.cs",
-              "RelativeToolTip": "Service\\Services\\RunnerService.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABEAAAAFAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-01T00:59:40.044Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 38,
+              "DocumentIndex": 37,
               "Title": "HclabRoutingTask.cs",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\SETSMiddleware\\HclabRoutingTask.cs",
               "RelativeDocumentMoniker": "SETSMiddleware\\HclabRoutingTask.cs",
@@ -348,7 +318,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 37,
+              "DocumentIndex": 36,
               "Title": "BatchController.cs",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\SETS.Server\\Controllers\\BatchController.cs",
               "RelativeDocumentMoniker": "SETS.Server\\Controllers\\BatchController.cs",
@@ -360,7 +330,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 41,
+              "DocumentIndex": 40,
               "Title": "IBranchService.cs",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Service\\Interfaces\\IBranchService.cs",
               "RelativeDocumentMoniker": "Service\\Interfaces\\IBranchService.cs",
@@ -374,7 +344,7 @@
         },
         {
           "DockedWidth": 241,
-          "SelectedChildIndex": 9,
+          "SelectedChildIndex": 1,
           "Children": [
             {
               "$type": "Bookmark",
@@ -382,33 +352,20 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
-              "Title": "AppSidebar.vue",
-              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\components\\layout\\AppSidebar.vue",
-              "RelativeDocumentMoniker": "sets.client\\src\\components\\layout\\AppSidebar.vue",
-              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\components\\layout\\AppSidebar.vue",
-              "RelativeToolTip": "sets.client\\src\\components\\layout\\AppSidebar.vue",
-              "ViewState": "AgIAAJAAAAAAAAAAAAAAAJsAAAAZAAAAAAAAAA==",
+              "DocumentIndex": 0,
+              "Title": "ReceiveEndorsement.vue",
+              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\receiver\\ReceiveEndorsement.vue",
+              "RelativeDocumentMoniker": "sets.client\\src\\views\\receiver\\ReceiveEndorsement.vue",
+              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\receiver\\ReceiveEndorsement.vue",
+              "RelativeToolTip": "sets.client\\src\\views\\receiver\\ReceiveEndorsement.vue",
+              "ViewState": "AgIAAMYAAAAAAAAAAAAAAAUBAAAyAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
-              "WhenOpened": "2026-05-02T05:57:24.074Z",
+              "WhenOpened": "2026-05-05T00:14:47.814Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "SpecimenIssueController.cs",
-              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\SETS.Server\\Controllers\\SpecimenIssueController.cs",
-              "RelativeDocumentMoniker": "SETS.Server\\Controllers\\SpecimenIssueController.cs",
-              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\SETS.Server\\Controllers\\SpecimenIssueController.cs",
-              "RelativeToolTip": "SETS.Server\\Controllers\\SpecimenIssueController.cs",
-              "ViewState": "AgIAAJ4AAAAAAAAAAAAnwO4AAAA2AAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-02T05:43:01.548Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 6,
               "Title": "SpecimenIssuesLog.vue",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\receiver\\SpecimenIssuesLog.vue",
               "RelativeDocumentMoniker": "sets.client\\src\\views\\receiver\\SpecimenIssuesLog.vue",
@@ -416,12 +373,36 @@
               "RelativeToolTip": "sets.client\\src\\views\\receiver\\SpecimenIssuesLog.vue",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAEYAAABmAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
-              "WhenOpened": "2026-05-02T05:56:33.371Z",
+              "WhenOpened": "2026-05-02T05:56:33.371Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "EndorsementTatResetTask.cs",
+              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\SETSMiddleware\\EndorsementTatResetTask.cs",
+              "RelativeDocumentMoniker": "SETSMiddleware\\EndorsementTatResetTask.cs",
+              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\SETSMiddleware\\EndorsementTatResetTask.cs",
+              "RelativeToolTip": "SETSMiddleware\\EndorsementTatResetTask.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAADEAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-01T08:51:02.057Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 5,
+              "Title": "SpecimenIssueController.cs",
+              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\SETS.Server\\Controllers\\SpecimenIssueController.cs",
+              "RelativeDocumentMoniker": "SETS.Server\\Controllers\\SpecimenIssueController.cs",
+              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\SETS.Server\\Controllers\\SpecimenIssueController.cs",
+              "RelativeToolTip": "SETS.Server\\Controllers\\SpecimenIssueController.cs",
+              "ViewState": "AgIAAJ4AAAAAAAAAAAAnwO4AAAA2AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-02T05:43:01.548Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
               "Title": "SpecimenIssueService.cs",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Service\\Services\\SpecimenIssueService.cs",
               "RelativeDocumentMoniker": "Service\\Services\\SpecimenIssueService.cs",
@@ -429,12 +410,11 @@
               "RelativeToolTip": "Service\\Services\\SpecimenIssueService.cs",
               "ViewState": "AgIAAMQAAAAAAAAAAAAIwOgAAAAgAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-02T05:33:54.341Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-02T05:33:54.341Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 8,
+              "DocumentIndex": 9,
               "Title": "Login.vue",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\Login.vue",
               "RelativeDocumentMoniker": "sets.client\\src\\views\\Login.vue",
@@ -442,12 +422,11 @@
               "RelativeToolTip": "sets.client\\src\\views\\Login.vue",
               "ViewState": "AgIAAAkBAAAAAAAAAAAkwEsBAAAeAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
-              "WhenOpened": "2026-05-01T22:32:10.624Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-01T22:32:10.624Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 12,
+              "DocumentIndex": 13,
               "Title": "IssueSubCategoryRepo.cs",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Reposi\\Repositories\\IssueSubCategoryRepo.cs",
               "RelativeDocumentMoniker": "Reposi\\Repositories\\IssueSubCategoryRepo.cs",
@@ -455,12 +434,11 @@
               "RelativeToolTip": "Reposi\\Repositories\\IssueSubCategoryRepo.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABYAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-02T05:19:09.994Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-02T05:19:09.994Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 13,
+              "DocumentIndex": 14,
               "Title": "IssueIncidentTypeRepo.cs",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Reposi\\Repositories\\IssueIncidentTypeRepo.cs",
               "RelativeDocumentMoniker": "Reposi\\Repositories\\IssueIncidentTypeRepo.cs",
@@ -468,12 +446,11 @@
               "RelativeToolTip": "Reposi\\Repositories\\IssueIncidentTypeRepo.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABUAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-02T05:18:47.873Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-02T05:18:47.873Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 17,
+              "DocumentIndex": 18,
               "Title": "Issue_Comment.cs",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Model\\SETSDB\\Issue_Comment.cs",
               "RelativeDocumentMoniker": "Model\\SETSDB\\Issue_Comment.cs",
@@ -481,25 +458,23 @@
               "RelativeToolTip": "Model\\SETSDB\\Issue_Comment.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABIAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-02T05:15:58.094Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-02T05:15:58.094Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "EndorsementTatResetTask.cs",
-              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\SETSMiddleware\\EndorsementTatResetTask.cs",
-              "RelativeDocumentMoniker": "SETSMiddleware\\EndorsementTatResetTask.cs",
-              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\SETSMiddleware\\EndorsementTatResetTask.cs*",
-              "RelativeToolTip": "SETSMiddleware\\EndorsementTatResetTask.cs*",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAACIAAAAyAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-01T08:51:02.057Z",
-              "EditorCaption": ""
+              "DocumentIndex": 7,
+              "Title": "AppSidebar.vue",
+              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\components\\layout\\AppSidebar.vue",
+              "RelativeDocumentMoniker": "sets.client\\src\\components\\layout\\AppSidebar.vue",
+              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\components\\layout\\AppSidebar.vue",
+              "RelativeToolTip": "sets.client\\src\\components\\layout\\AppSidebar.vue",
+              "ViewState": "AgIAAJAAAAAAAAAAAAAAAJsAAAAZAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
+              "WhenOpened": "2026-05-02T05:57:24.074Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 11,
+              "DocumentIndex": 12,
               "Title": "IssueCommentRepo.cs",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Reposi\\Repositories\\IssueCommentRepo.cs",
               "RelativeDocumentMoniker": "Reposi\\Repositories\\IssueCommentRepo.cs",
@@ -507,12 +482,11 @@
               "RelativeToolTip": "Reposi\\Repositories\\IssueCommentRepo.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABYAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-02T05:19:58.02Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-02T05:19:58.02Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 9,
+              "DocumentIndex": 10,
               "Title": "IssueLabEntryRepo.cs",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Reposi\\Repositories\\IssueLabEntryRepo.cs",
               "RelativeDocumentMoniker": "Reposi\\Repositories\\IssueLabEntryRepo.cs",
@@ -520,12 +494,11 @@
               "RelativeToolTip": "Reposi\\Repositories\\IssueLabEntryRepo.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABYAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-02T05:19:42.365Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-02T05:19:42.365Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 18,
+              "DocumentIndex": 19,
               "Title": "Issue_LabEntry.cs",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Model\\SETSDB\\Issue_LabEntry.cs",
               "RelativeDocumentMoniker": "Model\\SETSDB\\Issue_LabEntry.cs",
@@ -533,12 +506,11 @@
               "RelativeToolTip": "Model\\SETSDB\\Issue_LabEntry.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABYAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-02T05:15:46.926Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-02T05:15:46.926Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 16,
+              "DocumentIndex": 17,
               "Title": "Issue_Tag.cs",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Model\\SETSDB\\Issue_Tag.cs",
               "RelativeDocumentMoniker": "Model\\SETSDB\\Issue_Tag.cs",
@@ -546,12 +518,11 @@
               "RelativeToolTip": "Model\\SETSDB\\Issue_Tag.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABEAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-02T05:13:59.851Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-02T05:13:59.851Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 15,
+              "DocumentIndex": 16,
               "Title": "Issue_SubCategory.cs",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Model\\SETSDB\\Issue_SubCategory.cs",
               "RelativeDocumentMoniker": "Model\\SETSDB\\Issue_SubCategory.cs",
@@ -559,12 +530,11 @@
               "RelativeToolTip": "Model\\SETSDB\\Issue_SubCategory.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABAAAAAFAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-02T05:13:49.378Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-02T05:13:49.378Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 14,
+              "DocumentIndex": 15,
               "Title": "Issue_IncidentType.cs",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Model\\SETSDB\\Issue_IncidentType.cs",
               "RelativeDocumentMoniker": "Model\\SETSDB\\Issue_IncidentType.cs",
@@ -572,12 +542,11 @@
               "RelativeToolTip": "Model\\SETSDB\\Issue_IncidentType.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAAoAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-02T05:13:39.826Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-02T05:13:39.826Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 19,
+              "DocumentIndex": 20,
               "Title": "TestRunningDayController.cs",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\SETS.Server\\Controllers\\TestRunningDayController.cs",
               "RelativeDocumentMoniker": "SETS.Server\\Controllers\\TestRunningDayController.cs",
@@ -585,12 +554,11 @@
               "RelativeToolTip": "SETS.Server\\Controllers\\TestRunningDayController.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAABRAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-02T00:34:20.498Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-02T00:34:20.498Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 23,
+              "DocumentIndex": 24,
               "Title": "ITatService.cs",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Service\\Interfaces\\ITatService.cs",
               "RelativeDocumentMoniker": "Service\\Interfaces\\ITatService.cs",
@@ -598,8 +566,7 @@
               "RelativeToolTip": "Service\\Interfaces\\ITatService.cs",
               "ViewState": "AgIAAAkAAAAAAAAAAAAAACYAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-02T00:31:47.42Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-02T00:31:47.42Z"
             },
             {
               "$type": "Document",
@@ -611,8 +578,7 @@
               "RelativeToolTip": "sets.client\\src\\views\\admin\\TatSetUpTab.vue",
               "ViewState": "AgIAAGcAAAAAAAAAAAAjwIwAAAAtAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
-              "WhenOpened": "2026-05-01T09:10:57.069Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-01T09:10:57.069Z"
             },
             {
               "$type": "Document",
@@ -640,7 +606,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 21,
+              "DocumentIndex": 22,
               "Title": "AuditTrail.vue",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\shared\\AuditTrail.vue",
               "RelativeDocumentMoniker": "sets.client\\src\\views\\shared\\AuditTrail.vue",
@@ -648,12 +614,11 @@
               "RelativeToolTip": "sets.client\\src\\views\\shared\\AuditTrail.vue",
               "ViewState": "AgIAAGEEAAAAAAAAAAAIwK8EAAATAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
-              "WhenOpened": "2026-05-01T04:42:15.414Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-01T04:42:15.414Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 22,
+              "DocumentIndex": 23,
               "Title": "tatApi.js",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\api\\tatApi.js",
               "RelativeDocumentMoniker": "sets.client\\src\\api\\tatApi.js",
@@ -661,8 +626,7 @@
               "RelativeToolTip": "sets.client\\src\\api\\tatApi.js",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2026-05-02T00:35:43.119Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-02T00:35:43.119Z"
             },
             {
               "$type": "Document",
@@ -698,8 +662,7 @@
               "RelativeToolTip": "Model\\Main\\AuditLogDto.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAqwAwAAAAWAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-01T03:55:29.501Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-01T03:55:29.501Z"
             },
             {
               "$type": "Document",

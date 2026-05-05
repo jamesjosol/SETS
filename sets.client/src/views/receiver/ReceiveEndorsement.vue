@@ -644,7 +644,7 @@ async function handleScan() {
       pid: data.pid,
       patientName: data.patientName,
       sampleTypeName: data.sampleTypeName,
-      endorsementRemarks: null,
+      endorsementRemarks: data.endorsementRemarks,
       receivingRemarks: null,
       batchStatus: data.batchStatus
     })

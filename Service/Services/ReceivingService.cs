@@ -151,7 +151,8 @@ namespace Service.Services
                         BatchStatus = newBatchStatus,
                         Temp = header.Temp,        // ← carry existing temp
                         TempRemarks = header.TempRemarks,
-                        BagNo = header.BagNo
+                        BagNo = header.BagNo,
+                        EndorsementRemarks = specimen.Remarks
                     };
                 }
                 catch
