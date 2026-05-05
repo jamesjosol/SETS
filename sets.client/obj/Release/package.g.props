@@ -12,6 +12,7 @@
     <PackageJsonScriptsLintOxlint Condition="$(PackageJsonScriptsLintOxlint) == ''">oxlint . --fix</PackageJsonScriptsLintOxlint>
     <PackageJsonScriptsLintEslint Condition="$(PackageJsonScriptsLintEslint) == ''">eslint . --fix --cache</PackageJsonScriptsLintEslint>
     <PackageJsonDependenciesAxios Condition="$(PackageJsonDependenciesAxios) == ''">^1.15.0</PackageJsonDependenciesAxios>
+    <PackageJsonDependenciesGsap Condition="$(PackageJsonDependenciesGsap) == ''">^3.15.0</PackageJsonDependenciesGsap>
     <PackageJsonDependenciesMaterialSymbols Condition="$(PackageJsonDependenciesMaterialSymbols) == ''">^0.44.1</PackageJsonDependenciesMaterialSymbols>
     <PackageJsonDependenciesNprogress Condition="$(PackageJsonDependenciesNprogress) == ''">^0.2.0</PackageJsonDependenciesNprogress>
     <PackageJsonDependenciesPikaday Condition="$(PackageJsonDependenciesPikaday) == ''">^1.8.2</PackageJsonDependenciesPikaday>

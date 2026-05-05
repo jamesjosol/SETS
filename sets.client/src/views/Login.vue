@@ -445,7 +445,7 @@
       applyAccent(data.data.accentColor)
 
       // play splash — does NOT fade out on its own anymore
-      //await playLoginSplash()
+      await playLoginSplash()
 
       // push route while splash is still covering the screen
       router.push(getDefaultRoute(authStore))

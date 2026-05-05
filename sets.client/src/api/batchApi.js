@@ -35,4 +35,5 @@ export const batchApi = {
   getEndorsements: (sectionCode, dateFrom, dateTo) => api.get(`${BATCH_URL}/endorsements`, { params: { sectionCode, dateFrom, dateTo } }).then(r => r.data),
 
   getAllEndorsements: (dateFrom, dateTo) => api.get(`${BATCH_URL}/endorsements/all`, { params: { dateFrom, dateTo } }).then(r => r.data),
+  searchGlobal: (q) => api.get(`${BATCH_URL}/search`, { params: { q } }).then(r => r.data),
 }

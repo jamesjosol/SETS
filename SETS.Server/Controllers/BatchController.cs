@@ -284,6 +284,38 @@ namespace API.Controllers
                 return StatusCode(500, new { message = ex.Message });
             }
         }
+
+        // GET api/batch/search?q=2654070
+        [HttpGet("search")]
+        public IActionResult GlobalSearch([FromQuery] string q)
+        {
+            try
+            {
+                var branch = HttpContext.Session.GetString("BranchCode");
+                if (string.IsNullOrEmpty(branch))
+                    return Unauthorized(new { message = "Session expired." });
+
+                if (string.IsNullOrWhiteSpace(q) || q.Trim().Length < 3)
+                    return BadRequest(new { message = "Minimum 3 characters required." });
+
+                var userID = HttpContext.Session.GetString("UserID") ?? "";
+                var category = HttpContext.Session.GetString("SectionCategory") ?? "";
+                var sectionCode = HttpContext.Session.GetString("SectionCode") ?? "";
+                var isAdmin = HttpContext.Session.GetString("IsAdmin") == "True";
+
+                // Admin bypasses all role scoping
+                if (isAdmin) category = "admin";
+
+                using var master = new MasterService(branch);
+                var results = master.Batch.GlobalSearch(q.Trim(), userID, category, sectionCode);
+
+                return Ok(results);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
     }
 }
 

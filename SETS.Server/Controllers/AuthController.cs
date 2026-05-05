@@ -60,16 +60,17 @@ namespace SETS.Server.Controllers
                         Message = $"You do not have access to the {request.SectionCode} section."
                     });
 
+                var section = master.Section.GetByCode(request.SectionCode);
+
                 HttpContext.Session.SetString("UserID", user.UserID);
                 HttpContext.Session.SetString("UserName", user.UserName);
                 HttpContext.Session.SetString("BranchCode", request.Branch);
                 HttpContext.Session.SetString("SectionCode", request.SectionCode);
                 HttpContext.Session.SetInt32("RoleID", userSection.RoleID);
                 HttpContext.Session.SetString("IsAdmin", user.IsAdmin.ToString());
+                HttpContext.Session.SetString("SectionCategory", section?.Category ?? "1");
 
                 Console.WriteLine("logged in: " + HttpContext.Session.GetString("UserID"));
-
-                var section = master.Section.GetByCode(request.SectionCode);
 
                 return Ok(new LoginResponse
                 {

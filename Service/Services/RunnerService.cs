@@ -1003,7 +1003,8 @@ namespace Service.Services
             var batchSpecimens = context.Batch_Specimen
                 .ToList()
                 .Where(b => specimenNos.Contains(b.SpecimenNo))
-                .ToDictionary(b => b.SpecimenNo, b => b);
+                .GroupBy(b => b.SpecimenNo)
+                .ToDictionary(g => g.Key, g => g.OrderByDescending(b => b.Id).First());
 
             var standard = headers.Select(h =>
             {
@@ -1169,7 +1170,8 @@ namespace Service.Services
                     .ToList();
                 var specimens = allSpecimens
                     .Where(s => specimenNos.Contains(s.SpecimenNo))
-                    .ToDictionary(s => s.SpecimenNo);
+                    .GroupBy(b => b.SpecimenNo)
+                    .ToDictionary(g => g.Key, g => g.OrderByDescending(b => b.Id).First());
 
                 var standard = headers.Select(h =>
                 {

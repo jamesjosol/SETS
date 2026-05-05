@@ -501,5 +501,179 @@ namespace Service.Services
             }
             catch { throw; }
         }
+
+        public List<GlobalSearchResult> GlobalSearch(string query, string userID, string sectionCategory, string sectionCode)
+        {
+            try
+            {
+                using var context = _factory.CreateContext(_branch);
+
+                var q = query.Trim();
+                var cutoff = DateTime.Today.AddDays(-90);
+
+                var sections = context.Section_Master
+                    .ToDictionary(s => s.Code, s => s.Name);
+
+                var results = new List<GlobalSearchResult>();
+
+                // ══════════════════════════════════════════════════════════════
+                // RUNNER (category 3) — searches Specimen_Section_Header
+                // ══════════════════════════════════════════════════════════════
+                if (sectionCategory == "3")
+                {
+                    // 1. Pull section headers for this section, within cutoff
+                    var headers = context.Specimen_Section_Header
+                        .Where(h => h.SectionCode == sectionCode && h.Routed >= cutoff)
+                        .ToList();
+
+                    // 2. Pull batch specimens in memory to join for patient info
+                    //    Pre-filter by cutoff to avoid full table scan
+                    var specimenNosInHeaders = headers
+                      .Select(h => h.SpecimenNo)
+                      .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+                    var batchSpecimens = context.Batch_Specimen
+                        .Where(s => s.Endorsed >= cutoff)
+                        .ToList()
+                        .Where(s => specimenNosInHeaders.Contains(s.SpecimenNo))
+                        .GroupBy(s => s.SpecimenNo)
+                        .ToDictionary(g => g.Key, g => g.OrderByDescending(s => s.Endorsed).First());
+
+                    // 3. Filter by query across all relevant fields
+                    var matches = headers
+                        .Where(h =>
+                        {
+                            batchSpecimens.TryGetValue(h.SpecimenNo, out var bs);
+                            return h.SpecimenNo.Contains(q, StringComparison.OrdinalIgnoreCase)
+                                || (bs?.LabNo != null && bs.LabNo.Contains(q, StringComparison.OrdinalIgnoreCase))
+                                || (bs?.PID != null && bs.PID.Contains(q, StringComparison.OrdinalIgnoreCase))
+                                || (bs?.PatientName != null && bs.PatientName.Contains(q, StringComparison.OrdinalIgnoreCase));
+                        })
+                        .OrderByDescending(h => h.Routed)
+                        .Take(10)
+                        .ToList();
+
+                    foreach (var h in matches)
+                    {
+                        batchSpecimens.TryGetValue(h.SpecimenNo, out var bs);
+                        results.Add(new GlobalSearchResult
+                        {
+                            Type = "specimen",
+                            SpecimenNo = h.SpecimenNo,
+                            BatchNo = bs?.BatchNo ?? "",
+                            LabNo = bs?.LabNo,
+                            PID = bs?.PID,
+                            PatientName = bs?.PatientName,
+                            SampleTypeName = bs?.SampleTypeName ?? h.SampleTypeCode,
+                            Status = h.Status,       // P, R, C from Specimen_Section_Header
+                            LocationCode = sectionCode,
+                            Location = sections.TryGetValue(sectionCode, out var sn) ? sn : sectionCode,
+                            ProcDestination = sectionCode,
+                            Endorsed = h.Routed
+                        });
+                    }
+
+                    return results;
+                }
+
+                // ══════════════════════════════════════════════════════════════
+                // ENDORSER (1) + RECEIVER (2) + ADMIN — searches Batch_Specimen
+                // ══════════════════════════════════════════════════════════════
+
+                // Materialize headers first (avoids CTE issue)
+                var allHeaders = context.Batch_Header
+                    .Where(h => h.Endorsed >= cutoff)
+                    .ToList()
+                    .ToDictionary(h => h.BatchNo);
+
+                // Materialize specimens with date pre-filter
+                var specimenRaw = context.Batch_Specimen
+                    .Where(s => s.Endorsed >= cutoff)
+                    .ToList();
+
+                // Role scope in-memory
+                specimenRaw = sectionCategory switch
+                {
+                    "1" => specimenRaw.Where(s => s.EndorsedBy == userID).ToList(),
+                    "2" => specimenRaw
+                                   .Where(s => allHeaders.TryGetValue(s.BatchNo, out var hdr)
+                                            && hdr.ProcDestination == sectionCode)
+                                   .ToList(),
+                    _ => specimenRaw   // admin
+                };
+
+                var specimenMatches = specimenRaw
+                    .Where(s =>
+                        s.SpecimenNo.Contains(q, StringComparison.OrdinalIgnoreCase) ||
+                        s.LabNo.Contains(q, StringComparison.OrdinalIgnoreCase) ||
+                        (s.PID != null && s.PID.Contains(q, StringComparison.OrdinalIgnoreCase)) ||
+                        (s.PatientName != null && s.PatientName.Contains(q, StringComparison.OrdinalIgnoreCase)))
+                    .OrderByDescending(s => s.Endorsed)
+                    .Take(8)
+                    .ToList();
+
+                // Batch search
+                var batchRaw = allHeaders.Values.ToList();
+
+                batchRaw = sectionCategory switch
+                {
+                    "1" => batchRaw.Where(h => h.EndorsedBy == userID).ToList(),
+                    "2" => batchRaw.Where(h => h.ProcDestination == sectionCode).ToList(),
+                    _ => batchRaw
+                };
+
+                var batchMatches = batchRaw
+                    .Where(h => h.BatchNo.Contains(q, StringComparison.OrdinalIgnoreCase))
+                    .OrderByDescending(h => h.Endorsed)
+                    .Take(5)
+                    .ToList();
+
+                // Build specimen results — reuse allHeaders (no second DB query)
+                foreach (var s in specimenMatches)
+                {
+                    allHeaders.TryGetValue(s.BatchNo, out var hdr);
+                    results.Add(new GlobalSearchResult
+                    {
+                        Type = "specimen",
+                        SpecimenNo = s.SpecimenNo,
+                        BatchNo = s.BatchNo,
+                        LabNo = s.LabNo,
+                        PID = s.PID,
+                        PatientName = s.PatientName,
+                        SampleTypeName = s.SampleTypeName,
+                        Status = s.Status,
+                        LocationCode = hdr?.Location ?? "",
+                        Location = sections.TryGetValue(hdr?.Location ?? "", out var loc) ? loc : hdr?.Location ?? "",
+                        ProcDestination = hdr?.ProcDestination ?? "",
+                        Endorsed = s.Endorsed
+                    });
+                }
+
+                // Build batch results
+                foreach (var h in batchMatches)
+                {
+                    results.Add(new GlobalSearchResult
+                    {
+                        Type = "batch",
+                        SpecimenNo = "",
+                        BatchNo = h.BatchNo,
+                        LabNo = null,
+                        PID = null,
+                        PatientName = null,
+                        SampleTypeName = null,
+                        Status = h.Status,
+                        LocationCode = h.Location,
+                        Location = sections.TryGetValue(h.Location, out var loc) ? loc : h.Location,
+                        ProcDestination = h.ProcDestination,
+                        Endorsed = h.Endorsed
+                    });
+                }
+
+                return results
+                    .OrderByDescending(r => r.Endorsed)
+                    .ToList();
+            }
+            catch { throw; }
+        }
     }
 }

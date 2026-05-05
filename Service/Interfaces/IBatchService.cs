@@ -21,5 +21,6 @@ namespace Service.Interfaces
         List<BatchDailyFlow> GetAllSectionsWeeklyFlow();
         List<BatchRecentItem> GetEndorsements(string sectionCode, DateTime dateFrom, DateTime dateTo);
         List<BatchRecentItem> GetAllEndorsements(DateTime dateFrom, DateTime dateTo);
+        List<GlobalSearchResult> GlobalSearch(string query, string userID, string sectionCategory, string sectionCode);
     }
 }
