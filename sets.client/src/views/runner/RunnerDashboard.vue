@@ -729,9 +729,11 @@
   // ══════════════════════════════════════════════════════════════════════════
 
   async function silentRefreshRegular() {
+    if (!authStore.isAuthenticated) return
     await Promise.all([fetchSummary(), fetchRunning(), fetchScheduled(), fetchPending(), fetchCompletedToday()])
   }
   async function silentRefreshAdmin() {
+    if (!authStore.isAuthenticated) return
     await Promise.all([
       fetchAdminSummary(), fetchAdminRunning(),
       fetchAdminRecentlyRouted(), fetchAdminDueToday(), fetchAdminCompletedToday(),

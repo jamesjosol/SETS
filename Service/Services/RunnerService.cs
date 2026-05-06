@@ -95,11 +95,21 @@ namespace Service.Services
                             Console.WriteLine($"[AUDIT] Logging failed for specimen {request.SpecimenNo}: {auditEx.Message}");
                         }
                     }
+                    var todayDayName = DateTime.Now.DayOfWeek.ToString(); 
 
                     var testCodes = tests.Select(t => t.TestCode).ToList();
-                    var testCodesWithRunningDay = context.Test_RunningDay
-                        .ToList()
-                        .Where(r => testCodes.Contains(r.TestCode))
+                    var allRunningDayRecords = context.Test_RunningDay
+                      .ToList()
+                      .Where(r => testCodes.Contains(r.TestCode))
+                      .ToList();
+
+                    var testCodesWithRunningDay = allRunningDayRecords
+                        .Select(r => r.TestCode)
+                        .ToHashSet();
+
+                    var testCodesRunningToday = allRunningDayRecords
+                        .Where(r => r.RunningDays != null &&
+                                    r.RunningDays.Split(';').Contains(todayDayName))
                         .Select(r => r.TestCode)
                         .ToHashSet();
 
@@ -131,7 +141,8 @@ namespace Service.Services
                             AssignedRMT = t.AssignedRMT,
                             Assigned = t.Assigned,
                             RunAt = t.RunAt,
-                            HasRunningDay = testCodesWithRunningDay.Contains(t.TestCode)
+                            HasRunningDay = testCodesWithRunningDay.Contains(t.TestCode),
+                            IsTodayRunningDay = testCodesRunningToday.Contains(t.TestCode)
                         }).ToList()
                     };
                 }

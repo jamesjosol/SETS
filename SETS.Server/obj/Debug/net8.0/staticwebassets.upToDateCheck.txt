@@ -7,9 +7,9 @@ wwwroot\BatchDetailDrawer-Vu0Mx4ZI.js
 wwwroot\Dashboard-BI-etW1W.js
 wwwroot\Dashboard-DC-_G3fk.css
 wwwroot\favicon.ico
-wwwroot\index.html
 wwwroot\index-DF_hBfWa.js
 wwwroot\index-jTUXP12n.css
+wwwroot\index.html
 wwwroot\loginbg.png
 wwwroot\material-symbols-outlined-SlFx5dHU.woff2
 wwwroot\material-symbols-rounded-B0uSmYvh.woff2

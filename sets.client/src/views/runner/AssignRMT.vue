@@ -438,9 +438,9 @@
           if (t.scheduleTag && runningDateStr && runningDateStr > today) {
             initialTag = t.scheduleTag
           } else if (t.scheduleTag === 'SRD' && !runningDateStr) {
-            initialTag = 'SRD'
+            initialTag = t.isTodayRunningDay ? 'NOW' : 'SRD'
           } else if (!t.scheduleTag && t.hasRunningDay) {
-            initialTag = 'SRD'
+            initialTag = t.isTodayRunningDay ? 'NOW' : 'SRD'
           }
           // On-Site: always default to NOW, no SRD
 

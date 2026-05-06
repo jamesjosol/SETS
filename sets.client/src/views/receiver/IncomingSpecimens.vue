@@ -45,6 +45,19 @@
         <!-- Filters -->
         <div class="flex items-center gap-3">
 
+          <!-- Search -->
+          <div class="relative">
+            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-sm pointer-events-none"
+                  style="color: var(--color-text-muted);">search</span>
+            <input v-model="searchQuery"
+                   type="text"
+                   :placeholder="activeTab === 'batch' ? 'Batch No. or Endorsed By...' : 'Batch No., Specimen No., Patient...'"
+                   class="pl-9 pr-4 py-2.5 rounded-xl text-sm font-medium outline-none border transition-all w-60"
+                   style="background-color: var(--color-surface-low); color: var(--color-text); border-color: var(--color-border);"
+                   @focus="e => e.target.style.borderColor = 'var(--color-primary)'"
+                   @blur="e => e.target.style.borderColor = 'var(--color-border)'" />
+          </div>
+
           <!-- Location Filter -->
           <div>
             <DropdownSelect v-model="locationFilter"
@@ -333,12 +346,14 @@ const tabs = [
 function switchTab(key) {
   activeTab.value = key
   batchFilter.value = ''
+  searchQuery.value = ''
 }
 
 // ── Filters ────────────────────────────────────────────────────────────────
 
 const locationFilter = ref('')
-const batchFilter    = ref('')
+  const batchFilter = ref('')
+  const searchQuery = ref('')  
 
 const availableLocations = computed(() => {
   const source = activeTab.value === 'batch'
@@ -385,19 +400,37 @@ function onLocationFilterChange() {
   batchFilter.value = ''
 }
 
-const filteredBatches = computed(() => {
-  if (!locationFilter.value) return batches.value
-  return batches.value.filter(b => b.location === locationFilter.value)
-})
+  const filteredBatches = computed(() => {
+    let result = batches.value
+    if (locationFilter.value)
+      result = result.filter(b => b.location === locationFilter.value)
+    if (searchQuery.value) {
+      const q = searchQuery.value.toLowerCase()
+      result = result.filter(b =>
+        b.batchNo?.toLowerCase().includes(q) ||
+        b.endorsedBy?.toLowerCase().includes(q)
+      )
+    }
+    return result
+  })
 
-const filteredSpecimens = computed(() => {
-  let result = specimens.value
-  if (locationFilter.value)
-    result = result.filter(s => s.location === locationFilter.value)
-  if (batchFilter.value)
-    result = result.filter(s => s.batchNo === batchFilter.value)
-  return result
-})
+  const filteredSpecimens = computed(() => {
+    let result = specimens.value
+    if (locationFilter.value)
+      result = result.filter(s => s.location === locationFilter.value)
+    if (batchFilter.value)
+      result = result.filter(s => s.batchNo === batchFilter.value)
+    if (searchQuery.value) {
+      const q = searchQuery.value.toLowerCase()
+      result = result.filter(s =>
+        s.batchNo?.toLowerCase().includes(q) ||
+        s.specimenNo?.toLowerCase().includes(q) ||
+        s.pid?.toLowerCase().includes(q) ||
+        s.patientName?.toLowerCase().includes(q)
+      )
+    }
+    return result
+  })
 
 // ── Data ───────────────────────────────────────────────────────────────────
 

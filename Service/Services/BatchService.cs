@@ -265,7 +265,7 @@ namespace Service.Services
                     from b in context.Batch_Header
                     join s in context.Section_Master
                         on b.Location equals s.Code
-                    where s.Active && s.Category == "1"
+                    where s.Active && s.Category == "1" && b.Endorsed.Date == DateTime.Today
                     orderby b.Endorsed descending
                     select b
                 )

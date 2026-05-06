@@ -495,6 +495,7 @@ const visibleSections = computed(() => {
 
   // Silent refresh — no spinners touched
   async function silentRefresh() {
+    if (!authStore.isAuthenticated) return
     await Promise.all([
       fetchSummary(),
       fetchMonitoring(),

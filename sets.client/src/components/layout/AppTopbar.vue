@@ -428,7 +428,7 @@
 
   // ── Status helpers ─────────────────────────────────────────────────────────
   function statusLabel(s) {
-    return { P: 'Pending', R: 'Received', C: 'Completed', X: 'Cancelled', S: 'Saved' }[s] ?? s
+    return { P: 'Pending', R: 'Received', C: 'Completed', X: 'Cancelled', S: 'Saved', PA:'Partial' }[s] ?? s
   }
 
   function statusDotStyle(s) {
@@ -437,7 +437,8 @@
       R: 'var(--color-primary)',
       C: 'var(--color-success, #16a34a)',
       X: 'var(--color-error)',
-      S: 'var(--color-info, #0ea5e9)'
+      S: 'var(--color-info, #0ea5e9)',
+      PA: '#2563EB'
     }
     return `background-color: ${colors[s] ?? 'var(--color-text-muted)'};`
   }
@@ -448,7 +449,8 @@
       R: 'background-color: rgba(var(--color-primary-rgb,99,102,241),0.12); color: var(--color-primary);',
       C: 'background-color: rgba(22,163,74,0.12); color: var(--color-success, #16a34a);',
       X: 'background-color: rgba(239,68,68,0.12); color: var(--color-error);',
-      S: 'background-color: rgba(14,165,233,0.12); color: var(--color-info, #0ea5e9);'
+      S: 'background-color: rgba(14,165,233,0.12); color: var(--color-info, #0ea5e9);',
+      PA: 'background-color: rgba(37, 99, 235, 0.08); color: var(--color-info, #2563EB);'
     }
     return map[s] ?? ''
   }

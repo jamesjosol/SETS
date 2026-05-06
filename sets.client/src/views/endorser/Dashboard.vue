@@ -452,9 +452,6 @@
 
     // Tick every second for the countdown
     tickInterval = setInterval(() => { nowTick.value = Date.now() }, 1000)
-
-    // Silent refresh every 5 seconds
-    refreshInterval = setInterval(silentRefresh, 5000)
   })
 
   onUnmounted(() => {
@@ -511,6 +508,7 @@
 
   // Silent refresh — no spinners touched
   async function silentRefresh() {
+    if (!authStore.isAuthenticated) return
     await Promise.all([fetchKPIs(), fetchTableData(), loadTatCycle()])
   }
 
