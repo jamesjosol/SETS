@@ -22,6 +22,7 @@ export const specimenIssueApi = {
   // Lab Entries
   getLabEntries: (subCategoryId) => api.get(`${BASE_URL}/subcategories/${subCategoryId}/entries`).then(r => r.data),
   addLabEntry: (data) => api.post(`${BASE_URL}/entries`, data),
+  deleteLabEntry: (id) => api.delete(`${BASE_URL}/entries/${id}`),
 
   // Comments
   getComments: (incidentTypeId) =>  api.get(`${BASE_URL}/incident-types/${incidentTypeId}/comments`).then(r => r.data),

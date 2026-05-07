@@ -1,27 +1,43 @@
 import api from './axiosInstance'
 
 export const userApi = {
-  // GET all users with section assignments
+  // ── Admin ────────────────────────────────────────────────────────────────
+
   getAll: () =>
     api.get('/api/user'),
 
-  // GET all user from hclab
   getHCLABUsers: (param) =>
     api.get('/api/user/hclab-user', { params: { param } }),
 
-  // POST register new user
   add: (data) =>
     api.post('/api/user', data),
 
-  // PUT update user info (name, isAdmin, active)
   update: (userID, data) =>
     api.put(`/api/user/${userID}`, data),
 
-  // PATCH toggle active/inactive
   toggle: (userID) =>
     api.patch(`/api/user/${userID}/toggle`),
 
-  // PUT replace all section assignments
   updateSections: (userID, data) =>
     api.put(`/api/user/${userID}/sections`, data),
+
+  delete: (userID) =>
+    api.delete(`/api/user/${userID}`),
+
+  // ── TL (scoped to session section) ───────────────────────────────────────
+
+  tlGetAll: () =>
+    api.get('/api/user/tl'),
+
+  tlAdd: (data) =>
+    api.post('/api/user/tl', data),
+
+  tlUpdateRole: (userID, roleID) =>
+    api.put(`/api/user/tl/${userID}/role`, { roleID }),
+
+  tlToggle: (userID) =>
+    api.patch(`/api/user/tl/${userID}/toggle`),
+
+  tlRemoveFromSection: (userID) =>
+    api.delete(`/api/user/tl/${userID}/section`),
 }

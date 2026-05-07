@@ -8,16 +8,27 @@ namespace SETS.Server.Controllers
     [Route("api/[controller]")]
     public class PCController : ControllerBase
     {
-        // ── Helpers ──────────────────────────────────────────────────────────
+        // ── Session helpers ───────────────────────────────────────────────────
 
         private string? Branch => HttpContext.Session.GetString("BranchCode");
+        private string? SessionUserID => HttpContext.Session.GetString("UserID");
         private bool IsAdmin => HttpContext.Session.GetString("IsAdmin") == "True";
+        private int RoleID => HttpContext.Session.GetInt32("RoleID") ?? 0;
+        private string? SectionCode => HttpContext.Session.GetString("SectionCode");
+
+        private bool IsTL => RoleID == 2;
 
         private IActionResult RequireAdmin()
             => Unauthorized(new { message = "Administrator access required." });
 
+        private IActionResult RequireTL()
+            => Unauthorized(new { message = "Team Lead access required." });
+
+        // ══════════════════════════════════════════════════════════════════════
+        // ADMIN ENDPOINTS
+        // ══════════════════════════════════════════════════════════════════════
+
         // ── GET api/pc ────────────────────────────────────────────────────────
-        // Returns all PCs with their assigned sections.
         [HttpGet]
         public IActionResult GetAll()
         {
@@ -40,12 +51,7 @@ namespace SETS.Server.Controllers
                     var sections = pcSections.Select(ps =>
                     {
                         var section = allSections.FirstOrDefault(s => s.Code == ps.SectionCode);
-                        return new
-                        {
-                            id = ps.Id,
-                            sectionCode = ps.SectionCode,
-                            sectionName = section?.Name ?? ps.SectionCode
-                        };
+                        return new { id = ps.Id, sectionCode = ps.SectionCode, sectionName = section?.Name ?? ps.SectionCode };
                     }).ToList();
 
                     return new
@@ -64,14 +70,10 @@ namespace SETS.Server.Controllers
 
                 return Ok(result);
             }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = ex.Message });
-            }
+            catch (Exception ex) { return StatusCode(500, new { message = ex.Message }); }
         }
 
         // ── POST api/pc ───────────────────────────────────────────────────────
-        // Register a new PC.
         [HttpPost]
         public IActionResult Add([FromBody] AddPCRequest request)
         {
@@ -86,11 +88,10 @@ namespace SETS.Server.Controllers
                 if (string.IsNullOrWhiteSpace(request.IpAddress))
                     return BadRequest(new { message = "IP Address is required." });
 
-                var userID = HttpContext.Session.GetString("UserID") ?? "SYSTEM";
+                var userID = SessionUserID ?? "SYSTEM";
 
                 using var master = new MasterService(branch);
 
-                // Check for duplicate
                 var existing = master.PC.GetAll().FirstOrDefault(p => p.IpAddress == request.IpAddress);
                 if (existing != null)
                     return BadRequest(new { message = $"IP address {request.IpAddress} is already registered." });
@@ -106,27 +107,20 @@ namespace SETS.Server.Controllers
 
                 master.PC.Add(pc);
 
-                // Assign sections if provided
                 if (request.SectionCodes?.Any() == true)
                 {
-                    // Re-fetch to get the generated Id
                     var saved = master.PC.GetAll().First(p => p.IpAddress == pc.IpAddress);
                     foreach (var code in request.SectionCodes)
-                    {
                         master.PC.AddSection(new PC_Section { PCId = saved.Id, SectionCode = code });
-                    }
                 }
 
                 return Ok(new { success = true, message = "PC registered successfully." });
             }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = ex.Message });
-            }
+            catch (Exception ex) { return StatusCode(500, new { message = ex.Message }); }
         }
 
         // ── PUT api/pc/{id} ───────────────────────────────────────────────────
-        // Update a PC's description and active status.
+        // Updates description and active status.
         [HttpPut("{id}")]
         public IActionResult Update(int id, [FromBody] UpdatePCRequest request)
         {
@@ -138,15 +132,13 @@ namespace SETS.Server.Controllers
                 if (string.IsNullOrEmpty(branch))
                     return Unauthorized(new { message = "Session expired." });
 
-                var userID = HttpContext.Session.GetString("UserID") ?? "SYSTEM";
+                var userID = SessionUserID ?? "SYSTEM";
 
                 using var master = new MasterService(branch);
 
                 var pc = master.PC.GetAll().FirstOrDefault(p => p.Id == id);
-                if (pc == null)
-                    return NotFound(new { message = "PC not found." });
+                if (pc == null) return NotFound(new { message = "PC not found." });
 
-                // Check for IP duplicate if IP is being changed
                 if (!string.IsNullOrWhiteSpace(request.IpAddress) && request.IpAddress != pc.IpAddress)
                 {
                     var dup = master.PC.GetAll().FirstOrDefault(p => p.IpAddress == request.IpAddress);
@@ -161,17 +153,12 @@ namespace SETS.Server.Controllers
                 pc.Updated = DateTime.Now;
 
                 master.PC.Update(pc);
-
                 return Ok(new { success = true, message = "PC updated successfully." });
             }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = ex.Message });
-            }
+            catch (Exception ex) { return StatusCode(500, new { message = ex.Message }); }
         }
 
         // ── PATCH api/pc/{id}/toggle ──────────────────────────────────────────
-        // Toggle active/inactive status.
         [HttpPatch("{id}/toggle")]
         public IActionResult Toggle(int id)
         {
@@ -183,30 +170,24 @@ namespace SETS.Server.Controllers
                 if (string.IsNullOrEmpty(branch))
                     return Unauthorized(new { message = "Session expired." });
 
-                var userID = HttpContext.Session.GetString("UserID") ?? "SYSTEM";
+                var userID = SessionUserID ?? "SYSTEM";
 
                 using var master = new MasterService(branch);
 
                 var pc = master.PC.GetAll().FirstOrDefault(p => p.Id == id);
-                if (pc == null)
-                    return NotFound(new { message = "PC not found." });
+                if (pc == null) return NotFound(new { message = "PC not found." });
 
                 pc.Active = !pc.Active;
                 pc.UpdatedBy = userID;
                 pc.Updated = DateTime.Now;
 
                 master.PC.Update(pc);
-
                 return Ok(new { success = true, active = pc.Active });
             }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = ex.Message });
-            }
+            catch (Exception ex) { return StatusCode(500, new { message = ex.Message }); }
         }
 
         // ── PUT api/pc/{id}/sections ──────────────────────────────────────────
-        // Replace the full set of section assignments for a PC.
         [HttpPut("{id}/sections")]
         public IActionResult UpdateSections(int id, [FromBody] UpdatePCSectionsRequest request)
         {
@@ -221,24 +202,249 @@ namespace SETS.Server.Controllers
                 using var master = new MasterService(branch);
 
                 var pc = master.PC.GetAll().FirstOrDefault(p => p.Id == id);
-                if (pc == null)
-                    return NotFound(new { message = "PC not found." });
+                if (pc == null) return NotFound(new { message = "PC not found." });
 
-                // Remove all existing section assignments
                 master.PC.DeleteSectionsByPCId(id);
 
-                // Re-add new assignments
                 foreach (var code in request.SectionCodes ?? new List<string>())
-                {
                     master.PC.AddSection(new PC_Section { PCId = id, SectionCode = code });
-                }
 
                 return Ok(new { success = true, message = "Section assignments updated." });
             }
-            catch (Exception ex)
+            catch (Exception ex) { return StatusCode(500, new { message = ex.Message }); }
+        }
+
+        // ── DELETE api/pc/{id} ────────────────────────────────────────────────
+        // Hard deletes the PC and all its section assignments.
+        [HttpDelete("{id}")]
+        public IActionResult Delete(int id)
+        {
+            try
             {
-                return StatusCode(500, new { message = ex.Message });
+                if (!IsAdmin) return RequireAdmin();
+
+                var branch = Branch;
+                if (string.IsNullOrEmpty(branch))
+                    return Unauthorized(new { message = "Session expired." });
+
+                using var master = new MasterService(branch);
+
+                var pc = master.PC.GetAll().FirstOrDefault(p => p.Id == id);
+                if (pc == null) return NotFound(new { message = "PC not found." });
+
+                master.PC.Delete(id);
+                return Ok(new { success = true, message = "PC deleted successfully." });
             }
+            catch (Exception ex) { return StatusCode(500, new { message = ex.Message }); }
+        }
+
+        // ══════════════════════════════════════════════════════════════════════
+        // TL ENDPOINTS (scoped to session SectionCode)
+        // ══════════════════════════════════════════════════════════════════════
+
+        // ── GET api/pc/tl ─────────────────────────────────────────────────────
+        [HttpGet("tl")]
+        public IActionResult TLGetAll()
+        {
+            try
+            {
+                if (!IsTL && !IsAdmin) return RequireTL();
+
+                var branch = Branch;
+                var sectionCode = SectionCode;
+
+                if (string.IsNullOrEmpty(branch) || string.IsNullOrEmpty(sectionCode))
+                    return Unauthorized(new { message = "Session expired." });
+
+                using var master = new MasterService(branch);
+
+                var allPCs = master.PC.GetAll();
+                var allSections = master.Section.GetAll();
+
+                var result = allPCs
+                    .Select(pc =>
+                    {
+                        var pcSections = master.PC.GetSectionsByPCId(pc.Id);
+                        return new { pc, pcSections };
+                    })
+                    .Where(x => x.pcSections.Any(ps => ps.SectionCode == sectionCode))
+                    .Select(x =>
+                    {
+                        var sections = x.pcSections.Select(ps =>
+                        {
+                            var section = allSections.FirstOrDefault(s => s.Code == ps.SectionCode);
+                            return new { id = ps.Id, sectionCode = ps.SectionCode, sectionName = section?.Name ?? ps.SectionCode };
+                        }).ToList();
+
+                        return new
+                        {
+                            id = x.pc.Id,
+                            ipAddress = x.pc.IpAddress,
+                            description = x.pc.Description,
+                            active = x.pc.Active,
+                            createdBy = x.pc.CreatedBy,
+                            created = x.pc.Created,
+                            updatedBy = x.pc.UpdatedBy,
+                            updated = x.pc.Updated,
+                            sections
+                        };
+                    })
+                    .OrderBy(p => p.ipAddress)
+                    .ToList();
+
+                return Ok(result);
+            }
+            catch (Exception ex) { return StatusCode(500, new { message = ex.Message }); }
+        }
+
+        // ── POST api/pc/tl ────────────────────────────────────────────────────
+        [HttpPost("tl")]
+        public IActionResult TLAdd([FromBody] TLAddPCRequest request)
+        {
+            try
+            {
+                if (!IsTL && !IsAdmin) return RequireTL();
+
+                var branch = Branch;
+                var sectionCode = SectionCode;
+                var userID = SessionUserID ?? "SYSTEM";
+
+                if (string.IsNullOrEmpty(branch) || string.IsNullOrEmpty(sectionCode))
+                    return Unauthorized(new { message = "Session expired." });
+
+                if (string.IsNullOrWhiteSpace(request.IpAddress))
+                    return BadRequest(new { message = "IP Address is required." });
+
+                using var master = new MasterService(branch);
+
+                var existing = master.PC.GetAll().FirstOrDefault(p => p.IpAddress == request.IpAddress);
+                if (existing != null)
+                {
+                    var existingSections = master.PC.GetSectionsByPCId(existing.Id);
+                    if (existingSections.Any(ps => ps.SectionCode == sectionCode))
+                        return BadRequest(new { message = $"IP address {request.IpAddress} is already registered for your section." });
+
+                    master.PC.AddSection(new PC_Section { PCId = existing.Id, SectionCode = sectionCode });
+                    return Ok(new { success = true, message = "Section added to existing PC." });
+                }
+
+                var pc = new PC_Master
+                {
+                    IpAddress = request.IpAddress.Trim(),
+                    Description = request.Description?.Trim() ?? string.Empty,
+                    Active = true,
+                    CreatedBy = userID,
+                    Created = DateTime.Now
+                };
+
+                master.PC.Add(pc);
+
+                var saved = master.PC.GetAll().First(p => p.IpAddress == pc.IpAddress);
+                master.PC.AddSection(new PC_Section { PCId = saved.Id, SectionCode = sectionCode });
+
+                return Ok(new { success = true, message = "PC registered successfully." });
+            }
+            catch (Exception ex) { return StatusCode(500, new { message = ex.Message }); }
+        }
+
+        // ── PUT api/pc/tl/{id} ────────────────────────────────────────────────
+        [HttpPut("tl/{id}")]
+        public IActionResult TLUpdate(int id, [FromBody] UpdatePCRequest request)
+        {
+            try
+            {
+                if (!IsTL && !IsAdmin) return RequireTL();
+
+                var branch = Branch;
+                var sectionCode = SectionCode;
+                var userID = SessionUserID ?? "SYSTEM";
+
+                if (string.IsNullOrEmpty(branch) || string.IsNullOrEmpty(sectionCode))
+                    return Unauthorized(new { message = "Session expired." });
+
+                using var master = new MasterService(branch);
+
+                var pc = master.PC.GetAll().FirstOrDefault(p => p.Id == id);
+                if (pc == null) return NotFound(new { message = "PC not found." });
+
+                var pcSections = master.PC.GetSectionsByPCId(id);
+                if (!pcSections.Any(ps => ps.SectionCode == sectionCode))
+                    return Unauthorized(new { message = "You do not have access to this PC." });
+
+                pc.Description = request.Description?.Trim() ?? pc.Description;
+                pc.Active = request.Active;
+                pc.UpdatedBy = userID;
+                pc.Updated = DateTime.Now;
+
+                master.PC.Update(pc);
+                return Ok(new { success = true, message = "PC updated successfully." });
+            }
+            catch (Exception ex) { return StatusCode(500, new { message = ex.Message }); }
+        }
+
+        // ── PATCH api/pc/tl/{id}/toggle ───────────────────────────────────────
+        [HttpPatch("tl/{id}/toggle")]
+        public IActionResult TLToggle(int id)
+        {
+            try
+            {
+                if (!IsTL && !IsAdmin) return RequireTL();
+
+                var branch = Branch;
+                var sectionCode = SectionCode;
+                var userID = SessionUserID ?? "SYSTEM";
+
+                if (string.IsNullOrEmpty(branch) || string.IsNullOrEmpty(sectionCode))
+                    return Unauthorized(new { message = "Session expired." });
+
+                using var master = new MasterService(branch);
+
+                var pc = master.PC.GetAll().FirstOrDefault(p => p.Id == id);
+                if (pc == null) return NotFound(new { message = "PC not found." });
+
+                var pcSections = master.PC.GetSectionsByPCId(id);
+                if (!pcSections.Any(ps => ps.SectionCode == sectionCode))
+                    return Unauthorized(new { message = "You do not have access to this PC." });
+
+                pc.Active = !pc.Active;
+                pc.UpdatedBy = userID;
+                pc.Updated = DateTime.Now;
+
+                master.PC.Update(pc);
+                return Ok(new { success = true, active = pc.Active });
+            }
+            catch (Exception ex) { return StatusCode(500, new { message = ex.Message }); }
+        }
+
+        // ── DELETE api/pc/tl/{id}/section ─────────────────────────────────────
+        [HttpDelete("tl/{id}/section")]
+        public IActionResult TLRemoveSection(int id)
+        {
+            try
+            {
+                if (!IsTL && !IsAdmin) return RequireTL();
+
+                var branch = Branch;
+                var sectionCode = SectionCode;
+
+                if (string.IsNullOrEmpty(branch) || string.IsNullOrEmpty(sectionCode))
+                    return Unauthorized(new { message = "Session expired." });
+
+                using var master = new MasterService(branch);
+
+                var pc = master.PC.GetAll().FirstOrDefault(p => p.Id == id);
+                if (pc == null) return NotFound(new { message = "PC not found." });
+
+                var pcSections = master.PC.GetSectionsByPCId(id);
+                var assignment = pcSections.FirstOrDefault(ps => ps.SectionCode == sectionCode);
+
+                if (assignment == null)
+                    return NotFound(new { message = "Your section is not assigned to this PC." });
+
+                master.PC.DeleteSection(assignment.Id);
+                return Ok(new { success = true, message = "Section removed from PC." });
+            }
+            catch (Exception ex) { return StatusCode(500, new { message = ex.Message }); }
         }
     }
 
@@ -249,6 +455,12 @@ namespace SETS.Server.Controllers
         public string IpAddress { get; set; } = string.Empty;
         public string? Description { get; set; }
         public List<string>? SectionCodes { get; set; }
+    }
+
+    public class TLAddPCRequest
+    {
+        public string IpAddress { get; set; } = string.Empty;
+        public string? Description { get; set; }
     }
 
     public class UpdatePCRequest

@@ -286,6 +286,32 @@
 
         <!-- ===== NON-BARCODED TAB ===== -->
         <div v-if="activeTab === 'nonbarcoded'">
+          <!-- Job Order Scan -->
+          <div class="flex items-end gap-4 mb-6">
+            <div class="flex-1">
+              <label class="block text-[11px] font-bold uppercase tracking-widest mb-2"
+                     style="color: var(--color-text-muted);">Scan Job Order</label>
+              <div class="relative flex items-center">
+                <span class="material-symbols-outlined absolute left-4 text-lg"
+                      style="color: var(--color-text-muted);">document_scanner</span>
+                <input ref="jobOrderScanInput"
+                       v-model="jobOrderScanValue"
+                       type="text"
+                       placeholder="Scan or enter Lab No. to auto-tick..."
+                       class="w-full border-none outline-none rounded-xl py-4 pl-12 pr-4 text-sm transition-colors"
+                       style="background-color: var(--color-surface-low); color: var(--color-text);"
+                       @focus="e => e.target.style.backgroundColor = 'var(--color-surface-high)'"
+                       @blur="e => e.target.style.backgroundColor = 'var(--color-surface-low)'"
+                       @keyup.enter="handleJobOrderScan" />
+              </div>
+            </div>
+            <button class="px-6 py-4 rounded-xl text-xs font-bold uppercase tracking-widest transition-all active:scale-95 flex items-center gap-2"
+                    style="background-color: var(--color-surface-low); color: var(--color-text-muted);"
+                    @click="jobOrderScanValue = ''">
+              <span class="material-symbols-outlined text-sm">close</span>
+              Cancel
+            </button>
+          </div>
 
           <!-- Filter + Actions Row -->
           <div class="flex items-end justify-between gap-4 mb-6">
@@ -343,6 +369,8 @@
                            @change="toggleSelectAll" />
                   </th>
                   <th class="px-4 py-3 text-[10px] font-bold uppercase tracking-widest"
+                      style="color: var(--color-text-muted);">Type</th>
+                  <th class="px-4 py-3 text-[10px] font-bold uppercase tracking-widest"
                       style="color: var(--color-text-muted);">Batch No.</th>
                   <th class="px-4 py-3 text-[10px] font-bold uppercase tracking-widest"
                       style="color: var(--color-text-muted);">Location</th>
@@ -397,6 +425,14 @@
                            :checked="selectedItemIDs.includes(item.itemID)"
                            class="rounded"
                            @change="toggleItem(item.itemID)" />
+                  </td>
+                  <td class="px-4 py-4">
+                    <span class="px-2 py-1 rounded-lg text-[10px] font-bold uppercase tracking-widest"
+                          :style="item.type === 'joborder'
+                          ? 'background-color: var(--color-primary-soft); color: var(--color-primary);'
+                          : 'background-color: var(--color-surface-low); color: var(--color-text-muted);'">
+                      {{ item.type === 'joborder' ? 'Job Order' : 'Others' }}
+                    </span>
                   </td>
                   <td class="px-4 py-4 font-mono text-xs font-bold"
                       style="color: var(--color-primary);">
@@ -523,7 +559,7 @@ const authStore = useAuthStore()
 const activeTab = ref('barcoded')
 const tabs = [
   { key: 'barcoded',    label: '🔬 Receive by Specimen' },
-  { key: 'nonbarcoded', label: '📋 Receive Non-Barcoded' },
+  { key: 'nonbarcoded', label: '📋 Miscellaneous Items' },
 ]
 
 // ── Alert ──────────────────────────────────────────────────────────────────
@@ -673,7 +709,35 @@ const nonBarcodedLoading = ref(false)
 const pendingNonBarcoded = ref([])
 const selectedItemIDs = ref([])
 const locationFilter = ref('')
-const isReceivingNonBarcoded = ref(false)
+  const isReceivingNonBarcoded = ref(false)
+
+  // ── Job Order Scan ─────────────────────────────────────────────────────────
+  const jobOrderScanInput = ref(null)
+  const jobOrderScanValue = ref('')
+
+  function handleJobOrderScan() {
+    const input = jobOrderScanValue.value.trim().toUpperCase()
+    if (!input) return
+
+    const match = filteredNonBarcoded.value.find(
+      n => n.type === 'joborder' && n.labNo?.toUpperCase() === input
+    )
+
+    if (!match) {
+      showAlert('warning', 'Not Found', `No pending Job Order with Lab No. ${input} was found.`)
+      jobOrderScanValue.value = ''
+      return
+    }
+
+    if (selectedItemIDs.value.includes(match.itemID)) {
+      showAlert('warning', 'Already Selected', `Job Order ${input} is already ticked for receiving.`)
+      jobOrderScanValue.value = ''
+      return
+    }
+
+    selectedItemIDs.value.push(match.itemID)
+    jobOrderScanValue.value = ''
+  }
 
 const availableLocations = computed(() => {
   const seen = new Map()

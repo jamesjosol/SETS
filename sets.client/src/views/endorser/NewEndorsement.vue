@@ -9,25 +9,25 @@
            :style="`background-color: var(--color-surface);
            border: 1.5px solid ${tatExceeded ? 'var(--color-error)' : tatProgressPct <= 25 ? 'var(--color-warning)' : 'var(--color-success)'};
                 box-shadow: 0 1px 3px var(--color-shadow);`">
-    <span class="material-symbols-outlined text-sm"
-          :class="tatExceeded ? 'animate-pulse' : ''"
-          :style="tatColorStyle">
-      {{ tatExceeded ? 'timer_off' : 'timer' }}
-    </span>
-    <div>
-      <p class="text-[9px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Next Due In</p>
-      <p class="text-xs font-extrabold font-mono leading-none mt-0.5" :style="tatColorStyle">
-        {{ tatCountdown }}
-      </p>
-    </div>
-    <!-- Mini progress bar -->
-    <div class="w-16 h-1 rounded-full overflow-hidden ml-1" style="background-color: var(--color-surface-low);">
-      <div class="h-full rounded-full transition-all duration-1000"
-           :style="`width: ${tatProgressPct}%;
-                    background-color: ${tatExceeded ? 'var(--color-error)' : tatProgressPct <= 25 ? 'var(--color-warning)' : 'var(--color-success)'};`">
+        <span class="material-symbols-outlined text-sm"
+              :class="tatExceeded ? 'animate-pulse' : ''"
+              :style="tatColorStyle">
+          {{ tatExceeded ? 'timer_off' : 'timer' }}
+        </span>
+        <div>
+          <p class="text-[9px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Next Due In</p>
+          <p class="text-xs font-extrabold font-mono leading-none mt-0.5" :style="tatColorStyle">
+            {{ tatCountdown }}
+          </p>
+        </div>
+        <!-- Mini progress bar -->
+        <div class="w-16 h-1 rounded-full overflow-hidden ml-1" style="background-color: var(--color-surface-low);">
+          <div class="h-full rounded-full transition-all duration-1000"
+               :style="`width: ${tatProgressPct}%;
+                        background-color: ${tatExceeded ? 'var(--color-error)' : tatProgressPct <= 25 ? 'var(--color-warning)' : 'var(--color-success)'};`">
+          </div>
+        </div>
       </div>
-    </div>
-  </div>
 
       <!-- Back Button -->
       <router-link to="/dashboard"
@@ -40,6 +40,7 @@
       </router-link>
 
     </div>
+
     <!-- Endorsement Card -->
     <div class="rounded-2xl overflow-hidden" style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
 
@@ -88,8 +89,8 @@
                 :key="tab.key"
                 class="px-8 py-4 text-xs font-bold uppercase tracking-widest transition-all relative"
                 :style="activeTab === tab.key
-            ? 'color: var(--color-primary);'
-            : 'color: var(--color-text-muted);'"
+                  ? 'color: var(--color-primary);'
+                  : 'color: var(--color-text-muted);'"
                 @click="activeTab = tab.key">
           {{ tab.label }}
           <span v-if="activeTab === tab.key"
@@ -108,7 +109,7 @@
       <!-- Tab Content -->
       <div class="p-8">
 
-        <!-- ===== BARCODED TAB ===== -->
+        <!-- ===== SPECIMENS TAB ===== -->
         <div v-if="activeTab === 'barcoded'">
 
           <!-- Input Row -->
@@ -185,8 +186,8 @@
                   <td class="px-4 py-4 text-center">
                     <button class="w-8 h-8 rounded-full flex items-center justify-center mx-auto transition-all hover:scale-110"
                             :style="item.remarks
-                        ? 'background-color: var(--color-error-soft); color: var(--color-error);'
-                        : 'background-color: var(--color-surface-low); color: var(--color-text-muted);'"
+                              ? 'background-color: var(--color-error-soft); color: var(--color-error);'
+                              : 'background-color: var(--color-surface-low); color: var(--color-text-muted);'"
                             :title="item.remarks || 'Add remark'"
                             @click="openRemarkModal(index, 'barcoded')">
                       <span class="material-symbols-outlined text-sm">{{ item.remarks ? 'chat_bubble' : 'chat_bubble_outline' }}</span>
@@ -205,24 +206,65 @@
           </div>
         </div>
 
-        <!-- ===== NON-BARCODED TAB ===== -->
+        <!-- ===== MISCELLANEOUS ITEMS TAB ===== -->
         <div v-if="activeTab === 'nonbarcoded'">
 
           <!-- Input Row -->
           <div class="flex items-end gap-4 mb-6">
-            <div class="flex-1">
+
+            <!-- Type Dropdown -->
+            <div>
+              <label class="block text-[11px] font-bold uppercase tracking-widest mb-2" style="color: var(--color-text-muted);">
+                Type
+              </label>
+              <div class="[&>div>button]:py-3 [&>div>button]:px-3 [&>div>button]:text-sm">
+                <DropdownSelect v-model="nonBarcodedInput.type"
+                                icon="category"
+                                :options="[{ value: 'joborder', label: 'Job Order' }, { value: 'others', label: 'Others' }]"
+                                @change="clearNonBarcodedInput(false)" />
+              </div>
+            </div>
+
+            <!-- Job Order: Lab No. scan field -->
+            <div v-if="nonBarcodedInput.type === 'joborder'" class="flex-1">
+              <label class="block text-[11px] font-bold uppercase tracking-widest mb-2" style="color: var(--color-text-muted);">
+                Lab No.
+              </label>
+              <div class="relative flex items-center">
+                <span class="material-symbols-outlined absolute left-4 text-lg" style="color: var(--color-text-muted);">
+                  {{ isJobOrderSearching ? 'progress_activity' : 'document_scanner' }}
+                </span>
+                <input ref="jobOrderInput"
+                       v-model="nonBarcodedInput.labNo"
+                       type="text"
+                       :placeholder="isJobOrderSearching ? 'Looking up job order...' : 'Scan or enter lab number...'"
+                       :disabled="isJobOrderSearching || isEndorsed"
+                       class="w-full border-none outline-none rounded-xl py-4 pl-12 pr-4 text-sm transition-colors"
+                       style="background-color: var(--color-surface-low); color: var(--color-text);"
+                       @focus="e => e.target.style.backgroundColor = 'var(--color-surface-high)'"
+                       @blur="e => e.target.style.backgroundColor = 'var(--color-surface-low)'"
+                       @keyup.enter="addJobOrderItem" />
+              </div>
+            </div>
+
+            <!-- Others: free-text description -->
+            <div v-else class="flex-1">
               <label class="block text-[11px] font-bold uppercase tracking-widest mb-2" style="color: var(--color-text-muted);">
                 Item Description
               </label>
               <input v-model="nonBarcodedInput.description"
                      type="text"
-                     placeholder="e.g. Request Form, Slide, Job Order..."
+                     placeholder="e.g. Request Form, Slide, Documents..."
+                     :disabled="isEndorsed"
                      class="w-full border-none outline-none rounded-xl py-4 px-6 text-sm transition-colors"
                      style="background-color: var(--color-surface-low); color: var(--color-text);"
                      @focus="e => e.target.style.backgroundColor = 'var(--color-surface-high)'"
-                     @blur="e => e.target.style.backgroundColor = 'var(--color-surface-low)'" />
+                     @blur="e => e.target.style.backgroundColor = 'var(--color-surface-low)'"
+                     @keyup.enter="addOthersItem" />
             </div>
-            <div style="width: 120px;">
+
+            <!-- Quantity — only for Others -->
+            <div v-if="nonBarcodedInput.type === 'others'" style="width: 120px;">
               <label class="block text-[11px] font-bold uppercase tracking-widest mb-2" style="color: var(--color-text-muted);">
                 Quantity
               </label>
@@ -230,31 +272,47 @@
                      type="number"
                      min="1"
                      placeholder="1"
+                     :disabled="isEndorsed"
                      class="w-full border-none outline-none rounded-xl py-4 px-4 text-sm transition-colors text-center"
                      style="background-color: var(--color-surface-low); color: var(--color-text);"
                      @focus="e => e.target.style.backgroundColor = 'var(--color-surface-high)'"
                      @blur="e => e.target.style.backgroundColor = 'var(--color-surface-low)'" />
             </div>
-            <button class="px-6 py-4 rounded-xl text-xs font-bold uppercase tracking-widest transition-all active:scale-95 flex items-center gap-2"
+
+            <!-- Add button — only for Others (Job Order auto-adds on scan) -->
+            <button v-if="nonBarcodedInput.type === 'others'"
+                    class="px-6 py-4 rounded-xl text-xs font-bold uppercase tracking-widest transition-all active:scale-95 flex items-center gap-2"
                     style="background-color: var(--color-primary); color: #ffffff;"
-                    @click="addNonBarcodedItem">
+                    :disabled="isEndorsed"
+                    @click="addOthersItem">
               <span class="material-symbols-outlined text-sm">add</span>
               Add to List
             </button>
+
+            <!-- Cancel / Clear -->
             <button class="px-6 py-4 rounded-xl text-xs font-bold uppercase tracking-widest transition-all active:scale-95 flex items-center gap-2"
                     style="background-color: var(--color-surface-low); color: var(--color-text-muted);"
-                    @click="clearNonBarcodedInput">
+                    @click="clearNonBarcodedInput(true)">
               <span class="material-symbols-outlined text-sm">close</span>
               Cancel
             </button>
           </div>
 
-          <!-- Non-Barcoded Table -->
+          <!-- Job Order hint -->
+          <div v-if="nonBarcodedInput.type === 'joborder'"
+               class="mb-4 flex items-center gap-2 px-4 py-2 rounded-xl text-xs"
+               style="background-color: var(--color-primary-soft); color: var(--color-primary);">
+            <span class="material-symbols-outlined text-sm">info</span>
+            Scan or enter a Lab No. and press Enter — patient name will be fetched automatically.
+          </div>
+
+          <!-- Miscellaneous Table -->
           <div class="rounded-xl overflow-hidden" style="border: 1px solid var(--color-border);">
             <table class="w-full text-left">
               <thead>
                 <tr style="background-color: var(--color-surface-low);">
-                  <th class="px-6 py-3 text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Item Description</th>
+                  <th class="px-6 py-3 text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Type</th>
+                  <th class="px-4 py-3 text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Item Description</th>
                   <th class="px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-center" style="color: var(--color-text-muted);">Quantity</th>
                   <th class="px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-center" style="color: var(--color-text-muted);">Remarks</th>
                   <th class="px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-center" style="color: var(--color-text-muted);">Action</th>
@@ -262,11 +320,11 @@
               </thead>
               <tbody>
                 <tr v-if="nonBarcodedItems.length === 0">
-                  <td colspan="4" class="px-6 py-12 text-center">
+                  <td colspan="5" class="px-6 py-12 text-center">
                     <div class="flex flex-col items-center gap-3">
                       <span class="material-symbols-outlined text-4xl opacity-20" style="color: var(--color-text-muted);">inventory_2</span>
                       <p class="text-sm font-bold" style="color: var(--color-text-muted);">No items added yet</p>
-                      <p class="text-xs" style="color: var(--color-text-muted);">Add non-barcoded items such as forms or slides</p>
+                      <p class="text-xs" style="color: var(--color-text-muted);">Add job orders or other miscellaneous items</p>
                     </div>
                   </td>
                 </tr>
@@ -276,13 +334,22 @@
                     style="border-top: 1px solid var(--color-surface-low);"
                     @mouseenter="e => e.currentTarget.style.backgroundColor = 'var(--color-surface-low)'"
                     @mouseleave="e => e.currentTarget.style.backgroundColor = 'transparent'">
-                  <td class="px-6 py-4 text-sm font-medium" style="color: var(--color-text);">{{ item.description }}</td>
+                  <!-- Type badge -->
+                  <td class="px-6 py-4">
+                    <span class="px-2 py-1 rounded-lg text-[10px] font-bold uppercase tracking-widest"
+                          :style="item.type === 'joborder'
+                            ? 'background-color: var(--color-primary-soft); color: var(--color-primary);'
+                            : 'background-color: var(--color-surface-low); color: var(--color-text-muted);'">
+                      {{ item.type === 'joborder' ? 'Job Order' : 'Others' }}
+                    </span>
+                  </td>
+                  <td class="px-4 py-4 text-sm font-medium" style="color: var(--color-text);">{{ item.description }}</td>
                   <td class="px-4 py-4 text-sm text-center font-bold" style="color: var(--color-text);">{{ item.quantity }}</td>
                   <td class="px-4 py-4 text-center">
                     <button class="w-8 h-8 rounded-full flex items-center justify-center mx-auto transition-all hover:scale-110"
                             :style="item.remarks
-                        ? 'background-color: var(--color-error-soft); color: var(--color-error);'
-                        : 'background-color: var(--color-surface-low); color: var(--color-text-muted);'"
+                              ? 'background-color: var(--color-error-soft); color: var(--color-error);'
+                              : 'background-color: var(--color-surface-low); color: var(--color-text-muted);'"
                             :title="item.remarks || 'Add remark'"
                             @click="openRemarkModal(index, 'nonbarcoded')">
                       <span class="material-symbols-outlined text-sm">{{ item.remarks ? 'chat_bubble' : 'chat_bubble_outline' }}</span>
@@ -309,7 +376,7 @@
         <div class="flex items-center gap-3">
           <span class="text-xs font-bold uppercase tracking-widest"
                 style="color: var(--color-text-muted);">
-            {{ barcodedItems.length }} barcoded · {{ nonBarcodedItems.length }} non-barcoded
+            {{ barcodedItems.length }} specimen(s) · {{ nonBarcodedItems.length }} miscellaneous
           </span>
         </div>
         <div class="flex items-center gap-3">
@@ -318,28 +385,29 @@
                   @click="clearAll">
             {{ isEndorsed ? 'New Endorsement' : 'Clear All' }}
           </button>
-          <button class="px-8 py-3 rounded-xl text-xs font-bold uppercase tracking-widest transition-all active:scale-95 flex items-center gap-2 shadow-lg"
+          <!-- Specimens tab: Proceed button -->
+          <button v-if="activeTab === 'barcoded'"
+                  class="px-8 py-3 rounded-xl text-xs font-bold uppercase tracking-widest transition-all active:scale-95 flex items-center gap-2 shadow-lg"
+                  :disabled="barcodedItems.length === 0"
+                  :style="barcodedItems.length === 0
+          ? 'background: var(--color-surface-low); color: var(--color-text-muted); cursor: not-allowed;'
+          : 'background: var(--color-primary-gradient); color: #ffffff; cursor: pointer;'"
+                  @click="activeTab = 'nonbarcoded'">
+            <span class="material-symbols-outlined text-sm">arrow_forward</span>
+            Proceed
+          </button>
+
+          <!-- Miscellaneous tab: Endorse button -->
+          <button v-else
+                  class="px-8 py-3 rounded-xl text-xs font-bold uppercase tracking-widest transition-all active:scale-95 flex items-center gap-2 shadow-lg"
                   :disabled="isEndorsed || isEndorsing || (barcodedItems.length === 0 && nonBarcodedItems.length === 0)"
                   :style="(isEndorsed || isEndorsing || (barcodedItems.length === 0 && nonBarcodedItems.length === 0))
-    ? 'background: var(--color-surface-low); color: var(--color-text-muted); cursor: not-allowed;'
-    : 'background: var(--color-primary-gradient); color: #ffffff; cursor: pointer;'"
+          ? 'background: var(--color-surface-low); color: var(--color-text-muted); cursor: not-allowed;'
+          : 'background: var(--color-primary-gradient); color: #ffffff; cursor: pointer;'"
                   @click="handleEndorse">
-            <!-- Spinner while saving -->
-            <span v-if="isEndorsing"
-                  class="material-symbols-outlined text-sm animate-spin">
-              progress_activity
-            </span>
-            <!-- Checkmark once done -->
-            <span v-else-if="isEndorsed"
-                  class="material-symbols-outlined text-sm">
-              check_circle
-            </span>
-            <!-- Default send icon -->
-            <span v-else
-                  class="material-symbols-outlined text-sm">
-              send
-            </span>
-
+            <span v-if="isEndorsing" class="material-symbols-outlined text-sm animate-spin">progress_activity</span>
+            <span v-else-if="isEndorsed" class="material-symbols-outlined text-sm">check_circle</span>
+            <span v-else class="material-symbols-outlined text-sm">send</span>
             {{ isEndorsing ? 'Endorsing...' : isEndorsed ? 'Endorsed' : 'Endorse' }}
           </button>
         </div>
@@ -362,7 +430,6 @@
                   @cancel="handleConfirmNo"
                   @close="confirmPrompt.visible = false" />
 
-    <!-- Alert Modal -->
     <AlertModal :isVisible="alert.isVisible"
                 :type="alert.type"
                 :title="alert.title"
@@ -375,46 +442,50 @@
 
 <script setup>
   import { ref, nextTick, onMounted, onUnmounted, computed } from 'vue'
-import AppLayout from '@/components/layout/AppLayout.vue'
-import AlertModal from '@/components/common/AlertModal.vue'
-import RemarkModal from '@/components/common/RemarkModal.vue'
-import ConfirmModal from '@/components/common/ConfirmModal.vue'
-import { useAuthStore } from '@/stores/authStore'
-import { transactionApi } from '@/api/transactionApi'
-import { tatApi } from '@/api/tatApi'
-import NProgress from 'nprogress'
+  import AppLayout from '@/components/layout/AppLayout.vue'
+  import AlertModal from '@/components/common/AlertModal.vue'
+  import RemarkModal from '@/components/common/RemarkModal.vue'
+  import ConfirmModal from '@/components/common/ConfirmModal.vue'
+  import DropdownSelect from '@/components/common/DropdownSelect.vue'
+  import { useAuthStore } from '@/stores/authStore'
+  import { transactionApi } from '@/api/transactionApi'
+  import { tatApi } from '@/api/tatApi'
+  import NProgress from 'nprogress'
 
-const authStore = useAuthStore()
+  const authStore = useAuthStore()
 
-const activeTab = ref('barcoded')
-const specimenInput = ref(null)
-const specimenNoInput = ref('')
-const batchNo = ref(null)
-const isSearching = ref(false)
+  const activeTab = ref('barcoded')
+  const specimenInput = ref(null)
+  const jobOrderInput = ref(null)
+  const specimenNoInput = ref('')
+  const batchNo = ref(null)
+  const isSearching = ref(false)
+  const isJobOrderSearching = ref(false)
 
-const tabs = [
-  { key: 'barcoded', label: '🔬 Barcoded Items' },
-  { key: 'nonbarcoded', label: '📋 Non-Barcoded Items' },
-]
+  const tabs = [
+    { key: 'barcoded', label: '🔬 Specimens' },
+    { key: 'nonbarcoded', label: '📋 Miscellaneous Items' },
+  ]
 
-// Barcoded items list
-const barcodedItems = ref([])
+  // Barcoded items list
+  const barcodedItems = ref([])
 
-// Non-barcoded items list
-const nonBarcodedItems = ref([])
-const nonBarcodedInput = ref({ description: '', quantity: 1 })
-const isEndorsed = ref(false)
-const isEndorsing = ref(false)
+  // Non-barcoded items list
+  const nonBarcodedItems = ref([])
+  const nonBarcodedInput = ref({ type: 'joborder', labNo: '', description: '', quantity: 1 })
+  const isEndorsed = ref(false)
+  const isEndorsing = ref(false)
 
-// Remark modal
-const remarkModal = ref({
-  visible: false,
-  index: null,
-  type: null,
-  text: '',
-  required: false,
-  resolve: null  // ← for programmatic use
-})
+  // Remark modal
+  const remarkModal = ref({
+    visible: false,
+    index: null,
+    type: null,
+    text: '',
+    required: false,
+    resolve: null
+  })
+
   onMounted(async () => {
     await loadTatCycle()
     tatTick = setInterval(() => { nowTick.value = Date.now() }, 1000)
@@ -439,7 +510,6 @@ const remarkModal = ref({
     })
   }
 
-  // Manual open from table row (existing behavior)
   function openRemarkModal(index, type) {
     const item = type === 'barcoded' ? barcodedItems.value[index] : nonBarcodedItems.value[index]
     remarkModal.value = {
@@ -483,19 +553,19 @@ const remarkModal = ref({
     const { required, resolve } = remarkModal.value
     remarkModal.value.visible = false
     if (required && resolve) {
-      resolve(null)  // user cancelled required remarks
+      resolve(null)
     }
   }
 
+  // Alert modal
+  const alert = ref({ isVisible: false, type: 'error', title: '', message: '' })
 
-// Alert modal
-const alert = ref({ isVisible: false, type: 'error', title: '', message: '' })
+  function showAlert(type, title, message) {
+    alert.value = { isVisible: true, type, title, message }
+  }
 
-function showAlert(type, title, message) {
-  alert.value = { isVisible: true, type, title, message }
-}
+  // ── Barcoded ──────────────────────────────────────────────────────────────
 
-// ---- Barcoded ----
   async function addBarcodedItem() {
     const input = specimenNoInput.value.trim().toUpperCase()
     if (!input) return
@@ -513,17 +583,14 @@ function showAlert(type, title, message) {
       const response = await transactionApi.getOrder(input)
       const data = response.data.data
 
-      // --- Check conditions ---
       const daysDiff = Math.floor(
         (new Date() - new Date(data.transactionDate)) / (1000 * 60 * 60 * 24)
       )
       const isBeyond14 = daysDiff > 14
 
-      // Check previously endorsed via API
       const checkResponse = await transactionApi.checkSpecimen(input)
       const isPreviouslyEndorsed = checkResponse.data.previouslyEndorsed
 
-      // --- Build remarks template if needed ---
       let requiredRemarks = false
       let remarksTemplate = ''
 
@@ -532,51 +599,34 @@ function showAlert(type, title, message) {
           'Warning',
           `This specimen has been previously endorsed and its transaction date is beyond 14 days (${daysDiff} days ago). Do you want to continue?`
         )
-        if (!confirmed) {
-          specimenNoInput.value = ''
-          return
-        }
+        if (!confirmed) { specimenNoInput.value = ''; return }
         remarksTemplate = 'Reason for late endorsement: \nReason for re-endorsement: '
         requiredRemarks = true
-
       } else if (isBeyond14) {
         const confirmed = await showConfirmPrompt(
           'Transaction Beyond 14 Days',
           `This specimen's transaction date is beyond 14 days (${daysDiff} days ago). Do you want to continue?`
         )
-        if (!confirmed) {
-          specimenNoInput.value = ''
-          return
-        }
+        if (!confirmed) { specimenNoInput.value = ''; return }
         remarksTemplate = 'Reason for late endorsement: '
         requiredRemarks = true
-
       } else if (isPreviouslyEndorsed) {
         const confirmed = await showConfirmPrompt(
           'Previously Endorsed',
           `Specimen ${input} has already been endorsed in a previous batch. Do you want to continue?`
         )
-        if (!confirmed) {
-          specimenNoInput.value = ''
-          return
-        }
+        if (!confirmed) { specimenNoInput.value = ''; return }
         remarksTemplate = 'Reason for re-endorsement: '
         requiredRemarks = true
       }
 
-      // --- If remarks required, open modal and wait ---
       let finalRemarks = ''
       if (requiredRemarks) {
         finalRemarks = await openRequiredRemarkModal(remarksTemplate)
-        if (finalRemarks === null) {
-          // user cancelled the remarks modal
-          specimenNoInput.value = ''
-          return
-        }
+        if (finalRemarks === null) { specimenNoInput.value = ''; return }
       }
 
-      // --- Push to list ---
-      barcodedItems.value.push({
+      barcodedItems.value.unshift({
         specimenNo: data.specimenNo,
         labNo: data.labNo,
         trxDate: new Date(data.transactionDate).toISOString(),
@@ -586,7 +636,7 @@ function showAlert(type, title, message) {
         sampleTypeCode: data.sampleTypeCode,
         sampleType: data.sampleTypeName,
         remarks: finalRemarks,
-        isBeyond14Days: isBeyond14,        
+        isBeyond14Days: isBeyond14,
         isDuplicate: isPreviouslyEndorsed
       })
 
@@ -610,129 +660,184 @@ function showAlert(type, title, message) {
     }
   }
 
-function removeBarcodedItem(index) {
-  barcodedItems.value.splice(index, 1)
-}
-
-function clearBarcodedInput() {
-  specimenNoInput.value = ''
-}
-
-// ---- Non-Barcoded ----
-function addNonBarcodedItem() {
-  if (!nonBarcodedInput.value.description.trim()) {
-    showAlert('warning', 'Missing Description', 'Please enter an item description.')
-    return
-  }
-  if (!nonBarcodedInput.value.quantity || nonBarcodedInput.value.quantity < 1) {
-    showAlert('warning', 'Invalid Quantity', 'Please enter a valid quantity.')
-    return
+  function removeBarcodedItem(index) {
+    barcodedItems.value.splice(index, 1)
   }
 
-  nonBarcodedItems.value.push({
-    description: nonBarcodedInput.value.description.trim(),
-    quantity: nonBarcodedInput.value.quantity,
-    remarks: ''
-  })
-
-  clearNonBarcodedInput()
-}
-
-function removeNonBarcodedItem(index) {
-  nonBarcodedItems.value.splice(index, 1)
-}
-
-function clearNonBarcodedInput() {
-  nonBarcodedInput.value = { description: '', quantity: 1 }
-}
-
-
-// ---- Clear All ----
-function clearAll() {
-    barcodedItems.value = []
-    nonBarcodedItems.value = []
+  function clearBarcodedInput() {
     specimenNoInput.value = ''
-    nonBarcodedInput.value = { description: '', quantity: 1 }
-    batchNo.value = null
-    isEndorsed.value = false   // ← unlock for new endorsement
-}
+  }
 
-async function handleEndorse() {
-    if (barcodedItems.value.length === 0 && nonBarcodedItems.value.length === 0) {
-        showAlert('warning', 'No Items', 'Please add at least one item before endorsing.')
-        return
+  // ── Miscellaneous: Job Order ──────────────────────────────────────────────
+
+  async function addJobOrderItem() {
+    const input = nonBarcodedInput.value.labNo.trim().toUpperCase()
+    if (!input) return
+
+    // Duplicate guard
+    if (nonBarcodedItems.value.some(i => i.type === 'joborder' && i.labNo === input)) {
+      showAlert('warning', 'Duplicate Job Order', `Lab No. ${input} has already been added to this batch.`)
+      nonBarcodedInput.value.labNo = ''
+      return
     }
 
-    isEndorsing.value = true 
+    isJobOrderSearching.value = true
     NProgress.start()
 
     try {
-        const payload = {
-            sectionCode: authStore.sectionCode,
-            userID: authStore.userID,
-            procDestination: authStore.branchCode,
-            specimens: barcodedItems.value.map(i => ({
-                specimenNo: i.specimenNo,
-                labNo: i.labNo,
-                trxDate: i.trxDate,
-                pid: i.patientID,
-                patientName: i.patientName,
-                sampleTypeCode: i.sampleTypeCode,
-                sampleTypeName: i.sampleType,
-                remarks: i.remarks || null,
-                isBeyond14Days: i.isBeyond14Days ?? false, 
-                isDuplicate: i.isDuplicate ?? false 
-            })),
-            nonBarcoded: nonBarcodedItems.value.map(i => ({
-                description: i.description,
-                quantity: i.quantity,
-                remarks: i.remarks || null
-            }))
-        }
+      const data = await transactionApi.getJobOrder(input)
 
-        const response = await transactionApi.endorse(payload)
-        batchNo.value = response.data.batchNo
-        isEndorsed.value = true   // ← lock the form
+      nonBarcodedItems.value.unshift({
+        type: 'joborder',
+        labNo: data.data.labNo,
+        description: `Job Order - ${data.data.patientName}`,
+        quantity: 1,
+        remarks: ''
+      })
+
+      nonBarcodedInput.value.labNo = ''
+      await nextTick()
+
+
+    } catch (err) {
+      if (err.response?.status === 404) {
+        showAlert('error', 'Not Found', err.response?.data?.message ?? `Job Order ${input} not found.`)
+      } else if (err.response?.status === 401) {
+        showAlert('error', 'Session Expired', 'Your session has expired. Please log in again.')
+      } else {
+        showAlert('error', 'Connection Error', 'Unable to connect to the server.')
+      }
+      nonBarcodedInput.value.labNo = ''
+    } finally {
+      isJobOrderSearching.value = false
+      NProgress.done()
+      await nextTick()
+      jobOrderInput.value?.focus()
+    }
+  }
+
+  // ── Miscellaneous: Others ─────────────────────────────────────────────────
+
+  function addOthersItem() {
+    if (!nonBarcodedInput.value.description.trim()) {
+      showAlert('warning', 'Missing Description', 'Please enter an item description.')
+      return
+    }
+    if (!nonBarcodedInput.value.quantity || nonBarcodedInput.value.quantity < 1) {
+      showAlert('warning', 'Invalid Quantity', 'Please enter a valid quantity.')
+      return
+    }
+
+    nonBarcodedItems.value.unshift({
+      type: 'others',
+      labNo: null,
+      description: nonBarcodedInput.value.description.trim(),
+      quantity: nonBarcodedInput.value.quantity,
+      remarks: ''
+    })
+
+    clearNonBarcodedInput(true)
+  }
+
+  function removeNonBarcodedItem(index) {
+    nonBarcodedItems.value.splice(index, 1)
+  }
+
+  // keepType: true = only clear fields, preserve selected type
+  //           false = reset triggered by type change, clear fields only
+  function clearNonBarcodedInput(keepType = true) {
+    const currentType = keepType ? nonBarcodedInput.value.type : nonBarcodedInput.value.type
+    nonBarcodedInput.value = { type: currentType, labNo: '', description: '', quantity: 1 }
+  }
+
+  // ── Clear All ─────────────────────────────────────────────────────────────
+
+  function clearAll() {
+    barcodedItems.value = []
+    nonBarcodedItems.value = []
+    specimenNoInput.value = ''
+    nonBarcodedInput.value = { type: 'joborder', labNo: '', description: '', quantity: 1 }
+    batchNo.value = null
+    isEndorsed.value = false
+  }
+
+  // ── Endorse ───────────────────────────────────────────────────────────────
+
+  async function handleEndorse() {
+    if (barcodedItems.value.length === 0 && nonBarcodedItems.value.length === 0) {
+      showAlert('warning', 'No Items', 'Please add at least one item before endorsing.')
+      return
+    }
+
+    isEndorsing.value = true
+    NProgress.start()
+
+    try {
+      const payload = {
+        sectionCode: authStore.sectionCode,
+        userID: authStore.userID,
+        procDestination: authStore.branchCode,
+        specimens: barcodedItems.value.map(i => ({
+          specimenNo: i.specimenNo,
+          labNo: i.labNo,
+          trxDate: i.trxDate,
+          pid: i.patientID,
+          patientName: i.patientName,
+          sampleTypeCode: i.sampleTypeCode,
+          sampleTypeName: i.sampleType,
+          remarks: i.remarks || null,
+          isBeyond14Days: i.isBeyond14Days ?? false,
+          isDuplicate: i.isDuplicate ?? false
+        })),
+        nonBarcoded: nonBarcodedItems.value.map(i => ({
+          type: i.type,
+          labNo: i.labNo ?? null,
+          description: i.description,
+          quantity: i.quantity,
+          remarks: i.remarks || null
+        }))
+      }
+
+      const response = await transactionApi.endorse(payload)
+      batchNo.value = response.data.batchNo
+      isEndorsed.value = true
 
       showAlert('success', 'Endorsement Successful', `Batch ${batchNo.value} has been created.`)
       await loadTatCycle()
 
     } catch (err) {
-        if (err.response?.status === 401) {
-            showAlert('error', 'Session Expired', 'Your session has expired. Please log in again.')
-        } else if (err.response?.status === 400) {
-            showAlert('warning', 'Invalid Request', err.response.data.message)
-        } else {
-            showAlert('error', 'Endorsement Failed', 'Unable to complete endorsement. Please try again.')
-        }
+      if (err.response?.status === 401) {
+        showAlert('error', 'Session Expired', 'Your session has expired. Please log in again.')
+      } else if (err.response?.status === 400) {
+        showAlert('warning', 'Invalid Request', err.response.data.message)
+      } else {
+        showAlert('error', 'Endorsement Failed', 'Unable to complete endorsement. Please try again.')
+      }
     } finally {
-        NProgress.done()
-        isEndorsing.value = false
+      NProgress.done()
+      isEndorsing.value = false
     }
-}
+  }
 
-const confirmPrompt = ref({
-  visible: false,
-  title: '',
-  message: '',
-  resolve: null
-})
+  // ── Confirm Prompt ────────────────────────────────────────────────────────
 
-function showConfirmPrompt(title, message) {
-  return new Promise((resolve) => {
-    confirmPrompt.value = { visible: true, title, message, resolve }
-  })
-}
+  const confirmPrompt = ref({ visible: false, title: '', message: '', resolve: null })
 
-function handleConfirmYes() {
-  confirmPrompt.value.visible = false
-  confirmPrompt.value.resolve(true)
-}
+  function showConfirmPrompt(title, message) {
+    return new Promise((resolve) => {
+      confirmPrompt.value = { visible: true, title, message, resolve }
+    })
+  }
 
-function handleConfirmNo() {
-  confirmPrompt.value.visible = false
-  confirmPrompt.value.resolve(false)
-}
+  function handleConfirmYes() {
+    confirmPrompt.value.visible = false
+    confirmPrompt.value.resolve(true)
+  }
+
+  function handleConfirmNo() {
+    confirmPrompt.value.visible = false
+    confirmPrompt.value.resolve(false)
+  }
 
   // ── TAT Countdown ─────────────────────────────────────────────────────────
 
@@ -775,6 +880,7 @@ function handleConfirmNo() {
   })
 
   const tatExceeded = computed(() => tatSecondsRemaining.value !== null && tatSecondsRemaining.value <= 0)
+
   const tatColorStyle = computed(() => {
     const secs = tatSecondsRemaining.value
     if (secs === null) return ''

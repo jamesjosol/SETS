@@ -19,6 +19,8 @@ namespace Model.Main
         public DateTime? Received { get; set; }
         public string? ReceivedBy { get; set; }
         public string? Remarks { get; set; }
+        public string? PatientName { get; set; } 
+        public string? PID { get; set; }
         public List<ScanSpecimenTestItem> Tests { get; set; }
     }
 

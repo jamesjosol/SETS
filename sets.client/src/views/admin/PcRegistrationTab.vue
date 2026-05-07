@@ -71,11 +71,20 @@
         <template #actions="{ row }">
           <div class="flex items-center gap-1 justify-end">
             <button class="w-8 h-8 rounded-lg flex items-center justify-center transition-all"
+                    title="Edit PC"
                     style="color: var(--color-text-muted)"
                     @mouseenter="(e) => (e.currentTarget.style.backgroundColor = 'var(--color-surface-low)')"
                     @mouseleave="(e) => (e.currentTarget.style.backgroundColor = 'transparent')"
-                    @click.stop="openEditSections(row)">
+                    @click.stop="openEditPC(row)">
               <span class="material-symbols-outlined text-sm">edit</span>
+            </button>
+            <button class="w-8 h-8 rounded-lg flex items-center justify-center transition-all"
+                    title="Delete PC"
+                    style="color: #ba1a1a"
+                    @mouseenter="(e) => (e.currentTarget.style.backgroundColor = 'rgba(186,26,26,0.08)')"
+                    @mouseleave="(e) => (e.currentTarget.style.backgroundColor = 'transparent')"
+                    @click.stop="confirmDeletePC(row)">
+              <span class="material-symbols-outlined text-sm">delete</span>
             </button>
           </div>
         </template>
@@ -83,7 +92,7 @@
     </div>
   </div>
 
-  <!-- Modal -->
+  <!-- Add / Edit Modal -->
   <Teleport to="body">
     <Transition name="modal">
       <div v-if="pcModal.visible"
@@ -101,7 +110,7 @@
                 <span class="material-symbols-outlined text-sm" style="color: var(--color-primary)">computer</span>
               </div>
               <h3 class="text-sm font-extrabold tracking-tight" style="color: var(--color-text)">
-                {{ pcModal.mode === "add" ? "Register New PC" : "Edit Section Assignments" }}
+                {{ pcModal.mode === "add" ? "Register New PC" : "Edit PC" }}
               </h3>
             </div>
             <button class="w-8 h-8 rounded-lg flex items-center justify-center transition-all"
@@ -115,17 +124,23 @@
 
           <!-- Modal Body -->
           <div class="px-6 py-5 space-y-4">
-            <div v-if="pcModal.mode === 'add'">
+            <!-- IP Address (add only — read-only on edit) -->
+            <div>
               <label class="block text-[10px] font-bold uppercase tracking-widest mb-1.5"
                      style="color: var(--color-text-muted)">IP Address *</label>
               <input v-model="pcModal.form.ipAddress"
                      placeholder="e.g. 192.168.1.100"
+                     :readonly="pcModal.mode === 'edit'"
                      class="w-full px-4 py-2.5 rounded-xl text-sm font-mono font-medium outline-none transition-all"
-                     style="background-color: var(--color-surface-low); color: var(--color-text); border: 1.5px solid var(--color-border);"
-                     @focus="(e) => (e.target.style.borderColor = 'var(--color-primary)')"
+                     :style="pcModal.mode === 'edit'
+                       ? 'background-color: var(--color-surface-low); color: var(--color-text-muted); border: 1.5px solid var(--color-border); cursor: not-allowed;'
+                       : 'background-color: var(--color-surface-low); color: var(--color-text); border: 1.5px solid var(--color-border);'"
+                     @focus="(e) => { if (pcModal.mode !== 'edit') e.target.style.borderColor = 'var(--color-primary)' }"
                      @blur="(e) => (e.target.style.borderColor = 'var(--color-border)')" />
             </div>
-            <div v-if="pcModal.mode === 'add'">
+
+            <!-- Description (both add and edit) -->
+            <div>
               <label class="block text-[10px] font-bold uppercase tracking-widest mb-1.5"
                      style="color: var(--color-text-muted)">Description</label>
               <input v-model="pcModal.form.description"
@@ -136,6 +151,7 @@
                      @blur="(e) => (e.target.style.borderColor = 'var(--color-border)')" />
             </div>
 
+            <!-- Section Assignments (both add and edit) -->
             <div>
               <label class="block text-[10px] font-bold uppercase tracking-widest mb-2"
                      style="color: var(--color-text-muted)">Allowed Sections</label>
@@ -182,149 +198,186 @@
       </div>
     </Transition>
   </Teleport>
+
+  <!-- Delete Confirm Modal -->
+  <ConfirmModal :isVisible="deleteConfirm.visible"
+                type="error"
+                title="Delete PC"
+                :message="`Delete ${deleteConfirm.ipAddress}? This will remove the PC and all its section assignments permanently.`"
+                confirm-label="Delete"
+                @close="deleteConfirm.visible = false"
+                @confirm="executeDeletePC" />
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
-import { pcApi } from "@/api/pcApi";
-import { settingsApi } from "@/api/settingsApi";
-import AppTable from "@/components/common/AppTable.vue";
+  import { ref, computed, onMounted } from "vue";
+  import { pcApi } from "@/api/pcApi";
+  import { settingsApi } from "@/api/settingsApi";
+  import AppTable from "@/components/common/AppTable.vue";
+  import ConfirmModal from "@/components/common/ConfirmModal.vue";
 
-const emit = defineEmits(["toast"]);
+  const emit = defineEmits(["toast"]);
 
-// ── State ──────────────────────────────────────────────────────────────────
-const pcList = ref([]);
-const pcLoading = ref(false);
-const availableSections = ref([]);
-const pcSearch = ref("");
+  // ── State ──────────────────────────────────────────────────────────────────
+  const pcList = ref([]);
+  const pcLoading = ref(false);
+  const availableSections = ref([]);
+  const pcSearch = ref("");
 
-const pcColumns = [
-  { key: "ipAddress",   label: "IP Address" },
-  { key: "description", label: "Description" },
-  { key: "sections",    label: "Allowed Sections" },
-  { key: "active",      label: "Status" },
-];
+  const pcColumns = [
+    { key: "ipAddress", label: "IP Address" },
+    { key: "description", label: "Description" },
+    { key: "sections", label: "Allowed Sections" },
+    { key: "active", label: "Status" },
+  ];
 
-const pcModal = ref({
-  visible: false,
-  mode: "add",
-  pcId: null,
-  form: { ipAddress: "", description: "", sectionCodes: [] },
-  saving: false,
-  error: "",
-});
-
-const filteredPCs = computed(() => {
-  const q = pcSearch.value.toLowerCase();
-  if (!q) return pcList.value;
-  return pcList.value.filter(
-    (pc) =>
-      pc.ipAddress.toLowerCase().includes(q) ||
-      (pc.description ?? "").toLowerCase().includes(q) ||
-      pc.sections.some((s) => s.sectionName.toLowerCase().includes(q)),
-  );
-});
-
-// ── Data loading ───────────────────────────────────────────────────────────
-async function loadPCs() {
-  pcLoading.value = true;
-  try {
-    const res = await pcApi.getAll();
-    pcList.value = res.data;
-  } catch {
-    pcList.value = [];
-  } finally {
-    pcLoading.value = false;
-  }
-}
-
-async function loadSections() {
-  try {
-    const res = await settingsApi.getSections();
-    availableSections.value = res.data.filter((s) => s.active);
-  } catch {
-    availableSections.value = [];
-  }
-}
-
-onMounted(() => {
-  loadPCs();
-  loadSections();
-});
-
-// ── Modal actions ──────────────────────────────────────────────────────────
-function openAddPC() {
-  pcModal.value = {
-    visible: true,
-    mode: "add",
+  const pcModal = ref({
+    visible: false,
+    mode: "add",       // "add" | "edit"
     pcId: null,
     form: { ipAddress: "", description: "", sectionCodes: [] },
     saving: false,
     error: "",
-  };
-}
+  });
 
-function openEditSections(pc) {
-  pcModal.value = {
-    visible: true,
-    mode: "editSections",
-    pcId: pc.id,
-    form: {
-      ipAddress: pc.ipAddress,
-      description: pc.description,
-      sectionCodes: pc.sections.map((s) => s.sectionCode),
-    },
-    saving: false,
-    error: "",
-  };
-}
+  const deleteConfirm = ref({ visible: false, pcId: null, ipAddress: "" });
 
-function closePCModal() {
-  pcModal.value.visible = false;
-}
+  const filteredPCs = computed(() => {
+    const q = pcSearch.value.toLowerCase();
+    if (!q) return pcList.value;
+    return pcList.value.filter(
+      (pc) =>
+        pc.ipAddress.toLowerCase().includes(q) ||
+        (pc.description ?? "").toLowerCase().includes(q) ||
+        pc.sections.some((s) => s.sectionName.toLowerCase().includes(q)),
+    );
+  });
 
-function toggleSectionInModal(code) {
-  const idx = pcModal.value.form.sectionCodes.indexOf(code);
-  if (idx === -1) pcModal.value.form.sectionCodes.push(code);
-  else pcModal.value.form.sectionCodes.splice(idx, 1);
-}
-
-async function savePCModal() {
-  pcModal.value.error = "";
-  pcModal.value.saving = true;
-  try {
-    if (pcModal.value.mode === "add") {
-      if (!pcModal.value.form.ipAddress.trim()) {
-        pcModal.value.error = "IP Address is required.";
-        return;
-      }
-      await pcApi.add({
-        ipAddress: pcModal.value.form.ipAddress.trim(),
-        description: pcModal.value.form.description.trim(),
-        sectionCodes: pcModal.value.form.sectionCodes,
-      });
-      emit("toast", "PC registered successfully.");
-    } else {
-      await pcApi.updateSections(pcModal.value.pcId, {
-        sectionCodes: pcModal.value.form.sectionCodes,
-      });
-      emit("toast", "Section assignments updated.");
+  // ── Data loading ───────────────────────────────────────────────────────────
+  async function loadPCs() {
+    pcLoading.value = true;
+    try {
+      const res = await pcApi.getAll();
+      pcList.value = res.data;
+    } catch {
+      pcList.value = [];
+    } finally {
+      pcLoading.value = false;
     }
-    closePCModal();
-    await loadPCs();
-  } catch (err) {
-    pcModal.value.error = err.response?.data?.message || "An error occurred.";
-  } finally {
-    pcModal.value.saving = false;
   }
-}
 
-async function togglePC(pc) {
-  try {
-    await pcApi.toggle(pc.id);
-    pc.active = !pc.active;
-  } catch (err) {
-    emit("toast", err.response?.data?.message || "Failed to update status.");
+  async function loadSections() {
+    try {
+      const res = await settingsApi.getSections();
+      availableSections.value = res.data.filter((s) => s.active);
+    } catch {
+      availableSections.value = [];
+    }
   }
-}
+
+  onMounted(() => {
+    loadPCs();
+    loadSections();
+  });
+
+  // ── Modal: Add ─────────────────────────────────────────────────────────────
+  function openAddPC() {
+    pcModal.value = {
+      visible: true,
+      mode: "add",
+      pcId: null,
+      form: { ipAddress: "", description: "", sectionCodes: [] },
+      saving: false,
+      error: "",
+    };
+  }
+
+  // ── Modal: Edit (description + sections combined) ──────────────────────────
+  function openEditPC(pc) {
+    pcModal.value = {
+      visible: true,
+      mode: "edit",
+      pcId: pc.id,
+      form: {
+        ipAddress: pc.ipAddress,
+        description: pc.description ?? "",
+        sectionCodes: pc.sections.map((s) => s.sectionCode),
+      },
+      saving: false,
+      error: "",
+    };
+  }
+
+  function closePCModal() {
+    pcModal.value.visible = false;
+  }
+
+  function toggleSectionInModal(code) {
+    const idx = pcModal.value.form.sectionCodes.indexOf(code);
+    if (idx === -1) pcModal.value.form.sectionCodes.push(code);
+    else pcModal.value.form.sectionCodes.splice(idx, 1);
+  }
+
+  async function savePCModal() {
+    pcModal.value.error = "";
+    pcModal.value.saving = true;
+    try {
+      if (pcModal.value.mode === "add") {
+        if (!pcModal.value.form.ipAddress.trim()) {
+          pcModal.value.error = "IP Address is required.";
+          return;
+        }
+        await pcApi.add({
+          ipAddress: pcModal.value.form.ipAddress.trim(),
+          description: pcModal.value.form.description.trim(),
+          sectionCodes: pcModal.value.form.sectionCodes,
+        });
+        emit("toast", "PC registered successfully.");
+      } else {
+        // Update description + active in one call, then update sections
+        await pcApi.update(pcModal.value.pcId, {
+          ipAddress: pcModal.value.form.ipAddress,
+          description: pcModal.value.form.description.trim(),
+          active: pcList.value.find((p) => p.id === pcModal.value.pcId)?.active ?? true,
+        });
+        await pcApi.updateSections(pcModal.value.pcId, {
+          sectionCodes: pcModal.value.form.sectionCodes,
+        });
+        emit("toast", "PC updated successfully.");
+      }
+      closePCModal();
+      await loadPCs();
+    } catch (err) {
+      pcModal.value.error = err.response?.data?.message || "An error occurred.";
+    } finally {
+      pcModal.value.saving = false;
+    }
+  }
+
+  // ── Toggle active ──────────────────────────────────────────────────────────
+  async function togglePC(pc) {
+    try {
+      await pcApi.toggle(pc.id);
+      pc.active = !pc.active;
+    } catch (err) {
+      emit("toast", err.response?.data?.message || "Failed to update status.");
+    }
+  }
+
+  // ── Delete ─────────────────────────────────────────────────────────────────
+  function confirmDeletePC(pc) {
+    deleteConfirm.value = { visible: true, pcId: pc.id, ipAddress: pc.ipAddress };
+  }
+
+  async function executeDeletePC() {
+    try {
+      await pcApi.delete(deleteConfirm.value.pcId);
+      pcList.value = pcList.value.filter((p) => p.id !== deleteConfirm.value.pcId);
+      emit("toast", "PC deleted successfully.");
+    } catch (err) {
+      emit("toast", err.response?.data?.message || "Failed to delete PC.");
+    } finally {
+      deleteConfirm.value.visible = false;
+    }
+  }
 </script>

@@ -100,9 +100,9 @@ function getBadgeStyle(state) {
 function applyState(index, online, latencyMs = 0) {
   const item = systemStatus.value[index]
   if (online) {
-    if      (latencyMs >= 200) { item.state = 'Severe Delay'; item.iconColor = '#ea580c' }
-    else if (latencyMs >= 100) { item.state = 'Delay';        item.iconColor = '#d97706' }
-    else if (latencyMs >= 50)  { item.state = 'Slight Delay'; item.iconColor = '#ca8a04' }
+    if      (latencyMs >= 300) { item.state = 'Severe Delay'; item.iconColor = '#ea580c' }
+    else if (latencyMs >= 200) { item.state = 'Delay';        item.iconColor = '#d97706' }
+    else if (latencyMs >= 100)  { item.state = 'Slight Delay'; item.iconColor = '#ca8a04' }
     else                       { item.state = 'Online';       item.iconColor = '#059669' }
     item.note = latencyMs > 0 ? `${latencyMs}ms` : null
   } else {

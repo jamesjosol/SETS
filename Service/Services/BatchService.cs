@@ -82,6 +82,8 @@ namespace Service.Services
                         context.Batch_NonBarcoded.Add(new Batch_NonBarcoded
                         {
                             BatchNo = batchNo,
+                            Type = nb.Type ?? "others",   
+                            LabNo = nb.LabNo,        
                             Description = nb.Description,
                             Quantity = nb.Quantity,
                             Endorsed = now,

@@ -349,6 +349,8 @@ namespace Service.Services
                     BatchNo = x.NonBarcoded.BatchNo,
                     Location = x.Header.Location,
                     LocationName = sections.TryGetValue(x.Header.Location, out var name) ? name : x.Header.Location,
+                    Type = x.NonBarcoded.Type,      // ← new
+                    LabNo = x.NonBarcoded.LabNo,     // ← new
                     Description = x.NonBarcoded.Description,
                     Quantity = x.NonBarcoded.Quantity,
                     Endorsed = x.NonBarcoded.Endorsed,

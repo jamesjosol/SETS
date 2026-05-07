@@ -30,6 +30,13 @@ const routes = [
     component: () => import('../views/endorser/Endorsements.vue'),
     meta: { requiresAuth: true, category: '1' }
   },
+  {
+    path: '/settings',
+    name: 'EndorserSettings',
+    component: () => import('../views/endorser/EndorserSettings.vue'),
+    meta: { requiresAuth: true, category: '1', requiresTL: true }
+  },
+
   // ── Receiver (category 2) ──────────────────────────────────────────
   {
     path: '/receiver/dashboard',
@@ -61,7 +68,14 @@ const routes = [
     component: () => import('../views/receiver/SpecimenIssuesLog.vue'),
     meta: { requiresAuth: true, category: '2' }
   },
-  // ── Runner ───────────────────────────────────
+  {
+    path: '/receiver/settings',
+    name: 'ReceiverSettings',
+    component: () => import('../views/receiver/ReceiverSettings.vue'),
+    meta: { requiresAuth: true, category: '2', requiresTL: true }
+  },
+
+  // ── Runner (category 3) ───────────────────────────────────────────
   {
     path: '/runner/dashboard',
     name: 'RunnerDashboard',
@@ -96,6 +110,13 @@ const routes = [
     component: () => import('../views/runner/CompletedSpecimens.vue'),
     meta: { requiresAuth: true, category: '3' }
   },
+  {
+    path: '/runner/settings',
+    name: 'RunnerSettings',
+    component: () => import('../views/runner/RunnerSettings.vue'),
+    meta: { requiresAuth: true, category: '3', requiresTL: true }
+  },
+
   // ── Shared ────────────────────────────────────────────────────────────
   {
     path: '/audit-trail',
@@ -115,14 +136,16 @@ const routes = [
     component: () => import('../views/shared/AuditTrail.vue'),
     meta: { requiresAuth: true, category: '3' }
   },
-  // - admin
+
+  // ── Admin ─────────────────────────────────────────────────────────────
   {
     path: '/admin/settings',
     name: 'AdminSettings',
     component: () => import('../views/admin/AdminSettings.vue'),
     meta: { requiresAuth: true, requiresAdmin: true }
   },
-  // ── Catch-all: redirect to login ───────────────────────────────────
+
+  // ── Catch-all ─────────────────────────────────────────────────────────
   {
     path: '/:pathMatch(.*)*',
     redirect: '/'
@@ -139,24 +162,29 @@ router.beforeEach((to, from, next) => {
 
   const authStore = useAuthStore()
 
-  // 1. Guest-only routes — redirect to home if already logged in
+  // 1. Guest-only routes
   if (to.meta.requiresGuest && authStore.isAuthenticated) {
     return next(getDefaultRoute(authStore))
   }
 
-  // 2. Protected routes — redirect to login if not authenticated
+  // 2. Protected routes
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
     return next('/')
   }
 
+  // 3. Admin-only routes
   if (to.meta.requiresAdmin && !authStore.isAdmin) {
     return next(getDefaultRoute(authStore))
   }
 
-  // 3. Category guard — admin bypasses, others must match
+  // 4. TL-only routes — roleID must be 2; admin bypasses
+  if (to.meta.requiresTL && !authStore.isAdmin && authStore.roleID !== 2) {
+    return next(getDefaultRoute(authStore))
+  }
+
+  // 5. Category guard — admin bypasses, others must match
   if (to.meta.requiresAuth && to.meta.category && authStore.isAuthenticated) {
     if (!authStore.isAdmin && authStore.sectionCategory !== to.meta.category) {
-      // Redirect to their own default route instead of blocking
       return next(getDefaultRoute(authStore))
     }
   }
@@ -168,7 +196,6 @@ router.afterEach(() => {
   NProgress.done()
 })
 
-// ── Helper: resolve default route per category ─────────────────────────────
 export function getDefaultRoute(authStore) {
   if (authStore.isAdmin) return '/dashboard'
   switch (authStore.sectionCategory) {

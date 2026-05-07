@@ -442,6 +442,9 @@
                           style="color: var(--color-text-muted);">Date</th>
                       <th class="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-widest"
                           style="color: var(--color-text-muted);">Logged By</th>
+                      <th v-if="isTLOrAdmin"
+                          class="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-widest"
+                          style="color: var(--color-text-muted);"></th>
                     </tr>
                   </thead>
                   <tbody>
@@ -470,6 +473,14 @@
                       <td class="px-4 py-3 text-xs"
                           style="color: var(--color-text-muted);">
                         {{ entry.loggedBy }}
+                      </td>
+                      <td v-if="isTLOrAdmin" class="px-4 py-3">
+                        <button class="w-7 h-7 rounded-lg flex items-center justify-center transition-all active:scale-95"
+                                style="background-color: var(--color-error-soft); color: var(--color-error);"
+                                title="Delete entry"
+                                @click="promptDeleteEntry(entry)">
+                          <span class="material-symbols-outlined text-sm">delete</span>
+                        </button>
                       </td>
                     </tr>
                   </tbody>
@@ -843,6 +854,23 @@ async function submitLabEntry() {
   } finally {
     entrySaving.value = false
   }
+}
+
+function promptDeleteEntry(entry) {
+  openConfirm(
+    'Delete Entry',
+    `Remove specimen "${entry.specimenNo}" from this log? This cannot be undone.`,
+    async () => {
+      try {
+        await specimenIssueApi.deleteLabEntry(entry.id)
+        await loadLabEntries(selectedSubCategory.value.id)
+        await loadSubCategories(selectedFolder.value.id)
+        selectedSubCategory.value = subCategories.value.find(s => s.id === selectedSubCategory.value.id)
+      } catch (e) {
+        showAlert('error', 'Error', e.response?.data?.message ?? 'Failed to delete entry.')
+      }
+    }
+  )
 }
 
 // ── Comments ───────────────────────────────────────────────────────────────

@@ -12,18 +12,24 @@ namespace SETS.Server.Controllers
         private string? Branch => HttpContext.Session.GetString("BranchCode");
         private string? CurrentUserID => HttpContext.Session.GetString("UserID");
         private bool IsAdmin => HttpContext.Session.GetString("IsAdmin") == "True";
+        private int RoleID => HttpContext.Session.GetInt32("RoleID") ?? 0;
 
-        private IActionResult RequireAdmin()
-            => Unauthorized(new { message = "Administrator access required." });
+        // Running Days: Admin OR Runner TL (roleID 2, category 3)
+        // Category check is enforced by the router on the frontend;
+        // here we just open the guard to roleID 2 so non-runner TLs
+        // who somehow hit this endpoint are still blocked by the frontend guard.
+        private bool IsAdminOrTL => IsAdmin || RoleID == 2;
+
+        private IActionResult RequireAdminOrTL()
+            => Unauthorized(new { message = "Administrator or Team Lead access required." });
 
         // ── GET api/test-running-day ──────────────────────────────────────────
-        // All configured running day setups.
         [HttpGet]
         public IActionResult GetAll()
         {
             try
             {
-                if (!IsAdmin) return RequireAdmin();
+                if (!IsAdminOrTL) return RequireAdminOrTL();
 
                 var branch = Branch;
                 if (string.IsNullOrEmpty(branch))
@@ -47,20 +53,16 @@ namespace SETS.Server.Controllers
 
                 return Ok(items);
             }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = ex.Message });
-            }
+            catch (Exception ex) { return StatusCode(500, new { message = ex.Message }); }
         }
 
         // ── GET api/test-running-day/search?param=FBS ─────────────────────────
-        // Searches HCLAB for tests matching the param (3+ chars).
         [HttpGet("search")]
         public async Task<IActionResult> SearchHCLAB([FromQuery] string param)
         {
             try
             {
-                if (!IsAdmin) return RequireAdmin();
+                if (!IsAdminOrTL) return RequireAdminOrTL();
 
                 var branch = Branch;
                 if (string.IsNullOrEmpty(branch))
@@ -72,7 +74,6 @@ namespace SETS.Server.Controllers
                 using var master = new MasterService(branch);
                 var results = await master.TestRunningDay.GetHCLABTests(param.Trim().ToUpper());
 
-                // Mark which ones already have a running day configured
                 var configured = master.TestRunningDay.GetAll()
                     .Select(t => t.TestCode)
                     .ToHashSet();
@@ -87,20 +88,16 @@ namespace SETS.Server.Controllers
 
                 return Ok(mapped);
             }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = ex.Message });
-            }
+            catch (Exception ex) { return StatusCode(500, new { message = ex.Message }); }
         }
 
         // ── POST api/test-running-day ─────────────────────────────────────────
-        // Create a new running day setup.
         [HttpPost]
         public IActionResult Add([FromBody] AddTestRunningDayRequest request)
         {
             try
             {
-                if (!IsAdmin) return RequireAdmin();
+                if (!IsAdminOrTL) return RequireAdminOrTL();
 
                 var branch = Branch;
                 if (string.IsNullOrEmpty(branch))
@@ -123,7 +120,6 @@ namespace SETS.Server.Controllers
 
                 using var master = new MasterService(branch);
 
-                // Duplicate check
                 if (master.TestRunningDay.GetByTestCode(request.TestCode.Trim().ToUpper()) != null)
                     return BadRequest(new { message = $"Running day setup for '{request.TestCode}' already exists." });
 
@@ -138,20 +134,16 @@ namespace SETS.Server.Controllers
 
                 return Ok(new { success = true, message = "Running day setup saved." });
             }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = ex.Message });
-            }
+            catch (Exception ex) { return StatusCode(500, new { message = ex.Message }); }
         }
 
         // ── PUT api/test-running-day/{id} ─────────────────────────────────────
-        // Update running days for an existing setup.
         [HttpPut("{id}")]
         public IActionResult Update(int id, [FromBody] UpdateTestRunningDayRequest request)
         {
             try
             {
-                if (!IsAdmin) return RequireAdmin();
+                if (!IsAdminOrTL) return RequireAdminOrTL();
 
                 var branch = Branch;
                 if (string.IsNullOrEmpty(branch))
@@ -177,13 +169,9 @@ namespace SETS.Server.Controllers
                 item.Updated = DateTime.Now;
 
                 master.TestRunningDay.Update(item);
-
                 return Ok(new { success = true, message = "Running days updated." });
             }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = ex.Message });
-            }
+            catch (Exception ex) { return StatusCode(500, new { message = ex.Message }); }
         }
 
         // ── DELETE api/test-running-day/{id} ──────────────────────────────────
@@ -192,7 +180,7 @@ namespace SETS.Server.Controllers
         {
             try
             {
-                if (!IsAdmin) return RequireAdmin();
+                if (!IsAdminOrTL) return RequireAdminOrTL();
 
                 var branch = Branch;
                 if (string.IsNullOrEmpty(branch))
@@ -205,13 +193,9 @@ namespace SETS.Server.Controllers
                     return NotFound(new { message = "Setup not found." });
 
                 master.TestRunningDay.Delete(item.Id);
-
                 return Ok(new { success = true, message = "Running day setup removed." });
             }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = ex.Message });
-            }
+            catch (Exception ex) { return StatusCode(500, new { message = ex.Message }); }
         }
     }
 }

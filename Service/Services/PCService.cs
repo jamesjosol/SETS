@@ -84,6 +84,22 @@ namespace Service.Services
             catch { throw; }
         }
 
+        // ── Delete PC master record ───────────────────────────────────────────
+        public void Delete(int id)
+        {
+            try
+            {
+                using var context = _factory.CreateContext(_branch);
+                using var unit = new UnitOfWork(context);
+                // Remove all section assignments first to avoid FK violations
+                var sections = unit.PCSections.GetByPCId(id);
+                foreach (var s in sections)
+                    unit.PCSections.Delete(s);
+                unit.PCs.Delete(id);
+            }
+            catch { throw; }
+        }
+
         public void AddSection(PC_Section pcSection)
         {
             try

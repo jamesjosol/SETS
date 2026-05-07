@@ -27,6 +27,7 @@ namespace Service.Interfaces
         // Lab Entries
         List<LabEntryItem> GetLabEntries(int subCategoryId);
         Task AddLabEntry(AddLabEntryRequest request);
+        void DeleteLabEntry(int id);
 
         // Comments
         List<CommentItem> GetComments(int incidentTypeId);

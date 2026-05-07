@@ -104,6 +104,7 @@
             <tr style="border-bottom: 1.5px solid var(--color-border); background-color: var(--color-surface-low);">
               <th class="w-8 px-4 py-3"></th>
               <th class="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Specimen No.</th>
+              <th class="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Patient</th>
               <th class="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Test Group</th>
               <th class="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Sample Type</th>
               <th class="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Received</th>
@@ -124,7 +125,6 @@
                   @mouseleave="e => { if (expandedSpecimen !== group.specimenNo) e.currentTarget.style.backgroundColor = '' }"
                   @click="toggleSpecimen(group.specimenNo)"
                   style="border-top: 1px solid var(--color-border);">
-
                 <td class="px-4 py-3">
                   <span class="material-symbols-outlined text-sm transition-transform duration-200"
                         :style="{
@@ -143,6 +143,11 @@
                      style="color: var(--color-success, #16a34a);">
                     ✓ Received now
                   </p>
+                </td>
+
+                <td class="px-4 py-3">
+                  <p class="text-xs font-semibold" style="color: var(--color-text);">{{ group.patientName ?? '—' }}</p>
+                  <p v-if="group.pid" class="text-[10px] font-mono mt-0.5" style="color: var(--color-text-muted);">{{ group.pid }}</p>
                 </td>
 
                 <td class="px-4 py-3">
@@ -195,7 +200,7 @@
               <!-- Expanded child test rows -->
               <Transition name="expand">
                 <tr v-if="expandedSpecimen === group.specimenNo" :key="`exp-${group.specimenNo}`">
-                  <td colspan="8" class="px-0 py-0">
+                  <td colspan="9" class="px-0 py-0">
                     <div class="mx-4 mb-3 rounded-xl overflow-hidden"
                          style="border: 1.5px solid var(--color-border);">
                       <table class="w-full text-xs">
@@ -411,7 +416,7 @@
       const {
         firstScan, tests, specimenNo,
         testGroupCode, sampleTypeCode, sampleTypeName,
-        received, receivedBy
+        received, receivedBy, patientName, pid 
       } = result.data
 
       if (!tests || !tests.length) {
@@ -430,6 +435,8 @@
         receivedBy,
         remarks: result.data.remarks ?? '',
         isOnSite: scanMode.value === 'onsite',
+        patientName: patientName ?? null,
+        pid: pid ?? null,
         tests: tests.map(t => {
           const today = new Date().toISOString().split('T')[0]
           const runningDateStr = t.runningDate ?? null

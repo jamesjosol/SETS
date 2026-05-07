@@ -16,7 +16,6 @@ namespace SETS.Server.Controllers
                 if (string.IsNullOrEmpty(branch))
                     return Unauthorized(new { message = "Session expired." });
 
-                // extract labNo (first 10 chars) and sampleTypeCode (remainder)
                 if (specimenNo.Length < 10)
                     return BadRequest(new { message = "Invalid specimen number." });
 
@@ -65,6 +64,41 @@ namespace SETS.Server.Controllers
             }
         }
 
+        [HttpGet("joborder/{labNo}")]
+        public async Task<IActionResult> GetJobOrder(string labNo)
+        {
+            try
+            {
+                var branch = HttpContext.Session.GetString("BranchCode");
+                if (string.IsNullOrEmpty(branch))
+                    return Unauthorized(new { message = "Session expired." });
 
+                labNo = labNo.Trim().ToUpper();
+                if (string.IsNullOrEmpty(labNo))
+                    return BadRequest(new { message = "Lab number is required." });
+
+                using var master = new MasterService(branch);
+
+                var result = await master.Transaction.GetOrdHdr(labNo);
+                if (result == null)
+                    return NotFound(new { message = $"Lab number {labNo} not found." });
+
+                return Ok(new
+                {
+                    success = true,
+                    data = new
+                    {
+                        labNo,
+                        patientID = result.PID,
+                        patientName = result.PATIENTNAME,
+                        transactionDate = result.TRXDATE
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
     }
 }

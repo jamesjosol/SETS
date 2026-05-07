@@ -47,6 +47,13 @@ namespace SETS.Server.Controllers
                         Message = "User is not registered."
                     });
 
+                if (!user.Active)
+                    return Unauthorized(new LoginResponse
+                    {
+                        Success = false,
+                        Message = "Your account has been deactivated. Please contact your TL or OIC."
+                    });
+
                 // Step 3: Check if user has access to the selected section
                 var userSection = master.UserSection.GetByUserAndSection(
                     request.UserID,

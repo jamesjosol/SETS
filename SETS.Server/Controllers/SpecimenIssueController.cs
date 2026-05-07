@@ -245,6 +245,27 @@ namespace SETS.Server.Controllers
             }
         }
 
+        // DELETE api/specimenissue/entries/{id}
+        [HttpDelete("entries/{id}")]
+        public IActionResult DeleteLabEntry(int id)
+        {
+            try
+            {
+                if (!IsTLOrAdmin) return RequireTL();
+
+                var branch = Branch;
+                if (string.IsNullOrEmpty(branch)) return SessionExpired();
+
+                using var master = new MasterService(branch);
+                master.SpecimenIssue.DeleteLabEntry(id);
+                return Ok(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(400, new { message = ex.Message });
+            }
+        }
+
         // ── GET api/specimenissue/incident-types/{id}/comments ────────────────
         [HttpGet("incident-types/{id}/comments")]
         public IActionResult GetComments(int id)

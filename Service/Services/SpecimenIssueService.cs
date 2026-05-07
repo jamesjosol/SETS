@@ -292,6 +292,21 @@ namespace Service.Services
             catch { throw; }
         }
 
+        public void DeleteLabEntry(int id)
+        {
+            try
+            {
+                using var context = _factory.CreateContext(_branch);
+                using var unit = new UnitOfWork(context);
+
+                var record = unit.IssueLabEntries.Get(id)
+                    ?? throw new Exception("Lab entry not found.");
+
+                unit.IssueLabEntries.Delete(id);
+            }
+            catch { throw; }
+        }
+
         // ── Comments ───────────────────────────────────────────────────────────
 
         public List<CommentItem> GetComments(int incidentTypeId)

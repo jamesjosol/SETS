@@ -66,11 +66,20 @@
         <template #actions="{ row }">
           <div class="flex items-center gap-1 justify-end">
             <button class="w-8 h-8 rounded-lg flex items-center justify-center transition-all"
+                    title="Edit user"
                     style="color: var(--color-text-muted)"
                     @mouseenter="(e) => (e.currentTarget.style.backgroundColor = 'var(--color-surface-low)')"
                     @mouseleave="(e) => (e.currentTarget.style.backgroundColor = 'transparent')"
                     @click.stop="openEditUser(row)">
               <span class="material-symbols-outlined text-sm">edit</span>
+            </button>
+            <button class="w-8 h-8 rounded-lg flex items-center justify-center transition-all"
+                    title="Delete user"
+                    style="color: #ba1a1a"
+                    @mouseenter="(e) => (e.currentTarget.style.backgroundColor = 'rgba(186,26,26,0.08)')"
+                    @mouseleave="(e) => (e.currentTarget.style.backgroundColor = 'transparent')"
+                    @click.stop="confirmDeleteUser(row)">
+              <span class="material-symbols-outlined text-sm">delete</span>
             </button>
           </div>
         </template>
@@ -292,271 +301,300 @@
       </div>
     </Transition>
   </Teleport>
+
+  <!-- Delete User Confirm Modal -->
+  <ConfirmModal :isVisible="deleteConfirm.visible"
+                type="error"
+                title="Delete User"
+                :message="`Delete ${deleteConfirm.userName} (${deleteConfirm.userID})? This will deactivate the account and revoke all section access.`"
+                confirm-label="Delete"
+                @close="deleteConfirm.visible = false"
+                @confirm="executeDeleteUser" />
 </template>
 
 <script setup>
-import { ref, computed, onMounted, nextTick } from "vue";
-import { userApi } from "@/api/userApi";
-import { settingsApi } from "@/api/settingsApi";
-import AppTable from "@/components/common/AppTable.vue";
+  import { ref, computed, onMounted, nextTick } from "vue";
+  import { userApi } from "@/api/userApi";
+  import { settingsApi } from "@/api/settingsApi";
+  import AppTable from "@/components/common/AppTable.vue";
+  import ConfirmModal from "@/components/common/ConfirmModal.vue";
 
-const emit = defineEmits(["toast"]);
+  const emit = defineEmits(["toast"]);
 
-// ── Constants ──────────────────────────────────────────────────────────────
-const roles = [
-  { id: 1, label: "Regular" },
-  { id: 2, label: "Team Lead" },
-];
+  // ── Constants ──────────────────────────────────────────────────────────────
+  const roles = [
+    { id: 1, label: "Regular" },
+    { id: 2, label: "Team Lead" },
+  ];
 
-const userColumns = [
-  { key: "userID",   label: "User ID" },
-  { key: "userName", label: "Name" },
-  { key: "sections", label: "Sections & Roles" },
-  { key: "isAdmin",  label: "Admin" },
-  { key: "active",   label: "Status" },
-];
+  const userColumns = [
+    { key: "userID", label: "User ID" },
+    { key: "userName", label: "Name" },
+    { key: "sections", label: "Sections & Roles" },
+    { key: "isAdmin", label: "Admin" },
+    { key: "active", label: "Status" },
+  ];
 
-function roleLabel(roleID) {
-  return roles.find((r) => r.id === roleID)?.label ?? "Regular";
-}
-
-// ── State ──────────────────────────────────────────────────────────────────
-const usersList        = ref([]);
-const usersLoading     = ref(false);
-const userSearch       = ref("");
-const availableSections = ref([]);
-const userIdInputRef   = ref(null);
-const hclabDropdownRef = ref(null);
-const hclabDropdownPos = ref({ top: 0, left: 0, width: 0 });
-let hclabSearchTimer   = null;
-
-const filteredUsers = computed(() => {
-  const q = userSearch.value.toLowerCase();
-  if (!q) return usersList.value;
-  return usersList.value.filter(
-    (u) => u.userID.toLowerCase().includes(q) || u.userName.toLowerCase().includes(q),
-  );
-});
-
-const userModal = ref({
-  visible: false,
-  mode: "add",
-  userID: null,
-  form: { userID: "", userName: "", isAdmin: false, sections: [] },
-  hclabSearch: "",
-  hclabResults: [],
-  hclabLoading: false,
-  hclabDropdownOpen: false,
-  hclabNoResults: false,
-  hclabActiveIdx: -1,
-  saving: false,
-  error: "",
-  sectionError: false,
-});
-
-// ── Data loading ───────────────────────────────────────────────────────────
-async function loadUsers() {
-  usersLoading.value = true;
-  try {
-    const res = await userApi.getAll();
-    usersList.value = res.data;
-  } catch {
-    usersList.value = [];
-  } finally {
-    usersLoading.value = false;
+  function roleLabel(roleID) {
+    return roles.find((r) => r.id === roleID)?.label ?? "Regular";
   }
-}
 
-async function loadSections() {
-  try {
-    const res = await settingsApi.getSections();
-    availableSections.value = res.data.filter((s) => s.active);
-  } catch {
-    availableSections.value = [];
-  }
-}
+  // ── State ──────────────────────────────────────────────────────────────────
+  const usersList = ref([]);
+  const usersLoading = ref(false);
+  const userSearch = ref("");
+  const availableSections = ref([]);
+  const userIdInputRef = ref(null);
+  const hclabDropdownRef = ref(null);
+  const hclabDropdownPos = ref({ top: 0, left: 0, width: 0 });
+  let hclabSearchTimer = null;
 
-onMounted(() => {
-  loadUsers();
-  loadSections();
-});
+  const filteredUsers = computed(() => {
+    const q = userSearch.value.toLowerCase();
+    if (!q) return usersList.value;
+    return usersList.value.filter(
+      (u) => u.userID.toLowerCase().includes(q) || u.userName.toLowerCase().includes(q),
+    );
+  });
 
-// ── Section selection helpers ──────────────────────────────────────────────
-function isUserSectionSelected(code) {
-  return userModal.value.form.sections.some((s) => s.sectionCode === code);
-}
-function getUserSectionRole(code) {
-  return userModal.value.form.sections.find((s) => s.sectionCode === code)?.roleID ?? 1;
-}
-function toggleUserSection(code) {
-  const idx = userModal.value.form.sections.findIndex((s) => s.sectionCode === code);
-  if (idx === -1) userModal.value.form.sections.push({ sectionCode: code, roleID: 1 });
-  else userModal.value.form.sections.splice(idx, 1);
-  userModal.value.sectionError = false;
-}
-function setUserSectionRole(code, roleID) {
-  const entry = userModal.value.form.sections.find((s) => s.sectionCode === code);
-  if (entry) entry.roleID = roleID;
-}
-
-// ── Modal actions ──────────────────────────────────────────────────────────
-function openAddUser() {
-  userModal.value = {
-    visible: true, mode: "add", userID: null,
+  const userModal = ref({
+    visible: false,
+    mode: "add",
+    userID: null,
     form: { userID: "", userName: "", isAdmin: false, sections: [] },
-    hclabSearch: "", hclabResults: [], hclabLoading: false,
-    hclabDropdownOpen: false, hclabNoResults: false, hclabActiveIdx: -1,
-    saving: false, error: "", sectionError: false,
-  };
-}
+    hclabSearch: "",
+    hclabResults: [],
+    hclabLoading: false,
+    hclabDropdownOpen: false,
+    hclabNoResults: false,
+    hclabActiveIdx: -1,
+    saving: false,
+    error: "",
+    sectionError: false,
+  });
 
-function openEditUser(user) {
-  userModal.value = {
-    visible: true, mode: "edit", userID: user.userID,
-    form: {
-      userID: user.userID, userName: user.userName, isAdmin: user.isAdmin,
-      sections: user.sections.map((s) => ({ sectionCode: s.sectionCode, roleID: s.roleID })),
-    },
-    saving: false, error: "", sectionError: false,
-  };
-}
-
-function closeUserModal() {
-  userModal.value.visible = false;
-}
-
-async function saveUserModal() {
-  userModal.value.error = "";
-  userModal.value.sectionError = false;
-
-  if (!userModal.value.form.sections.length) {
-    userModal.value.sectionError = true;
-    return;
-  }
-
-  userModal.value.saving = true;
-  try {
-    if (userModal.value.mode === "add") {
-      if (!userModal.value.form.userID.trim()) { userModal.value.error = "User ID is required."; return; }
-      if (!userModal.value.form.userName.trim()) { userModal.value.error = "Full name is required."; return; }
-      await userApi.add({
-        userID: userModal.value.form.userID.trim().toUpperCase(),
-        userName: userModal.value.form.userName.trim(),
-        isAdmin: userModal.value.form.isAdmin,
-        sections: userModal.value.form.sections,
-      });
-      emit("toast", "User added successfully.");
-    } else {
-      await userApi.update(userModal.value.userID, {
-        userName: userModal.value.form.userName.trim(),
-        isAdmin: userModal.value.form.isAdmin,
-        active: usersList.value.find((u) => u.userID === userModal.value.userID)?.active ?? true,
-      });
-      await userApi.updateSections(userModal.value.userID, { sections: userModal.value.form.sections });
-      emit("toast", "User updated successfully.");
-    }
-    closeUserModal();
-    await loadUsers();
-  } catch (err) {
-    userModal.value.error = err.response?.data?.message || "An error occurred.";
-  } finally {
-    userModal.value.saving = false;
-  }
-}
-
-async function toggleUser(user) {
-  try {
-    await userApi.toggle(user.userID);
-    user.active = !user.active;
-  } catch (err) {
-    emit("toast", err.response?.data?.message || "Failed to update status.");
-  }
-}
-
-// ── HCLAB search ───────────────────────────────────────────────────────────
-function computeDropdownPos() {
-  const el = userIdInputRef.value;
-  if (!el) return;
-  const rect = el.getBoundingClientRect();
-  hclabDropdownPos.value = { top: rect.bottom + 6, left: rect.left, width: rect.width };
-}
-
-function onHclabSearchFocus() {
-  userIdInputRef.value?.style.setProperty("border-color", "var(--color-primary)");
-  if (userModal.value.hclabResults.length) {
-    computeDropdownPos();
-    userModal.value.hclabDropdownOpen = true;
-  }
-}
-
-function onHclabSearchBlur(e) {
-  setTimeout(() => {
-    e.target.style.borderColor = "var(--color-border)";
-    if (!userModal.value.hclabDropdownOpen) return;
-    if (!userModal.value.form.userID) closeHclabDropdown();
-  }, 150);
-}
-
-function onHclabSearchInput() {
-  userModal.value.form.userID = "";
-  userModal.value.form.userName = "";
-  userModal.value.hclabNoResults = false;
-  userModal.value.hclabDropdownOpen = false;
-  userModal.value.hclabActiveIdx = -1;
-  clearTimeout(hclabSearchTimer);
-
-  const q = userModal.value.hclabSearch.trim();
-  if (q.length < 3) { userModal.value.hclabResults = []; return; }
-
-  userModal.value.hclabLoading = true;
-  hclabSearchTimer = setTimeout(async () => {
+  // ── Data loading ───────────────────────────────────────────────────────────
+  async function loadUsers() {
+    usersLoading.value = true;
     try {
-      const res = await userApi.getHCLABUsers(q);
-      userModal.value.hclabResults = res.data ?? [];
-      userModal.value.hclabNoResults = userModal.value.hclabResults.length === 0;
-      userModal.value.hclabDropdownOpen = true;
-      await nextTick();
-      computeDropdownPos();
+      const res = await userApi.getAll();
+      usersList.value = res.data;
     } catch {
-      userModal.value.hclabResults = [];
-      userModal.value.hclabNoResults = true;
+      usersList.value = [];
     } finally {
-      userModal.value.hclabLoading = false;
+      usersLoading.value = false;
     }
-  }, 350);
-}
+  }
 
-function selectHclabUser(u) {
-  userModal.value.form.userID = u.userID;
-  userModal.value.form.userName = u.userName;
-  userModal.value.hclabSearch = `${u.userID} — ${u.userName}`;
-  userModal.value.hclabDropdownOpen = false;
-  userModal.value.hclabActiveIdx = -1;
-}
+  async function loadSections() {
+    try {
+      const res = await settingsApi.getSections();
+      availableSections.value = res.data.filter((s) => s.active);
+    } catch {
+      availableSections.value = [];
+    }
+  }
 
-function clearHclabSelection() {
-  userModal.value.form.userID = "";
-  userModal.value.form.userName = "";
-  userModal.value.hclabSearch = "";
-  userModal.value.hclabResults = [];
-  userModal.value.hclabDropdownOpen = false;
-  userModal.value.hclabActiveIdx = -1;
-  nextTick(() => userIdInputRef.value?.focus());
-}
+  onMounted(() => {
+    loadUsers();
+    loadSections();
+  });
 
-function closeHclabDropdown() { userModal.value.hclabDropdownOpen = false; }
+  // ── Section selection helpers ──────────────────────────────────────────────
+  function isUserSectionSelected(code) {
+    return userModal.value.form.sections.some((s) => s.sectionCode === code);
+  }
+  function getUserSectionRole(code) {
+    return userModal.value.form.sections.find((s) => s.sectionCode === code)?.roleID ?? 1;
+  }
+  function toggleUserSection(code) {
+    const idx = userModal.value.form.sections.findIndex((s) => s.sectionCode === code);
+    if (idx === -1) userModal.value.form.sections.push({ sectionCode: code, roleID: 1 });
+    else userModal.value.form.sections.splice(idx, 1);
+    userModal.value.sectionError = false;
+  }
+  function setUserSectionRole(code, roleID) {
+    const entry = userModal.value.form.sections.find((s) => s.sectionCode === code);
+    if (entry) entry.roleID = roleID;
+  }
 
-function hclabSelectNext() {
-  if (!userModal.value.hclabResults.length) return;
-  userModal.value.hclabActiveIdx = (userModal.value.hclabActiveIdx + 1) % userModal.value.hclabResults.length;
-}
-function hclabSelectPrev() {
-  if (!userModal.value.hclabResults.length) return;
-  userModal.value.hclabActiveIdx =
-    (userModal.value.hclabActiveIdx - 1 + userModal.value.hclabResults.length) % userModal.value.hclabResults.length;
-}
-function hclabConfirmSelected() {
-  const idx = userModal.value.hclabActiveIdx;
-  if (idx >= 0 && userModal.value.hclabResults[idx]) selectHclabUser(userModal.value.hclabResults[idx]);
-}
+  // ── Modal actions ──────────────────────────────────────────────────────────
+  function openAddUser() {
+    userModal.value = {
+      visible: true, mode: "add", userID: null,
+      form: { userID: "", userName: "", isAdmin: false, sections: [] },
+      hclabSearch: "", hclabResults: [], hclabLoading: false,
+      hclabDropdownOpen: false, hclabNoResults: false, hclabActiveIdx: -1,
+      saving: false, error: "", sectionError: false,
+    };
+  }
+
+  function openEditUser(user) {
+    userModal.value = {
+      visible: true, mode: "edit", userID: user.userID,
+      form: {
+        userID: user.userID, userName: user.userName, isAdmin: user.isAdmin,
+        sections: user.sections.map((s) => ({ sectionCode: s.sectionCode, roleID: s.roleID })),
+      },
+      saving: false, error: "", sectionError: false,
+    };
+  }
+
+  function closeUserModal() {
+    userModal.value.visible = false;
+  }
+
+  async function saveUserModal() {
+    userModal.value.error = "";
+    userModal.value.sectionError = false;
+
+    if (!userModal.value.form.sections.length) {
+      userModal.value.sectionError = true;
+      return;
+    }
+
+    userModal.value.saving = true;
+    try {
+      if (userModal.value.mode === "add") {
+        if (!userModal.value.form.userID.trim()) { userModal.value.error = "User ID is required."; return; }
+        if (!userModal.value.form.userName.trim()) { userModal.value.error = "Full name is required."; return; }
+        await userApi.add({
+          userID: userModal.value.form.userID.trim().toUpperCase(),
+          userName: userModal.value.form.userName.trim(),
+          isAdmin: userModal.value.form.isAdmin,
+          sections: userModal.value.form.sections,
+        });
+        emit("toast", "User added successfully.");
+      } else {
+        await userApi.update(userModal.value.userID, {
+          userName: userModal.value.form.userName.trim(),
+          isAdmin: userModal.value.form.isAdmin,
+          active: usersList.value.find((u) => u.userID === userModal.value.userID)?.active ?? true,
+        });
+        await userApi.updateSections(userModal.value.userID, { sections: userModal.value.form.sections });
+        emit("toast", "User updated successfully.");
+      }
+      closeUserModal();
+      await loadUsers();
+    } catch (err) {
+      userModal.value.error = err.response?.data?.message || "An error occurred.";
+    } finally {
+      userModal.value.saving = false;
+    }
+  }
+
+  async function toggleUser(user) {
+    try {
+      await userApi.toggle(user.userID);
+      user.active = !user.active;
+    } catch (err) {
+      emit("toast", err.response?.data?.message || "Failed to update status.");
+    }
+  }
+
+  // ── Delete ─────────────────────────────────────────────────────────────────
+  const deleteConfirm = ref({ visible: false, userID: "", userName: "" });
+
+  function confirmDeleteUser(user) {
+    deleteConfirm.value = { visible: true, userID: user.userID, userName: user.userName };
+  }
+
+  async function executeDeleteUser() {
+    try {
+      await userApi.delete(deleteConfirm.value.userID);
+      usersList.value = usersList.value.filter((u) => u.userID !== deleteConfirm.value.userID);
+      emit("toast", "User deleted successfully.");
+    } catch (err) {
+      emit("toast", err.response?.data?.message || "Failed to delete user.");
+    } finally {
+      deleteConfirm.value.visible = false;
+    }
+  }
+
+  // ── HCLAB search ───────────────────────────────────────────────────────────
+  function computeDropdownPos() {
+    const el = userIdInputRef.value;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    hclabDropdownPos.value = { top: rect.bottom + 6, left: rect.left, width: rect.width };
+  }
+
+  function onHclabSearchFocus() {
+    userIdInputRef.value?.style.setProperty("border-color", "var(--color-primary)");
+    if (userModal.value.hclabResults.length) {
+      computeDropdownPos();
+      userModal.value.hclabDropdownOpen = true;
+    }
+  }
+
+  function onHclabSearchBlur(e) {
+    setTimeout(() => {
+      e.target.style.borderColor = "var(--color-border)";
+      if (!userModal.value.hclabDropdownOpen) return;
+      if (!userModal.value.form.userID) closeHclabDropdown();
+    }, 150);
+  }
+
+  function onHclabSearchInput() {
+    userModal.value.form.userID = "";
+    userModal.value.form.userName = "";
+    userModal.value.hclabNoResults = false;
+    userModal.value.hclabDropdownOpen = false;
+    userModal.value.hclabActiveIdx = -1;
+    clearTimeout(hclabSearchTimer);
+
+    const q = userModal.value.hclabSearch.trim();
+    if (q.length < 3) { userModal.value.hclabResults = []; return; }
+
+    userModal.value.hclabLoading = true;
+    hclabSearchTimer = setTimeout(async () => {
+      try {
+        const res = await userApi.getHCLABUsers(q);
+        userModal.value.hclabResults = res.data ?? [];
+        userModal.value.hclabNoResults = userModal.value.hclabResults.length === 0;
+        userModal.value.hclabDropdownOpen = true;
+        await nextTick();
+        computeDropdownPos();
+      } catch {
+        userModal.value.hclabResults = [];
+        userModal.value.hclabNoResults = true;
+      } finally {
+        userModal.value.hclabLoading = false;
+      }
+    }, 350);
+  }
+
+  function selectHclabUser(u) {
+    userModal.value.form.userID = u.userID;
+    userModal.value.form.userName = u.userName;
+    userModal.value.hclabSearch = `${u.userID} — ${u.userName}`;
+    userModal.value.hclabDropdownOpen = false;
+    userModal.value.hclabActiveIdx = -1;
+  }
+
+  function clearHclabSelection() {
+    userModal.value.form.userID = "";
+    userModal.value.form.userName = "";
+    userModal.value.hclabSearch = "";
+    userModal.value.hclabResults = [];
+    userModal.value.hclabDropdownOpen = false;
+    userModal.value.hclabActiveIdx = -1;
+    nextTick(() => userIdInputRef.value?.focus());
+  }
+
+  function closeHclabDropdown() { userModal.value.hclabDropdownOpen = false; }
+
+  function hclabSelectNext() {
+    if (!userModal.value.hclabResults.length) return;
+    userModal.value.hclabActiveIdx = (userModal.value.hclabActiveIdx + 1) % userModal.value.hclabResults.length;
+  }
+  function hclabSelectPrev() {
+    if (!userModal.value.hclabResults.length) return;
+    userModal.value.hclabActiveIdx =
+      (userModal.value.hclabActiveIdx - 1 + userModal.value.hclabResults.length) % userModal.value.hclabResults.length;
+  }
+  function hclabConfirmSelected() {
+    const idx = userModal.value.hclabActiveIdx;
+    if (idx >= 0 && userModal.value.hclabResults[idx]) selectHclabUser(userModal.value.hclabResults[idx]);
+  }
 </script>

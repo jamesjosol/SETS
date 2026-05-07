@@ -10,6 +10,8 @@ namespace Model.SETSDB
     {
         public int ItemID { get; set; }
         public string BatchNo { get; set; }
+        public string Type { get; set; } = "others";  
+        public string? LabNo { get; set; }
         public string Description { get; set; }
         public int Quantity { get; set; }
         public DateTime Endorsed { get; set; }

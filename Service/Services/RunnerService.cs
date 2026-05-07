@@ -74,12 +74,13 @@ namespace Service.Services
                     tx.Commit();
 
                     // ── Audit Logging ─────────────────────────────────────────────────────
+                    Batch_Specimen temp = null;
                     if (firstScan)
                     {
                         try
                         {
                             using var master = new MasterService(_branch_raw);
-                            var temp = context.Batch_Specimen.FirstOrDefault(a => a.SpecimenNo == header.SpecimenNo);
+                            temp = context.Batch_Specimen.FirstOrDefault(a => a.SpecimenNo == header.SpecimenNo);
                             string? loc = null;
                             if (temp != null) {
                                 loc = context.Batch_Header.FirstOrDefault(a => a.BatchNo == temp.BatchNo)?.ProcDestination;
@@ -117,6 +118,10 @@ namespace Service.Services
                     var sampleTypeName = context.Sample_Type
                         .FirstOrDefault(s => s.Code == header.SampleTypeCode)?.Name;
 
+                    var batchSpecimen = temp != null ? 
+                        temp : context.Batch_Specimen
+                        .FirstOrDefault(b => b.SpecimenNo == header.SpecimenNo);
+
                     return new ScanSpecimenResponse
                     {
                         HeaderId = header.Id,
@@ -130,6 +135,8 @@ namespace Service.Services
                         Received = header.Received,
                         ReceivedBy = header.ReceivedBy,
                         Remarks = header.Remarks,
+                        PatientName = batchSpecimen?.PatientName, 
+                        PID = batchSpecimen?.PID,
                         Tests = tests.Select(t => new ScanSpecimenTestItem
                         {
                             Id = t.Id,
