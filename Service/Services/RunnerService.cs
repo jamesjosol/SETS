@@ -87,6 +87,8 @@ namespace Service.Services
                             }
                             master.Audit.Log(Audit_Log.SectionReceived(
                                 request.SpecimenNo,
+                                temp?.PatientName ?? "",
+                                temp?.PID ?? "",
                                 loc ?? "SYSTEM",
                                 request.SectionCode,
                                 request.UserID));
@@ -96,6 +98,14 @@ namespace Service.Services
                             Console.WriteLine($"[AUDIT] Logging failed for specimen {request.SpecimenNo}: {auditEx.Message}");
                         }
                     }
+
+                    // ── Section cut-off time ───────────────────────────────────────
+                    var section = context.Section_Master
+                        .FirstOrDefault(s => s.Code == request.SectionCode);
+                    string? cutOffTimeStr = section?.CutOffTime.HasValue == true
+                        ? $"{(int)section.CutOffTime.Value.TotalHours:D2}:{section.CutOffTime.Value.Minutes:D2}"
+                        : null;
+
                     var todayDayName = DateTime.Now.DayOfWeek.ToString(); 
 
                     var testCodes = tests.Select(t => t.TestCode).ToList();
@@ -137,6 +147,7 @@ namespace Service.Services
                         Remarks = header.Remarks,
                         PatientName = batchSpecimen?.PatientName, 
                         PID = batchSpecimen?.PID,
+                        CutOffTime = cutOffTimeStr,
                         Tests = tests.Select(t => new ScanSpecimenTestItem
                         {
                             Id = t.Id,

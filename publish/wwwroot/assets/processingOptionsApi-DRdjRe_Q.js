@@ -1,0 +1,1 @@
+import{r as e}from"./router-B-E8D2lu.js";var t={get:()=>e.get(`/api/processingoptions`).then(e=>e.data),upsert:t=>e.put(`/api/processingoptions`,t)};export{t};

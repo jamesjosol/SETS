@@ -1,16 +1,14 @@
 using Reposi;
+using SETS.Server.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
 SetsConnection.Initialize(builder.Configuration);
 
-// Add services to the container.
-
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
+builder.Services.AddSignalR();
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
 {
@@ -18,7 +16,6 @@ builder.Services.AddSession(options =>
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
 });
-
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
@@ -26,18 +23,17 @@ builder.Services.AddCors(options =>
         policy.WithOrigins("https://localhost:39722")
               .AllowAnyHeader()
               .AllowAnyMethod()
-              .AllowCredentials(); // <- important for session cookies
+              .AllowCredentials();
     });
 });
 
-
 var app = builder.Build();
 
+// ?? Middleware pipeline — ORDER MATTERS ????????????????????????????????????
 app.UseCors("AllowFrontend");
 app.UseDefaultFiles();
 app.UseStaticFiles();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -45,13 +41,10 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
+app.UseSession();          // ? must be BEFORE UseAuthorization and MapControllers
 app.UseAuthorization();
-
-app.UseSession();
-
 app.MapControllers();
-
+app.MapHub<ContingencyHub>("/hubs/contingency");
 app.MapFallbackToFile("/index.html");
 
 app.Run();

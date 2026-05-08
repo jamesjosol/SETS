@@ -48,6 +48,8 @@
         <OnSiteTab v-if="activeTab === 'onsite'" @toast="showToast" />
         <ProcessingTab v-if="activeTab === 'processing'" @toast="showToast" />
         <BranchTab v-if="activeTab === 'branch'" @toast="showToast" />
+        <ContingencyTab v-if="activeTab === 'contingency'" @toast="showToast" />
+        <AnnouncementTab v-if="activeTab === 'announcement'" @toast="showToast" />
         <EndorsementTab v-if="activeTab === 'endorsement'" @toast="showToast" />
         <ArchiveTab v-if="activeTab === 'archive'" @toast="showToast" />
       </div>
@@ -80,6 +82,8 @@ import TatSetUpTab from "./TatSetUpTab.vue";
 import OnSiteTab from "./OnSiteTab.vue";
 import ProcessingTab from "./ProcessingTab.vue";
 import BranchTab from "./BranchTab.vue";
+import ContingencyTab from "./ContingencyTab.vue";
+import AnnouncementTab from '@/views/admin/AnnouncementTab.vue';
 import EndorsementTab from "./EndorsementTab.vue";
 import ArchiveTab from "./ArchiveTab.vue";
 
@@ -94,6 +98,8 @@ const settingsTabs = [
   { key: "onsite", label: "On-Site", icon: "location_on" },
   { key: "processing", label: "Processing", icon: "tune" },
   { key: "branch", label: "Branch", icon: "location_city" },
+  { key: "contingency", label: "Contingency", icon: "offline_bolt" },
+  { key: 'announcement', label: 'Announcements', icon: 'campaign' },
   { key: "endorsement", label: "Endorsement", icon: "swap_horiz" },
   { key: "archive", label: "Archive", icon: "archive" },
 ];

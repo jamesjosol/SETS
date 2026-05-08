@@ -11,6 +11,7 @@ namespace Model.Main
     {
         public bool Success { get; set; }
         public string? Message { get; set; }
+        public bool IsContingency { get; set; }
         public UserSessionData? Data { get; set; }
     }
 

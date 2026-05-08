@@ -32,7 +32,7 @@ namespace SETSMiddleware.Tasks
             var now = DateTime.Now;
 
             // Only act at 7pm (19:00)
-            if (now.Hour != 8 || now.Minute != 22)
+            if (now.Hour != 19 || now.Minute != 00)
             {
                 LastStatus = $"Waiting for 7:00 PM — current time: {now:HH:mm:ss}";
                 await Task.CompletedTask;

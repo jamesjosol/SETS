@@ -27,6 +27,8 @@ namespace Service
         public ProcessingOptionsService ProcessingOptions { get; private set; }
         public AuditService Audit { get; private set; }
         public SpecimenIssueService SpecimenIssue { get; private set; }
+        public ContingencyService Contingency { get; private set; }
+        public AnnouncementService Announcement { get; private set; }
 
         private readonly AppDbContextFactory _factory;
         private readonly string _branch;
@@ -61,6 +63,8 @@ namespace Service
             ProcessingOptions = new ProcessingOptionsService(_factory, _branch);
             Audit = new AuditService(_factory, _branch);
             SpecimenIssue = new SpecimenIssueService(_factory, _branch);
+            Contingency = new ContingencyService(_factory, _branch);
+            Announcement = new AnnouncementService(_factory, _branch);
         }
 
         public void Dispose()
@@ -84,6 +88,8 @@ namespace Service
             ProcessingOptions = null;
             Audit = null;
             SpecimenIssue = null;
+            Contingency = null;
+            Announcement = null;
         }
     }
 }

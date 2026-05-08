@@ -10,6 +10,11 @@ C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\bin\Debug\net8.0\SETS.Ser
 C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\bin\Debug\net8.0\SETS.Server.pdb
 C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\bin\Debug\net8.0\Azure.Core.dll
 C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\bin\Debug\net8.0\Azure.Identity.dll
+C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\bin\Debug\net8.0\ClosedXML.dll
+C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\bin\Debug\net8.0\ClosedXML.Parser.dll
+C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\bin\Debug\net8.0\DocumentFormat.OpenXml.dll
+C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\bin\Debug\net8.0\DocumentFormat.OpenXml.Framework.dll
+C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\bin\Debug\net8.0\ExcelNumberFormat.dll
 C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\bin\Debug\net8.0\Microsoft.AspNetCore.SpaProxy.dll
 C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\bin\Debug\net8.0\Microsoft.Bcl.AsyncInterfaces.dll
 C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\bin\Debug\net8.0\Microsoft.Data.SqlClient.dll
@@ -35,6 +40,8 @@ C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\bin\Debug\net8.0\Microsof
 C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\bin\Debug\net8.0\Microsoft.SqlServer.Server.dll
 C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\bin\Debug\net8.0\Microsoft.Win32.SystemEvents.dll
 C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\bin\Debug\net8.0\Oracle.ManagedDataAccess.dll
+C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\bin\Debug\net8.0\RBush.dll
+C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\bin\Debug\net8.0\SixLabors.Fonts.dll
 C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\bin\Debug\net8.0\Swashbuckle.AspNetCore.Swagger.dll
 C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\bin\Debug\net8.0\Swashbuckle.AspNetCore.SwaggerGen.dll
 C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\bin\Debug\net8.0\Swashbuckle.AspNetCore.SwaggerUI.dll
@@ -45,6 +52,7 @@ C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\bin\Debug\net8.0\System.D
 C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\bin\Debug\net8.0\System.DirectoryServices.Protocols.dll
 C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\bin\Debug\net8.0\System.Drawing.Common.dll
 C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\bin\Debug\net8.0\System.IdentityModel.Tokens.Jwt.dll
+C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\bin\Debug\net8.0\System.IO.Packaging.dll
 C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\bin\Debug\net8.0\System.Memory.Data.dll
 C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\bin\Debug\net8.0\System.Runtime.Caching.dll
 C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\bin\Debug\net8.0\System.Security.Cryptography.ProtectedData.dll
@@ -75,6 +83,7 @@ C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\bin\Debug\net8.0\HCLAB.pd
 C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\bin\Debug\net8.0\HCLAB.dll.config
 C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\obj\Debug\net8.0\SETS.Server.csproj.AssemblyReference.cache
 C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\obj\Debug\net8.0\spa.proxy.json
+C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\obj\Debug\net8.0\rpswa.dswa.cache.json
 C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\obj\Debug\net8.0\SETS.Server.GeneratedMSBuildEditorConfig.editorconfig
 C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\obj\Debug\net8.0\SETS.Server.AssemblyInfoInputs.cache
 C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\obj\Debug\net8.0\SETS.Server.AssemblyInfo.cs
@@ -82,8 +91,12 @@ C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\obj\Debug\net8.0\SETS.Ser
 C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\obj\Debug\net8.0\SETS.Server.MvcApplicationPartsAssemblyInfo.cs
 C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\obj\Debug\net8.0\SETS.Server.MvcApplicationPartsAssemblyInfo.cache
 C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\obj\Debug\net8.0\SETS.Server.sourcelink.json
+C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\obj\Debug\net8.0\rjimswa.dswa.cache.json
+C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\obj\Debug\net8.0\rjsmrazor.dswa.cache.json
+C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\obj\Debug\net8.0\rjsmcshtml.dswa.cache.json
 C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\obj\Debug\net8.0\scopedcss\bundle\SETS.Server.styles.css
 C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\obj\Debug\net8.0\staticwebassets.build.json
+C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\obj\Debug\net8.0\staticwebassets.build.json.cache
 C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\obj\Debug\net8.0\staticwebassets.development.json
 C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\obj\Debug\net8.0\staticwebassets.build.endpoints.json
 C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
@@ -93,8 +106,3 @@ C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\obj\Debug\net8.0\refint\S
 C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\obj\Debug\net8.0\SETS.Server.pdb
 C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\obj\Debug\net8.0\SETS.Server.genruntimeconfig.cache
 C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\obj\Debug\net8.0\ref\SETS.Server.dll
-C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\obj\Debug\net8.0\rpswa.dswa.cache.json
-C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\obj\Debug\net8.0\rjimswa.dswa.cache.json
-C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\obj\Debug\net8.0\rjsmrazor.dswa.cache.json
-C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\obj\Debug\net8.0\rjsmcshtml.dswa.cache.json
-C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\obj\Debug\net8.0\staticwebassets.build.json.cache

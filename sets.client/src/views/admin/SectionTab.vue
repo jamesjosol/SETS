@@ -80,7 +80,7 @@
             <table class="w-full text-sm">
               <thead>
                 <tr style="border-bottom: 1px solid var(--color-border)">
-                  <th v-for="col in ['Code','Name','Branch','Auto No.','Status','']" :key="col"
+                  <th v-for="col in sectionTableHeaders(cat.id)" :key="col"
                       class="text-left px-4 py-2.5 text-[10px] font-bold uppercase tracking-widest"
                       style="color: var(--color-text-muted); background-color: var(--color-surface-low);">{{ col }}</th>
                 </tr>
@@ -98,8 +98,19 @@
                     <span class="px-2 py-0.5 rounded-lg text-[10px] font-bold"
                           style="background-color: var(--color-surface-low); color: var(--color-text-muted);">{{ sec.branchCode }}</span>
                   </td>
-                  <td class="px-4 py-3">
+                  <!-- Auto No — endorser only -->
+                  <td v-if="cat.id === '1'" class="px-4 py-3">
                     <span class="text-sm font-mono" style="color: var(--color-text-muted)">{{ sec.autoNo || "—" }}</span>
+                  </td>
+                  <!-- Cut-off — lab only -->
+                  <td v-if="cat.id === '3'" class="px-4 py-3">
+                    <span v-if="sec.cutOffTime"
+                          class="flex items-center gap-1 text-xs font-bold font-mono"
+                          style="color: var(--color-text)">
+                      <span class="material-symbols-outlined text-sm" style="color: var(--color-primary)">schedule</span>
+                      {{ sec.cutOffTime }}
+                    </span>
+                    <span v-else class="text-xs" style="color: var(--color-text-muted)">—</span>
                   </td>
                   <td class="px-4 py-3">
                     <button class="flex items-center gap-1.5 px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all"
@@ -308,6 +319,41 @@
               </div>
             </div>
 
+            <!-- ── Cut-Off Time (lab sections, edit mode only) ────────────────── -->
+            <div v-if="sectionModal.form.category === '3' && sectionModal.mode === 'edit'">
+              <label class="block text-[10px] font-bold uppercase tracking-widest mb-1.5" style="color: var(--color-text-muted)">
+                Cut-Off Time
+              </label>
+              <div class="flex items-center gap-3">
+                <input v-model="sectionModal.form.cutOffTime"
+                       type="time"
+                       class="px-4 py-2.5 rounded-xl text-sm font-mono font-bold outline-none transition-all"
+                       style="background-color: var(--color-surface-low); color: var(--color-text); border: 1.5px solid var(--color-border); min-width: 140px;"
+                       @focus="(e) => (e.target.style.borderColor = 'var(--color-primary)')"
+                       @blur="(e) => (e.target.style.borderColor = 'var(--color-border)')" />
+                <button v-if="sectionModal.form.cutOffTime"
+                        class="flex items-center gap-1.5 px-3 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all"
+                        style="background-color: var(--color-surface-low); color: var(--color-text-muted);"
+                        @click="sectionModal.form.cutOffTime = ''">
+                  <span class="material-symbols-outlined text-xs">close</span>
+                  Clear
+                </button>
+              </div>
+              <p class="mt-1.5 text-xs" style="color: var(--color-text-muted)">
+                Specimens scanned at or after this time will have all <strong>NOW</strong> tests automatically set to <strong>END</strong> (Endorsed Next Day).
+                Leave blank to disable cut-off for this section.
+              </p>
+              <!-- Active indicator -->
+              <div v-if="sectionModal.form.cutOffTime"
+                   class="mt-2 flex items-center gap-2 px-3 py-2 rounded-xl"
+                   style="background-color: rgba(70,21,153,0.06); border: 1px solid rgba(70,21,153,0.15);">
+                <span class="material-symbols-outlined text-sm" style="color: var(--color-primary)">schedule</span>
+                <span class="text-xs font-bold" style="color: var(--color-primary)">
+                  Cut-off active at {{ sectionModal.form.cutOffTime }}
+                </span>
+              </div>
+            </div>
+
             <p v-if="sectionModal.error" class="text-xs font-bold" style="color: #ba1a1a">{{ sectionModal.error }}</p>
           </div>
 
@@ -334,182 +380,203 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
-import { sectionApi } from "@/api/sectionApi";
-import { settingsApi } from "@/api/settingsApi";
+  import { ref, computed, onMounted } from "vue";
+  import { sectionApi } from "@/api/sectionApi";
+  import { settingsApi } from "@/api/settingsApi";
 
-const emit = defineEmits(["toast"]);
+  const emit = defineEmits(["toast"]);
 
-// ── Constants ──────────────────────────────────────────────────────────────
-const sectionCategories = [
-  { id: "1", label: "Endorser",   icon: "outbox",        color: "#2e7d9a", softColor: "rgba(46,125,154,0.1)" },
-  { id: "2", label: "Receiver",   icon: "move_to_inbox", color: "#6a4c93", softColor: "rgba(106,76,147,0.1)" },
-  { id: "3", label: "Laboratory", icon: "science",       color: "#2e7d4f", softColor: "rgba(46,125,79,0.1)" },
-];
+  // ── Constants ──────────────────────────────────────────────────────────────
+  const sectionCategories = [
+    { id: "1", label: "Endorser", icon: "outbox", color: "#2e7d9a", softColor: "rgba(46,125,154,0.1)" },
+    { id: "2", label: "Receiver", icon: "move_to_inbox", color: "#6a4c93", softColor: "rgba(106,76,147,0.1)" },
+    { id: "3", label: "Laboratory", icon: "science", color: "#2e7d4f", softColor: "rgba(46,125,79,0.1)" },
+  ];
 
-// ── State ──────────────────────────────────────────────────────────────────
-const sectionsList        = ref([]);
-const sectionsLoading     = ref(false);
-const sectionSearch       = ref("");
-const sectionBranchFilter = ref("ALL");
-const availableBranches   = ref([]);
-const allTestGroups       = ref([]);
-const testGroupsLoading   = ref(false);
-let codeCheckTimer        = null;
+  // Column headers per category — lab sections get cut-off column instead of auto-no
+  function sectionTableHeaders(catId) {
+    if (catId === "1") return ["Code", "Name", "Branch", "Auto No.", "Status", ""];
+    if (catId === "3") return ["Code", "Name", "Branch", "Cut-Off", "Status", ""];
+    return ["Code", "Name", "Branch", "Status", ""];
+  }
 
-const filteredSections = computed(() => {
-  let list = sectionsList.value;
-  if (sectionBranchFilter.value !== "ALL") list = list.filter((s) => s.branchCode === sectionBranchFilter.value);
-  const q = sectionSearch.value.toLowerCase();
-  if (q) list = list.filter((s) => s.code.toLowerCase().includes(q) || s.name.toLowerCase().includes(q));
-  return list;
-});
+  // ── State ──────────────────────────────────────────────────────────────────
+  const sectionsList = ref([]);
+  const sectionsLoading = ref(false);
+  const sectionSearch = ref("");
+  const sectionBranchFilter = ref("ALL");
+  const availableBranches = ref([]);
+  const allTestGroups = ref([]);
+  const testGroupsLoading = ref(false);
+  let codeCheckTimer = null;
 
-function filteredSectionsByCategory(catId) {
-  return filteredSections.value.filter((s) => s.category === catId);
-}
+  const filteredSections = computed(() => {
+    let list = sectionsList.value;
+    if (sectionBranchFilter.value !== "ALL") list = list.filter((s) => s.branchCode === sectionBranchFilter.value);
+    const q = sectionSearch.value.toLowerCase();
+    if (q) list = list.filter((s) => s.code.toLowerCase().includes(q) || s.name.toLowerCase().includes(q));
+    return list;
+  });
 
-function receiverExistsForBranch(branchCode) {
-  return sectionsList.value.some((s) => s.category === "2" && s.branchCode === branchCode);
-}
+  function filteredSectionsByCategory(catId) {
+    return filteredSections.value.filter((s) => s.category === catId);
+  }
 
-const sectionModal = ref({
-  visible: false, mode: "add", originalCode: null,
-  form: { code: "", name: "", branchCode: "", category: "1", autoNo: 0, testGroupCodes: [] },
-  codeStatus: "idle", codeChecking: false, testGroupError: false, saving: false, error: "",
-});
+  function receiverExistsForBranch(branchCode) {
+    return sectionsList.value.some((s) => s.category === "2" && s.branchCode === branchCode);
+  }
 
-// ── Data loading ───────────────────────────────────────────────────────────
-async function loadSectionsList() {
-  sectionsLoading.value = true;
-  try {
-    const res = await sectionApi.getAll();
-    sectionsList.value = res.data;
-  } catch { sectionsList.value = []; }
-  finally { sectionsLoading.value = false; }
-}
+  const sectionModal = ref({
+    visible: false, mode: "add", originalCode: null,
+    form: { code: "", name: "", branchCode: "", category: "1", autoNo: 0, testGroupCodes: [], cutOffTime: "" },
+    codeStatus: "idle", codeChecking: false, testGroupError: false, saving: false, error: "",
+  });
 
-async function loadBranches() {
-  try {
-    const res = await settingsApi.getBranches();
-    availableBranches.value = res.data.filter((b) => b.active);
-  } catch { availableBranches.value = []; }
-}
-
-async function loadTestGroups() {
-  testGroupsLoading.value = true;
-  try {
-    const res = await sectionApi.getTestGroups();
-    allTestGroups.value = res.data;
-  } catch { allTestGroups.value = []; }
-  finally { testGroupsLoading.value = false; }
-}
-
-onMounted(() => {
-  loadSectionsList();
-  loadBranches();
-});
-
-// ── Modal actions ──────────────────────────────────────────────────────────
-function onCodeInput() {
-  sectionModal.value.form.code = sectionModal.value.form.code.toUpperCase();
-  sectionModal.value.codeStatus = "idle";
-  clearTimeout(codeCheckTimer);
-  const code = sectionModal.value.form.code.trim();
-  if (!code) return;
-  sectionModal.value.codeChecking = true;
-  codeCheckTimer = setTimeout(async () => {
+  // ── Data loading ───────────────────────────────────────────────────────────
+  async function loadSectionsList() {
+    sectionsLoading.value = true;
     try {
-      const res = await sectionApi.checkCode(code);
-      sectionModal.value.codeStatus = res.data.exists ? "taken" : "available";
-    } catch { sectionModal.value.codeStatus = "idle"; }
-    finally { sectionModal.value.codeChecking = false; }
-  }, 400);
-}
-
-function openAddSection() {
-  sectionModal.value = {
-    visible: true, mode: "add", originalCode: null,
-    form: { code: "", name: "", branchCode: availableBranches.value[0]?.code ?? "", category: "1", autoNo: 0, testGroupCodes: [] },
-    codeStatus: "idle", codeChecking: false, testGroupError: false, saving: false, error: "",
-  };
-  loadTestGroups();
-}
-
-function openEditSection(sec) {
-  sectionModal.value = {
-    visible: true, mode: "edit", originalCode: sec.code,
-    form: {
-      code: sec.code, name: sec.name, branchCode: sec.branchCode, category: sec.category,
-      autoNo: sec.autoNo ?? 0,
-      testGroupCodes: sec.testGroups?.filter((tg) => tg.active).map((tg) => tg.testGroupCode) ?? [],
-    },
-    codeStatus: "idle", codeChecking: false, testGroupError: false, saving: false, error: "",
-  };
-  if (sec.category === "3") loadTestGroups();
-}
-
-function closeSectionModal() {
-  clearTimeout(codeCheckTimer);
-  sectionModal.value.visible = false;
-}
-
-function toggleTestGroup(code) {
-  const idx = sectionModal.value.form.testGroupCodes.indexOf(code);
-  if (idx === -1) sectionModal.value.form.testGroupCodes.push(code);
-  else sectionModal.value.form.testGroupCodes.splice(idx, 1);
-  sectionModal.value.testGroupError = false;
-}
-
-async function saveSectionModal() {
-  sectionModal.value.error = "";
-  sectionModal.value.testGroupError = false;
-  const f = sectionModal.value.form;
-
-  if (sectionModal.value.mode === "add") {
-    if (!f.code.trim()) { sectionModal.value.error = "Section code is required."; return; }
-    if (sectionModal.value.codeStatus === "taken") { sectionModal.value.error = "This section code already exists."; return; }
-    if (sectionModal.value.codeChecking) return;
-    if (!f.branchCode) { sectionModal.value.error = "Please select a branch."; return; }
-    if (!f.category) { sectionModal.value.error = "Please select a category."; return; }
-    if (f.category === "2" && receiverExistsForBranch(f.branchCode)) {
-      sectionModal.value.error = "A Receiver already exists for this branch."; return;
-    }
+      const res = await sectionApi.getAll();
+      sectionsList.value = res.data;
+    } catch { sectionsList.value = []; }
+    finally { sectionsLoading.value = false; }
   }
-  if (!f.name.trim()) { sectionModal.value.error = "Section name is required."; return; }
-  if (f.category === "3" && !f.testGroupCodes.length) { sectionModal.value.testGroupError = true; return; }
 
-  sectionModal.value.saving = true;
-  try {
+  async function loadBranches() {
+    try {
+      const res = await settingsApi.getBranches();
+      availableBranches.value = res.data.filter((b) => b.active);
+    } catch { availableBranches.value = []; }
+  }
+
+  async function loadTestGroups() {
+    testGroupsLoading.value = true;
+    try {
+      const res = await sectionApi.getTestGroups();
+      allTestGroups.value = res.data;
+    } catch { allTestGroups.value = []; }
+    finally { testGroupsLoading.value = false; }
+  }
+
+  onMounted(() => {
+    loadSectionsList();
+    loadBranches();
+  });
+
+  // ── Modal actions ──────────────────────────────────────────────────────────
+  function onCodeInput() {
+    sectionModal.value.form.code = sectionModal.value.form.code.toUpperCase();
+    sectionModal.value.codeStatus = "idle";
+    clearTimeout(codeCheckTimer);
+    const code = sectionModal.value.form.code.trim();
+    if (!code) return;
+    sectionModal.value.codeChecking = true;
+    codeCheckTimer = setTimeout(async () => {
+      try {
+        const res = await sectionApi.checkCode(code);
+        sectionModal.value.codeStatus = res.data.exists ? "taken" : "available";
+      } catch { sectionModal.value.codeStatus = "idle"; }
+      finally { sectionModal.value.codeChecking = false; }
+    }, 400);
+  }
+
+  function openAddSection() {
+    sectionModal.value = {
+      visible: true, mode: "add", originalCode: null,
+      form: { code: "", name: "", branchCode: availableBranches.value[0]?.code ?? "", category: "1", autoNo: 0, testGroupCodes: [], cutOffTime: "" },
+      codeStatus: "idle", codeChecking: false, testGroupError: false, saving: false, error: "",
+    };
+    loadTestGroups();
+  }
+
+  function openEditSection(sec) {
+    sectionModal.value = {
+      visible: true, mode: "edit", originalCode: sec.code,
+      form: {
+        code: sec.code, name: sec.name, branchCode: sec.branchCode, category: sec.category,
+        autoNo: sec.autoNo ?? 0,
+        testGroupCodes: sec.testGroups?.filter((tg) => tg.active).map((tg) => tg.testGroupCode) ?? [],
+        cutOffTime: sec.cutOffTime ?? "",    // "HH:mm" from API or empty string
+      },
+      codeStatus: "idle", codeChecking: false, testGroupError: false, saving: false, error: "",
+    };
+    if (sec.category === "3") loadTestGroups();
+  }
+
+  function closeSectionModal() {
+    clearTimeout(codeCheckTimer);
+    sectionModal.value.visible = false;
+  }
+
+  function toggleTestGroup(code) {
+    const idx = sectionModal.value.form.testGroupCodes.indexOf(code);
+    if (idx === -1) sectionModal.value.form.testGroupCodes.push(code);
+    else sectionModal.value.form.testGroupCodes.splice(idx, 1);
+    sectionModal.value.testGroupError = false;
+  }
+
+  async function saveSectionModal() {
+    sectionModal.value.error = "";
+    sectionModal.value.testGroupError = false;
+    const f = sectionModal.value.form;
+
     if (sectionModal.value.mode === "add") {
-      await sectionApi.add({
-        code: f.code.trim().toUpperCase(), name: f.name.trim(), branchCode: f.branchCode,
-        category: f.category, autoNo: f.category === "1" ? (f.autoNo ?? 0) : 0,
-        testGroupCodes: f.category === "3" ? f.testGroupCodes : [],
-      });
-      emit("toast", "Section created successfully.");
-    } else {
-      await sectionApi.update(sectionModal.value.originalCode, {
-        name: f.name.trim(),
-        testGroupCodes: f.category === "3" ? f.testGroupCodes : [],
-      });
-      emit("toast", "Section updated successfully.");
+      if (!f.code.trim()) { sectionModal.value.error = "Section code is required."; return; }
+      if (sectionModal.value.codeStatus === "taken") { sectionModal.value.error = "This section code already exists."; return; }
+      if (sectionModal.value.codeChecking) return;
+      if (!f.branchCode) { sectionModal.value.error = "Please select a branch."; return; }
+      if (!f.category) { sectionModal.value.error = "Please select a category."; return; }
+      if (f.category === "2" && receiverExistsForBranch(f.branchCode)) {
+        sectionModal.value.error = "A Receiver already exists for this branch."; return;
+      }
     }
-    closeSectionModal();
-    await loadSectionsList();
-  } catch (err) {
-    sectionModal.value.error = err.response?.data?.message || "An error occurred.";
-  } finally {
-    sectionModal.value.saving = false;
-  }
-}
+    if (!f.name.trim()) { sectionModal.value.error = "Section name is required."; return; }
+    if (f.category === "3" && !f.testGroupCodes.length) { sectionModal.value.testGroupError = true; return; }
 
-async function toggleSection(sec) {
-  try {
-    await sectionApi.toggle(sec.code);
-    sec.active = !sec.active;
-  } catch (err) {
-    emit("toast", err.response?.data?.message || "Failed to update status.");
+    sectionModal.value.saving = true;
+    try {
+      if (sectionModal.value.mode === "add") {
+        await sectionApi.add({
+          code: f.code.trim().toUpperCase(), name: f.name.trim(), branchCode: f.branchCode,
+          category: f.category, autoNo: f.category === "1" ? (f.autoNo ?? 0) : 0,
+          testGroupCodes: f.category === "3" ? f.testGroupCodes : [],
+        });
+        emit("toast", "Section created successfully.");
+      } else {
+        await sectionApi.update(sectionModal.value.originalCode, {
+          name: f.name.trim(),
+          testGroupCodes: f.category === "3" ? f.testGroupCodes : [],
+          cutOffTime: f.category === "3" ? (f.cutOffTime || null) : null,
+        });
+        emit("toast", "Section updated successfully.");
+      }
+      closeSectionModal();
+      await loadSectionsList();
+    } catch (err) {
+      sectionModal.value.error = err.response?.data?.message || "An error occurred.";
+    } finally {
+      sectionModal.value.saving = false;
+    }
   }
-}
+
+  async function toggleSection(sec) {
+    try {
+      await sectionApi.toggle(sec.code);
+      sec.active = !sec.active;
+    } catch (err) {
+      emit("toast", err.response?.data?.message || "Failed to update status.");
+    }
+  }
 </script>
+
+<style scoped>
+  .modal-enter-active,
+  .modal-leave-active {
+    transition: opacity 0.2s ease;
+  }
+
+  .modal-enter-from,
+  .modal-leave-to {
+    opacity: 0;
+  }
+</style>

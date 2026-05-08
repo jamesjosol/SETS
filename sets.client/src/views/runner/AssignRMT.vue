@@ -44,6 +44,21 @@
         </span>
       </div>
 
+      <!-- Cut-off banner — shown when cut-off is active and time has passed -->
+      <div v-if="sectionCutOff && isCutOffPassedComputed"
+           class="flex items-center gap-3 px-4 py-2.5 rounded-xl"
+           style="background-color: rgba(217,119,6,0.08); border: 1px solid rgba(217,119,6,0.25);">
+        <span class="material-symbols-outlined text-base flex-shrink-0" style="color: var(--color-warning)">schedule</span>
+        <div>
+          <p class="text-xs font-bold" style="color: var(--color-warning)">
+            Cut-off time reached ({{ sectionCutOff }})
+          </p>
+          <p class="text-[10px]" style="color: var(--color-text-muted)">
+            All NOW tests will be automatically set to END (Endorsed Next Day) on scan.
+          </p>
+        </div>
+      </div>
+
       <!-- Barcode scan input -->
       <div class="flex items-center gap-4">
         <div class="p-3 rounded-xl flex-shrink-0"
@@ -369,6 +384,7 @@
   const specimenGroups = ref([])
   const availableRMTs = ref([])
   const onSiteEnabled = ref(false)
+  const sectionCutOff = ref(null) 
   const scanMode = ref('standard') // 'standard' | 'onsite'
 
   // Schedule tag options
@@ -416,13 +432,24 @@
       const {
         firstScan, tests, specimenNo,
         testGroupCode, sampleTypeCode, sampleTypeName,
-        received, receivedBy, patientName, pid 
+        received, receivedBy, patientName, pid, cutOffTime
       } = result.data
+
+      if (cutOffTime) sectionCutOff.value = cutOffTime
 
       if (!tests || !tests.length) {
         showAlert('warning', 'No Tests', `No pending tests found for specimen ${val}.`)
         return
       }
+
+      const isCutOffPassed = (() => {
+        if (!cutOffTime) return false
+        const [coH, coM] = cutOffTime.split(':').map(Number)
+        const now = new Date()
+        const cutOffMinutes = coH * 60 + coM
+        const nowMinutes = now.getHours() * 60 + now.getMinutes()
+        return nowMinutes >= cutOffMinutes
+      })()
 
       specimenGroups.value.unshift({
         specimenNo,
@@ -451,6 +478,12 @@
           }
           // On-Site: always default to NOW, no SRD
 
+          // ── Cut-off enforcement ────────────────────────────────────────
+          // Only flip tests that resolved to NOW — leave SRD/CRD/END untouched
+          if (isCutOffPassed && initialTag === 'NOW' && scanMode.value !== 'onsite') {
+            initialTag = 'END'
+          }
+
           return {
             ...t,
             selectedRMT: authStore.userID,
@@ -471,6 +504,13 @@
       scanInput.value?.focus()
     }
   }
+
+  const isCutOffPassedComputed = computed(() => {
+    if (!sectionCutOff.value) return false
+    const [coH, coM] = sectionCutOff.value.split(':').map(Number)
+    const now = new Date()
+    return (now.getHours() * 60 + now.getMinutes()) >= (coH * 60 + coM)
+  })
 
   // ── Remove ─────────────────────────────────────────────────────────────────
 

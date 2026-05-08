@@ -58,5 +58,16 @@ namespace SETS.Server.Controllers
                 return Ok(new { online = false, branch, tasks = Array.Empty<object>() });
             }
         }
+
+        [HttpGet("hclab-prelogin")]
+        public IActionResult HcLabPreLogin([FromQuery] string branch)
+        {
+            if (string.IsNullOrEmpty(branch))
+                return BadRequest(new { message = "Branch required." });
+
+            using var master = new MasterService(branch);
+            var result = master.Health.CheckHcLab();
+            return Ok(result);
+        }
     }
 }

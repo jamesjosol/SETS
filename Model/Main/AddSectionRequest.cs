@@ -21,5 +21,6 @@ namespace Model.Main
         public string Name { get; set; } = string.Empty;
         public int AutoNo { get; set; }
         public List<string>? TestGroupCodes { get; set; }
+        public string? CutOffTime { get; set; }
     }
 }

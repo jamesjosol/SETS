@@ -77,7 +77,7 @@ namespace Model.SETSDB
                 UserID = userID
             };
 
-        public static Audit_Log SectionReceived(string specimenNo, string fromLocation, string toLocation, string userID)
+        public static Audit_Log SectionReceived(string specimenNo, string patientName, string pid, string fromLocation, string toLocation, string userID)
             => new()
             {
                 EventCode = AuditEvents.SectionReceived,

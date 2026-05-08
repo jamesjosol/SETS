@@ -38,6 +38,10 @@ namespace Reposi.Context
         public DbSet<Issue_Tag> Issue_Tags { get; set; }
         public DbSet<Issue_LabEntry> Issue_LabEntries { get; set; }
         public DbSet<Issue_Comment> Issue_Comments { get; set; }
+        public DbSet<Contingency_Config> ContingencyConfigs { get; set; }
+        public DbSet<Contingency_Batch> ContingencyBatches { get; set; }
+        public DbSet<Contingency_Specimen> ContingencySpecimens { get; set; }
+        public DbSet<Announcement> Announcement { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -232,6 +236,21 @@ namespace Reposi.Context
             modelBuilder.Entity<Issue_Tag>().ToTable("Issue_Tag").HasKey(t => t.Id);
             modelBuilder.Entity<Issue_LabEntry>().ToTable("Issue_LabEntry").HasKey(e => e.Id);
             modelBuilder.Entity<Issue_Comment>().ToTable("Issue_Comment").HasKey(c => c.Id);
+
+            // Contingency
+            modelBuilder.Entity<Contingency_Config>().ToTable("Contingency_Config").HasKey(c => c.Id);
+            modelBuilder.Entity<Contingency_Batch>().ToTable("Contingency_Batch").HasKey(b => b.Id);
+            modelBuilder.Entity<Contingency_Batch>().HasIndex(b => b.BatchNo).IsUnique();
+            modelBuilder.Entity<Contingency_Specimen>().ToTable("Contingency_Specimen").HasKey(s => s.Id);
+            modelBuilder.Entity<Contingency_Specimen>()
+                .HasOne<Contingency_Batch>()
+                .WithMany()
+                .HasForeignKey(s => s.BatchId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // 
+            modelBuilder.Entity<Announcement>().ToTable("Announcement");
+            modelBuilder.Entity<Announcement>().HasKey(a => a.Id);
         }
     }
 }

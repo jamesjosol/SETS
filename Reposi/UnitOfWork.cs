@@ -44,6 +44,10 @@ namespace Reposi
         public IssueTagRepo IssueTags { get; private set; }
         public IssueLabEntryRepo IssueLabEntries { get; private set; }
         public IssueCommentRepo IssueComments { get; private set; }
+        public ContingencyConfigRepo ContingencyConfig { get; private set; }
+        public ContingencyBatchRepo ContingencyBatches { get; private set; }
+        public ContingencySpecimenRepo ContingencySpecimens { get; private set; }
+        public AnnouncementRepo Announcement { get; private set; }
 
         public UnitOfWork(AppDbContext context)
         {
@@ -79,6 +83,10 @@ namespace Reposi
             IssueTags = new IssueTagRepo(_context);
             IssueLabEntries = new IssueLabEntryRepo(_context);
             IssueComments = new IssueCommentRepo(_context);
+            ContingencyConfig = new ContingencyConfigRepo(_context);
+            ContingencyBatches = new ContingencyBatchRepo(_context);
+            ContingencySpecimens = new ContingencySpecimenRepo(_context);
+            Announcement = new AnnouncementRepo(context);
         }
 
         public void Dispose()

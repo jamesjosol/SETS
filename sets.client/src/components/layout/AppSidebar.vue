@@ -145,7 +145,7 @@
     </nav>
 
     <!-- New Endorsement Button (Endorser only) -->
-    <div v-if="authStore.isEndorser"
+    <div v-if="authStore.isEndorser && !authStore.isContingency"
          class="px-4 pt-4"
          :class="authStore.isEndorser && authStore.isReceiver ? '' : 'pb-6'"
          style="border-top: 1px solid var(--color-border);">
@@ -159,7 +159,7 @@
     </div>
 
     <!-- Receive Endorsement Button (Receiver only) -->
-    <div v-if="authStore.isReceiver"
+    <div v-if="authStore.isReceiver && !authStore.isContingency"
          class="px-4 pb-6"
          :class="authStore.isEndorser ? 'pt-2' : 'pt-4'"
          style="border-top: 1px solid var(--color-border);">
@@ -173,7 +173,7 @@
     </div>
 
     <!-- Assign RMT Button (Runner only) -->
-    <div v-if="authStore.isRunner"
+    <div v-if="authStore.isRunner && !authStore.isContingency"
          class="px-4 pb-6"
          :class="authStore.isRunner ? 'pt-4' : ''"
          style="border-top: 1px solid var(--color-border);">
@@ -204,6 +204,7 @@
     { name: 'Dashboard', path: '/dashboard', icon: 'dashboard' },
     { name: 'Endorsements', path: '/endorsements', icon: 'inventory_2' },
     { name: 'Audit Trail', path: '/audit-trail', icon: 'manage_search' },
+    { name: 'Contingency', path: '/contingency/endorse', icon: 'offline_bolt' },
   ]
 
   const endorserRestrictedItems = [
@@ -239,6 +240,13 @@
     { name: 'Settings', path: '/runner/settings', icon: 'settings' },
   ]
 
+  const contingencyEndorserItems = [
+    { name: 'Contingency', path: '/contingency/endorse', icon: 'offline_bolt' },
+  ]
+  const contingencyReceiverItems = [
+    { name: 'Contingency', path: '/receiver/contingency', icon: 'offline_bolt' },
+  ]
+
   // ── Computed: visible items for regular/TL user ────────────────────────────
 
   const isTLorAdmin = computed(() => authStore.isAdmin || authStore.roleID === 2)
@@ -256,6 +264,12 @@
     } else if (authStore.isRunner) {
       base = runnerItems
       restricted = runnerRestrictedItems
+    }
+
+    if (authStore.isContingency) {
+      if (authStore.isEndorser) return contingencyEndorserItems
+      if (authStore.isReceiver) return contingencyReceiverItems
+      return []
     }
 
     return isTLorAdmin.value ? [...base, ...restricted] : base

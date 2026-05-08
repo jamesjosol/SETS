@@ -126,6 +126,8 @@ namespace Service.Services
                         using var auditMaster = new MasterService(_branch_raw);
                         auditMaster.Audit.Log(Audit_Log.SectionReceived(
                             header.SpecimenNo,
+                            header.PatientName,
+                            header.PID,
                             request.UserID,
                             request.SectionCode,
                             request.UserID));

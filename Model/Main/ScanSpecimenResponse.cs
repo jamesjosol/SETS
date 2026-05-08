@@ -15,12 +15,13 @@ namespace Model.Main
         public string SampleTypeCode { get; set; }
         public string? SampleTypeName { get; set; }
         public string Status { get; set; }
-        public bool FirstScan { get; set; }         // true = Received was just stamped
+        public bool FirstScan { get; set; }     
         public DateTime? Received { get; set; }
         public string? ReceivedBy { get; set; }
         public string? Remarks { get; set; }
         public string? PatientName { get; set; } 
         public string? PID { get; set; }
+        public string? CutOffTime { get; set; }
         public List<ScanSpecimenTestItem> Tests { get; set; }
     }
 

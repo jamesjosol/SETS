@@ -53,6 +53,9 @@ namespace SETS.Server.Controllers
                             createdBy = s.CreatedBy,
                             updated = s.Updated,
                             updatedBy = s.UpdatedBy,
+                            cutOffTime = s.CutOffTime.HasValue
+                                ? $"{(int)s.CutOffTime.Value.TotalHours:D2}:{s.CutOffTime.Value.Minutes:D2}"
+                                : null,
                             testGroups
                         };
                     })
@@ -252,6 +255,15 @@ namespace SETS.Server.Controllers
                 section.Name = request.Name.Trim();
                 // auto no should not be updated
                 //section.AutoNo = section.Category == "1" ? request.AutoNo : 0;
+                // ── Cut-off time (Lab sections only) ──────────────────────
+                if (section.Category == "3")
+                {
+                    if (!string.IsNullOrEmpty(request.CutOffTime) &&
+                        TimeSpan.TryParseExact(request.CutOffTime, @"hh\:mm", null, out var ts))
+                        section.CutOffTime = ts;
+                    else
+                        section.CutOffTime = null;
+                }
                 section.UpdatedBy = updatedBy;
                 section.Updated = now;
 

@@ -125,7 +125,7 @@ namespace SETS.Server.Controllers
 
                 master.TestRunningDay.Add(new Test_RunningDay
                 {
-                    TestCode = request.TestCode.Trim().ToUpper(),
+                    TestCode = request.TestCode.Trim(),
                     TestName = request.TestName.Trim(),
                     RunningDays = string.Join(";", request.Days),
                     CreatedBy = CurrentUserID ?? "SYSTEM",

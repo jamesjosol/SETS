@@ -144,7 +144,19 @@ const routes = [
     component: () => import('../views/admin/AdminSettings.vue'),
     meta: { requiresAuth: true, requiresAdmin: true }
   },
-
+  // ── Contingency ───────────────────────────────────────────────────────
+  {
+    path: '/contingency/endorse',
+    name: 'ContingencyEndorse',
+    component: () => import('../views/contingency/ContingencyEndorse.vue'),
+    meta: { requiresAuth: true, category: '1' }
+  },
+  {
+    path: '/receiver/contingency',
+    name: 'ContingencyReceive',
+    component: () => import('../views/contingency/ContingencyReceive.vue'),
+    meta: { requiresAuth: true, category: '2' }
+  },
   // ── Catch-all ─────────────────────────────────────────────────────────
   {
     path: '/:pathMatch(.*)*',

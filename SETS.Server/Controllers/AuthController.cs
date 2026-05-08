@@ -108,6 +108,83 @@ namespace SETS.Server.Controllers
             }
         }
 
+        [HttpPost("contingency-login")]
+        public IActionResult ContingencyLogin([FromBody] ContingencyLoginRequest request)
+        {
+            try
+            {
+                using var master = new MasterService(request.Branch);
+
+                // Validate feature is enabled + master password matches
+                bool valid = master.Contingency.ValidateMasterPassword(request.Password);
+                if (!valid)
+                    return Unauthorized(new LoginResponse
+                    {
+                        Success = false,
+                        Message = "Invalid contingency password or feature is disabled."
+                    });
+
+                // Get user from SETS DB (no HCLAB needed)
+                var user = master.User.GetUser(request.UserID, request.Branch);
+                if (user == null)
+                    return Unauthorized(new LoginResponse { Success = false, Message = "User is not registered." });
+
+                if (!user.Active)
+                    return Unauthorized(new LoginResponse { Success = false, Message = "Your account has been deactivated." });
+
+                // Get their section access
+                var userSection = master.UserSection.GetByUserAndSection(request.UserID, request.SectionCode);
+                if (userSection == null)
+                    return Unauthorized(new LoginResponse
+                    {
+                        Success = false,
+                        Message = $"You do not have access to the {request.SectionCode} section."
+                    });
+
+                // Block runners — contingency is for endorsers and receivers only
+                var section = master.Section.GetByCode(request.SectionCode);
+                if (section?.Category == "3")
+                    return Unauthorized(new LoginResponse
+                    {
+                        Success = false,
+                        Message = "Contingency mode is not available for Lab Section/Runner role."
+                    });
+
+                // Set session — same as normal login but flag IsContingency
+                HttpContext.Session.SetString("UserID", user.UserID);
+                HttpContext.Session.SetString("UserName", user.UserName);
+                HttpContext.Session.SetString("BranchCode", request.Branch);
+                HttpContext.Session.SetString("SectionCode", request.SectionCode);
+                HttpContext.Session.SetInt32("RoleID", userSection.RoleID);
+                HttpContext.Session.SetString("IsAdmin", user.IsAdmin.ToString());
+                HttpContext.Session.SetString("SectionCategory", section?.Category ?? "1");
+                HttpContext.Session.SetString("IsContingency", "True");
+
+                return Ok(new LoginResponse
+                {
+                    Success = true,
+                    Message = "Contingency login successful.",
+                    Data = new UserSessionData
+                    {
+                        UserID = user.UserID,
+                        UserName = user.UserName,
+                        IsAdmin = false, // force non-admin in contingency mode
+                        BranchCode = request.Branch,
+                        SectionCode = request.SectionCode,
+                        SectionName = section?.Name ?? request.SectionCode,
+                        RoleID = userSection.RoleID,
+                        Theme = user.Theme,
+                        AccentColor = user.AccentColor,
+                        SectionCategory = section?.Category ?? "1"
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new LoginResponse { Success = false, Message = ex.Message });
+            }
+        }
+
         [HttpGet("pc-info")]
         public IActionResult GetPCInfo()
         {
