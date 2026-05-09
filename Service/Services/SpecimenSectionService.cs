@@ -243,7 +243,7 @@ namespace Service.Services
         /// <summary>
         /// Checks all tests under a header — if every one is "X", flips Header to "C".
         /// </summary>
-        public void TryCompleteHeader(int headerId)
+        public bool TryCompleteHeader(int headerId)
         {
             try
             {
@@ -253,18 +253,19 @@ namespace Service.Services
                     .Where(t => t.HeaderId == headerId)
                     .Any(t => t.Status != "X");
 
-                if (!allReleased) return;
+                if (!allReleased) return false;
 
                 var header = context.Specimen_Section_Header.Find(headerId);
-                if (header == null || header.Status == "C") return;
+                if (header == null || header.Status == "C") return false;
 
                 header.Status = "C";
                 header.Updated = DateTime.Now;
                 context.SaveChanges();
+
+                return true;
             }
             catch { throw; }
         }
-
         public Specimen_Section_Header? GetHeaderById(int id)
         {
             try

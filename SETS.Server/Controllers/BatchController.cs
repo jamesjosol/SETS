@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Model.HCLAB;
 using Model.Main;
 using Service;
+using SETS.Server.Hubs;
 
 namespace API.Controllers
 {
@@ -9,12 +11,23 @@ namespace API.Controllers
     [Route("api/[controller]")]
     public class BatchController : ControllerBase
     {
+        private readonly IHubContext<NotificationHub> _hub;
+
+        private string? Branch => HttpContext.Session.GetString("BranchCode");
+        private string? UserID => HttpContext.Session.GetString("UserID");
+        private string? SectionCode => HttpContext.Session.GetString("SectionCode");
+
+        public BatchController(IHubContext<NotificationHub> hub)
+        {
+            _hub = hub;
+        }
+
         [HttpPost("endorse")]
-        public IActionResult Endorse([FromBody] EndorseRequest request)
+        public async Task<IActionResult> Endorse([FromBody] EndorseRequest request)
         {
             try
             {
-                var branch = HttpContext.Session.GetString("BranchCode");
+                var branch = Branch;
                 if (string.IsNullOrEmpty(branch))
                     return Unauthorized(new { message = "Session expired." });
 
@@ -29,7 +42,6 @@ namespace API.Controllers
 
                 using var master = new MasterService(branch);
 
-                // Auto-resolve local Processing section (Category = "2")
                 var processingSection = master.Section
                     .GetByBranch(branch)
                     .FirstOrDefault(s => s.Category == "2" && s.Active);
@@ -39,8 +51,39 @@ namespace API.Controllers
 
                 request.ProcDestination = processingSection.Code;
 
-                var batchNo = master.Batch.Endorse(request);
-                return Ok(new { success = true, batchNo });
+                var result = master.Batch.Endorse(request);
+
+                // ── Notification: BATCH_ENDORSED → all receivers ──────────────
+                try
+                {
+                    var notif = master.Notification.Create(new CreateNotificationRequest
+                    {
+                        NotifType = NotifType.BatchEndorsed,
+                        Title = "New Batch Endorsed",
+                        Message = $"Batch {result.BatchNo} endorsed from {result.LocationName}.",
+                        TargetCategory = "2",
+                        ReferenceID = result.BatchNo
+                    });
+
+                    await _hub.Clients
+                        .Group($"notif-{branch}-cat-2")
+                        .SendAsync("NewNotification", new
+                        {
+                            notif.NotifID,
+                            notif.NotifType,
+                            notif.Title,
+                            notif.Message,
+                            notif.IsRead,
+                            notif.ReferenceID,
+                            notif.CreatedAt
+                        });
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[NOTIF] BATCH_ENDORSED failed for {result.BatchNo}: {ex.Message}");
+                }
+
+                return Ok(new { success = true, batchNo = result.BatchNo });
             }
             catch (Exception ex)
             {
@@ -53,7 +96,7 @@ namespace API.Controllers
         {
             try
             {
-                var branch = HttpContext.Session.GetString("BranchCode");
+                var branch = Branch;
                 if (string.IsNullOrEmpty(branch))
                     return Unauthorized(new { message = "Session expired." });
 
@@ -80,7 +123,7 @@ namespace API.Controllers
         {
             try
             {
-                var branch = HttpContext.Session.GetString("BranchCode");
+                var branch = Branch;
                 if (string.IsNullOrEmpty(branch))
                     return Unauthorized(new { message = "Session expired." });
                 if (string.IsNullOrEmpty(sectionCode))
@@ -104,7 +147,7 @@ namespace API.Controllers
         {
             try
             {
-                var branch = HttpContext.Session.GetString("BranchCode");
+                var branch = Branch;
                 if (string.IsNullOrEmpty(branch))
                     return Unauthorized(new { message = "Session expired." });
 
@@ -126,7 +169,7 @@ namespace API.Controllers
         {
             try
             {
-                var branch = HttpContext.Session.GetString("BranchCode");
+                var branch = Branch;
                 if (string.IsNullOrEmpty(branch))
                     return Unauthorized(new { message = "Session expired." });
                 if (string.IsNullOrEmpty(sectionCode))
@@ -150,7 +193,7 @@ namespace API.Controllers
         {
             try
             {
-                var branch = HttpContext.Session.GetString("BranchCode");
+                var branch = Branch;
                 if (string.IsNullOrEmpty(branch))
                     return Unauthorized(new { message = "Session expired." });
 
@@ -172,7 +215,7 @@ namespace API.Controllers
         {
             try
             {
-                var branch = HttpContext.Session.GetString("BranchCode");
+                var branch = Branch;
                 if (string.IsNullOrEmpty(branch))
                     return Unauthorized(new { message = "Session expired." });
 
@@ -197,7 +240,7 @@ namespace API.Controllers
         {
             try
             {
-                var branch = HttpContext.Session.GetString("BranchCode");
+                var branch = Branch;
                 if (string.IsNullOrEmpty(branch))
                     return Unauthorized(new { message = "Session expired." });
                 if (string.IsNullOrEmpty(sectionCode))
@@ -245,7 +288,7 @@ namespace API.Controllers
         {
             try
             {
-                var branch = HttpContext.Session.GetString("BranchCode");
+                var branch = Branch;
                 if (string.IsNullOrEmpty(branch))
                     return Unauthorized(new { message = "Session expired." });
                 if (string.IsNullOrEmpty(sectionCode))
@@ -269,7 +312,7 @@ namespace API.Controllers
         {
             try
             {
-                var branch = HttpContext.Session.GetString("BranchCode");
+                var branch = Branch;
                 if (string.IsNullOrEmpty(branch))
                     return Unauthorized(new { message = "Session expired." });
 
@@ -291,16 +334,16 @@ namespace API.Controllers
         {
             try
             {
-                var branch = HttpContext.Session.GetString("BranchCode");
+                var branch = Branch;
                 if (string.IsNullOrEmpty(branch))
                     return Unauthorized(new { message = "Session expired." });
 
                 if (string.IsNullOrWhiteSpace(q) || q.Trim().Length < 3)
                     return BadRequest(new { message = "Minimum 3 characters required." });
 
-                var userID = HttpContext.Session.GetString("UserID") ?? "";
+                var userID = UserID ?? "";
                 var category = HttpContext.Session.GetString("SectionCategory") ?? "";
-                var sectionCode = HttpContext.Session.GetString("SectionCode") ?? "";
+                var sectionCode = SectionCode ?? "";
                 var isAdmin = HttpContext.Session.GetString("IsAdmin") == "True";
 
                 // Admin bypasses all role scoping

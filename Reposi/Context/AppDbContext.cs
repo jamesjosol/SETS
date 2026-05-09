@@ -42,6 +42,7 @@ namespace Reposi.Context
         public DbSet<Contingency_Batch> ContingencyBatches { get; set; }
         public DbSet<Contingency_Specimen> ContingencySpecimens { get; set; }
         public DbSet<Announcement> Announcement { get; set; }
+        public DbSet<Notification_Log> Notification_Log { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -248,9 +249,13 @@ namespace Reposi.Context
                 .HasForeignKey(s => s.BatchId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // 
+            // Announcement  
             modelBuilder.Entity<Announcement>().ToTable("Announcement");
             modelBuilder.Entity<Announcement>().HasKey(a => a.Id);
+
+            // Notification_Log
+            modelBuilder.Entity<Notification_Log>().ToTable("Notification_Log");
+            modelBuilder.Entity<Notification_Log>().HasKey(n => n.NotifID);
         }
     }
 }

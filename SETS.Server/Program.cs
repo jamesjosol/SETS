@@ -29,7 +29,6 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// ?? Middleware pipeline — ORDER MATTERS ????????????????????????????????????
 app.UseCors("AllowFrontend");
 app.UseDefaultFiles();
 app.UseStaticFiles();
@@ -41,10 +40,12 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseSession();          // ? must be BEFORE UseAuthorization and MapControllers
+app.UseSession();          
 app.UseAuthorization();
 app.MapControllers();
 app.MapHub<ContingencyHub>("/hubs/contingency");
+app.MapHub<AnnouncementHub>("/hubs/announcement");
+app.MapHub<NotificationHub>("/hubs/notification");
 app.MapFallbackToFile("/index.html");
 
 app.Run();

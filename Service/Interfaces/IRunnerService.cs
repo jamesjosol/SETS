@@ -11,7 +11,7 @@ namespace Service.Interfaces
     public interface IRunnerService
     {
         ScanSpecimenResponse ScanSpecimen(ScanSpecimenRequest request);
-        void SaveAssignments(SaveAssignmentsRequest request);
+        SaveAssignmentsResult SaveAssignments(SaveAssignmentsRequest request);
         List<PendingSpecimenItem> GetPendingSpecimens(string sectionCode);
         List<ScheduledSpecimenItem> GetScheduledSpecimens(string sectionCode);
         List<Specimen_Section_Test> GetTestsByHeader(int headerId);

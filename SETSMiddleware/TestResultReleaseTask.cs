@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Linq;
+using System.Net.Http;
+using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using HCLAB;
 using Model.SETSDB;
@@ -7,18 +10,15 @@ using Service;
 
 namespace SETSMiddleware.Tasks
 {
-    /// <summary>
-    /// Task 3 — Test Result Release Checker
-    ///
-    /// Runs every 60 seconds. Finds all Specimen_Section_Test rows with Status = "R"
-    /// (Running), queries Oracle ord_dtl to check if all child rows (od_item_type = 'U')
-    /// under the matching od_order_ti have a non-null od_release_on.
-    /// If fully released: flips test Status → "X", then checks if all sibling tests
-    /// are also "X" — if so flips the parent Specimen_Section_Header Status → "C".
-    /// </summary>
     public class TestResultReleaseTask : TaskBase
     {
         private readonly string _branch;
+        private static readonly HttpClient _http = new HttpClient();
+
+        // Base URL of SETS.Server — adjust if different
+        private const string SETS_BASE_URL = "http://localhost:5066";
+        private const string MIDDLEWARE_KEY = "sets-middleware-secret-2026";
+
         public TestResultReleaseTask(string branch, int intervalSeconds = 60)
         {
             _branch = branch;
@@ -65,7 +65,14 @@ namespace SETSMiddleware.Tasks
                         if (!isReleased) continue;
 
                         master.SpecimenSection.MarkTestReleased(test.Id);
-                        master.SpecimenSection.TryCompleteHeader(test.HeaderId);
+
+                        // ── TryCompleteHeader now returns bool ─────────────
+                        bool justCompleted = master.SpecimenSection.TryCompleteHeader(test.HeaderId);
+
+                        if (justCompleted && header != null)
+                        {
+                            await FireSpecimenCompletedAsync(header.SpecimenNo, header.SectionCode);
+                        }
 
                         // ── Audit ──────────────────────────────────────────
                         try
@@ -125,7 +132,12 @@ namespace SETSMiddleware.Tasks
                         if (!isReleased) continue;
 
                         master.OnSite.MarkTestReleased(test.Id);
-                        master.OnSite.TryCompleteHeader(test.HeaderId);
+                        bool justCompleted = master.OnSite.TryCompleteHeader(test.HeaderId);
+
+                        if (justCompleted && header != null)
+                        {
+                            await FireSpecimenCompletedAsync(header.SpecimenNo, header.SectionCode);
+                        }
 
                         // ── Audit ──────────────────────────────────────────
                         try
@@ -164,6 +176,44 @@ namespace SETSMiddleware.Tasks
 
             LastStatus = $"Last run: {DateTime.Now:HH:mm:ss} — {summary}";
             Log(summary, releasedCount > 0 ? LogLevel.Success : LogLevel.Info);
+        }
+
+        // ── Fire SPECIMEN_COMPLETED to SETS.Server ─────────────────────────────
+        private async Task FireSpecimenCompletedAsync(string specimenNo, string sectionCode)
+        {
+            try
+            {
+                var payload = new
+                {
+                    branch = _branch,
+                    notifType = "SPECIMEN_COMPLETED",
+                    title = "Specimen Completed",
+                    message = $"Specimen {specimenNo} has been completed in your section.",
+                    targetCategory = "3",
+                    targetSection = sectionCode,
+                    referenceID = specimenNo,
+                    isAdmin = false
+                };
+
+                var json = JsonSerializer.Serialize(payload);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                using var req = new HttpRequestMessage(HttpMethod.Post,
+                    $"{SETS_BASE_URL}/api/notification/middleware");
+                req.Headers.Add("X-Middleware-Key", MIDDLEWARE_KEY);
+                req.Content = content;
+
+                var response = await _http.SendAsync(req);
+
+                if (!response.IsSuccessStatusCode)
+                    Log($"[NOTIF] SPECIMEN_COMPLETED HTTP {response.StatusCode} for {specimenNo}", LogLevel.Warning);
+                else
+                    Log($"[NOTIF] SPECIMEN_COMPLETED fired for {specimenNo}", LogLevel.Success);
+            }
+            catch (Exception ex)
+            {
+                Log($"[NOTIF] FireSpecimenCompleted failed for {specimenNo}: {ex.Message}", LogLevel.Warning);
+            }
         }
     }
 }

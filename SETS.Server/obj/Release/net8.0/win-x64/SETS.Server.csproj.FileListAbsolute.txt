@@ -85,3 +85,11 @@ C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\obj\Release\net8.0\win-x6
 C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\obj\Release\net8.0\win-x64\SETS.Server.pdb
 C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\obj\Release\net8.0\win-x64\SETS.Server.genruntimeconfig.cache
 C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\obj\Release\net8.0\win-x64\ref\SETS.Server.dll
+C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\bin\Release\net8.0\win-x64\ClosedXML.dll
+C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\bin\Release\net8.0\win-x64\ClosedXML.Parser.dll
+C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\bin\Release\net8.0\win-x64\DocumentFormat.OpenXml.dll
+C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\bin\Release\net8.0\win-x64\DocumentFormat.OpenXml.Framework.dll
+C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\bin\Release\net8.0\win-x64\ExcelNumberFormat.dll
+C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\bin\Release\net8.0\win-x64\RBush.dll
+C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\bin\Release\net8.0\win-x64\SixLabors.Fonts.dll
+C:\Users\jamespaul.josol\source\repos\SETS\SETS.Server\bin\Release\net8.0\win-x64\System.IO.Packaging.dll

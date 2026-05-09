@@ -1,0 +1,217 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Model.Main
+{
+    // ── Shared filter base ────────────────────────────────────────────────────
+
+    public class ReportDateRangeRequest
+    {
+        public DateTime DateFrom { get; set; }
+        public DateTime DateTo { get; set; }
+    }
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // R1 — Unprocessed Specimen Report
+    // ══════════════════════════════════════════════════════════════════════════
+
+    public class UnprocessedSpecimenRequest : ReportDateRangeRequest { }
+
+    public class UnprocessedSpecimenRow
+    {
+        public string LabNo { get; set; } = string.Empty;
+        public string? PatientName { get; set; }
+        public string? TestName { get; set; }
+        public string? ScheduleTag { get; set; }       // ERD / CRD / SRD
+        public string? RunningDate { get; set; }        // formatted date string when tag is CRD/SRD
+        public string SectionCode { get; set; } = string.Empty;
+        public string SectionName { get; set; } = string.Empty;
+    }
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // R2 — Specimen Not Endorsed
+    // ══════════════════════════════════════════════════════════════════════════
+
+    public class SpecimenNotEndorsedRequest : ReportDateRangeRequest
+    {
+        public string? LocationCode { get; set; }       // null = ALL
+    }
+
+    public class SpecimenNotEndorsedRow
+    {
+        public string? BatchNo { get; set; }
+        public string? Location { get; set; }
+        public string? SpecimenNo { get; set; }
+        public string? PatientName { get; set; }
+        public DateTime? LoggedAt { get; set; }
+    }
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // R3 — Specimen Not Received / Pending
+    // ══════════════════════════════════════════════════════════════════════════
+
+    public class SpecimenNotReceivedRequest : ReportDateRangeRequest
+    {
+        public string? LocationCode { get; set; }       // null = ALL
+    }
+
+    public class SpecimenNotReceivedRow
+    {
+        public string BatchNo { get; set; } = string.Empty;
+        public string Location { get; set; } = string.Empty;
+        public string? LabNo { get; set; }
+        public string? PatientName { get; set; }
+        public string? SpecimenType { get; set; }
+        public DateTime Endorsed { get; set; }
+    }
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // R4 — Test Management Report
+    // ══════════════════════════════════════════════════════════════════════════
+
+    public class TestManagementRequest : ReportDateRangeRequest
+    {
+        public string? LocationCode { get; set; }       // null = ALL
+    }
+
+    public class TestManagementRow
+    {
+        public string TestCode { get; set; } = string.Empty;
+        public string TestName { get; set; } = string.Empty;
+        public string? RunningDays { get; set; }
+        public string? Tat { get; set; }
+        public string Status { get; set; } = string.Empty;  // Active / Inactive
+    }
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // R5 — Batch Summary Report
+    // ══════════════════════════════════════════════════════════════════════════
+
+    public class BatchSummaryReportRequest : ReportDateRangeRequest
+    {
+        public string? LocationCode { get; set; }       // null = ALL
+        public string? SampleTypeCode { get; set; }     // null = ALL
+        public string? UserID { get; set; }             // null = ALL
+    }
+
+    public class BatchSummaryReportRow
+    {
+        public string BatchNo { get; set; } = string.Empty;
+        public string LocationCode { get; set; } = string.Empty;
+        public string Location { get; set; } = string.Empty;
+        public DateTime Endorsed { get; set; }
+        public string EndorsedBy { get; set; } = string.Empty;
+        public DateTime? ProcReceived { get; set; }
+        public string? ReceivedBy { get; set; }
+        public DateTime? Completed { get; set; }
+        public string? Temp { get; set; }
+        public string Status { get; set; } = string.Empty;
+        // TAT (Batch Endorsement) = ProcReceived – Endorsed   (how long specimen arrives from branch)
+        public string? TatEndorsement { get; set; }     // hh:mm, null if ProcReceived is null
+                                                        // TAT (Batch Completion)   = Completed – ProcReceived (how long batch is fully received)
+        public string? TatCompletion { get; set; }      // hh:mm, null if either timestamp is null
+    }
+
+    public class BatchSummaryReportResult
+    {
+        public List<BatchSummaryReportRow> Rows { get; set; } = new();
+        public int TotalBatches { get; set; }
+        public int CompletedBatches { get; set; }
+        public int PendingBatches { get; set; }
+        public string? AvgTatEndorsement { get; set; }  // hh:mm average across rows that have it
+        public string? AvgTatCompletion { get; set; }   // hh:mm average across rows that have it
+    }
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // R6 — Specimen Receipt (Section) Report
+    // ══════════════════════════════════════════════════════════════════════════
+
+    public class SpecimenReceiptSectionRequest : ReportDateRangeRequest
+    {
+        public string? LocationCode { get; set; }       // null = ALL
+        public string? SectionCode { get; set; }        // null = ALL
+        public string? TestCode { get; set; }           // null = ALL
+        public string? UserID { get; set; }             // null = ALL
+    }
+
+    public class SpecimenReceiptSectionRow
+    {
+        public string BatchNo { get; set; } = string.Empty;
+        public string Location { get; set; } = string.Empty;
+        public string? LabNo { get; set; }
+        public DateTime? ProcReceivedAt { get; set; }
+        public DateTime? SectionReceivedAt { get; set; }
+        public string? TatSection { get; set; }         // hh:mm
+    }
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // R7 — Duplicate Endorsement Report
+    // ══════════════════════════════════════════════════════════════════════════
+
+    public class DuplicateEndorsementRequest : ReportDateRangeRequest
+    {
+        public string? LocationCode { get; set; }       // null = ALL
+    }
+
+    public class DuplicateEndorsementRow
+    {
+        public string? BatchNo { get; set; }
+        public string? Location { get; set; }
+        public string? LabNo { get; set; }
+        public string? PatientName { get; set; }
+        public string? SpecimenType { get; set; }
+        public DateTime? FirstEndorsedAt { get; set; }
+        public string? FirstEndorsedBy { get; set; }
+        public DateTime? SecondEndorsedAt { get; set; }
+        public string? SecondEndorsedBy { get; set; }
+        public string? Decision { get; set; }           // Y / N
+        public string? Reason { get; set; }
+    }
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // R8 — Transaction Beyond 14 Days Report
+    // ══════════════════════════════════════════════════════════════════════════
+
+    public class Beyond14DaysRequest : ReportDateRangeRequest
+    {
+        public string? LocationCode { get; set; }       // null = ALL
+    }
+
+    public class Beyond14DaysRow
+    {
+        public string? BatchNo { get; set; }
+        public string? Location { get; set; }
+        public string? LabNo { get; set; }
+        public string? PatientName { get; set; }
+        public string? SpecimenType { get; set; }
+        public DateTime? EndorsedAt { get; set; }
+        public string? EndorsedBy { get; set; }
+        public string? Decision { get; set; }           // Y / N
+        public string? Reason { get; set; }
+    }
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // R9 — Monthly Endorsement Summary
+    // ══════════════════════════════════════════════════════════════════════════
+
+    public class MonthlyEndorsementSummaryRequest : ReportDateRangeRequest
+    {
+        public string? LocationCode { get; set; }       // null = ALL
+        public string? SectionCode { get; set; }        // null = ALL
+    }
+
+    public class MonthlyEndorsementSummaryRow
+    {
+        public string Location { get; set; } = string.Empty;
+        public int TotalBatches { get; set; }
+        public int BatchesOutsideTat { get; set; }
+        public int BatchesWithinTat { get; set; }
+        public int DuplicateEndorsements { get; set; }
+        public int NotEndorsed { get; set; }
+        public int Beyond14Days { get; set; }
+    }
+}
+

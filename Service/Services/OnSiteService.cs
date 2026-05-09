@@ -671,7 +671,7 @@ namespace Service.Services
             catch { throw; }
         }
 
-        public void TryCompleteHeader(int headerId)
+        public bool TryCompleteHeader(int headerId)
         {
             try
             {
@@ -682,7 +682,7 @@ namespace Service.Services
                     .ToList();
 
                 var header = context.OnSite_Section_Header.Find(headerId);
-                if (header == null || header.Status == "C") return;
+                if (header == null || header.Status == "C") return false;
 
                 if (allTests.All(t => t.Status == "X"))
                     header.Status = "C";
@@ -693,6 +693,8 @@ namespace Service.Services
 
                 header.Updated = DateTime.Now;
                 context.SaveChanges();
+
+                return true;
             }
             catch { throw; }
         }

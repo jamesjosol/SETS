@@ -180,7 +180,7 @@ namespace Service.Services
         // - Neither                       → Status = P (Pending)
         // Then re-derives header status from all its child tests.
 
-        public void SaveAssignments(SaveAssignmentsRequest request)
+        public SaveAssignmentsResult SaveAssignments(SaveAssignmentsRequest request)
         {
             try
             {
@@ -331,6 +331,8 @@ namespace Service.Services
                         .Where(h => affectedHeaderIds.Contains(h.Id))
                         .ToList();
 
+
+                    var justCompletedHeaders = new List<CompletedHeaderInfo>();
                     foreach (var header in headers)
                     {
                         var headerTests = allTestsForHeaders.Where(t => t.HeaderId == header.Id).ToList();
@@ -349,6 +351,16 @@ namespace Service.Services
                             header.UpdatedBy = request.UserID;
                             header.Updated = now;
                             context.Specimen_Section_Header.Update(header);
+                        }
+
+
+                        if (newStatus == "C" && header.Status != "C") // was not already C
+                        {
+                            justCompletedHeaders.Add(new CompletedHeaderInfo
+                            {
+                                SpecimenNo = header.SpecimenNo,
+                                SectionCode = header.SectionCode
+                            });
                         }
                     }
 
@@ -434,6 +446,11 @@ namespace Service.Services
                     {
                         Console.WriteLine($"[AUDIT] Logging failed in SaveAssignments: {auditEx.Message}");
                     }
+
+                    return new SaveAssignmentsResult
+                    {
+                        CompletedHeaders = justCompletedHeaders
+                    };
                 }
                 catch
                 {

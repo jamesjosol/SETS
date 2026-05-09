@@ -119,20 +119,26 @@ onUnmounted(() => clearInterval(ticker))
 
 <style scoped>
   .banner-enter-active {
-    transition: opacity 0.25s ease, transform 0.25s ease;
+    transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), max-height 0.3s ease;
+    max-height: 80px;
+    overflow: hidden;
   }
 
   .banner-leave-active {
-    transition: opacity 0.2s ease, transform 0.2s ease;
+    transition: opacity 0.2s ease, transform 0.2s ease, max-height 0.25s ease;
+    max-height: 80px;
+    overflow: hidden;
   }
 
   .banner-enter-from {
     opacity: 0;
-    transform: translateY(-6px);
+    transform: translateY(-10px);
+    max-height: 0;
   }
 
   .banner-leave-to {
     opacity: 0;
     transform: translateY(-6px);
+    max-height: 0;
   }
 </style>

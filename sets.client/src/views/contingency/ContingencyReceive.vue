@@ -404,8 +404,8 @@
 
 <script setup>
   import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
-  import * as signalR from '@microsoft/signalr'
   import AppLayout from '@/components/layout/AppLayout.vue'
+  import { useSignalR } from '@/composables/useSignalR'
   import AlertModal from '@/components/common/AlertModal.vue'
   import { useAuthStore } from '@/stores/authStore'
   import { contingencyApi } from '@/api/contingencyApi'
@@ -445,7 +445,22 @@
   const receivedDetailLoading = ref(false)
 
   // ── SignalR ────────────────────────────────────────────────────────────────
-  let hubConnection = null
+  const { on } = useSignalR('/hubs/contingency', authStore.branchCode, () => loadBatches())
+
+  on('NewContingencyBatch', async () => {
+    await loadBatches()
+  })
+
+  on('ContingencySpecimenReceived', async (data) => {
+    if (selectedBatch.value?.id === data.batchId) {
+      await loadDetail(data.batchId)
+      if (data.batchCompleted) {
+        const b = batches.value.find(b => b.id === data.batchId)
+        if (b) { b.status = 'Completed'; b.receivedCount = b.totalSpecimens }
+      }
+    }
+    await loadBatches()
+  })
 
   // ── Computed ───────────────────────────────────────────────────────────────
   const pendingBatches = computed(() =>
@@ -500,32 +515,6 @@
         completingBatch.value = null
       }
     }, 1000)
-  }
-
-  // ── SignalR ────────────────────────────────────────────────────────────────
-  async function connectSignalR() {
-    hubConnection = new signalR.HubConnectionBuilder()
-      .withUrl('/hubs/contingency')
-      .withAutomaticReconnect()
-      .build()
-
-    hubConnection.on('NewContingencyBatch', async () => {
-      await loadBatches()
-    })
-
-    hubConnection.on('ContingencySpecimenReceived', async (data) => {
-      if (selectedBatch.value?.id === data.batchId) {
-        await loadDetail(data.batchId)
-        if (data.batchCompleted) {
-          const b = batches.value.find(b => b.id === data.batchId)
-          if (b) { b.status = 'Completed'; b.receivedCount = b.totalSpecimens }
-        }
-      }
-      await loadBatches()
-    })
-
-    await hubConnection.start()
-    await hubConnection.invoke('JoinBranch', authStore.branchCode)
   }
 
   // ── Load ───────────────────────────────────────────────────────────────────
@@ -636,15 +625,10 @@
   // ── Lifecycle ──────────────────────────────────────────────────────────────
   onMounted(async () => {
     await loadBatches()
-    await connectSignalR()
   })
 
-  onUnmounted(async () => {
+  onUnmounted(() => {
     clearInterval(countdownTimer)
-    if (hubConnection) {
-      await hubConnection.invoke('LeaveBranch', authStore.branchCode).catch(() => { })
-      await hubConnection.stop()
-    }
   })
 </script>
 

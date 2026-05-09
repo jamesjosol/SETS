@@ -29,6 +29,8 @@ namespace Service
         public SpecimenIssueService SpecimenIssue { get; private set; }
         public ContingencyService Contingency { get; private set; }
         public AnnouncementService Announcement { get; private set; }
+        public NotificationService Notification { get; private set; }
+        public ReportService Report { get; set; }
 
         private readonly AppDbContextFactory _factory;
         private readonly string _branch;
@@ -65,31 +67,13 @@ namespace Service
             SpecimenIssue = new SpecimenIssueService(_factory, _branch);
             Contingency = new ContingencyService(_factory, _branch);
             Announcement = new AnnouncementService(_factory, _branch);
+            Notification = new NotificationService(_factory, _branch);
+            Report = new ReportService(_factory, _branch);
         }
 
         public void Dispose()
         {
-            User = null;
-            Branch = null;
-            Section = null;
-            UserSection = null;
-            PC = null;
-            Transaction = null;
-            SampleType = null;
-            Receiving = null;
-            Health = null;
-            Runner = null;
-            SpecimenSection = null;
-            TestGroup = null;
-            TestRunningDay = null;
-            Tat = null;
-            OnSite = null;
-            OnSiteSettings = null;
-            ProcessingOptions = null;
-            Audit = null;
-            SpecimenIssue = null;
-            Contingency = null;
-            Announcement = null;
+            
         }
     }
 }

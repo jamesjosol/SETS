@@ -117,7 +117,7 @@ namespace Service.Services
                     context.SaveChanges();
 
                     // Route specimen to lab sections
-                    await RouteToLabSections(context, specimen, request.UserID, now);
+                    var routedSectionCode = await RouteToLabSections(context, specimen, request.UserID, now);
 
                     tx.Commit();
 
@@ -152,7 +152,9 @@ namespace Service.Services
                         Temp = header.Temp,        // ← carry existing temp
                         TempRemarks = header.TempRemarks,
                         BagNo = header.BagNo,
-                        EndorsementRemarks = specimen.Remarks
+                        EndorsementRemarks = specimen.Remarks,
+                        EndorsedBy = header.EndorsedBy,
+                        RoutedSectionCode = routedSectionCode,
                     };
                 }
                 catch
@@ -715,7 +717,7 @@ namespace Service.Services
             catch { throw; }
         }
 
-        private async Task RouteToLabSections(
+        private async Task<string?> RouteToLabSections(
                 AppDbContext context,
                 Batch_Specimen specimen,
                 string routedByUserID,
@@ -726,24 +728,24 @@ namespace Service.Services
             var tests = await HclabMaster.HCLABTransactions
                 .GetOrd_Dtl(connStr, specimen.LabNo, specimen.SampleTypeCode);
 
-            if (tests == null || !tests.Any()) return;
+            if (tests == null || !tests.Any()) return string.Empty;
 
             // Step 2 — All rows share the same TestGroup — take it from the first row
             var testGroupCode = tests.First().TESTGROUP;
-            if (string.IsNullOrEmpty(testGroupCode)) return;
+            if (string.IsNullOrEmpty(testGroupCode)) return string.Empty;
 
             // Step 3 — Resolve which section owns this test group
             var mapping = context.Section_TestGroup
                 .FirstOrDefault(m => m.Active && m.TestGroupCode == testGroupCode);
 
-            if (mapping == null) return; // unmapped test group — skip silently
+            if (mapping == null) return string.Empty; // unmapped test group — skip silently
 
             // Step 4 — Guard against duplicate routing
             bool alreadyRouted = context.Specimen_Section_Header
                 .Any(h => h.SpecimenNo == specimen.SpecimenNo
                        && h.TestGroupCode == testGroupCode);
 
-            if (alreadyRouted) return;
+            if (alreadyRouted) return string.Empty;
 
             bool isHclabRouted = await HclabMaster.HCLABTransactions
                                     .CheckSplRouted(connStr, specimen.SpecimenNo);
@@ -777,9 +779,10 @@ namespace Service.Services
             }
 
             context.SaveChanges();
+            return mapping.SectionCode;
         }
 
-        public void CancelSpecimen(CancelSpecimenRequest request)
+        public CancelSpecimenResult CancelSpecimen(CancelSpecimenRequest request)
         {
             try
             {
@@ -866,6 +869,11 @@ namespace Service.Services
                     {
                         Console.WriteLine($"[AUDIT] Logging failed for specimen {specimen.SpecimenNo}: {auditEx.Message}");
                     }
+
+                    return new CancelSpecimenResult
+                    {
+                        EndorsedBy = batchHeader.EndorsedBy 
+                    };
                 }
                 catch
                 {

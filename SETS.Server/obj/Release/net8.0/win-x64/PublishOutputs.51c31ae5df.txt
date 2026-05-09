@@ -7,6 +7,11 @@ C:\Users\jamespaul.josol\source\repos\SETS\publish\SETS.Server.runtimeconfig.jso
 C:\Users\jamespaul.josol\source\repos\SETS\publish\SETS.Server.pdb
 C:\Users\jamespaul.josol\source\repos\SETS\publish\Azure.Core.dll
 C:\Users\jamespaul.josol\source\repos\SETS\publish\Azure.Identity.dll
+C:\Users\jamespaul.josol\source\repos\SETS\publish\ClosedXML.dll
+C:\Users\jamespaul.josol\source\repos\SETS\publish\ClosedXML.Parser.dll
+C:\Users\jamespaul.josol\source\repos\SETS\publish\DocumentFormat.OpenXml.dll
+C:\Users\jamespaul.josol\source\repos\SETS\publish\DocumentFormat.OpenXml.Framework.dll
+C:\Users\jamespaul.josol\source\repos\SETS\publish\ExcelNumberFormat.dll
 C:\Users\jamespaul.josol\source\repos\SETS\publish\Microsoft.AspNetCore.SpaProxy.dll
 C:\Users\jamespaul.josol\source\repos\SETS\publish\Microsoft.Bcl.AsyncInterfaces.dll
 C:\Users\jamespaul.josol\source\repos\SETS\publish\Microsoft.Data.SqlClient.dll
@@ -32,6 +37,8 @@ C:\Users\jamespaul.josol\source\repos\SETS\publish\Microsoft.OpenApi.dll
 C:\Users\jamespaul.josol\source\repos\SETS\publish\Microsoft.SqlServer.Server.dll
 C:\Users\jamespaul.josol\source\repos\SETS\publish\Microsoft.Win32.SystemEvents.dll
 C:\Users\jamespaul.josol\source\repos\SETS\publish\Oracle.ManagedDataAccess.dll
+C:\Users\jamespaul.josol\source\repos\SETS\publish\RBush.dll
+C:\Users\jamespaul.josol\source\repos\SETS\publish\SixLabors.Fonts.dll
 C:\Users\jamespaul.josol\source\repos\SETS\publish\Swashbuckle.AspNetCore.Swagger.dll
 C:\Users\jamespaul.josol\source\repos\SETS\publish\Swashbuckle.AspNetCore.SwaggerGen.dll
 C:\Users\jamespaul.josol\source\repos\SETS\publish\Swashbuckle.AspNetCore.SwaggerUI.dll
@@ -42,6 +49,7 @@ C:\Users\jamespaul.josol\source\repos\SETS\publish\System.DirectoryServices.dll
 C:\Users\jamespaul.josol\source\repos\SETS\publish\System.DirectoryServices.Protocols.dll
 C:\Users\jamespaul.josol\source\repos\SETS\publish\System.Drawing.Common.dll
 C:\Users\jamespaul.josol\source\repos\SETS\publish\System.IdentityModel.Tokens.Jwt.dll
+C:\Users\jamespaul.josol\source\repos\SETS\publish\System.IO.Packaging.dll
 C:\Users\jamespaul.josol\source\repos\SETS\publish\System.Memory.Data.dll
 C:\Users\jamespaul.josol\source\repos\SETS\publish\System.Runtime.Caching.dll
 C:\Users\jamespaul.josol\source\repos\SETS\publish\System.Security.Cryptography.ProtectedData.dll

@@ -10,7 +10,7 @@ namespace Service.Interfaces
 {
     public interface IBatchService
     {
-        string Endorse(Model.Main.EndorseRequest request);
+        EndorseResult Endorse(EndorseRequest request);
         Batch_Specimen? CheckSpecimen(string specimenNo);
         BatchSummary GetDashboardSummary(string sectionCode, DateTime date);
         List<BatchSectionSummary> GetAllSectionsSummary(DateTime date);

@@ -34,7 +34,7 @@ namespace Service.Interfaces
         void FlipHclabRouted(string specimenNo);
         List<Specimen_Section_Test> GetAllRunningTests();
         void MarkTestReleased(int testId);
-        void TryCompleteHeader(int headerId);
+        bool TryCompleteHeader(int headerId);
 
     }
 }

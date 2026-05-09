@@ -171,15 +171,130 @@
     <div class="flex items-center gap-4 ml-auto">
 
       <!-- Notifications -->
-      <button class="relative p-2 rounded-full transition-colors"
-              style="color: var(--color-text-muted);"
-              @mouseenter="(e) => (e.currentTarget.style.backgroundColor = 'var(--color-surface-high)')"
-              @mouseleave="(e) => (e.currentTarget.style.backgroundColor = 'transparent')">
-        <span class="material-symbols-outlined">notifications</span>
-        <span v-if="notifCount > 0"
-              class="absolute top-1 right-1 w-4 h-4 rounded-full text-[9px] font-bold flex items-center justify-center text-white"
-              style="background-color: var(--color-error);">{{ notifCount }}</span>
-      </button>
+      <div ref="notifRef" class="relative">
+        <button class="relative p-2 rounded-full transition-colors"
+                style="color: var(--color-text-muted);"
+                @mouseenter="(e) => (e.currentTarget.style.backgroundColor = 'var(--color-surface-high)')"
+                @mouseleave="(e) => (e.currentTarget.style.backgroundColor = 'transparent')"
+                @click.stop="toggleNotif">
+          <span class="material-symbols-outlined">notifications</span>
+          <span v-if="notifCount > 0"
+                class="absolute top-1 right-1 w-4 h-4 rounded-full text-[9px] font-bold flex items-center justify-center text-white"
+                style="background-color: var(--color-error);">
+            {{ notifCount > 99 ? '99+' : notifCount }}
+          </span>
+        </button>
+
+        <!-- Notification Dropdown -->
+        <Teleport to="body">
+          <Transition name="notif-drop">
+            <div v-if="notifOpen"
+                 class="fixed z-50 rounded-2xl overflow-hidden"
+                 style="
+             width: 360px;
+             top: 56px;
+             right: 16px;
+             background-color: var(--color-surface);
+             box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+             border: 1px solid var(--color-border);
+           ">
+
+              <!-- Header -->
+              <div class="px-5 py-4 flex items-center justify-between"
+                   style="border-bottom: 1px solid var(--color-border);">
+                <div>
+                  <p class="text-sm font-bold" style="color: var(--color-text);">Notifications</p>
+                  <p class="text-[10px] mt-0.5" style="color: var(--color-text-muted);">
+                    {{ notifCount }} unread
+                  </p>
+                </div>
+                <button v-if="notifStore.items.length > 0"
+                        class="text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg transition-all"
+                        style="color: var(--color-primary); background-color: var(--color-primary-soft);"
+                        @click="notifStore.markAllRead()">
+                  Mark all read
+                </button>
+              </div>
+
+              <!-- List -->
+              <div class="overflow-y-auto" style="max-height: 420px;">
+
+                <!-- Loading -->
+                <div v-if="notifStore.loading"
+                     class="flex items-center justify-center py-10">
+                  <span class="material-symbols-outlined animate-spin text-2xl"
+                        style="color: var(--color-text-muted);">progress_activity</span>
+                </div>
+
+                <!-- Empty -->
+                <div v-else-if="notifStore.items.length === 0"
+                     class="flex flex-col items-center justify-center py-10 gap-2">
+                  <span class="material-symbols-outlined text-3xl"
+                        style="color: var(--color-text-muted);">notifications_off</span>
+                  <p class="text-xs" style="color: var(--color-text-muted);">No notifications</p>
+                </div>
+
+                <!-- Items -->
+                <template v-else>
+                  <button v-for="notif in notifStore.items"
+                          :key="notif.notifID"
+                          class="w-full flex items-start gap-3 px-5 py-3.5 transition-all text-left"
+                          :style="!notif.isRead
+                      ? 'background-color: var(--color-primary-soft);'
+                      : 'background-color: transparent;'"
+                          @mouseenter="(e) => { if (notif.isRead) e.currentTarget.style.backgroundColor = 'var(--color-surface-low)' }"
+                          @mouseleave="(e) => { if (notif.isRead) e.currentTarget.style.backgroundColor = 'transparent' }"
+                          @click="handleNotifClick(notif)">
+
+                    <!-- Icon -->
+                    <div class="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5"
+                         style="background-color: var(--color-surface-low);">
+                      <span class="material-symbols-outlined text-base"
+                            :style="`color: ${notifIconColor(notif.notifType)}; font-size: 16px;`">
+                        {{ notifIcon(notif.notifType) }}
+                      </span>
+                    </div>
+
+                    <!-- Content -->
+                    <div class="flex-1 min-w-0">
+                      <div class="flex items-start justify-between gap-2">
+                        <p class="text-xs font-bold leading-snug"
+                           style="color: var(--color-text);">
+                          {{ notif.title }}
+                        </p>
+                        <span class="text-[10px] flex-shrink-0 mt-0.5"
+                              style="color: var(--color-text-muted);">
+                          {{ formatNotifTime(notif.createdAt) }}
+                        </span>
+                      </div>
+                      <p class="text-[11px] mt-0.5 leading-relaxed"
+                         style="color: var(--color-text-muted);">
+                        {{ notif.message }}
+                      </p>
+                    </div>
+
+                    <!-- Unread dot -->
+                    <div v-if="!notif.isRead"
+                         class="w-2 h-2 rounded-full flex-shrink-0 mt-2"
+                         style="background-color: var(--color-primary);"></div>
+
+                  </button>
+                </template>
+              </div>
+
+              <!-- Footer -->
+              <div v-if="notifStore.items.length > 0"
+                   class="px-5 py-3 text-center"
+                   style="border-top: 1px solid var(--color-border);">
+                <p class="text-[10px]" style="color: var(--color-text-muted);">
+                  Showing last {{ notifStore.items.length }} notification{{ notifStore.items.length !== 1 ? 's' : '' }}
+                </p>
+              </div>
+
+            </div>
+          </Transition>
+        </Teleport>
+      </div>
 
       <!-- Divider -->
       <div class="h-8 w-px" style="background-color: var(--color-border-strong);"></div>
@@ -282,10 +397,12 @@
   import NProgress from 'nprogress'
   import { useRouter } from 'vue-router'
   import { useAuthStore } from '@/stores/authStore'
+  import { useNotificationStore } from '@/stores/notificationStore'
   import { useTheme } from '@/composables/useTheme'
   import { batchApi } from '@/api/batchApi'
   import { themeApi } from '@/api/themeApi'
   import { authApi } from '@/api/authApi'
+
 
   const { applyTheme, applyAccent } = useTheme()
   const authStore = useAuthStore()
@@ -377,8 +494,14 @@
       focusedIndex.value = -1
     }
   }
-  onMounted(() => document.addEventListener('mousedown', onClickOutside))
-  onUnmounted(() => document.removeEventListener('mousedown', onClickOutside))
+  onMounted(() => {
+    document.addEventListener('mousedown', onClickOutside)
+    document.addEventListener('click', handleNotifOutside)
+  })
+  onUnmounted(() => {
+    document.removeEventListener('click', handleNotifOutside)
+    document.removeEventListener('mousedown', onClickOutside)
+  })
 
   // ── Navigation ─────────────────────────────────────────────────────────────
   function navigate(item) {
@@ -461,7 +584,6 @@
   }
 
   // ── Profile dropdown ───────────────────────────────────────────────────────
-  const notifCount = ref(3)
   const dropdownOpen = ref(false)
 
   const themes = [
@@ -519,6 +641,101 @@
       router.push('/')
     }
   }
+
+
+  // --------------- NOTIFICATION
+
+  const notifStore = useNotificationStore()
+  const notifOpen = ref(false)
+  const notifRef = ref(null)
+
+  const notifCount = computed(() => notifStore.unreadCount)
+
+  function toggleNotif() {
+    notifOpen.value = !notifOpen.value
+  }
+
+  async function handleNotifClick(notif) {
+    if (!notif.isRead) {
+      await notifStore.markRead(notif.notifID)
+    }
+    notifOpen.value = false
+    // Navigate to relevant page based on notif type + role
+    navigateToRef(notif)
+  }
+
+  function navigateToRef(notif) {
+    if (!notif.referenceID) return
+    const authStore = useAuthStore()
+
+    switch (notif.notifType) {
+      case 'BATCH_ENDORSED':
+      case 'BATCH_RECEIVED':
+      case 'SPECIMEN_REENDORSED':
+        if (authStore.sectionCategory === '2')
+          router.push('/receiver/incoming')
+        else
+          router.push('/endorsements')
+        break
+      case 'SPECIMEN_CANCELLED':
+        router.push('/endorsements')
+        break
+      case 'SPECIMEN_ARRIVED':
+      case 'SPECIMEN_COMPLETED':
+        router.push('/runner/pending')
+        break
+      case 'MIDDLEWARE_ISSUE':
+        router.push('/admin/settings')
+        break
+    }
+  }
+
+  function notifIcon(type) {
+    const map = {
+      BATCH_ENDORSED: 'move_to_inbox',
+      BATCH_RECEIVED: 'inventory',
+      SPECIMEN_CANCELLED: 'cancel',
+      SPECIMEN_REENDORSED: 'redo',
+      SPECIMEN_ARRIVED: 'science',
+      SPECIMEN_COMPLETED: 'task_alt',
+      MIDDLEWARE_ISSUE: 'warning',
+    }
+    return map[type] ?? 'notifications'
+  }
+
+  function notifIconColor(type) {
+    const map = {
+      BATCH_ENDORSED: 'var(--color-primary)',
+      BATCH_RECEIVED: 'var(--color-success)',
+      SPECIMEN_CANCELLED: 'var(--color-error)',
+      SPECIMEN_REENDORSED: 'var(--color-warning)',
+      SPECIMEN_ARRIVED: 'var(--color-primary)',
+      SPECIMEN_COMPLETED: 'var(--color-success)',
+      MIDDLEWARE_ISSUE: 'var(--color-error)',
+    }
+    return map[type] ?? 'var(--color-text-muted)'
+  }
+
+  function formatNotifTime(dt) {
+    if (!dt) return ''
+    const d = new Date(dt)
+    const now = new Date()
+    const diffMs = now - d
+    const diffMins = Math.floor(diffMs / 60000)
+    if (diffMins < 1) return 'just now'
+    if (diffMins < 60) return `${diffMins}m ago`
+    const diffHrs = Math.floor(diffMins / 60)
+    if (diffHrs < 24) return `${diffHrs}h ago`
+    return d.toLocaleDateString('en-PH', { month: 'short', day: 'numeric' })
+  }
+
+  // Close on outside click
+  function handleNotifOutside(e) {
+    if (notifRef.value && !notifRef.value.contains(e.target)) {
+      notifOpen.value = false
+    }
+  }
+
 </script>
 
 <style scoped>
@@ -548,5 +765,16 @@
 
   .animate-spin {
     animation: spin 0.8s linear infinite;
+  }
+
+  .notif-drop-enter-active,
+  .notif-drop-leave-active {
+    transition: all 0.2s ease;
+  }
+
+  .notif-drop-enter-from,
+  .notif-drop-leave-to {
+    opacity: 0;
+    transform: translateY(-8px);
   }
 </style>

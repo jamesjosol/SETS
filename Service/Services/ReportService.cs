@@ -1,0 +1,376 @@
+﻿using ClosedXML.Excel;
+using Model.Main;
+using Model.SETSDB;
+using Reposi;
+using Reposi.Context;
+using Service.Interfaces;
+
+namespace Service.Services
+{
+    public class ReportService : IReportService
+    {
+        private readonly AppDbContextFactory _factory;
+        private readonly string _branch;
+        private readonly string _branch_raw;
+
+        public ReportService(AppDbContextFactory factory, string branch)
+        {
+            _factory = factory;
+            _branch = SetsConnection.ConnectionString(branch);
+            _branch_raw = branch;
+        }
+
+        // ── TAT helpers ───────────────────────────────────────────────────────
+
+        private static string? FormatTat(DateTime? from, DateTime? to)
+        {
+            if (from == null || to == null) return null;
+            var span = to.Value - from.Value;
+            if (span.TotalMinutes < 0) return null;
+            return $"{(int)span.TotalHours:D2}:{span.Minutes:D2}";
+        }
+
+        private static double? TatMinutes(DateTime? from, DateTime? to)
+        {
+            if (from == null || to == null) return null;
+            var minutes = (to.Value - from.Value).TotalMinutes;
+            return minutes < 0 ? null : minutes;
+        }
+
+        private static string? MinutesToHhMm(double? minutes)
+        {
+            if (minutes == null) return null;
+            var h = (int)(minutes.Value / 60);
+            var m = (int)(minutes.Value % 60);
+            return $"{h:D2}:{m:D2}";
+        }
+
+        private static string StatusLabel(string status) => status switch
+        {
+            "C" => "Complete",
+            "PA" => "Partial",
+            "P" => "Pending",
+            "X" => "Cancelled",
+            _ => status
+        };
+
+        // ══════════════════════════════════════════════════════════════════════
+        // R5 — Batch Summary (fully implemented)
+        // ══════════════════════════════════════════════════════════════════════
+
+        public BatchSummaryReportResult GetBatchSummary(BatchSummaryReportRequest request)
+        {
+            try
+            {
+                using var context = _factory.CreateContext(_branch);
+                using var unit = new UnitOfWork(context);
+
+                // ── 1. Sections for name lookup ───────────────────────────────
+                var sections = context.Section_Master
+                    .ToList()
+                    .ToDictionary(s => s.Code, s => s.Name);
+
+                // ── 2. Batch headers — materialise first (avoids EF CTE issue) ──
+                var allHeaders = context.Batch_Header
+                    .Where(h =>
+                        h.Endorsed.Date >= request.DateFrom.Date &&
+                        h.Endorsed.Date <= request.DateTo.Date)
+                    .ToList();
+
+                if (!string.IsNullOrEmpty(request.LocationCode))
+                    allHeaders = allHeaders.Where(h => h.Location == request.LocationCode).ToList();
+
+                if (!string.IsNullOrEmpty(request.UserID))
+                    allHeaders = allHeaders.Where(h => h.EndorsedBy == request.UserID).ToList();
+
+                if (!allHeaders.Any())
+                    return new BatchSummaryReportResult();
+
+                var batchNos = allHeaders.Select(h => h.BatchNo).ToList();
+
+                // ── 3. Receiving records grouped by BatchNo ───────────────────
+                var receivingRecords = context.Batch_Specimen_Receiving
+                    .ToList()
+                    .Where(r => batchNos.Contains(r.BatchNo))
+                    .GroupBy(r => r.BatchNo)
+                    .ToDictionary(
+                        g => g.Key,
+                        g => string.Join(", ", g.Select(r => r.ProcReceivedBy)
+                                                  .Distinct()
+                                                  .OrderBy(u => u))
+                    );
+
+                // ── 4. Optional sample type filter ────────────────────────────
+                if (!string.IsNullOrEmpty(request.SampleTypeCode))
+                {
+                    var matchingBatchNos = context.Batch_Specimen
+                        .Where(s => s.SampleTypeCode == request.SampleTypeCode)
+                        .ToList()
+                        .Where(s => batchNos.Contains(s.BatchNo))
+                        .Select(s => s.BatchNo)
+                        .Distinct()
+                        .ToHashSet();
+
+                    allHeaders = allHeaders.Where(h => matchingBatchNos.Contains(h.BatchNo)).ToList();
+                }
+
+                // ── 5. Build rows ─────────────────────────────────────────────
+                var rows = allHeaders
+                    .OrderByDescending(h => h.Endorsed)
+                    .Select(h => new BatchSummaryReportRow
+                    {
+                        BatchNo = h.BatchNo,
+                        LocationCode = h.Location,
+                        Location = sections.TryGetValue(h.Location, out var loc) ? loc : h.Location,
+                        Endorsed = h.Endorsed,
+                        EndorsedBy = h.EndorsedBy,
+                        ProcReceived = h.ProcReceived,
+                        ReceivedBy = receivingRecords.TryGetValue(h.BatchNo, out var rcvBy) ? rcvBy : null,
+                        Completed = h.Completed,
+                        Temp = h.Temp,
+                        Status = StatusLabel(h.Status),
+                        TatEndorsement = FormatTat(h.Endorsed, h.ProcReceived),
+                        TatCompletion = FormatTat(h.ProcReceived, h.Completed),
+                    })
+                    .ToList();
+
+                // ── 6. Averages ───────────────────────────────────────────────
+                var tatEndMinutes = allHeaders
+                    .Select(h => TatMinutes(h.Endorsed, h.ProcReceived))
+                    .Where(m => m != null)
+                    .Select(m => m!.Value)
+                    .ToList();
+
+                var tatCompMinutes = allHeaders
+                    .Select(h => TatMinutes(h.ProcReceived, h.Completed))
+                    .Where(m => m != null)
+                    .Select(m => m!.Value)
+                    .ToList();
+
+                return new BatchSummaryReportResult
+                {
+                    Rows = rows,
+                    TotalBatches = rows.Count,
+                    CompletedBatches = rows.Count(r => r.Status == "Complete"),
+                    PendingBatches = rows.Count(r => r.Status is "Pending" or "Partial"),
+                    AvgTatEndorsement = tatEndMinutes.Any() ? MinutesToHhMm(tatEndMinutes.Average()) : null,
+                    AvgTatCompletion = tatCompMinutes.Any() ? MinutesToHhMm(tatCompMinutes.Average()) : null,
+                };
+            }
+            catch { throw; }
+        }
+
+        // ══════════════════════════════════════════════════════════════════════
+        // R5 — Batch Summary Excel Export (ClosedXML — same library as Contingency)
+        // ══════════════════════════════════════════════════════════════════════
+
+        public byte[] ExportBatchSummaryExcel(BatchSummaryReportRequest request)
+        {
+            try
+            {
+                var data = GetBatchSummary(request);
+
+                using var wb = new XLWorkbook();
+                var ws = wb.Worksheets.Add("Batch Summary");
+
+                // ── Title block ───────────────────────────────────────────────
+                ws.Cell("A1").Value = "BATCH SUMMARY REPORT";
+                ws.Cell("A1").Style.Font.Bold = true;
+                ws.Cell("A1").Style.Font.FontSize = 14;
+                ws.Range("A1:K1").Merge();
+
+                ws.Cell("A2").Value = $"Generated: {DateTime.Now:MM/dd/yyyy HH:mm}";
+                ws.Range("A2:K2").Merge();
+
+                ws.Cell("A3").Value = $"Location: {(string.IsNullOrEmpty(request.LocationCode) ? "ALL" : request.LocationCode)}";
+                ws.Cell("C3").Value = $"Date: {request.DateFrom:MM/dd/yyyy} – {request.DateTo:MM/dd/yyyy}";
+                ws.Cell("E3").Value = $"Sample Type: {(string.IsNullOrEmpty(request.SampleTypeCode) ? "ALL" : request.SampleTypeCode)}";
+                ws.Cell("G3").Value = $"User: {(string.IsNullOrEmpty(request.UserID) ? "ALL" : request.UserID)}";
+
+                // ── Summary strip ─────────────────────────────────────────────
+                ws.Cell("A5").Value = "Total Batches"; ws.Cell("A5").Style.Font.Bold = true;
+                ws.Cell("B5").Value = data.TotalBatches;
+                ws.Cell("C5").Value = "Completed"; ws.Cell("C5").Style.Font.Bold = true;
+                ws.Cell("D5").Value = data.CompletedBatches;
+                ws.Cell("E5").Value = "Pending / Partial"; ws.Cell("E5").Style.Font.Bold = true;
+                ws.Cell("F5").Value = data.PendingBatches;
+                ws.Cell("G5").Value = "Avg TAT (Endorsement)"; ws.Cell("G5").Style.Font.Bold = true;
+                ws.Cell("H5").Value = data.AvgTatEndorsement ?? "—";
+                ws.Cell("I5").Value = "Avg TAT (Completion)"; ws.Cell("I5").Style.Font.Bold = true;
+                ws.Cell("J5").Value = data.AvgTatCompletion ?? "—";
+
+                // ── Column headers ────────────────────────────────────────────
+                int headerRow = 7;
+                var headers = new[]
+                {
+                    "Batch No.", "Location",
+                    "Batch Endorsed (Date & Time)", "Endorsed By",
+                    "Batch Received (Date & Time)", "Received By",
+                    "Batch Completed", "Temp", "Status",
+                    "TAT (Batch Endorsement)", "TAT (Batch Completion)"
+                };
+
+                for (int i = 0; i < headers.Length; i++)
+                {
+                    var cell = ws.Cell(headerRow, i + 1);
+                    cell.Value = headers[i];
+                    cell.Style.Font.Bold = true;
+                    cell.Style.Fill.BackgroundColor = XLColor.FromHtml("#4472C4");
+                    cell.Style.Font.FontColor = XLColor.White;
+                    cell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                    cell.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                }
+
+                // ── Data rows ─────────────────────────────────────────────────
+                int dataRow = headerRow + 1;
+                foreach (var r in data.Rows)
+                {
+                    ws.Cell(dataRow, 1).Value = r.BatchNo;
+                    ws.Cell(dataRow, 2).Value = r.Location;
+                    ws.Cell(dataRow, 3).Value = r.Endorsed.ToString("MM/dd/yyyy HH:mm");
+                    ws.Cell(dataRow, 4).Value = r.EndorsedBy;
+                    ws.Cell(dataRow, 5).Value = r.ProcReceived.HasValue ? r.ProcReceived.Value.ToString("MM/dd/yyyy HH:mm") : "—";
+                    ws.Cell(dataRow, 6).Value = r.ReceivedBy ?? "—";
+                    ws.Cell(dataRow, 7).Value = r.Completed.HasValue ? r.Completed.Value.ToString("MM/dd/yyyy HH:mm") : "—";
+                    ws.Cell(dataRow, 8).Value = r.Temp ?? "—";
+                    ws.Cell(dataRow, 9).Value = r.Status;
+                    ws.Cell(dataRow, 10).Value = r.TatEndorsement ?? "—";
+                    ws.Cell(dataRow, 11).Value = r.TatCompletion ?? "—";
+
+                    if (dataRow % 2 == 0)
+                        ws.Row(dataRow).Style.Fill.BackgroundColor = XLColor.FromHtml("#F2F2F2");
+
+                    ws.Range(dataRow, 1, dataRow, 11).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+
+                    dataRow++;
+                }
+
+                // ── Average footer ────────────────────────────────────────────
+                ws.Cell(dataRow, 1).Value = "AVERAGE TAT";
+                ws.Cell(dataRow, 10).Value = data.AvgTatEndorsement ?? "—";
+                ws.Cell(dataRow, 11).Value = data.AvgTatCompletion ?? "—";
+                ws.Range(dataRow, 1, dataRow, 11).Style.Font.Bold = true;
+                ws.Range(dataRow, 1, dataRow, 11).Style.Fill.BackgroundColor = XLColor.FromHtml("#D9E1F2");
+                ws.Range(dataRow, 1, dataRow, 11).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+
+                // ── Column widths + freeze ────────────────────────────────────
+                ws.Column(1).Width = 22;
+                ws.Column(2).Width = 18;
+                ws.Column(3).Width = 24;
+                ws.Column(4).Width = 16;
+                ws.Column(5).Width = 24;
+                ws.Column(6).Width = 16;
+                ws.Column(7).Width = 24;
+                ws.Column(8).Width = 8;
+                ws.Column(9).Width = 12;
+                ws.Column(10).Width = 24;
+                ws.Column(11).Width = 24;
+                ws.SheetView.FreezeRows(headerRow);
+
+                using var ms = new MemoryStream();
+                wb.SaveAs(ms);
+                return ms.ToArray();
+            }
+            catch { throw; }
+        }
+
+        // ══════════════════════════════════════════════════════════════════════
+        // R1 — Unprocessed Specimen (TODO)
+        // ══════════════════════════════════════════════════════════════════════
+
+        public List<UnprocessedSpecimenRow> GetUnprocessedSpecimens(UnprocessedSpecimenRequest request)
+        {
+            // TODO: Query Specimen_Section_Test where ScheduleTag IN ('ERD','CRD','SRD')
+            //       and Status IN ('P','S') within the date range.
+            //       Join to Section_Master for section name.
+            throw new NotImplementedException("Unprocessed Specimen report is not yet implemented.");
+        }
+
+        // ══════════════════════════════════════════════════════════════════════
+        // R2 — Specimen Not Endorsed (TODO — pending OIC clarification)
+        // ══════════════════════════════════════════════════════════════════════
+
+        public List<SpecimenNotEndorsedRow> GetSpecimensNotEndorsed(SpecimenNotEndorsedRequest request)
+        {
+            // TODO: Pending OIC clarification on event code and trigger condition.
+            //       Expected: Query Audit_Log where EventCode = AuditEvents.NotEndorsed
+            //       within date range, optionally filtered by FromLocation.
+            throw new NotImplementedException("Specimen Not Endorsed report is pending clarification with OIC.");
+        }
+
+        // ══════════════════════════════════════════════════════════════════════
+        // R3 — Specimen Not Received / Pending (TODO)
+        // ══════════════════════════════════════════════════════════════════════
+
+        public List<SpecimenNotReceivedRow> GetSpecimensNotReceived(SpecimenNotReceivedRequest request)
+        {
+            // TODO: Query Batch_Specimen where Status = 'P' (not received),
+            //       join Batch_Header for date range and location filter.
+            //       Include LabNo, PatientName, SampleTypeName.
+            throw new NotImplementedException("Specimen Not Received report is not yet implemented.");
+        }
+
+        // ══════════════════════════════════════════════════════════════════════
+        // R4 — Test Management (TODO)
+        // ══════════════════════════════════════════════════════════════════════
+
+        public List<TestManagementRow> GetTestManagement(TestManagementRequest request)
+        {
+            // TODO: Query Section_TestGroup joined to test master data.
+            //       Include running days, TAT, and Active/Inactive status.
+            throw new NotImplementedException("Test Management report is not yet implemented.");
+        }
+
+        // ══════════════════════════════════════════════════════════════════════
+        // R6 — Specimen Receipt (Section) (TODO)
+        // ══════════════════════════════════════════════════════════════════════
+
+        public List<SpecimenReceiptSectionRow> GetSpecimenReceiptSection(SpecimenReceiptSectionRequest request)
+        {
+            // TODO: Query Specimen_Section_Header for section received timestamp (Received column).
+            //       Join Batch_Specimen_Receiving for processing received timestamp.
+            //       TAT = SectionReceived – ProcReceived.
+            throw new NotImplementedException("Specimen Receipt (Section) report is not yet implemented.");
+        }
+
+        // ══════════════════════════════════════════════════════════════════════
+        // R7 — Duplicate Endorsement (TODO)
+        // ══════════════════════════════════════════════════════════════════════
+
+        public List<DuplicateEndorsementRow> GetDuplicateEndorsements(DuplicateEndorsementRequest request)
+        {
+            // TODO: Query Audit_Log where EventCode = AuditEvents.EndorsedDuplicate.
+            //       Pair first and second endorsement log entries per SpecimenNo.
+            //       Remarks column holds the decision (Y/N) and reason text.
+            throw new NotImplementedException("Duplicate Endorsement report is not yet implemented.");
+        }
+
+        // ══════════════════════════════════════════════════════════════════════
+        // R8 — Transaction Beyond 14 Days (TODO)
+        // ══════════════════════════════════════════════════════════════════════
+
+        public List<Beyond14DaysRow> GetBeyond14Days(Beyond14DaysRequest request)
+        {
+            // TODO: Query Audit_Log where EventCode = AuditEvents.Endorsed14Days.
+            //       Remarks column holds the decision (Y/N) and reason text.
+            //       Join back to Batch_Specimen for PatientName, SampleTypeName.
+            throw new NotImplementedException("Beyond 14 Days report is not yet implemented.");
+        }
+
+        // ══════════════════════════════════════════════════════════════════════
+        // R9 — Monthly Endorsement Summary (TODO)
+        // ══════════════════════════════════════════════════════════════════════
+
+        public List<MonthlyEndorsementSummaryRow> GetMonthlyEndorsementSummary(MonthlyEndorsementSummaryRequest request)
+        {
+            // TODO: Aggregate per location over the date range:
+            //   TotalBatches          = COUNT(Batch_Header) grouped by Location
+            //   BatchesOutsideTat     = COUNT where IsOutsideTat = true
+            //   BatchesWithinTat      = TotalBatches - BatchesOutsideTat
+            //   DuplicateEndorsements = COUNT(Audit_Log where EventCode = EndorsedDuplicate)
+            //   NotEndorsed           = COUNT(Audit_Log where EventCode = NotEndorsed)
+            //   Beyond14Days          = COUNT(Audit_Log where EventCode = Endorsed14Days)
+            throw new NotImplementedException("Monthly Endorsement Summary report is not yet implemented.");
+        }
+    }
+}

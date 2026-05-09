@@ -1,18 +1,17 @@
 import { defineStore } from 'pinia'
 import { announcementApi } from '@/api/announcementApi'
+import { createSignalRConnection } from '@/composables/useSignalR'
 
 export const useAnnouncementStore = defineStore('announcement', {
   state: () => ({
-    announcement: null,   // active AnnouncementDto or null
-    dismissed: false,     // per-session dismiss flag, resets on logout/login
+    announcement: null,
+    dismissed: false,
     loading: false,
+    _connection: null,
   }),
 
   getters: {
-    // Returns true if there is an active announcement visible to this user
-    isVisible: (state) => {
-      return !!state.announcement && !state.dismissed
-    },
+    isVisible: (state) => !!state.announcement && !state.dismissed,
   },
 
   actions: {
@@ -21,7 +20,6 @@ export const useAnnouncementStore = defineStore('announcement', {
         this.loading = true
         const data = await announcementApi.getActive()
         this.announcement = data ?? null
-        // If the announcement changed (new one posted), reset dismiss so it shows again
       } catch {
         this.announcement = null
       } finally {
@@ -33,13 +31,33 @@ export const useAnnouncementStore = defineStore('announcement', {
       this.dismissed = true
     },
 
-    // Called on login — resets dismiss so announcement shows fresh each session
     reset() {
       this.announcement = null
       this.dismissed = false
     },
+
+    // ── SignalR ──────────────────────────────────────────────────────────────
+
+    async connectSignalR(branchCode) {
+      if (this._connection) return
+
+      const conn = createSignalRConnection('/hubs/announcement', branchCode, () => this.fetch())
+
+      conn.on('AnnouncementUpdated', (data) => {
+        this.announcement = data ?? null
+        this.dismissed = false
+      })
+
+      await conn.start()
+      this._connection = conn
+    },
+
+    async disconnectSignalR(branchCode) {
+      if (!this._connection) return
+      await this._connection.stop(branchCode)
+      this._connection = null
+    },
   },
 
-  // Do NOT persist — dismiss resets on every login as per requirement
   persist: false,
 })

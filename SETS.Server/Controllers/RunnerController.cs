@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Model.Main;
 using Service;
+using SETS.Server.Hubs;
 
 namespace SETS.Server.Controllers
 {
@@ -8,6 +10,15 @@ namespace SETS.Server.Controllers
     [Route("api/[controller]")]
     public class RunnerController : ControllerBase
     {
+        private readonly IHubContext<NotificationHub> _hub;
+
+        private string? Branch => HttpContext.Session.GetString("BranchCode");
+
+        public RunnerController(IHubContext<NotificationHub> hub)
+        {
+            _hub = hub;
+        }
+
         // POST api/runner/scan
         // Scans a specimen barcode on the Assign RMT page.
         // Stamps section receipt on first scan, returns header + tests on all scans.
@@ -43,11 +54,11 @@ namespace SETS.Server.Controllers
         // POST api/runner/assign
         // Saves RMT assignments and schedule tags for a list of tests.
         [HttpPost("assign")]
-        public IActionResult SaveAssignments([FromBody] SaveAssignmentsRequest request)
+        public async Task<IActionResult> SaveAssignments([FromBody] SaveAssignmentsRequest request)
         {
             try
             {
-                var branch = HttpContext.Session.GetString("BranchCode");
+                var branch = Branch;
                 if (string.IsNullOrEmpty(branch))
                     return Unauthorized(new { message = "Session expired." });
 
@@ -58,7 +69,41 @@ namespace SETS.Server.Controllers
                     return BadRequest(new { message = "No assignments provided." });
 
                 using var master = new MasterService(branch);
-                master.Runner.SaveAssignments(request);
+                var result = master.Runner.SaveAssignments(request);
+
+                // ── Notification: SPECIMEN_COMPLETED → section runners ────────
+                foreach (var completed in result.CompletedHeaders)
+                {
+                    try
+                    {
+                        var notif = master.Notification.Create(new CreateNotificationRequest
+                        {
+                            NotifType = NotifType.SpecimenCompleted,
+                            Title = "Specimen Completed",
+                            Message = $"Specimen {completed.SpecimenNo} has been completed in your section.",
+                            TargetCategory = "3",
+                            TargetSection = completed.SectionCode,
+                            ReferenceID = completed.SpecimenNo
+                        });
+
+                        await _hub.Clients
+                            .Group($"notif-{branch}-sec-{completed.SectionCode}")
+                            .SendAsync("NewNotification", new
+                            {
+                                notif.NotifID,
+                                notif.NotifType,
+                                notif.Title,
+                                notif.Message,
+                                notif.IsRead,
+                                notif.ReferenceID,
+                                notif.CreatedAt
+                            });
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[NOTIF] SPECIMEN_COMPLETED failed for {completed.SpecimenNo}: {ex.Message}");
+                    }
+                }
 
                 return Ok(new { success = true });
             }
@@ -67,7 +112,6 @@ namespace SETS.Server.Controllers
                 return StatusCode(400, new { message = ex.Message });
             }
         }
-
         // GET api/runner/pending?sectionCode=HEMA
         [HttpGet("pending")]
         public IActionResult GetPendingSpecimens([FromQuery] string sectionCode)

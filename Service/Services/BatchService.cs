@@ -19,7 +19,7 @@ namespace Service.Services
             _branch_raw = branch;
         }
 
-        public string Endorse(EndorseRequest request)
+        public EndorseResult Endorse(EndorseRequest request)
         {
             try
             {
@@ -131,7 +131,12 @@ namespace Service.Services
                         Console.WriteLine($"[AUDIT] Logging failed for batch {batchNo}: {auditEx.Message}");
                     }
 
-                    return batchNo;
+                    return new EndorseResult
+                    {
+                        BatchNo = batchNo,
+                        ProcDestination = request.ProcDestination,
+                        LocationName = section.Name   
+                    };
                 }
                 catch
                 {

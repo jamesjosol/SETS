@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Model.Main;
 using Service;
+using SETS.Server.Hubs;
 
 namespace SETS.Server.Controllers
 {
@@ -8,13 +10,24 @@ namespace SETS.Server.Controllers
     [Route("api/[controller]")]
     public class ReceivingController : ControllerBase
     {
+        private readonly IHubContext<NotificationHub> _hub;
+
+        private string? Branch => HttpContext.Session.GetString("BranchCode");
+        private string? UserID => HttpContext.Session.GetString("UserID");
+        private string? SectionCode => HttpContext.Session.GetString("SectionCode");
+
+        public ReceivingController(IHubContext<NotificationHub> hub)
+        {
+            _hub = hub;
+        }
+
         // POST api/receiving/specimen
         [HttpPost("specimen")]
         public async Task<IActionResult> ReceiveSpecimen([FromBody] ReceiveSpecimenRequest request)
         {
             try
             {
-                var branch = HttpContext.Session.GetString("BranchCode");
+                var branch = Branch;
                 if (string.IsNullOrEmpty(branch))
                     return Unauthorized(new { message = "Session expired." });
 
@@ -27,12 +40,77 @@ namespace SETS.Server.Controllers
                 using var master = new MasterService(branch);
                 var result = await master.Receiving.ReceiveSpecimen(request);
 
+                // ── Notification: BATCH_RECEIVED → specific endorser ──────────
+                if (result.BatchStatus == "C")
+                {
+                    try
+                    {
+                        var notif = master.Notification.Create(new CreateNotificationRequest
+                        {
+                            NotifType = NotifType.BatchReceived,
+                            Title = "Batch Fully Received",
+                            Message = $"Batch {result.BatchNo} from {result.LocationName} has been fully received.",
+                            TargetUserID = result.EndorsedBy,
+                            ReferenceID = result.BatchNo
+                        });
+
+                        await _hub.Clients
+                            .Group($"notif-user-{result.EndorsedBy}")
+                            .SendAsync("NewNotification", new
+                            {
+                                notif.NotifID,
+                                notif.NotifType,
+                                notif.Title,
+                                notif.Message,
+                                notif.IsRead,
+                                notif.ReferenceID,
+                                notif.CreatedAt
+                            });
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[NOTIF] BATCH_RECEIVED failed for {result.BatchNo}: {ex.Message}");
+                    }
+                }
+
+                // ── Notification: SPECIMEN_ARRIVED → section runners ──────────
+                if (!string.IsNullOrEmpty(result.RoutedSectionCode))
+                {
+                    try
+                    {
+                        var notif = master.Notification.Create(new CreateNotificationRequest
+                        {
+                            NotifType = NotifType.SpecimenArrived,
+                            Title = "New Specimen Arrived",
+                            Message = $"Specimen {result.SpecimenNo} has arrived in your section.",
+                            TargetCategory = "3",
+                            TargetSection = result.RoutedSectionCode,
+                            ReferenceID = result.SpecimenNo
+                        });
+
+                        await _hub.Clients
+                            .Group($"notif-{branch}-sec-{result.RoutedSectionCode}")
+                            .SendAsync("NewNotification", new
+                            {
+                                notif.NotifID,
+                                notif.NotifType,
+                                notif.Title,
+                                notif.Message,
+                                notif.IsRead,
+                                notif.ReferenceID,
+                                notif.CreatedAt
+                            });
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[NOTIF] SPECIMEN_ARRIVED failed for {result.SpecimenNo}: {ex.Message}");
+                    }
+                }
+
                 return Ok(new { success = true, data = result });
             }
             catch (Exception ex)
             {
-                // Surface known business rule violations as 400
-                // so the frontend can display them as prompts
                 return StatusCode(400, new { message = ex.Message });
             }
         }
@@ -88,11 +166,11 @@ namespace SETS.Server.Controllers
 
         // PATCH api/receiving/specimen-cancel
         [HttpPatch("specimen-cancel")]
-        public IActionResult CancelSpecimen([FromBody] CancelSpecimenRequest request)
+        public async Task<IActionResult> CancelSpecimen([FromBody] CancelSpecimenRequest request)
         {
             try
             {
-                var branch = HttpContext.Session.GetString("BranchCode");
+                var branch = Branch;
                 if (string.IsNullOrEmpty(branch))
                     return Unauthorized(new { message = "Session expired." });
 
@@ -109,7 +187,37 @@ namespace SETS.Server.Controllers
                     return BadRequest(new { message = "User ID is required." });
 
                 using var master = new MasterService(branch);
-                master.Receiving.CancelSpecimen(request);
+                var cancelResult = master.Receiving.CancelSpecimen(request);
+
+                // ── Notification: SPECIMEN_CANCELLED → specific endorser ───────
+                try
+                {
+                    var notif = master.Notification.Create(new CreateNotificationRequest
+                    {
+                        NotifType = NotifType.SpecimenCancelled,
+                        Title = "Specimen Cancelled",
+                        Message = $"Specimen {request.SpecimenNo} from batch {request.BatchNo} was cancelled. Reason: {request.CancelReason}",
+                        TargetUserID = cancelResult.EndorsedBy,
+                        ReferenceID = request.SpecimenNo
+                    });
+
+                    await _hub.Clients
+                        .Group($"notif-user-{cancelResult.EndorsedBy}")
+                        .SendAsync("NewNotification", new
+                        {
+                            notif.NotifID,
+                            notif.NotifType,
+                            notif.Title,
+                            notif.Message,
+                            notif.IsRead,
+                            notif.ReferenceID,
+                            notif.CreatedAt
+                        });
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[NOTIF] SPECIMEN_CANCELLED failed for {request.SpecimenNo}: {ex.Message}");
+                }
 
                 return Ok(new { success = true });
             }

@@ -36,7 +36,12 @@ const routes = [
     component: () => import('../views/endorser/EndorserSettings.vue'),
     meta: { requiresAuth: true, category: '1', requiresTL: true }
   },
-
+  {
+    path: '/reports',
+    name: 'EndorserReports',
+    component: () => import('../views/shared/Reports.vue'),
+    meta: { requiresAuth: true, category: '1', requiresTL: true }
+  },
   // ── Receiver (category 2) ──────────────────────────────────────────
   {
     path: '/receiver/dashboard',
@@ -72,6 +77,12 @@ const routes = [
     path: '/receiver/settings',
     name: 'ReceiverSettings',
     component: () => import('../views/receiver/ReceiverSettings.vue'),
+    meta: { requiresAuth: true, category: '2', requiresTL: true }
+  },
+  {
+    path: '/receiver/reports',
+    name: 'ReceiverReports',
+    component: () => import('../views/shared/Reports.vue'),
     meta: { requiresAuth: true, category: '2', requiresTL: true }
   },
 
@@ -116,6 +127,12 @@ const routes = [
     component: () => import('../views/runner/RunnerSettings.vue'),
     meta: { requiresAuth: true, category: '3', requiresTL: true }
   },
+  {
+    path: '/runner/reports',
+    name: 'RunnerReports',
+    component: () => import('../views/shared/Reports.vue'),
+    meta: { requiresAuth: true, category: '3', requiresTL: true }
+  },
 
   // ── Shared ────────────────────────────────────────────────────────────
   {
@@ -144,6 +161,12 @@ const routes = [
     component: () => import('../views/admin/AdminSettings.vue'),
     meta: { requiresAuth: true, requiresAdmin: true }
   },
+  {
+    path: '/admin/reports',
+    name: 'AdminReports',
+    component: () => import('../views/shared/Reports.vue'),
+    meta: { requiresAuth: true, requiresAdmin: true }
+  },
   // ── Contingency ───────────────────────────────────────────────────────
   {
     path: '/contingency/endorse',
@@ -157,6 +180,7 @@ const routes = [
     component: () => import('../views/contingency/ContingencyReceive.vue'),
     meta: { requiresAuth: true, category: '2' }
   },
+
   // ── Catch-all ─────────────────────────────────────────────────────────
   {
     path: '/:pathMatch(.*)*',

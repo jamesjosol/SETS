@@ -22,6 +22,8 @@ namespace Model.Main
         public string? Temp { get; set; }           // ← add
         public string? TempRemarks { get; set; }    // ← add
         public string? BagNo { get; set; }          // ← add
+        public string EndorsedBy { get; set; }
+        public string? RoutedSectionCode { get; set; }
 
     }
 }
