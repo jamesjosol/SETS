@@ -122,7 +122,7 @@
                   style="color: var(--color-text-muted);">Status</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody  ref="tableBodyRef">
             <tr v-for="batch in paginatedBatches"
                 :key="batch.batchNo"
                 class="cursor-pointer transition-colors"
@@ -229,7 +229,8 @@
 </template>
 
 <script setup>
-  import { ref, computed, onMounted, watch } from 'vue'
+  import { ref, computed, onMounted, watch, nextTick } from 'vue'
+  import { gsap } from 'gsap'
   import AppLayout from '@/components/layout/AppLayout.vue'
   import BatchDetailDrawer from '@/components/common/BatchDetailDrawer.vue'
   import AlertModal from '@/components/common/AlertModal.vue'
@@ -324,6 +325,7 @@
       showAlert('error', 'Load Error', error.value)
     } finally {
       loading.value = false
+      animateTableRows()
     }
   }
 
@@ -406,6 +408,32 @@
     drawerOpen.value = false
     drawerData.value = null
   }
+
+  const tableBodyRef = ref(null)
+
+  async function animateTableRows() {
+    await nextTick()
+    if (!tableBodyRef.value) return
+    const rows = tableBodyRef.value.querySelectorAll('tr')
+    if (!rows.length) return
+    gsap.set(rows, { opacity: 0, x: -6 })
+    gsap.to(rows, {
+      opacity: 1,
+      x: 0,
+      duration: 0.18,
+      stagger: 0.025,
+      ease: 'power1.out',
+    })
+  }
+
+  // Re-animate on page change
+  watch(currentPage, animateTableRows)
+
+  // Re-animate on client-side filter change (already resets page, rows re-render)
+  watch([searchQuery, statusFilter], () => {
+    currentPage.value = 1
+    animateTableRows()
+  })
 
   // ── Helpers ────────────────────────────────────────────────────────────────
 

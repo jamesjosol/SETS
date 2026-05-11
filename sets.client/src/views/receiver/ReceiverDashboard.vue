@@ -12,7 +12,7 @@
     </div>
 
     <!-- KPI Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+    <div ref="kpiCardsRef" class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
 
       <!-- Total Batches -->
       <div class="rounded-2xl p-6 relative overflow-hidden group cursor-pointer transition-all hover:-translate-y-0.5"
@@ -25,7 +25,7 @@
                 style="color: var(--color-text-muted);">Today</span>
         </div>
         <h3 class="text-4xl font-extrabold mb-1" style="color: var(--color-text);">
-          <span v-if="loading">—</span><span v-else>{{ summary.totalEndorsed }}</span>
+          <span v-if="loading">—</span><span v-else>{{ displayTotalEndorsed }}</span>
         </h3>
         <p class="text-xs font-bold uppercase tracking-tighter"
            style="color: var(--color-text-muted);">Total Batches</p>
@@ -44,7 +44,7 @@
                 style="color: var(--color-warning);">Awaiting</span>
         </div>
         <h3 class="text-4xl font-extrabold mb-1" style="color: var(--color-warning);">
-          <span v-if="loading">—</span><span v-else>{{ summary.pending }}</span>
+          <span v-if="loading">—</span><span v-else>{{ displayPending }}</span>
         </h3>
         <p class="text-xs font-bold uppercase tracking-tighter"
            style="color: var(--color-text-muted);">Pending Batches</p>
@@ -63,7 +63,7 @@
                 style="color: #2563eb;">In Progress</span>
         </div>
         <h3 class="text-4xl font-extrabold mb-1" style="color: #2563eb;">
-          <span v-if="loading">—</span><span v-else>{{ summary.outsideTAT }}</span>
+          <span v-if="loading">—</span><span v-else>{{ displayOutsideTAT }}</span>
         </h3>
         <p class="text-xs font-bold uppercase tracking-tighter"
            style="color: var(--color-text-muted);">Partial Batches</p>
@@ -82,7 +82,7 @@
                 style="color: var(--color-success);">Done</span>
         </div>
         <h3 class="text-4xl font-extrabold mb-1" style="color: var(--color-success);">
-          <span v-if="loading">—</span><span v-else>{{ summary.received }}</span>
+          <span v-if="loading">—</span><span v-else>{{ displayReceived }}</span>
         </h3>
         <p class="text-xs font-bold uppercase tracking-tighter"
            style="color: var(--color-text-muted);">Completed Batches</p>
@@ -137,7 +137,7 @@
 
       <!-- Grid -->
       <div v-else class="p-6 overflow-x-auto">
-        <div class="grid gap-4"
+        <div ref="monitoringGridRef" class="grid gap-4"
              :style="`grid-template-columns: repeat(${Math.min(visibleSections.length, 5)}, minmax(160px, 1fr));`">
 
           <div v-for="section in visibleSections"
@@ -196,13 +196,14 @@
           </div>
 
           <template v-else>
-            <div class="h-36 flex items-end justify-between gap-2 px-2">
+            <div ref="flowBarsContainerRef" class="h-36 flex items-end justify-between gap-2 px-2">
               <div v-for="(bar, i) in flowBars"
                    :key="i"
                    class="relative w-full h-full flex flex-col items-center justify-end group/bar">
                 <span class="absolute -top-5 text-[10px] font-bold opacity-0 group-hover/bar:opacity-100 transition-opacity"
                       style="color: var(--color-primary);">{{ bar.count }}</span>
-                <div class="w-full rounded-t-lg transition-all duration-500"
+                <div class="w-full rounded-t-lg origin-bottom"
+                     :data-bar-index="i"
                      :style="`height: ${bar.height}%; background-color: ${bar.active ? 'var(--color-primary)' : 'var(--color-primary-soft)'};`"
                      @mouseenter="e => { if (!bar.active) e.currentTarget.style.opacity = '0.7' }"
                      @mouseleave="e => { if (!bar.active) e.currentTarget.style.opacity = '1' }">
@@ -252,7 +253,8 @@
                       opacity="0.08" />
 
                 <!-- Line -->
-                <path :d="linePath"
+                <path ref="linePathRef"
+                      :d="linePath"
                       fill="none"
                       stroke="var(--color-primary)"
                       stroke-width="1.5"
@@ -347,7 +349,8 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
+import { gsap } from 'gsap'
 import AppLayout from '@/components/layout/AppLayout.vue'
 import AlertModal from '@/components/common/AlertModal.vue'
 import BatchDetailDrawer from '@/components/common/BatchDetailDrawer.vue'
@@ -378,7 +381,80 @@ const today = computed(() =>
 // ── KPI Summary ────────────────────────────────────────────────────────────
 
 const loading = ref(true)
-const summary = ref({ totalEndorsed: 0, pending: 0, received: 0, outsideTAT: 0 })
+  const summary = ref({ totalEndorsed: 0, pending: 0, received: 0, outsideTAT: 0 })
+
+
+
+  const displayTotalEndorsed = ref(0)
+  const displayPending = ref(0)
+  const displayOutsideTAT = ref(0)
+  const displayReceived = ref(0)
+
+  const kpiCardsRef = ref(null)
+  const monitoringGridRef = ref(null)
+  const flowBarsContainerRef = ref(null)
+  const linePathRef = ref(null)
+  const flowLoading = ref(true)
+  const weeklyFlow = ref([])
+  const hourlyLoading = ref(true)  
+  const hourlyFlow = ref([])      
+
+  function countUp(displayRef, target) {
+    const obj = { val: 0 }
+    gsap.killTweensOf(obj)
+    gsap.to(obj, {
+      val: target,
+      duration: 0.75,
+      ease: 'power2.out',
+      onUpdate: () => { displayRef.value = Math.round(obj.val) },
+    })
+  }
+
+  async function animateKpiCards() {
+    await nextTick()
+    if (!kpiCardsRef.value) return
+    const cards = kpiCardsRef.value.querySelectorAll(':scope > div')
+    if (!cards.length) return
+    gsap.set(cards, { opacity: 0, y: 24 })
+    gsap.to(cards, { opacity: 1, y: 0, duration: 0.35, stagger: 0.07, ease: 'power2.out' })
+  }
+
+  async function animateMonitoringCards() {
+    await nextTick()
+    if (!monitoringGridRef.value) return
+    const cards = monitoringGridRef.value.querySelectorAll(':scope > div')
+    if (!cards.length) return
+    gsap.set(cards, { opacity: 0, y: 12 })
+    gsap.to(cards, { opacity: 1, y: 0, duration: 0.28, stagger: 0.04, ease: 'power2.out' })
+  }
+
+  async function animateFlowBars() {
+    await nextTick()
+    if (!flowBarsContainerRef.value) return
+    const bars = flowBarsContainerRef.value.querySelectorAll('[data-bar-index]')
+    if (!bars.length) return
+    gsap.set(bars, { scaleY: 0, opacity: 0 })
+    gsap.to(bars, {
+      scaleY: 1,
+      opacity: 1,
+      duration: 0.45,
+      stagger: 0.06,
+      ease: 'back.out(1.4)',
+      delay: 0.1,
+    })
+  }
+
+  async function animateLineChart() {
+    await nextTick()
+    if (!linePathRef.value) return
+    const path = linePathRef.value
+    const length = path.getTotalLength()
+    if (!length) return   // ← add this guard
+    gsap.set(path, { strokeDasharray: length, strokeDashoffset: length })
+    gsap.to(path, { strokeDashoffset: 0, duration: 0.9, ease: 'power2.out', delay: 0.1 })
+  }
+
+
 
 // ── Monitoring ─────────────────────────────────────────────────────────────
 
@@ -529,6 +605,28 @@ const visibleSections = computed(() => {
     clearInterval(refreshInterval)
   })
 
+  watch(loading, async (isLoading) => {
+    if (!isLoading) {
+      // await animateKpiCards()
+      countUp(displayTotalEndorsed, summary.value.totalEndorsed)
+      countUp(displayPending, summary.value.pending)
+      countUp(displayOutsideTAT, summary.value.outsideTAT)
+      countUp(displayReceived, summary.value.received)
+    }
+  })
+
+  watch(monitoringLoading, async (isLoading) => {
+    if (!isLoading) await animateMonitoringCards()
+  })
+
+  watch(flowLoading, async (isLoading) => {
+    if (!isLoading) await animateFlowBars()
+  })
+
+  watch(hourlyLoading, async (isLoading) => {
+    if (!isLoading) await animateLineChart()
+  })
+
 // ── Drawer ─────────────────────────────────────────────────────────────────
 
 const drawerOpen = ref(false)
@@ -591,8 +689,7 @@ function getBatchStatusDot(status) {
 
   // ── Weekly Flow ────────────────────────────────────────────────────────────
 
-  const flowLoading = ref(true)
-  const weeklyFlow = ref([])
+
 
   const flowBars = computed(() => {
     if (weeklyFlow.value.length === 0) return []
@@ -606,9 +703,6 @@ function getBatchStatusDot(status) {
   })
 
   // ── Hourly Flow ────────────────────────────────────────────────────────────
-
-  const hourlyLoading = ref(true)
-  const hourlyFlow = ref([])
 
   const chartPoints = computed(() => {
     if (hourlyFlow.value.length === 0) return []

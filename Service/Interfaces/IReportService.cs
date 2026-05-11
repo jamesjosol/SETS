@@ -12,6 +12,7 @@ namespace Service.Interfaces
 
         // R3 — Specimen Not Received / Pending
         List<SpecimenNotReceivedRow> GetSpecimensNotReceived(SpecimenNotReceivedRequest request);
+        byte[] ExportSpecimensNotReceivedExcel(SpecimenNotReceivedRequest request);
 
         // R4 — Test Management
         List<TestManagementRow> GetTestManagement(TestManagementRequest request);

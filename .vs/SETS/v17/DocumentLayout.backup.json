@@ -3,60 +3,60 @@
   "WorkspaceRootPath": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{BD9ED67C-9663-4A71-9490-22712D3ED118}|SETS.Server\\SETS.Server.csproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\sets.server\\controllers\\reportcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{BD9ED67C-9663-4A71-9490-22712D3ED118}|SETS.Server\\SETS.Server.csproj|solutionrelative:sets.server\\controllers\\reportcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\sets.client\\src\\views\\receiver\\receivedbatches.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|solutionrelative:sets.client\\src\\views\\receiver\\receivedbatches.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\sets.client\\src\\api\\reportapi.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
-      "RelativeMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|solutionrelative:sets.client\\src\\api\\reportapi.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|c:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\node_modules\\@vue\\runtime-core\\dist\\runtime-core.esm-bundler.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}|",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:sets.client\\node_modules\\@vue\\runtime-core\\dist\\runtime-core.esm-bundler.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}|"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{C841152B-74B7-43B7-8E9A-E2B82C80289A}|Service\\Service.csproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\service\\services\\reportservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{C841152B-74B7-43B7-8E9A-E2B82C80289A}|Service\\Service.csproj|solutionrelative:service\\services\\reportservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\sets.client\\src\\views\\shared\\reports.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|solutionrelative:sets.client\\src\\views\\shared\\reports.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{3DB3CB0F-B33B-46A8-9666-EA421056EEEE}|Reposi\\Reposi.csproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\reposi\\repositories\\genericrepo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{3DB3CB0F-B33B-46A8-9666-EA421056EEEE}|Reposi\\Reposi.csproj|solutionrelative:reposi\\repositories\\genericrepo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{3DB3CB0F-B33B-46A8-9666-EA421056EEEE}|Reposi\\Reposi.csproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\reposi\\repositories\\auditlogrepo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{3DB3CB0F-B33B-46A8-9666-EA421056EEEE}|Reposi\\Reposi.csproj|solutionrelative:reposi\\repositories\\auditlogrepo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{BD9ED67C-9663-4A71-9490-22712D3ED118}|SETS.Server\\SETS.Server.csproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\sets.server\\controllers\\sectioncontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{BD9ED67C-9663-4A71-9490-22712D3ED118}|SETS.Server\\SETS.Server.csproj|solutionrelative:sets.server\\controllers\\sectioncontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{BD9ED67C-9663-4A71-9490-22712D3ED118}|SETS.Server\\SETS.Server.csproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\sets.server\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
-      "RelativeMoniker": "D:0:0:{BD9ED67C-9663-4A71-9490-22712D3ED118}|SETS.Server\\SETS.Server.csproj|solutionrelative:sets.server\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\sets.client\\src\\components\\layout\\appsidebar.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|solutionrelative:sets.client\\src\\components\\layout\\appsidebar.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\sets.client\\src\\views\\shared\\audittrail.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|solutionrelative:sets.client\\src\\views\\shared\\audittrail.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{BD9ED67C-9663-4A71-9490-22712D3ED118}|SETS.Server\\SETS.Server.csproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\sets.server\\controllers\\receivingcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{BD9ED67C-9663-4A71-9490-22712D3ED118}|SETS.Server\\SETS.Server.csproj|solutionrelative:sets.server\\controllers\\receivingcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\sets.client\\src\\views\\receiver\\incomingspecimens.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|solutionrelative:sets.client\\src\\views\\receiver\\incomingspecimens.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\sets.client\\src\\views\\endorser\\endorsements.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}",
       "RelativeMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|solutionrelative:sets.client\\src\\views\\endorser\\endorsements.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{C841152B-74B7-43B7-8E9A-E2B82C80289A}|Service\\Service.csproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\service\\services\\receivingservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{C841152B-74B7-43B7-8E9A-E2B82C80289A}|Service\\Service.csproj|solutionrelative:service\\services\\receivingservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\sets.client\\src\\views\\receiver\\receiverdashboard.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|solutionrelative:sets.client\\src\\views\\receiver\\receiverdashboard.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{BD9ED67C-9663-4A71-9490-22712D3ED118}|SETS.Server\\SETS.Server.csproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\sets.server\\controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{BD9ED67C-9663-4A71-9490-22712D3ED118}|SETS.Server\\SETS.Server.csproj|solutionrelative:sets.server\\controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\sets.client\\src\\views\\endorser\\dashboard.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|solutionrelative:sets.client\\src\\views\\endorser\\dashboard.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\sets.client\\src\\views\\shared\\reports\\batchsummarytab.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|solutionrelative:sets.client\\src\\views\\shared\\reports\\batchsummarytab.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\sets.client\\src\\views\\shared\\reports\\beyond14daystab.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|solutionrelative:sets.client\\src\\views\\shared\\reports\\beyond14daystab.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\sets.client\\src\\views\\receiver\\specimenissueslog.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|solutionrelative:sets.client\\src\\views\\receiver\\specimenissueslog.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\sets.client\\src\\views\\shared\\reports.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|solutionrelative:sets.client\\src\\views\\shared\\reports.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\sets.client\\src\\views\\shared\\reports\\specimennotreceivedtab.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|solutionrelative:sets.client\\src\\views\\shared\\reports\\specimennotreceivedtab.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\sets.client\\src\\views\\shared\\reports\\specimenreceiptsectiontab.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|solutionrelative:sets.client\\src\\views\\shared\\reports\\specimenreceiptsectiontab.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\sets.client\\src\\views\\shared\\reports\\duplicateendorsementtab.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|solutionrelative:sets.client\\src\\views\\shared\\reports\\duplicateendorsementtab.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\sets.client\\src\\views\\shared\\reports\\comingsoontab.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|solutionrelative:sets.client\\src\\views\\shared\\reports\\comingsoontab.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     }
   ],
   "DocumentGroupContainers": [
@@ -66,7 +66,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 166,
-          "SelectedChildIndex": 4,
+          "SelectedChildIndex": 1,
           "Children": [
             {
               "$type": "Bookmark",
@@ -74,194 +74,195 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
-              "Title": "appsettings.json",
-              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\SETS.Server\\appsettings.json",
-              "RelativeDocumentMoniker": "SETS.Server\\appsettings.json",
-              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\SETS.Server\\appsettings.json",
-              "RelativeToolTip": "SETS.Server\\appsettings.json",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABYAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2026-05-11T02:42:31.187Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "Reports.vue",
-              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\shared\\Reports.vue",
-              "RelativeDocumentMoniker": "sets.client\\src\\views\\shared\\Reports.vue",
-              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\shared\\Reports.vue",
-              "RelativeToolTip": "sets.client\\src\\views\\shared\\Reports.vue",
-              "ViewState": "AgIAAI0BAAAAAAAAAAAowMwBAAAZAAAAAAAAAA==",
+              "DocumentIndex": 0,
+              "Title": "ReceivedBatches.vue",
+              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\receiver\\ReceivedBatches.vue",
+              "RelativeDocumentMoniker": "sets.client\\src\\views\\receiver\\ReceivedBatches.vue",
+              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\receiver\\ReceivedBatches.vue",
+              "RelativeToolTip": "sets.client\\src\\views\\receiver\\ReceivedBatches.vue",
+              "ViewState": "AgIAAPAAAAAAAAAAAAAvwA4BAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
-              "WhenOpened": "2026-05-09T08:34:05.75Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "ReportService.cs",
-              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Service\\Services\\ReportService.cs",
-              "RelativeDocumentMoniker": "Service\\Services\\ReportService.cs",
-              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Service\\Services\\ReportService.cs",
-              "RelativeToolTip": "Service\\Services\\ReportService.cs",
-              "ViewState": "AgIAAEUCAAAAAAAAAAAMwF0CAAA2AAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-09T08:12:51.957Z",
+              "WhenOpened": "2026-05-11T08:14:17.478Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 1,
-              "Title": "reportApi.js",
-              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\api\\reportApi.js",
-              "RelativeDocumentMoniker": "sets.client\\src\\api\\reportApi.js",
-              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\api\\reportApi.js",
-              "RelativeToolTip": "sets.client\\src\\api\\reportApi.js",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAACoAAAAAAAAAAAAAAA==",
+              "Title": "runtime-core.esm-bundler.js",
+              "DocumentMoniker": "c:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\node_modules\\@vue\\runtime-core\\dist\\runtime-core.esm-bundler.js",
+              "RelativeDocumentMoniker": "sets.client\\node_modules\\@vue\\runtime-core\\dist\\runtime-core.esm-bundler.js",
+              "ToolTip": "c:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\node_modules\\@vue\\runtime-core\\dist\\runtime-core.esm-bundler.js",
+              "RelativeToolTip": "sets.client\\node_modules\\@vue\\runtime-core\\dist\\runtime-core.esm-bundler.js",
+              "ViewState": "AgIAAMoAAAAAAAAAAAAlwAsBAAAGAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2026-05-09T08:16:40.733Z",
+              "WhenOpened": "2026-05-11T08:12:06.209Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 13,
-              "Title": "AuthController.cs",
-              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\SETS.Server\\Controllers\\AuthController.cs",
-              "RelativeDocumentMoniker": "SETS.Server\\Controllers\\AuthController.cs",
-              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\SETS.Server\\Controllers\\AuthController.cs",
-              "RelativeToolTip": "SETS.Server\\Controllers\\AuthController.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABIAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-09T08:19:22.748Z"
-            }
-          ]
-        },
-        {
-          "DockedWidth": 162,
-          "SelectedChildIndex": 4,
-          "Children": [
-            {
-              "$type": "Bookmark",
-              "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
+              "DocumentIndex": 2,
+              "Title": "IncomingSpecimens.vue",
+              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\receiver\\IncomingSpecimens.vue",
+              "RelativeDocumentMoniker": "sets.client\\src\\views\\receiver\\IncomingSpecimens.vue",
+              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\receiver\\IncomingSpecimens.vue",
+              "RelativeToolTip": "sets.client\\src\\views\\receiver\\IncomingSpecimens.vue",
+              "ViewState": "AgIAABIBAAAAAAAAAAAvwGUBAAADAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
+              "WhenOpened": "2026-05-11T08:08:55.99Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 4,
-              "Title": "GenericRepo.cs",
-              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Reposi\\Repositories\\GenericRepo.cs",
-              "RelativeDocumentMoniker": "Reposi\\Repositories\\GenericRepo.cs",
-              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Reposi\\Repositories\\GenericRepo.cs",
-              "RelativeToolTip": "Reposi\\Repositories\\GenericRepo.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAACwAAAAkAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-11T03:01:11.543Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 6,
-              "Title": "SectionController.cs",
-              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\SETS.Server\\Controllers\\SectionController.cs",
-              "RelativeDocumentMoniker": "SETS.Server\\Controllers\\SectionController.cs",
-              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\SETS.Server\\Controllers\\SectionController.cs",
-              "RelativeToolTip": "SETS.Server\\Controllers\\SectionController.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAEEAAAAgAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-11T01:11:31.697Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 9,
-              "Title": "AuditTrail.vue",
-              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\shared\\AuditTrail.vue",
-              "RelativeDocumentMoniker": "sets.client\\src\\views\\shared\\AuditTrail.vue",
-              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\shared\\AuditTrail.vue",
-              "RelativeToolTip": "sets.client\\src\\views\\shared\\AuditTrail.vue",
-              "ViewState": "AgIAAAICAAAAAAAAAAAvwBwCAABIAAAAAAAAAA==",
+              "Title": "ReceiverDashboard.vue",
+              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\receiver\\ReceiverDashboard.vue",
+              "RelativeDocumentMoniker": "sets.client\\src\\views\\receiver\\ReceiverDashboard.vue",
+              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\receiver\\ReceiverDashboard.vue",
+              "RelativeToolTip": "sets.client\\src\\views\\receiver\\ReceiverDashboard.vue",
+              "ViewState": "AgIAAIoAAAAAAAAAAAAvwM8AAABiAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
-              "WhenOpened": "2026-05-11T01:05:46.046Z",
+              "WhenOpened": "2026-05-11T07:48:16.252Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "ReportController.cs",
-              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\SETS.Server\\Controllers\\ReportController.cs",
-              "RelativeDocumentMoniker": "SETS.Server\\Controllers\\ReportController.cs",
-              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\SETS.Server\\Controllers\\ReportController.cs",
-              "RelativeToolTip": "SETS.Server\\Controllers\\ReportController.cs",
-              "ViewState": "AgIAAKoAAAAAAAAAAAAYwNMAAAAlAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-09T08:14:26.721Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 5,
-              "Title": "AuditLogRepo.cs",
-              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Reposi\\Repositories\\AuditLogRepo.cs",
-              "RelativeDocumentMoniker": "Reposi\\Repositories\\AuditLogRepo.cs",
-              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Reposi\\Repositories\\AuditLogRepo.cs",
-              "RelativeToolTip": "Reposi\\Repositories\\AuditLogRepo.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAArAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-11T03:01:27.954Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 12,
-              "Title": "ReceivingService.cs",
-              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Service\\Services\\ReceivingService.cs",
-              "RelativeDocumentMoniker": "Service\\Services\\ReceivingService.cs",
-              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Service\\Services\\ReceivingService.cs",
-              "RelativeToolTip": "Service\\Services\\ReceivingService.cs",
-              "ViewState": "AgIAALMAAAAAAAAAAAAMwNkAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-11T00:46:16.141Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 10,
-              "Title": "ReceivingController.cs",
-              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\SETS.Server\\Controllers\\ReceivingController.cs",
-              "RelativeDocumentMoniker": "SETS.Server\\Controllers\\ReceivingController.cs",
-              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\SETS.Server\\Controllers\\ReceivingController.cs",
-              "RelativeToolTip": "SETS.Server\\Controllers\\ReceivingController.cs",
-              "ViewState": "AgIAAAMAAAAAAAAAAAAAACgAAABDAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-11T00:45:57.948Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 11,
+              "DocumentIndex": 3,
               "Title": "Endorsements.vue",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\endorser\\Endorsements.vue",
               "RelativeDocumentMoniker": "sets.client\\src\\views\\endorser\\Endorsements.vue",
               "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\endorser\\Endorsements.vue",
               "RelativeToolTip": "sets.client\\src\\views\\endorser\\Endorsements.vue",
-              "ViewState": "AgIAADoBAAAAAAAAAAAswGgBAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAF8BAAAAAAAAAAAswIkBAAA/AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
-              "WhenOpened": "2026-05-09T08:31:14.519Z",
+              "WhenOpened": "2026-05-11T07:38:59.716Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "Dashboard.vue",
+              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\endorser\\Dashboard.vue",
+              "RelativeDocumentMoniker": "sets.client\\src\\views\\endorser\\Dashboard.vue",
+              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\endorser\\Dashboard.vue",
+              "RelativeToolTip": "sets.client\\src\\views\\endorser\\Dashboard.vue",
+              "ViewState": "AgIAAMcBAAAAAAAAAAAvwBoCAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
+              "WhenOpened": "2026-05-11T07:05:27.37Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 8,
-              "Title": "AppSidebar.vue",
-              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\components\\layout\\AppSidebar.vue",
-              "RelativeDocumentMoniker": "sets.client\\src\\components\\layout\\AppSidebar.vue",
-              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\components\\layout\\AppSidebar.vue",
-              "RelativeToolTip": "sets.client\\src\\components\\layout\\AppSidebar.vue",
-              "ViewState": "AgIAALcAAAAAAAAAAAAAAM8AAAAeAAAAAAAAAA==",
+              "Title": "SpecimenIssuesLog.vue",
+              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\receiver\\SpecimenIssuesLog.vue",
+              "RelativeDocumentMoniker": "sets.client\\src\\views\\receiver\\SpecimenIssuesLog.vue",
+              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\receiver\\SpecimenIssuesLog.vue",
+              "RelativeToolTip": "sets.client\\src\\views\\receiver\\SpecimenIssuesLog.vue",
+              "ViewState": "AgIAAC8EAAAAAAAAAAAswEUEAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
-              "WhenOpened": "2026-05-11T01:35:18.426Z",
+              "WhenOpened": "2026-05-11T06:48:48.674Z",
               "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "SpecimenReceiptSectionTab.vue",
+              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\shared\\reports\\SpecimenReceiptSectionTab.vue",
+              "RelativeDocumentMoniker": "sets.client\\src\\views\\shared\\reports\\SpecimenReceiptSectionTab.vue",
+              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\shared\\reports\\SpecimenReceiptSectionTab.vue",
+              "RelativeToolTip": "sets.client\\src\\views\\shared\\reports\\SpecimenReceiptSectionTab.vue",
+              "ViewState": "AgIAAK0AAAAAAAAAAAAswDEBAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
+              "WhenOpened": "2026-05-11T06:21:15.069Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "SpecimenNotReceivedTab.vue",
+              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\shared\\reports\\SpecimenNotReceivedTab.vue",
+              "RelativeDocumentMoniker": "sets.client\\src\\views\\shared\\reports\\SpecimenNotReceivedTab.vue",
+              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\shared\\reports\\SpecimenNotReceivedTab.vue",
+              "RelativeToolTip": "sets.client\\src\\views\\shared\\reports\\SpecimenNotReceivedTab.vue",
+              "ViewState": "AgIAAKgAAAAAAAAAAAAswLMAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
+              "WhenOpened": "2026-05-11T06:21:02.729Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "DuplicateEndorsementTab.vue",
+              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\shared\\reports\\DuplicateEndorsementTab.vue",
+              "RelativeDocumentMoniker": "sets.client\\src\\views\\shared\\reports\\DuplicateEndorsementTab.vue",
+              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\shared\\reports\\DuplicateEndorsementTab.vue",
+              "RelativeToolTip": "sets.client\\src\\views\\shared\\reports\\DuplicateEndorsementTab.vue",
+              "ViewState": "AgIAAKgAAAAAAAAAAAAswOUAAAAdAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
+              "WhenOpened": "2026-05-11T06:20:48.761Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
+              "Title": "ComingSoonTab.vue",
+              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\shared\\reports\\ComingSoonTab.vue",
+              "RelativeDocumentMoniker": "sets.client\\src\\views\\shared\\reports\\ComingSoonTab.vue",
+              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\shared\\reports\\ComingSoonTab.vue",
+              "RelativeToolTip": "sets.client\\src\\views\\shared\\reports\\ComingSoonTab.vue",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAC4AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
+              "WhenOpened": "2026-05-11T06:20:42.744Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "Beyond14DaysTab.vue",
+              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\shared\\reports\\Beyond14DaysTab.vue",
+              "RelativeDocumentMoniker": "sets.client\\src\\views\\shared\\reports\\Beyond14DaysTab.vue",
+              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\shared\\reports\\Beyond14DaysTab.vue",
+              "RelativeToolTip": "sets.client\\src\\views\\shared\\reports\\Beyond14DaysTab.vue",
+              "ViewState": "AgIAAKQAAAAAAAAAAAAswCgBAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
+              "WhenOpened": "2026-05-11T06:20:34.57Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "BatchSummaryTab.vue",
+              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\shared\\reports\\BatchSummaryTab.vue",
+              "RelativeDocumentMoniker": "sets.client\\src\\views\\shared\\reports\\BatchSummaryTab.vue",
+              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\shared\\reports\\BatchSummaryTab.vue",
+              "RelativeToolTip": "sets.client\\src\\views\\shared\\reports\\BatchSummaryTab.vue",
+              "ViewState": "AgIAABEBAAAAAAAAAAAswCsBAAAdAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
+              "WhenOpened": "2026-05-11T06:20:28.203Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "Reports.vue",
+              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\shared\\Reports.vue",
+              "RelativeDocumentMoniker": "sets.client\\src\\views\\shared\\Reports.vue",
+              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\shared\\Reports.vue",
+              "RelativeToolTip": "sets.client\\src\\views\\shared\\Reports.vue",
+              "ViewState": "AgIAAKUAAAAAAAAAAAAAAMAAAAAgAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
+              "WhenOpened": "2026-05-11T06:18:42.345Z",
+              "EditorCaption": ""
+            }
+          ]
+        },
+        {
+          "DockedWidth": 1127,
+          "SelectedChildIndex": -1,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
             }
           ]
         }

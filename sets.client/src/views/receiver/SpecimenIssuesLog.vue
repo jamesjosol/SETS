@@ -26,7 +26,7 @@
         </div>
 
         <!-- Folder List -->
-        <div class="flex-1 overflow-y-auto p-2">
+        <div class="flex-1 overflow-y-auto p-2" ref="folderListRef">
           <div v-if="foldersLoading" class="flex flex-col gap-1">
             <div v-for="i in 4" :key="i"
                  class="h-14 rounded-xl animate-pulse"
@@ -44,7 +44,7 @@
 
           <button v-for="folder in incidentTypes.filter(f => f.isActive || isTLOrAdmin)"
                   :key="folder.id"
-                  class="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-left transition-all mb-1 cursor-pointer"
+                  class="folder-item w-full flex items-center gap-3 px-3 py-3 rounded-xl text-left transition-all mb-1 cursor-pointer"
                   :style="selectedFolder?.id === folder.id
                     ? 'background-color: var(--color-primary-soft); border-left: 3px solid var(--color-primary); padding-left: calc(0.75rem - 3px);'
                     : 'border-left: 3px solid transparent;'"
@@ -81,7 +81,8 @@
 
         <!-- Empty State -->
         <div v-if="!selectedFolder"
-             class="flex-1 flex flex-col items-center justify-center gap-3">
+             class="flex-1 flex flex-col items-center justify-center gap-3"
+             ref="emptyStateRef">
           <span class="material-symbols-outlined text-5xl"
                 style="color: var(--color-text-muted);">folder_open</span>
           <p class="text-sm font-bold" style="color: var(--color-text-muted);">
@@ -92,6 +93,7 @@
         <template v-else>
           <!-- Right Panel Header + Breadcrumb -->
           <div class="flex-shrink-0 px-6 py-4 flex items-center justify-between"
+               ref="rightHeaderRef"
                style="border-bottom: 1px solid var(--color-border); background-color: var(--color-surface);">
             <div class="flex items-center gap-2 min-w-0">
               <!-- Breadcrumb -->
@@ -157,7 +159,8 @@
 
             <!-- Tab: Sub-Categories -->
             <div v-if="rightTab === 'subcategories'"
-                 class="flex-1 overflow-y-auto p-6">
+                 class="flex-1 overflow-y-auto p-6"
+                 ref="subCatPanelRef">
 
               <div class="flex items-center justify-between mb-4">
                 <p class="text-xs font-bold uppercase tracking-widest"
@@ -185,9 +188,9 @@
                 <p class="text-sm font-bold" style="color: var(--color-text-muted);">No sub-categories yet</p>
               </div>
 
-              <div v-else class="flex flex-col gap-2">
-                  <div v-for="sub in subCategories.filter(s => s.isActive || isTLOrAdmin)" :key="sub.id"
-                     class="rounded-xl px-4 py-3 flex items-center gap-3 transition-all"
+              <div v-else class="flex flex-col gap-2" ref="subCatListRef">
+                <div v-for="sub in subCategories.filter(s => s.isActive || isTLOrAdmin)" :key="sub.id"
+                     class="subcat-item rounded-xl px-4 py-3 flex items-center gap-3 transition-all"
                      style="background-color: var(--color-surface); border: 1px solid var(--color-border);">
                   <!-- Open button -->
                   <button class="flex-1 flex items-center gap-3 text-left min-w-0 cursor-pointer"
@@ -238,7 +241,8 @@
 
             <!-- Tab: Comments -->
             <div v-if="rightTab === 'comments'"
-                 class="flex-1 overflow-y-auto p-6 flex flex-col gap-4">
+                 class="flex-1 overflow-y-auto p-6 flex flex-col gap-4"
+                 ref="commentsPanelRef">
 
               <!-- Add Comment -->
               <div class="rounded-xl p-4 flex flex-col gap-3"
@@ -277,9 +281,9 @@
               </div>
 
               <!-- Comment List -->
-              <div v-else class="flex flex-col gap-3">
+              <div v-else class="flex flex-col gap-3" ref="commentListRef">
                 <div v-for="comment in comments" :key="comment.id"
-                     class="rounded-xl p-4 flex flex-col gap-2"
+                     class="comment-item rounded-xl p-4 flex flex-col gap-2"
                      style="background-color: var(--color-surface); border: 1px solid var(--color-border);">
 
                   <div class="flex items-start justify-between gap-3">
@@ -336,10 +340,10 @@
           </div>
 
           <!-- ── Sub-Category Drill-In View ──────────────────────────────── -->
-          <div v-else class="flex-1 flex flex-col overflow-hidden">
+          <div v-else class="flex-1 flex flex-col overflow-hidden" ref="drillInPanelRef">
 
             <!-- Tags Row -->
-            <div class="flex-shrink-0 px-6 py-2 flex items-center gap-1.5 flex-wrap"
+            <div class="drill-in-tags flex-shrink-0 px-6 py-2 flex items-center gap-1.5 flex-wrap"
                  style="border-bottom: 1px solid var(--color-border); background-color: var(--color-surface);">
               <span class="text-[10px] font-bold uppercase tracking-widest flex-shrink-0 mr-1"
                     style="color: var(--color-text-muted);">Tags:</span>
@@ -384,7 +388,7 @@
             <div class="flex-1 overflow-y-auto p-6 flex flex-col gap-4">
 
               <!-- Scan Input -->
-              <div class="rounded-xl p-4 flex items-center gap-3"
+              <div class="drill-in-scan rounded-xl p-4 flex items-center gap-3"
                    style="background-color: var(--color-surface); border: 1px solid var(--color-border);">
                 <span class="material-symbols-outlined text-base flex-shrink-0"
                       style="color: var(--color-primary);">barcode_scanner</span>
@@ -415,7 +419,7 @@
 
               <!-- Empty -->
               <div v-else-if="!labEntries.length"
-                   class="flex flex-col items-center justify-center py-12 gap-2">
+                   class="drill-in-empty flex flex-col items-center justify-center py-12 gap-2">
                 <span class="material-symbols-outlined text-4xl"
                       style="color: var(--color-text-muted);">science_off</span>
                 <p class="text-sm font-bold" style="color: var(--color-text-muted);">No entries yet</p>
@@ -425,7 +429,7 @@
               </div>
 
               <!-- Entries Table -->
-              <div v-else class="rounded-xl overflow-hidden"
+              <div v-else class="drill-in-table rounded-xl overflow-hidden"
                    style="background-color: var(--color-surface); border: 1px solid var(--color-border);">
                 <table class="w-full text-sm">
                   <thead>
@@ -447,8 +451,9 @@
                           style="color: var(--color-text-muted);"></th>
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody ref="entryTbodyRef">
                     <tr v-for="entry in labEntries" :key="entry.id"
+                        class="entry-row"
                         style="border-bottom: 1px solid var(--color-border);">
                       <td class="px-4 py-3 font-bold text-xs"
                           style="color: var(--color-primary);">
@@ -494,10 +499,11 @@
 
     <!-- ── Create Folder Modal ─────────────────────────────────────────────── -->
     <div v-if="folderModal.visible"
-         class="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div class="absolute inset-0 bg-black/40 backdrop-blur-sm"
+         class="fixed inset-0 z-50 flex items-center justify-center p-4"
+         ref="folderModalOverlayRef">
+      <div class="absolute inset-0 bg-black/40 backdrop-blur-sm modal-backdrop"
            @click="folderModal.visible = false"></div>
-      <div class="relative w-full max-w-sm rounded-2xl shadow-2xl p-6 flex flex-col gap-4 animate-modal"
+      <div class="modal-card relative w-full max-w-sm rounded-2xl shadow-2xl p-6 flex flex-col gap-4"
            style="background-color: var(--color-surface);">
         <h3 class="text-base font-bold" style="color: var(--color-text);">New Incident Type</h3>
         <input v-model="folderModal.name"
@@ -509,7 +515,7 @@
         <div class="flex gap-3">
           <button class="flex-1 py-3 rounded-xl text-xs font-bold uppercase tracking-widest"
                   style="background-color: var(--color-surface-low); color: var(--color-text-muted);"
-                  @click="folderModal.visible = false">
+                  @click="closeModal('folder')">
             Cancel
           </button>
           <button class="flex-1 py-3 rounded-xl text-xs font-bold uppercase tracking-widest transition-all active:scale-95"
@@ -524,10 +530,11 @@
 
     <!-- ── Create Sub-Category Modal ──────────────────────────────────────── -->
     <div v-if="subCatModal.visible"
-         class="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div class="absolute inset-0 bg-black/40 backdrop-blur-sm"
+         class="fixed inset-0 z-50 flex items-center justify-center p-4"
+         ref="subCatModalOverlayRef">
+      <div class="absolute inset-0 bg-black/40 backdrop-blur-sm modal-backdrop"
            @click="subCatModal.visible = false"></div>
-      <div class="relative w-full max-w-sm rounded-2xl shadow-2xl p-6 flex flex-col gap-4 animate-modal"
+      <div class="modal-card relative w-full max-w-sm rounded-2xl shadow-2xl p-6 flex flex-col gap-4"
            style="background-color: var(--color-surface);">
         <h3 class="text-base font-bold" style="color: var(--color-text);">New Sub-Category</h3>
         <p class="text-xs" style="color: var(--color-text-muted);">
@@ -542,7 +549,7 @@
         <div class="flex gap-3">
           <button class="flex-1 py-3 rounded-xl text-xs font-bold uppercase tracking-widest"
                   style="background-color: var(--color-surface-low); color: var(--color-text-muted);"
-                  @click="subCatModal.visible = false">
+                  @click="closeModal('subcat')">
             Cancel
           </button>
           <button class="flex-1 py-3 rounded-xl text-xs font-bold uppercase tracking-widest transition-all active:scale-95"
@@ -577,400 +584,641 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, nextTick } from 'vue'
-import AppLayout from '@/components/layout/AppLayout.vue'
-import AlertModal from '@/components/common/AlertModal.vue'
-import ConfirmModal from '@/components/common/ConfirmModal.vue'
-import { useAuthStore } from '@/stores/authStore'
-import { specimenIssueApi } from '@/api/specimenIssueApi'
+  import { ref, computed, onMounted, nextTick, watch } from 'vue'
+  import gsap from 'gsap'
+  import AppLayout from '@/components/layout/AppLayout.vue'
+  import AlertModal from '@/components/common/AlertModal.vue'
+  import ConfirmModal from '@/components/common/ConfirmModal.vue'
+  import { useAuthStore } from '@/stores/authStore'
+  import { specimenIssueApi } from '@/api/specimenIssueApi'
 
-const authStore = useAuthStore()
+  const authStore = useAuthStore()
 
-const isTLOrAdmin = computed(() =>
-  authStore.isAdmin || authStore.roleID === 2
-)
-
-// ── Alert ──────────────────────────────────────────────────────────────────
-
-const alert = ref({ isVisible: false, type: 'error', title: '', message: '' })
-
-function showAlert(type, title, message) {
-  alert.value = { isVisible: true, type, title, message }
-}
-
-// ── Confirm Modal ──────────────────────────────────────────────────────────
-
-const confirmModal = ref({
-  visible: false,
-  title: '',
-  message: '',
-  onConfirm: () => {}
-})
-
-function openConfirm(title, message, onConfirm) {
-  confirmModal.value = { visible: true, title, message, onConfirm }
-}
-
-// ── Incident Types ─────────────────────────────────────────────────────────
-
-const incidentTypes = ref([])
-const foldersLoading = ref(false)
-const selectedFolder = ref(null)
-
-async function loadFolders() {
-  foldersLoading.value = true
-  try {
-    incidentTypes.value = await specimenIssueApi.getIncidentTypes()
-  } catch {
-    showAlert('error', 'Error', 'Failed to load incident types.')
-  } finally {
-    foldersLoading.value = false
-  }
-}
-
-function selectFolder(folder) {
-  selectedFolder.value = folder
-  selectedSubCategory.value = null
-  rightTab.value = 'subcategories'
-  loadSubCategories(folder.id)
-  loadComments(folder.id)
-}
-
-// ── Folder Modal ───────────────────────────────────────────────────────────
-
-const folderModal = ref({ visible: false, name: '', saving: false })
-
-function openCreateFolderModal() {
-  folderModal.value = { visible: true, name: '', saving: false }
-}
-
-async function submitCreateFolder() {
-  if (!folderModal.value.name.trim()) return
-  folderModal.value.saving = true
-  try {
-    await specimenIssueApi.createIncidentType({ name: folderModal.value.name.trim() })
-    folderModal.value.visible = false
-    await loadFolders()
-  } catch (e) {
-    showAlert('error', 'Error', e.response?.data?.message ?? 'Failed to create folder.')
-  } finally {
-    folderModal.value.saving = false
-  }
-}
-
-function promptToggleFolder() {
-  const action = selectedFolder.value.isActive ? 'deactivate' : 'activate'
-  openConfirm(
-    `${selectedFolder.value.isActive ? 'Deactivate' : 'Activate'} Folder`,
-    `Are you sure you want to ${action} "${selectedFolder.value.name}"?`,
-    async () => {
-      try {
-        await specimenIssueApi.toggleIncidentType(selectedFolder.value.id)
-        await loadFolders()
-        // Refresh selected folder state
-        selectedFolder.value = incidentTypes.value.find(f => f.id === selectedFolder.value.id) ?? null
-      } catch (e) {
-        showAlert('error', 'Error', e.response?.data?.message ?? 'Failed to update folder.')
-      }
-    }
+  const isTLOrAdmin = computed(() =>
+    authStore.isAdmin || authStore.roleID === 2
   )
-}
 
-// ── Right Panel Tabs ───────────────────────────────────────────────────────
+  // ── Template Refs ──────────────────────────────────────────────────────────
 
-const rightTab = ref('subcategories')
-const rightTabs = [
-  { key: 'subcategories', label: 'Sub-Categories' },
-  { key: 'comments', label: 'Comments' },
-]
+  const folderListRef = ref(null)
+  const rightHeaderRef = ref(null)
+  const subCatListRef = ref(null)
+  const subCatPanelRef = ref(null)
+  const commentListRef = ref(null)
+  const commentsPanelRef = ref(null)
+  const drillInPanelRef = ref(null)
+  const entryTbodyRef = ref(null)
+  const emptyStateRef = ref(null)
+  const folderModalOverlayRef = ref(null)
+  const subCatModalOverlayRef = ref(null)
 
-// ── Sub-Categories ─────────────────────────────────────────────────────────
+  // ── Alert ──────────────────────────────────────────────────────────────────
 
-const subCategories = ref([])
-const subCatLoading = ref(false)
-const selectedSubCategory = ref(null)
+  const alert = ref({ isVisible: false, type: 'error', title: '', message: '' })
 
-async function loadSubCategories(incidentTypeId) {
-  subCatLoading.value = true
-  try {
-    subCategories.value = await specimenIssueApi.getSubCategories(incidentTypeId)
-  } catch {
-    showAlert('error', 'Error', 'Failed to load sub-categories.')
-  } finally {
-    subCatLoading.value = false
+  function showAlert(type, title, message) {
+    alert.value = { isVisible: true, type, title, message }
   }
-}
 
-function selectSubCategory(sub) {
-  selectedSubCategory.value = sub
-  loadLabEntries(sub.id)
-  loadTagSuggestions()
-  nextTick(() => scanInput.value?.focus())
-}
+  // ── Confirm Modal ──────────────────────────────────────────────────────────
 
-function backToFolder() {
-  selectedSubCategory.value = null
-}
+  const confirmModal = ref({
+    visible: false,
+    title: '',
+    message: '',
+    onConfirm: () => { }
+  })
 
-// ── Sub-Category Modal ─────────────────────────────────────────────────────
+  function openConfirm(title, message, onConfirm) {
+    confirmModal.value = { visible: true, title, message, onConfirm }
+  }
 
-const subCatModal = ref({ visible: false, name: '', saving: false })
+  // ── Incident Types ─────────────────────────────────────────────────────────
 
-function openCreateSubCatModal() {
-  subCatModal.value = { visible: true, name: '', saving: false }
-}
+  const incidentTypes = ref([])
+  const foldersLoading = ref(false)
+  const selectedFolder = ref(null)
 
-async function submitCreateSubCat() {
-  if (!subCatModal.value.name.trim()) return
-  subCatModal.value.saving = true
-  try {
-    await specimenIssueApi.createSubCategory({
-      incidentTypeId: selectedFolder.value.id,
-      name: subCatModal.value.name.trim()
+  async function loadFolders() {
+    foldersLoading.value = true
+    try {
+      incidentTypes.value = await specimenIssueApi.getIncidentTypes()
+      await nextTick()
+      animateFolderList()
+    } catch {
+      showAlert('error', 'Error', 'Failed to load incident types.')
+    } finally {
+      foldersLoading.value = false
+    }
+  }
+
+  function selectFolder(folder) {
+    selectedFolder.value = folder
+    selectedSubCategory.value = null
+    rightTab.value = 'subcategories'
+    loadSubCategories(folder.id)
+    loadComments(folder.id)
+  }
+
+  // ── Folder Modal ───────────────────────────────────────────────────────────
+
+  const folderModal = ref({ visible: false, name: '', saving: false })
+
+  function openCreateFolderModal() {
+    folderModal.value = { visible: true, name: '', saving: false }
+    nextTick(() => animateModalIn(folderModalOverlayRef.value))
+  }
+
+  function closeModal(which) {
+    const ref = which === 'folder' ? folderModalOverlayRef.value : subCatModalOverlayRef.value
+    animateModalOut(ref, () => {
+      if (which === 'folder') folderModal.value.visible = false
+      else subCatModal.value.visible = false
     })
-    subCatModal.value.visible = false
-    await loadSubCategories(selectedFolder.value.id)
-    await loadFolders() // refresh count
-  } catch (e) {
-    showAlert('error', 'Error', e.response?.data?.message ?? 'Failed to create sub-category.')
-  } finally {
-    subCatModal.value.saving = false
   }
-}
 
-function promptToggleSubCat(sub) {
-  const action = sub.isActive ? 'deactivate' : 'activate'
-  openConfirm(
-    `${sub.isActive ? 'Deactivate' : 'Activate'} Sub-Category`,
-    `Are you sure you want to ${action} "${sub.name}"?`,
-    async () => {
-      try {
-        await specimenIssueApi.toggleSubCategory(sub.id)
-        await loadSubCategories(selectedFolder.value.id)
-      } catch (e) {
-        showAlert('error', 'Error', e.response?.data?.message ?? 'Failed to update sub-category.')
-      }
+  async function submitCreateFolder() {
+    if (!folderModal.value.name.trim()) return
+    folderModal.value.saving = true
+    try {
+      await specimenIssueApi.createIncidentType({ name: folderModal.value.name.trim() })
+      animateModalOut(folderModalOverlayRef.value, async () => {
+        folderModal.value.visible = false
+        await loadFolders()
+      })
+    } catch (e) {
+      showAlert('error', 'Error', e.response?.data?.message ?? 'Failed to create folder.')
+    } finally {
+      folderModal.value.saving = false
     }
-  )
-}
+  }
 
-// ── Tags ───────────────────────────────────────────────────────────────────
+  function promptToggleFolder() {
+    const action = selectedFolder.value.isActive ? 'deactivate' : 'activate'
+    openConfirm(
+      `${selectedFolder.value.isActive ? 'Deactivate' : 'Activate'} Folder`,
+      `Are you sure you want to ${action} "${selectedFolder.value.name}"?`,
+      async () => {
+        try {
+          await specimenIssueApi.toggleIncidentType(selectedFolder.value.id)
+          await loadFolders()
+          selectedFolder.value = incidentTypes.value.find(f => f.id === selectedFolder.value.id) ?? null
+        } catch (e) {
+          showAlert('error', 'Error', e.response?.data?.message ?? 'Failed to update folder.')
+        }
+      }
+    )
+  }
 
-const tagInput = ref('')
-const showTagSuggestions = ref(false)
-const allTagSuggestions = ref([])
-const filteredTagSuggestions = computed(() =>
-  tagInput.value.trim()
-    ? allTagSuggestions.value.filter(t =>
+  // ── Right Panel Tabs ───────────────────────────────────────────────────────
+
+  const rightTab = ref('subcategories')
+  const rightTabs = [
+    { key: 'subcategories', label: 'Sub-Categories' },
+    { key: 'comments', label: 'Comments' },
+  ]
+
+  // Animate tab panel switch
+  watch(rightTab, async (newTab) => {
+    await nextTick()
+    const panel = newTab === 'subcategories' ? subCatPanelRef.value : commentsPanelRef.value
+    if (!panel) return
+    gsap.set(panel, { opacity: 0, y: 10 })
+    gsap.to(panel, { opacity: 1, y: 0, duration: 0.25, ease: 'power2.out' })
+  })
+
+  // ── Sub-Categories ─────────────────────────────────────────────────────────
+
+  const subCategories = ref([])
+  const subCatLoading = ref(false)
+  const selectedSubCategory = ref(null)
+
+  async function loadSubCategories(incidentTypeId) {
+    subCatLoading.value = true
+    try {
+      subCategories.value = await specimenIssueApi.getSubCategories(incidentTypeId)
+      await nextTick()
+      animateSubCatList()
+    } catch {
+      showAlert('error', 'Error', 'Failed to load sub-categories.')
+    } finally {
+      subCatLoading.value = false
+    }
+  }
+
+  function selectSubCategory(sub) {
+    selectedSubCategory.value = sub
+    loadLabEntries(sub.id)
+    loadTagSuggestions()
+    nextTick(() => {
+      animateDrillIn()
+      scanInput.value?.focus()
+    })
+  }
+
+  function backToFolder() {
+    // Slide out drill-in, restore sub-cat view
+    if (drillInPanelRef.value) {
+      gsap.to(drillInPanelRef.value, {
+        opacity: 0,
+        x: 30,
+        duration: 0.18,
+        ease: 'power2.in',
+        onComplete: () => {
+          selectedSubCategory.value = null
+          nextTick(() => animateSubCatList())
+        }
+      })
+    } else {
+      selectedSubCategory.value = null
+    }
+  }
+
+  // ── Sub-Category Modal ─────────────────────────────────────────────────────
+
+  const subCatModal = ref({ visible: false, name: '', saving: false })
+
+  function openCreateSubCatModal() {
+    subCatModal.value = { visible: true, name: '', saving: false }
+    nextTick(() => animateModalIn(subCatModalOverlayRef.value))
+  }
+
+  async function submitCreateSubCat() {
+    if (!subCatModal.value.name.trim()) return
+    subCatModal.value.saving = true
+    try {
+      await specimenIssueApi.createSubCategory({
+        incidentTypeId: selectedFolder.value.id,
+        name: subCatModal.value.name.trim()
+      })
+      animateModalOut(subCatModalOverlayRef.value, async () => {
+        subCatModal.value.visible = false
+        await loadSubCategories(selectedFolder.value.id)
+        await loadFolders()
+      })
+    } catch (e) {
+      showAlert('error', 'Error', e.response?.data?.message ?? 'Failed to create sub-category.')
+    } finally {
+      subCatModal.value.saving = false
+    }
+  }
+
+  function promptToggleSubCat(sub) {
+    const action = sub.isActive ? 'deactivate' : 'activate'
+    openConfirm(
+      `${sub.isActive ? 'Deactivate' : 'Activate'} Sub-Category`,
+      `Are you sure you want to ${action} "${sub.name}"?`,
+      async () => {
+        try {
+          await specimenIssueApi.toggleSubCategory(sub.id)
+          await loadSubCategories(selectedFolder.value.id)
+        } catch (e) {
+          showAlert('error', 'Error', e.response?.data?.message ?? 'Failed to update sub-category.')
+        }
+      }
+    )
+  }
+
+  // ── Tags ───────────────────────────────────────────────────────────────────
+
+  const tagInput = ref('')
+  const showTagSuggestions = ref(false)
+  const allTagSuggestions = ref([])
+  const filteredTagSuggestions = computed(() =>
+    tagInput.value.trim()
+      ? allTagSuggestions.value.filter(t =>
         t.toLowerCase().includes(tagInput.value.toLowerCase()) &&
         !selectedSubCategory.value?.tags.some(st => st.tagName === t)
       )
-    : []
-)
-
-async function loadTagSuggestions() {
-  try {
-    allTagSuggestions.value = await specimenIssueApi.getTagSuggestions()
-  } catch { /* non-fatal */ }
-}
-
-function filterTagSuggestions() {
-  showTagSuggestions.value = true
-}
-
-function hideTagSuggestions() {
-  setTimeout(() => { showTagSuggestions.value = false }, 150)
-}
-
-function selectTagSuggestion(tag) {
-  tagInput.value = tag
-  submitTag()
-}
-
-async function submitTag() {
-  const name = tagInput.value.trim()
-  if (!name || !selectedSubCategory.value) return
-  try {
-    await specimenIssueApi.addTag({
-      subCategoryId: selectedSubCategory.value.id,
-      tagName: name
-    })
-    tagInput.value = ''
-    await loadSubCategories(selectedFolder.value.id)
-    // Sync selectedSubCategory tags
-    selectedSubCategory.value = subCategories.value.find(s => s.id === selectedSubCategory.value.id)
-    await loadTagSuggestions()
-  } catch (e) {
-    showAlert('error', 'Error', e.response?.data?.message ?? 'Failed to add tag.')
-  }
-}
-
-async function removeTag(tagId) {
-  try {
-    await specimenIssueApi.deleteTag(tagId)
-    await loadSubCategories(selectedFolder.value.id)
-    selectedSubCategory.value = subCategories.value.find(s => s.id === selectedSubCategory.value.id)
-  } catch (e) {
-    showAlert('error', 'Error', e.response?.data?.message ?? 'Failed to remove tag.')
-  }
-}
-
-// ── Lab Entries ────────────────────────────────────────────────────────────
-
-const labEntries = ref([])
-const entriesLoading = ref(false)
-const scanValue = ref('')
-const entrySaving = ref(false)
-const scanInput = ref(null)
-
-async function loadLabEntries(subCategoryId) {
-  entriesLoading.value = true
-  try {
-    labEntries.value = await specimenIssueApi.getLabEntries(subCategoryId)
-  } catch {
-    showAlert('error', 'Error', 'Failed to load entries.')
-  } finally {
-    entriesLoading.value = false
-  }
-}
-
-async function submitLabEntry() {
-  const val = scanValue.value.trim()
-  if (!val || !selectedSubCategory.value) return
-  entrySaving.value = true
-  try {
-    await specimenIssueApi.addLabEntry({
-      subCategoryId: selectedSubCategory.value.id,
-      specimenNo: val
-    })
-    scanValue.value = ''
-    await loadLabEntries(selectedSubCategory.value.id)
-    // Refresh entry count on sub-category list
-    await loadSubCategories(selectedFolder.value.id)
-    selectedSubCategory.value = subCategories.value.find(s => s.id === selectedSubCategory.value.id)
-    nextTick(() => scanInput.value?.focus())
-  } catch (e) {
-    showAlert('error', 'Error', e.response?.data?.message ?? 'Failed to add entry.')
-  } finally {
-    entrySaving.value = false
-  }
-}
-
-function promptDeleteEntry(entry) {
-  openConfirm(
-    'Delete Entry',
-    `Remove specimen "${entry.specimenNo}" from this log? This cannot be undone.`,
-    async () => {
-      try {
-        await specimenIssueApi.deleteLabEntry(entry.id)
-        await loadLabEntries(selectedSubCategory.value.id)
-        await loadSubCategories(selectedFolder.value.id)
-        selectedSubCategory.value = subCategories.value.find(s => s.id === selectedSubCategory.value.id)
-      } catch (e) {
-        showAlert('error', 'Error', e.response?.data?.message ?? 'Failed to delete entry.')
-      }
-    }
+      : []
   )
-}
 
-// ── Comments ───────────────────────────────────────────────────────────────
-
-const comments = ref([])
-const commentsLoading = ref(false)
-const newComment = ref('')
-const commentSaving = ref(false)
-const editingCommentId = ref(null)
-const editCommentText = ref('')
-
-async function loadComments(incidentTypeId) {
-  commentsLoading.value = true
-  try {
-    comments.value = await specimenIssueApi.getComments(incidentTypeId)
-  } catch {
-    showAlert('error', 'Error', 'Failed to load comments.')
-  } finally {
-    commentsLoading.value = false
+  async function loadTagSuggestions() {
+    try {
+      allTagSuggestions.value = await specimenIssueApi.getTagSuggestions()
+    } catch { /* non-fatal */ }
   }
-}
 
-async function submitComment() {
-  if (!newComment.value.trim() || !selectedFolder.value) return
-  commentSaving.value = true
-  try {
-    await specimenIssueApi.addComment({
-      incidentTypeId: selectedFolder.value.id,
-      commentText: newComment.value.trim()
-    })
-    newComment.value = ''
-    await loadComments(selectedFolder.value.id)
-  } catch (e) {
-    showAlert('error', 'Error', e.response?.data?.message ?? 'Failed to add comment.')
-  } finally {
-    commentSaving.value = false
+  function filterTagSuggestions() {
+    showTagSuggestions.value = true
   }
-}
 
-function startEditComment(comment) {
-  editingCommentId.value = comment.id
-  editCommentText.value = comment.commentText
-}
+  function hideTagSuggestions() {
+    setTimeout(() => { showTagSuggestions.value = false }, 150)
+  }
 
-function cancelEditComment() {
-  editingCommentId.value = null
-  editCommentText.value = ''
-}
+  function selectTagSuggestion(tag) {
+    tagInput.value = tag
+    submitTag()
+  }
 
-async function saveEditComment(id) {
-  if (!editCommentText.value.trim()) return
-  try {
-    await specimenIssueApi.editComment(id, { commentText: editCommentText.value.trim() })
+  async function submitTag() {
+    const name = tagInput.value.trim()
+    if (!name || !selectedSubCategory.value) return
+    try {
+      await specimenIssueApi.addTag({
+        subCategoryId: selectedSubCategory.value.id,
+        tagName: name
+      })
+      tagInput.value = ''
+      await loadSubCategories(selectedFolder.value.id)
+      selectedSubCategory.value = subCategories.value.find(s => s.id === selectedSubCategory.value.id)
+      await loadTagSuggestions()
+    } catch (e) {
+      showAlert('error', 'Error', e.response?.data?.message ?? 'Failed to add tag.')
+    }
+  }
+
+  async function removeTag(tagId) {
+    try {
+      await specimenIssueApi.deleteTag(tagId)
+      await loadSubCategories(selectedFolder.value.id)
+      selectedSubCategory.value = subCategories.value.find(s => s.id === selectedSubCategory.value.id)
+    } catch (e) {
+      showAlert('error', 'Error', e.response?.data?.message ?? 'Failed to remove tag.')
+    }
+  }
+
+  // ── Lab Entries ────────────────────────────────────────────────────────────
+
+  const labEntries = ref([])
+  const entriesLoading = ref(false)
+  const scanValue = ref('')
+  const entrySaving = ref(false)
+  const scanInput = ref(null)
+  const lastAddedEntryId = ref(null)
+
+  async function loadLabEntries(subCategoryId) {
+    entriesLoading.value = true
+    try {
+      labEntries.value = await specimenIssueApi.getLabEntries(subCategoryId)
+      await nextTick()
+      animateEntryRows()
+    } catch {
+      showAlert('error', 'Error', 'Failed to load entries.')
+    } finally {
+      entriesLoading.value = false
+    }
+  }
+
+  async function submitLabEntry() {
+    const val = scanValue.value.trim()
+    if (!val || !selectedSubCategory.value) return
+    entrySaving.value = true
+    try {
+      const result = await specimenIssueApi.addLabEntry({
+        subCategoryId: selectedSubCategory.value.id,
+        specimenNo: val
+      })
+      // Track newly added ID so we can animate only it
+      lastAddedEntryId.value = result?.id ?? null
+      scanValue.value = ''
+      await loadLabEntries(selectedSubCategory.value.id)
+      await loadSubCategories(selectedFolder.value.id)
+      selectedSubCategory.value = subCategories.value.find(s => s.id === selectedSubCategory.value.id)
+      nextTick(() => {
+        scanInput.value?.focus()
+        animateNewEntryRow()
+      })
+    } catch (e) {
+      showAlert('error', 'Error', e.response?.data?.message ?? 'Failed to add entry.')
+    } finally {
+      entrySaving.value = false
+    }
+  }
+
+  function promptDeleteEntry(entry) {
+    openConfirm(
+      'Delete Entry',
+      `Remove specimen "${entry.specimenNo}" from this log? This cannot be undone.`,
+      async () => {
+        try {
+          await specimenIssueApi.deleteLabEntry(entry.id)
+          await loadLabEntries(selectedSubCategory.value.id)
+          await loadSubCategories(selectedFolder.value.id)
+          selectedSubCategory.value = subCategories.value.find(s => s.id === selectedSubCategory.value.id)
+        } catch (e) {
+          showAlert('error', 'Error', e.response?.data?.message ?? 'Failed to delete entry.')
+        }
+      }
+    )
+  }
+
+  // ── Comments ───────────────────────────────────────────────────────────────
+
+  const comments = ref([])
+  const commentsLoading = ref(false)
+  const newComment = ref('')
+  const commentSaving = ref(false)
+  const editingCommentId = ref(null)
+  const editCommentText = ref('')
+
+  async function loadComments(incidentTypeId) {
+    commentsLoading.value = true
+    try {
+      comments.value = await specimenIssueApi.getComments(incidentTypeId)
+      await nextTick()
+      animateCommentList()
+    } catch {
+      showAlert('error', 'Error', 'Failed to load comments.')
+    } finally {
+      commentsLoading.value = false
+    }
+  }
+
+  async function submitComment() {
+    if (!newComment.value.trim() || !selectedFolder.value) return
+    commentSaving.value = true
+    try {
+      await specimenIssueApi.addComment({
+        incidentTypeId: selectedFolder.value.id,
+        commentText: newComment.value.trim()
+      })
+      newComment.value = ''
+      await loadComments(selectedFolder.value.id)
+      // Animate newest comment (first in list after reload)
+      await nextTick()
+      const firstComment = commentListRef.value?.querySelector('.comment-item')
+      if (firstComment) {
+        gsap.set(firstComment, { opacity: 0, y: -12, scale: 0.97 })
+        gsap.to(firstComment, { opacity: 1, y: 0, scale: 1, duration: 0.35, ease: 'back.out(1.4)' })
+      }
+    } catch (e) {
+      showAlert('error', 'Error', e.response?.data?.message ?? 'Failed to add comment.')
+    } finally {
+      commentSaving.value = false
+    }
+  }
+
+  function startEditComment(comment) {
+    editingCommentId.value = comment.id
+    editCommentText.value = comment.commentText
+  }
+
+  function cancelEditComment() {
     editingCommentId.value = null
-    await loadComments(selectedFolder.value.id)
-  } catch (e) {
-    showAlert('error', 'Error', e.response?.data?.message ?? 'Failed to update comment.')
+    editCommentText.value = ''
   }
-}
 
-// ── Formatters ─────────────────────────────────────────────────────────────
+  async function saveEditComment(id) {
+    if (!editCommentText.value.trim()) return
+    try {
+      await specimenIssueApi.editComment(id, { commentText: editCommentText.value.trim() })
+      editingCommentId.value = null
+      await loadComments(selectedFolder.value.id)
+    } catch (e) {
+      showAlert('error', 'Error', e.response?.data?.message ?? 'Failed to update comment.')
+    }
+  }
 
-function formatDate(val) {
-  if (!val) return '—'
-  return new Date(val).toLocaleString('en-US', {
-    month: 'short', day: 'numeric', year: 'numeric',
-    hour: 'numeric', minute: '2-digit', hour12: true
+  // ── GSAP Animation Helpers ─────────────────────────────────────────────────
+
+  /**
+   * Stagger-in the folder list items on mount / reload.
+   * Uses set+to pattern to avoid "from" flash bug.
+   */
+  function animateFolderList() {
+    const items = folderListRef.value?.querySelectorAll('.folder-item')
+    if (!items?.length) return
+    gsap.set(items, { opacity: 0, x: -16 })
+    gsap.to(items, {
+      opacity: 1,
+      x: 0,
+      duration: 0.32,
+      stagger: 0.055,
+      ease: 'power3.out',
+      clearProps: 'opacity,x'
+    })
+  }
+
+  /**
+   * Animate right panel header sliding down when a folder is selected.
+   */
+  watch(selectedFolder, async (newVal) => {
+    if (!newVal) return
+    await nextTick()
+    if (rightHeaderRef.value) {
+      gsap.set(rightHeaderRef.value, { opacity: 0, y: -10 })
+      gsap.to(rightHeaderRef.value, { opacity: 1, y: 0, duration: 0.28, ease: 'power2.out', clearProps: 'opacity,y' })
+    }
+    // Also animate initial sub-cat panel
+    if (subCatPanelRef.value) {
+      gsap.set(subCatPanelRef.value, { opacity: 0, y: 12 })
+      gsap.to(subCatPanelRef.value, { opacity: 1, y: 0, duration: 0.3, ease: 'power2.out', clearProps: 'opacity,y' })
+    }
   })
-}
 
-function formatEntryDate(val) {
-  if (!val) return '—'
-  // DateOnly from backend comes as "2026-05-02"
-  const [y, m, d] = String(val).split('-')
-  return new Date(y, m - 1, d).toLocaleDateString('en-US', {
-    month: 'short', day: 'numeric', year: 'numeric'
+  /**
+   * Stagger-in sub-category cards.
+   */
+  function animateSubCatList() {
+    const items = subCatListRef.value?.querySelectorAll('.subcat-item')
+    if (!items?.length) return
+    gsap.set(items, { opacity: 0, y: 14, scale: 0.98 })
+    gsap.to(items, {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      duration: 0.3,
+      stagger: 0.06,
+      ease: 'power3.out',
+      clearProps: 'opacity,y,scale'
+    })
+  }
+
+  /**
+   * Slide the drill-in panel in from the right.
+   */
+  function animateDrillIn() {
+    if (!drillInPanelRef.value) return
+    gsap.set(drillInPanelRef.value, { opacity: 0, x: 24 })
+    gsap.to(drillInPanelRef.value, { opacity: 1, x: 0, duration: 0.3, ease: 'power3.out', clearProps: 'opacity,x' })
+
+    // Cascade: tags row → scan bar → table/empty
+    const tagsRow = drillInPanelRef.value.querySelector('.drill-in-tags')
+    const scanBar = drillInPanelRef.value.querySelector('.drill-in-scan')
+    const table = drillInPanelRef.value.querySelector('.drill-in-table, .drill-in-empty')
+
+    const cascade = [tagsRow, scanBar, table].filter(Boolean)
+    gsap.set(cascade, { opacity: 0, y: 10 })
+    gsap.to(cascade, {
+      opacity: 1,
+      y: 0,
+      duration: 0.28,
+      stagger: 0.07,
+      ease: 'power2.out',
+      delay: 0.1,
+      clearProps: 'opacity,y'
+    })
+  }
+
+  /**
+   * Stagger-in all entry rows when lab entries first load.
+   */
+  function animateEntryRows() {
+    const rows = entryTbodyRef.value?.querySelectorAll('.entry-row')
+    if (!rows?.length) return
+    gsap.set(rows, { opacity: 0, y: 8 })
+    gsap.to(rows, {
+      opacity: 1,
+      y: 0,
+      duration: 0.25,
+      stagger: 0.04,
+      ease: 'power2.out',
+      clearProps: 'opacity,y'
+    })
+  }
+
+  /**
+   * Pop-in just the first row (newest entry) after adding.
+   */
+  function animateNewEntryRow() {
+    const firstRow = entryTbodyRef.value?.querySelector('.entry-row')
+    if (!firstRow) return
+    gsap.set(firstRow, { opacity: 0, scale: 0.96, backgroundColor: 'var(--color-primary-soft)' })
+    gsap.to(firstRow, {
+      opacity: 1,
+      scale: 1,
+      duration: 0.3,
+      ease: 'back.out(1.6)',
+      clearProps: 'opacity,scale'
+    })
+    // Fade the highlight back out
+    gsap.to(firstRow, {
+      backgroundColor: 'transparent',
+      duration: 0.8,
+      delay: 0.4,
+      ease: 'power1.out',
+      clearProps: 'backgroundColor'
+    })
+  }
+
+  /**
+   * Stagger-in comment cards.
+   */
+  function animateCommentList() {
+    const items = commentListRef.value?.querySelectorAll('.comment-item')
+    if (!items?.length) return
+    gsap.set(items, { opacity: 0, y: 10 })
+    gsap.to(items, {
+      opacity: 1,
+      y: 0,
+      duration: 0.28,
+      stagger: 0.06,
+      ease: 'power2.out',
+      clearProps: 'opacity,y'
+    })
+  }
+
+  /**
+   * Modal open: backdrop fade + card scale-in.
+   */
+  function animateModalIn(overlayEl) {
+    if (!overlayEl) return
+    const backdrop = overlayEl.querySelector('.modal-backdrop')
+    const card = overlayEl.querySelector('.modal-card')
+
+    if (backdrop) {
+      gsap.set(backdrop, { opacity: 0 })
+      gsap.to(backdrop, { opacity: 1, duration: 0.2, ease: 'power1.out' })
+    }
+    if (card) {
+      gsap.set(card, { opacity: 0, scale: 0.88, y: 16 })
+      gsap.to(card, { opacity: 1, scale: 1, y: 0, duration: 0.28, ease: 'back.out(1.5)', clearProps: 'opacity,scale,y' })
+    }
+  }
+
+  /**
+   * Modal close: card scale-out + backdrop fade, then callback.
+   */
+  function animateModalOut(overlayEl, onComplete) {
+    if (!overlayEl) { onComplete?.(); return }
+    const backdrop = overlayEl.querySelector('.modal-backdrop')
+    const card = overlayEl.querySelector('.modal-card')
+
+    const tl = gsap.timeline({ onComplete })
+    if (card) tl.to(card, { opacity: 0, scale: 0.9, y: 10, duration: 0.18, ease: 'power2.in' }, 0)
+    if (backdrop) tl.to(backdrop, { opacity: 0, duration: 0.2, ease: 'power1.in' }, 0)
+  }
+
+  // ── Formatters ─────────────────────────────────────────────────────────────
+
+  function formatDate(val) {
+    if (!val) return '—'
+    return new Date(val).toLocaleString('en-US', {
+      month: 'short', day: 'numeric', year: 'numeric',
+      hour: 'numeric', minute: '2-digit', hour12: true
+    })
+  }
+
+  function formatEntryDate(val) {
+    if (!val) return '—'
+    const [y, m, d] = String(val).split('-')
+    return new Date(y, m - 1, d).toLocaleDateString('en-US', {
+      month: 'short', day: 'numeric', year: 'numeric'
+    })
+  }
+
+  // ── Init ───────────────────────────────────────────────────────────────────
+
+  onMounted(async () => {
+    // Animate the empty state on first render
+    await nextTick()
+    if (emptyStateRef.value) {
+      gsap.set(emptyStateRef.value, { opacity: 0, y: 16 })
+      gsap.to(emptyStateRef.value, { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out', delay: 0.1, clearProps: 'opacity,y' })
+    }
+    loadFolders()
   })
-}
-
-// ── Init ───────────────────────────────────────────────────────────────────
-
-onMounted(() => {
-  loadFolders()
-})
 </script>
 
 <style scoped>
-  .animate-modal {
-    animation: modalIn 0.2s ease;
+  /* Entry row hover highlight */
+  .entry-row {
+    transition: background-color 0.15s ease;
   }
 
-  @keyframes modalIn {
-    from {
-      opacity: 0;
-      transform: scale(0.9) translateY(10px);
+    .entry-row:hover {
+      background-color: var(--color-surface-low);
     }
-
-    to {
-      opacity: 1;
-      transform: scale(1) translateY(0);
-    }
-  }
 </style>

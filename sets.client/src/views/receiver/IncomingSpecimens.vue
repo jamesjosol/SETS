@@ -111,7 +111,7 @@
                     style="color: var(--color-text-muted);">Status</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody ref="tableBodyRef">
 
               <!-- Loading -->
               <tr v-if="loading">
@@ -210,7 +210,7 @@
                     style="color: var(--color-text-muted);">Remarks</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody ref="tableBodyRef">
 
               <!-- Loading -->
               <tr v-if="loading">
@@ -315,11 +315,12 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch, nextTick } from 'vue'
+import { gsap } from 'gsap'
 import AppLayout from '@/components/layout/AppLayout.vue'
 import AlertModal from '@/components/common/AlertModal.vue'
-  import BatchDetailDrawer from '@/components/common/BatchDetailDrawer.vue'
-  import RemarkViewer from '@/components/common/RemarkViewer.vue'
+import BatchDetailDrawer from '@/components/common/BatchDetailDrawer.vue'
+import RemarkViewer from '@/components/common/RemarkViewer.vue'
 import DropdownSelect from '@/components/common/DropdownSelect.vue'
 import { useAuthStore } from '@/stores/authStore'
 import { receivingApi } from '@/api/receivingApi'
@@ -337,23 +338,24 @@ function showAlert(type, title, message) {
 
 // ── Tabs ───────────────────────────────────────────────────────────────────
 
-const activeTab = ref('specimen')
-const tabs = [
-  { key: 'specimen', label: '🔬 View by Specimen' },
-  { key: 'batch',    label: '📦 View by Batch'    },
-]
+  const activeTab = ref('specimen')
+  const tabs = [
+    { key: 'specimen', label: '🔬 View by Specimen' },
+    { key: 'batch', label: '📦 View by Batch' },
+  ]
 
-function switchTab(key) {
-  activeTab.value = key
-  batchFilter.value = ''
-  searchQuery.value = ''
-}
+  // ── Filters ────────────────────────────────────────────────────────────────
 
-// ── Filters ────────────────────────────────────────────────────────────────
-
-const locationFilter = ref('')
+  const locationFilter = ref('')
   const batchFilter = ref('')
-  const searchQuery = ref('')  
+  const searchQuery = ref('')
+
+  function switchTab(key) {
+    activeTab.value = key
+    batchFilter.value = ''
+    searchQuery.value = ''
+    animateTableRows()
+  }
 
 const availableLocations = computed(() => {
   const source = activeTab.value === 'batch'
@@ -459,6 +461,7 @@ async function loadData() {
     }
   } finally {
     loading.value = false
+    animateTableRows()
   }
 }
 
@@ -534,6 +537,23 @@ function getBatchStatusDot(status) {
   const map = { P: 'var(--color-warning)', PA: '#2563eb', C: 'var(--color-success)' }
   return map[status] ?? 'var(--color-text-muted)'
 }
+
+  const tableBodyRef = ref(null)
+
+  async function animateTableRows() {
+    await nextTick()
+    if (!tableBodyRef.value) return
+    const rows = tableBodyRef.value.querySelectorAll('tr')
+    if (!rows.length) return
+    gsap.set(rows, { opacity: 0, x: -6 })
+    gsap.to(rows, {
+      opacity: 1,
+      x: 0,
+      duration: 0.18,
+      stagger: 0.025,
+      ease: 'power1.out',
+    })
+  }
 
 // ── Lifecycle ──────────────────────────────────────────────────────────────
 

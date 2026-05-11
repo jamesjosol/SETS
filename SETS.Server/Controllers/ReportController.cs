@@ -111,6 +111,7 @@ namespace SETS.Server.Controllers
 
         // ══════════════════════════════════════════════════════════════════════
         // R3 — Specimen Not Received / Pending
+        // Access: Processing + Admin (Endorser locked out)
         // POST api/report/specimen-not-received
         // ══════════════════════════════════════════════════════════════════════
 
@@ -120,13 +121,38 @@ namespace SETS.Server.Controllers
             try
             {
                 var guard = SessionGuard(); if (guard != null) return guard;
-                if (!IsProcessingOrAbove) return Forbid();
+
+                if (Category == "1" && !IsAdmin) return Forbid();
+                if (Category == "3" && !IsAdmin) return Forbid();
+
                 var branch = Branch!;
                 using var master = new MasterService(branch);
                 var result = master.Report.GetSpecimensNotReceived(request);
                 return Ok(result);
             }
-            catch (NotImplementedException ex) { return StatusCode(501, new { message = ex.Message }); }
+            catch (Exception ex) { return StatusCode(500, new { message = ex.Message }); }
+        }
+
+        // POST api/report/specimen-not-received/export
+        [HttpPost("specimen-not-received/export")]
+        public IActionResult ExportSpecimensNotReceived([FromBody] SpecimenNotReceivedRequest request)
+        {
+            try
+            {
+                var guard = SessionGuard(); if (guard != null) return guard;
+
+                if (Category == "1" && !IsAdmin) return Forbid();
+                if (Category == "3" && !IsAdmin) return Forbid();
+
+                var branch = Branch!;
+                using var master = new MasterService(branch);
+                var bytes = master.Report.ExportSpecimensNotReceivedExcel(request);
+
+                var fileName = $"SpecimenNotReceivedReport_{DateTime.Now:yyyyMMdd}.xlsx";
+                return File(bytes,
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    fileName);
+            }
             catch (Exception ex) { return StatusCode(500, new { message = ex.Message }); }
         }
 

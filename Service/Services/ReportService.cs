@@ -282,15 +282,160 @@ namespace Service.Services
         }
 
         // ══════════════════════════════════════════════════════════════════════
-        // R3 — Specimen Not Received / Pending (TODO)
+        // R3 — Specimen Not Received / Pending
         // ══════════════════════════════════════════════════════════════════════
 
         public List<SpecimenNotReceivedRow> GetSpecimensNotReceived(SpecimenNotReceivedRequest request)
         {
-            // TODO: Query Batch_Specimen where Status = 'P' (not received),
-            //       join Batch_Header for date range and location filter.
-            //       Include LabNo, PatientName, SampleTypeName.
-            throw new NotImplementedException("Specimen Not Received report is not yet implemented.");
+            try
+            {
+                using var context = _factory.CreateContext(_branch);
+                using var unit = new UnitOfWork(context);
+
+                // ── 1. Section name lookup ────────────────────────────────────
+                var sections = context.Section_Master
+                    .ToList()
+                    .ToDictionary(s => s.Code, s => s.Name);
+
+                // ── 2. Batch headers in date range — materialise first ─────────
+                var headers = context.Batch_Header
+                    .Where(h =>
+                        h.Endorsed.Date >= request.DateFrom.Date &&
+                        h.Endorsed.Date <= request.DateTo.Date)
+                    .ToList();
+
+                // Optional location filter
+                if (!string.IsNullOrEmpty(request.LocationCode))
+                    headers = headers.Where(h => h.Location == request.LocationCode).ToList();
+
+                if (!headers.Any())
+                    return new List<SpecimenNotReceivedRow>();
+
+                var batchNos = headers.Select(h => h.BatchNo).ToHashSet();
+
+                // Map BatchNo → Location for lookup
+                var batchLocationMap = headers.ToDictionary(h => h.BatchNo, h => h.Location);
+
+                // ── 3. Pending specimens from those batches ───────────────────
+                //       Status = 'P' means endorsed but never received
+                //       Exclude cancelled ('X') explicitly
+                var specimens = context.Batch_Specimen
+                    .Where(s => s.Status == "P")
+                    .ToList()
+                    .Where(s => batchNos.Contains(s.BatchNo))
+                    .OrderBy(s => s.BatchNo)
+                    .ThenBy(s => s.Endorsed)
+                    .ToList();
+
+                if (!specimens.Any())
+                    return new List<SpecimenNotReceivedRow>();
+
+                // ── 4. Build rows ─────────────────────────────────────────────
+                var rows = specimens.Select(s =>
+                {
+                    var locationCode = batchLocationMap.TryGetValue(s.BatchNo, out var lc) ? lc : "";
+                    return new SpecimenNotReceivedRow
+                    {
+                        BatchNo = s.BatchNo,
+                        Location = sections.TryGetValue(locationCode, out var ln) ? ln : locationCode,
+                        SpecimenNo = s.SpecimenNo,
+                        PatientName = s.PatientName,
+                        SampleTypeName = s.SampleTypeName,
+                        Endorsed = s.Endorsed,
+                        EndorsedBy = s.EndorsedBy,
+                        Remarks = s.Remarks,
+                    };
+                }).ToList();
+
+                return rows;
+            }
+            catch { throw; }
+        }
+
+        public byte[] ExportSpecimensNotReceivedExcel(SpecimenNotReceivedRequest request)
+        {
+            try
+            {
+                var data = GetSpecimensNotReceived(request);
+
+                using var wb = new XLWorkbook();
+                var ws = wb.Worksheets.Add("Specimen Not Received");
+
+                // ── Title block ───────────────────────────────────────────────
+                ws.Cell("A1").Value = "SPECIMEN NOT RECEIVED REPORT";
+                ws.Cell("A1").Style.Font.Bold = true;
+                ws.Cell("A1").Style.Font.FontSize = 14;
+                ws.Range("A1:H1").Merge();
+
+                ws.Cell("A2").Value = $"Generated: {DateTime.Now:MM/dd/yyyy HH:mm}";
+                ws.Range("A2:H2").Merge();
+
+                ws.Cell("A3").Value = $"Location: {(string.IsNullOrEmpty(request.LocationCode) ? "ALL" : request.LocationCode)}";
+                ws.Cell("D3").Value = $"Date: {request.DateFrom:MM/dd/yyyy} – {request.DateTo:MM/dd/yyyy}";
+
+                // ── Column headers ────────────────────────────────────────────
+                int headerRow = 5;
+                var headers = new[]
+                {
+                    "Batch No.", "Location", "Specimen No.",
+                    "Patient Name", "Sample Type",
+                    "Endorsed", "Endorsed By", "Remarks"
+                };
+
+                for (int i = 0; i < headers.Length; i++)
+                {
+                    var cell = ws.Cell(headerRow, i + 1);
+                    cell.Value = headers[i];
+                    cell.Style.Font.Bold = true;
+                    cell.Style.Fill.BackgroundColor = XLColor.FromHtml("#4472C4");
+                    cell.Style.Font.FontColor = XLColor.White;
+                    cell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                    cell.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                }
+
+                // ── Data rows ─────────────────────────────────────────────────
+                int dataRow = headerRow + 1;
+                foreach (var r in data)
+                {
+                    ws.Cell(dataRow, 1).Value = r.BatchNo;
+                    ws.Cell(dataRow, 2).Value = r.Location;
+                    ws.Cell(dataRow, 3).Value = r.SpecimenNo ?? "";
+                    ws.Cell(dataRow, 4).Value = r.PatientName ?? "";
+                    ws.Cell(dataRow, 5).Value = r.SampleTypeName ?? "";
+                    ws.Cell(dataRow, 6).Value = r.Endorsed.ToString("MM/dd/yyyy HH:mm");
+                    ws.Cell(dataRow, 7).Value = r.EndorsedBy ?? "";
+                    ws.Cell(dataRow, 8).Value = r.Remarks ?? "";
+
+                    if (dataRow % 2 == 0)
+                        ws.Row(dataRow).Style.Fill.BackgroundColor = XLColor.FromHtml("#F2F2F2");
+
+                    ws.Range(dataRow, 1, dataRow, 8).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+
+                    dataRow++;
+                }
+
+                // ── Summary footer ────────────────────────────────────────────
+                ws.Cell(dataRow, 1).Value = $"Total: {data.Count} specimen(s)";
+                ws.Cell(dataRow, 1).Style.Font.Bold = true;
+                ws.Range(dataRow, 1, dataRow, 8).Style.Fill.BackgroundColor = XLColor.FromHtml("#D9E1F2");
+                ws.Range(dataRow, 1, dataRow, 8).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+
+                // ── Column widths ─────────────────────────────────────────────
+                ws.Column(1).Width = 18;
+                ws.Column(2).Width = 20;
+                ws.Column(3).Width = 18;
+                ws.Column(4).Width = 22;
+                ws.Column(5).Width = 16;
+                ws.Column(6).Width = 20;
+                ws.Column(7).Width = 14;
+                ws.Column(8).Width = 28;
+                ws.SheetView.FreezeRows(headerRow);
+
+                using var ms = new MemoryStream();
+                wb.SaveAs(ms);
+                return ms.ToArray();
+            }
+            catch { throw; }
         }
 
         // ══════════════════════════════════════════════════════════════════════

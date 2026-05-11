@@ -125,7 +125,7 @@
                   style="color: var(--color-text-muted);">Status</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody ref="tableBodyRef">
             <tr v-for="batch in paginatedBatches"
                 :key="batch.batchNo"
                 class="cursor-pointer transition-colors"
@@ -232,7 +232,8 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch, nextTick } from 'vue'
+import { gsap } from 'gsap'
 import AppLayout from '@/components/layout/AppLayout.vue'
 import BatchDetailDrawer from '@/components/common/BatchDetailDrawer.vue'
 import DatePicker from '@/components/common/DatePicker.vue'
@@ -303,6 +304,8 @@ function clearFilters() {
 const batches = ref([])
 const loading = ref(true)
 const error   = ref(null)
+const currentPage = ref(1)
+
 
 async function load() {
   if (dateFrom.value && dateTo.value && dateFrom.value > dateTo.value) {
@@ -325,15 +328,35 @@ async function load() {
     showAlert('error', 'Load Error', error.value)
   } finally {
     loading.value = false
+    animateTableRows()
   }
+}
+
+const tableBodyRef = ref(null)
+
+async function animateTableRows() {
+  await nextTick()
+  if (!tableBodyRef.value) return
+  const rows = tableBodyRef.value.querySelectorAll('tr')
+  if (!rows.length) return
+  gsap.set(rows, { opacity: 0, x: -6 })
+  gsap.to(rows, {
+    opacity: 1,
+    x: 0,
+    duration: 0.18,
+    stagger: 0.025,
+    ease: 'power1.out',
+  })
 }
 
 onMounted(load)
 
 watch([searchQuery, statusFilter], () => {
   currentPage.value = 1
+  animateTableRows()
 })
 
+watch(currentPage, animateTableRows)
 // ── Client-side filtering ──────────────────────────────────────────────────
 
 const filteredBatches = computed(() => {
@@ -358,7 +381,6 @@ const filteredBatches = computed(() => {
 // ── Pagination ─────────────────────────────────────────────────────────────
 
 const PAGE_SIZE   = 20
-const currentPage = ref(1)
 
 const totalPages = computed(() =>
   Math.max(1, Math.ceil(filteredBatches.value.length / PAGE_SIZE))

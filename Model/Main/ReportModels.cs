@@ -52,17 +52,19 @@ namespace Model.Main
 
     public class SpecimenNotReceivedRequest : ReportDateRangeRequest
     {
-        public string? LocationCode { get; set; }       // null = ALL
+        public string? LocationCode { get; set; }       // endorser section (Category 1), null = ALL
     }
 
     public class SpecimenNotReceivedRow
     {
         public string BatchNo { get; set; } = string.Empty;
-        public string Location { get; set; } = string.Empty;
-        public string? LabNo { get; set; }
+        public string Location { get; set; } = string.Empty;   // endorser section name
+        public string? SpecimenNo { get; set; }
         public string? PatientName { get; set; }
-        public string? SpecimenType { get; set; }
+        public string? SampleTypeName { get; set; }
         public DateTime Endorsed { get; set; }
+        public string? EndorsedBy { get; set; }
+        public string? Remarks { get; set; }
     }
 
     // ══════════════════════════════════════════════════════════════════════════

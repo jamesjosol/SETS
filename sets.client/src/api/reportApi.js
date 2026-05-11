@@ -30,6 +30,9 @@ export const reportApi = {
   getSpecimensNotReceived: (payload) =>
     api.post(`${BASE_URL}/specimen-not-received`, payload).then(r => r.data),
 
+  exportSpecimensNotReceivedExcel: (payload) =>
+    downloadExcel(`${BASE_URL}/specimen-not-received/export`, payload, 'SpecimenNotReceivedReport'),
+
   // R4 — Test Management
   getTestManagement: (payload) =>
     api.post(`${BASE_URL}/test-management`, payload).then(r => r.data),

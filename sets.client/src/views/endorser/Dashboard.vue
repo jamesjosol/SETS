@@ -10,7 +10,7 @@
     </div>
 
     <!-- KPI Cards — Regular / Team Lead -->
-    <div v-if="!authStore.isAdmin" class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+    <div v-if="!authStore.isAdmin" ref="kpiCardsRef" class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
       <div class="rounded-2xl p-6 relative overflow-hidden group cursor-pointer transition-all hover:-translate-y-0.5"
            style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
         <div class="flex justify-between items-start mb-4">
@@ -20,7 +20,7 @@
           <span class="text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Today</span>
         </div>
         <h3 class="text-4xl font-extrabold mb-1" style="color: var(--color-text);">
-          <span v-if="loading">—</span><span v-else>{{ summary.totalEndorsed }}</span>
+          <span v-if="loading">—</span><span v-else>{{ displayTotalEndorsed }}</span>
         </h3>
         <p class="text-xs font-bold uppercase tracking-tighter" style="color: var(--color-text-muted);">Total Batches Endorsed</p>
         <div class="absolute bottom-0 left-0 w-full h-0.5 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-500" style="background-color: var(--color-primary);"></div>
@@ -34,7 +34,7 @@
           <span class="text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-warning);">Awaiting</span>
         </div>
         <h3 class="text-4xl font-extrabold mb-1" style="color: var(--color-warning);">
-          <span v-if="loading">—</span><span v-else>{{ summary.pending }}</span>
+          <span v-if="loading">—</span><span v-else>{{ displayPending }}</span>
         </h3>
         <p class="text-xs font-bold uppercase tracking-tighter" style="color: var(--color-text-muted);">Pending Batches</p>
         <div class="absolute bottom-0 left-0 w-full h-0.5 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-500" style="background-color: var(--color-warning);"></div>
@@ -48,7 +48,7 @@
           <span class="text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-success);">Completed</span>
         </div>
         <h3 class="text-4xl font-extrabold mb-1" style="color: var(--color-text);">
-          <span v-if="loading">—</span><span v-else>{{ summary.received }}</span>
+          <span v-if="loading">—</span><span v-else>{{ displayReceived }}</span>
         </h3>
         <p class="text-xs font-bold uppercase tracking-tighter" style="color: var(--color-text-muted);">Received Batches</p>
         <div class="absolute bottom-0 left-0 w-full h-0.5 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-500" style="background-color: var(--color-success);"></div>
@@ -62,7 +62,7 @@
           <span class="text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-error);">TAT</span>
         </div>
         <h3 class="text-4xl font-extrabold mb-1" style="color: var(--color-error);">
-          <span v-if="loading">—</span><span v-else>{{ summary.outsideTAT }}</span>
+          <span v-if="loading">—</span><span v-else>{{ displayOutsideTAT }}</span>
         </h3>
         <p class="text-xs font-bold uppercase tracking-tighter" style="color: var(--color-text-muted);">Outside TAT</p>
         <div class="absolute bottom-0 left-0 w-full h-0.5 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-500" style="background-color: var(--color-error);"></div>
@@ -75,7 +75,7 @@
         <div v-for="n in 4" :key="n" class="rounded-2xl p-6 animate-pulse"
              style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow); height: 130px;"></div>
       </div>
-      <div v-else>
+      <div v-else ref="adminKpiRef">
         <div v-for="group in adminGroups" :key="group.category" class="mb-6">
           <div class="flex items-center gap-2 mb-3">
             <span class="material-symbols-outlined text-sm" style="color: var(--color-primary);">{{ group.icon }}</span>
@@ -110,6 +110,7 @@
         </div>
       </div>
     </div>
+
     <!-- TAT Countdown Bar — Endorser only -->
     <div v-if="!authStore.isAdmin && tatCycle.hasOpenCycle"
          class="mb-6 flex items-center gap-4 px-5 py-3 rounded-xl"
@@ -172,12 +173,13 @@
                   cancelText="Cancel"
                   @confirm="handleAppeal"
                   @close="appealConfirm.visible = false" />
+
     <!-- Main Grid -->
     <div class="grid grid-cols-12 gap-6">
 
       <!-- Recent Batches Table -->
       <div class="col-span-12 lg:col-span-8">
-        <div class="rounded-2xl overflow-hidden" style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
+        <div ref="tableCardRef" class="rounded-2xl overflow-hidden" style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
 
           <!-- Table Header -->
           <div class="px-8 py-5 flex justify-between items-center" style="border-bottom: 1px solid var(--color-surface-low);">
@@ -220,7 +222,7 @@
                   <th class="px-8 py-4 text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Status</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody ref="tableBodyRef">
                 <tr v-for="batch in paginatedRecentBatches" :key="batch.batchNo"
                     class="cursor-pointer transition-colors"
                     style="border-top: 1px solid var(--color-surface-low);"
@@ -281,16 +283,17 @@
       <div class="col-span-12 lg:col-span-4 space-y-6">
 
         <!-- Daily Batch Flow -->
-        <div class="rounded-2xl p-6" style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
+        <div ref="flowCardRef" class="rounded-2xl p-6" style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
           <h2 class="text-xs font-bold uppercase tracking-widest mb-6" style="color: var(--color-text);">Daily Batch Flow</h2>
-          <div class="h-48 flex items-end justify-between gap-2 px-2">
+          <div ref="flowBarsContainerRef" class="h-48 flex items-end justify-between gap-2 px-2">
             <div v-for="(bar, i) in flowBars" :key="i"
                  class="relative w-full h-full flex flex-col items-center justify-end group/bar">
               <!-- Count tooltip -->
               <span class="absolute -top-5 text-[10px] font-bold opacity-0 group-hover/bar:opacity-100 transition-opacity"
                     style="color: var(--color-primary);">{{ bar.count }}</span>
-              <!-- Bar -->
-              <div class="w-full rounded-t-lg transition-all duration-500"
+              <!-- Bar — height driven by inline style; GSAP animates scaleY from 0 -->
+              <div class="w-full rounded-t-lg origin-bottom"
+                   :data-bar-index="i"
                    :style="`height: ${bar.height}%; background-color: ${bar.active ? 'var(--color-primary)' : 'var(--color-primary-soft)'};`"
                    @mouseenter="(e) => { if (!bar.active) e.currentTarget.style.opacity = '0.7'; }"
                    @mouseleave="(e) => { if (!bar.active) e.currentTarget.style.opacity = '1'; }">
@@ -310,7 +313,6 @@
         <div class="col-span-12 lg:col-span-4">
           <SystemStatus />
         </div>
-
 
       </div>
     </div>
@@ -332,8 +334,9 @@
 </template>
 
 <script setup>
-  import { ref, computed, onMounted, onUnmounted } from 'vue'
+  import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
   import { useRouter } from 'vue-router'
+  import { gsap } from 'gsap'
   import AppLayout from '@/components/layout/AppLayout.vue'
   import { useAuthStore } from '@/stores/authStore'
   import { batchApi } from '@/api/batchApi'
@@ -367,6 +370,12 @@
 
   const summary = ref({ totalEndorsed: 0, pending: 0, received: 0, outsideTAT: 0 })
 
+  // Count-up display values (regular/TL view)
+  const displayTotalEndorsed = ref(0)
+  const displayPending = ref(0)
+  const displayReceived = ref(0)
+  const displayOutsideTAT = ref(0)
+
   const allSections = ref([])
 
   const adminGroups = computed(() => {
@@ -390,6 +399,7 @@
 
   const tableLoading = ref(true)
   const recentBatches = ref([])
+  const weeklyFlow = ref([])
 
   // ── Recent Batches Pagination ──────────────────────────────────────────────
 
@@ -435,7 +445,121 @@
     drawerData.value = null
   }
 
+  // ── GSAP Refs ──────────────────────────────────────────────────────────────
+
+  const kpiCardsRef = ref(null)
+  const adminKpiRef = ref(null)
+  const tableCardRef = ref(null)
+  const tableBodyRef = ref(null)
+  const flowCardRef = ref(null)
+  const flowBarsContainerRef = ref(null)
+
+  // ── GSAP Animations ────────────────────────────────────────────────────────
+
+  function countUp(displayRef, target) {
+    const obj = { val: 0 }
+    gsap.killTweensOf(obj)
+    gsap.to(obj, {
+      val: target,
+      duration: 0.75,
+      ease: 'power2.out',
+      onUpdate: () => { displayRef.value = Math.round(obj.val) },
+    })
+  }
+
+  async function animateKpiCards() {
+    await nextTick()
+    if (!kpiCardsRef.value) return
+    const cards = kpiCardsRef.value.querySelectorAll(':scope > div')
+    if (!cards.length) return
+    gsap.set(cards, { opacity: 0, y: 20 })
+    gsap.to(cards, {
+      opacity: 1,
+      y: 0,
+      duration: 0.2,
+      stagger: 0.07,
+      ease: 'power2.out',
+    })
+  }
+
+  async function animateAdminKpiCards() {
+    await nextTick()
+    if (!adminKpiRef.value) return
+    const cards = adminKpiRef.value.querySelectorAll('.rounded-2xl')
+    if (!cards.length) return
+    gsap.set(cards, { opacity: 0, y: 20 })
+    gsap.to(cards, {
+      opacity: 1,
+      y: 0,
+      duration: 0.35,
+      stagger: 0.05,
+      ease: 'power2.out',
+    })
+  }
+
+  async function animateTableEntrance() {
+    await nextTick()
+    if (!tableCardRef.value) return
+    // Animate the whole card in first
+    gsap.set(tableCardRef.value, { opacity: 0, y: 16 })
+    gsap.to(tableCardRef.value, { opacity: 1, y: 0, duration: 0.3, ease: 'power2.out' })
+    // Then stagger rows
+    if (tableBodyRef.value) {
+      const rows = tableBodyRef.value.querySelectorAll('tr')
+      if (rows.length) {
+        gsap.set(rows, { opacity: 0, x: -8 })
+        gsap.to(rows, {
+          opacity: 1,
+          x: 0,
+          duration: 0.3,
+          stagger: 0.05,
+          ease: 'power1.out',
+          delay: 0.18,
+        })
+      }
+    }
+  }
+
+  // Re-animate rows when page changes (pagination)
+  async function animateTableRows() {
+    await nextTick()
+    if (!tableBodyRef.value) return
+    const rows = tableBodyRef.value.querySelectorAll('tr')
+    if (!rows.length) return
+    gsap.set(rows, { opacity: 0, x: -6 })
+    gsap.to(rows, {
+      opacity: 1,
+      x: 0,
+      duration: 0.18,
+      stagger: 0.025,
+      ease: 'power1.out',
+    })
+  }
+
+  async function animateFlowBars() {
+    await nextTick()
+    if (!flowBarsContainerRef.value) return
+    const bars = flowBarsContainerRef.value.querySelectorAll('[data-bar-index]')
+    if (!bars.length) return
+    // Animate the card container first
+    if (flowCardRef.value) {
+      gsap.set(flowCardRef.value, { opacity: 0, y: 16 })
+      gsap.to(flowCardRef.value, { opacity: 1, y: 0, duration: 0.3, ease: 'power2.out' })
+    }
+    // Use scaleY on origin-bottom so bars grow upward from baseline
+    gsap.set(bars, { scaleY: 0, opacity: 0 })
+    gsap.to(bars, {
+      scaleY: 1,
+      opacity: 1,
+      duration: 0.45,
+      stagger: 0.06,
+      ease: 'back.out(1.4)',
+      delay: 0.15,
+    })
+  }
+
   // ── Fetch ──────────────────────────────────────────────────────────────────
+
   let refreshInterval = null
   onMounted(async () => {
     // First load — show spinners
@@ -459,6 +583,50 @@
     clearInterval(tickInterval)
   })
 
+  // ── Watchers for GSAP triggers ─────────────────────────────────────────────
+
+  // KPI cards — fire once after first load resolves
+  watch(loading, async (isLoading) => {
+    if (!isLoading) {
+      if (authStore.isAdmin) {
+        await animateAdminKpiCards()
+      } else {
+        //await animateKpiCards()
+        // Count-up the four numbers
+        countUp(displayTotalEndorsed, summary.value.totalEndorsed)
+        countUp(displayPending, summary.value.pending)
+        countUp(displayReceived, summary.value.received)
+        countUp(displayOutsideTAT, summary.value.outsideTAT)
+      }
+    }
+  })
+
+  // Table — fire once after first table load resolves
+  watch(tableLoading, async (isLoading) => {
+    if (!isLoading && recentBatches.value.length > 0) {
+      await animateTableEntrance()
+      await animateFlowBars()
+    }
+  })
+
+  // Re-animate rows on pagination change
+  watch(recentBatchPage, async () => {
+    await animateTableRows()
+  })
+
+  // Flow bars — re-animate whenever weeklyFlow data changes (silent refresh updates)
+  // Use a flag so it only re-runs on actual data changes, not the first mount (handled above)
+  const flowAnimatedOnce = ref(false)
+  watch(weeklyFlow, async (newVal, oldVal) => {
+    if (!newVal?.length) return
+    if (!flowAnimatedOnce.value) {
+      flowAnimatedOnce.value = true
+      return
+    }
+    const hasChanged = JSON.stringify(newVal) !== JSON.stringify(oldVal)
+    if (!hasChanged) return
+    await animateFlowBars()
+  }, { deep: true })
 
   // ── Fetch ──────────────────────────────────────────────────────────────────
 
@@ -512,7 +680,6 @@
     await Promise.all([fetchKPIs(), fetchTableData(), loadTatCycle()])
   }
 
-
   // ── Helpers ────────────────────────────────────────────────────────────────
 
   function formatDateTime(dt) {
@@ -541,9 +708,8 @@
     const map = { P: 'var(--color-warning)', PA: '#2563eb', C: 'var(--color-success)' }
     return map[status] ?? 'var(--color-text-muted)'
   }
-  // ── Static placeholders ────────────────────────────────────────────────────
 
-  const weeklyFlow = ref([])
+  // ── Weekly flow ────────────────────────────────────────────────────────────
 
   const flowBars = computed(() => {
     if (weeklyFlow.value.length === 0) return []
@@ -637,7 +803,6 @@
   })
 
   const tatExceeded = computed(() => tatSecondsRemaining.value !== null && tatSecondsRemaining.value <= 0)
-
 </script>
 
 <style scoped>
