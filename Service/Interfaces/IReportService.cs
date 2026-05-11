@@ -20,14 +20,17 @@ namespace Service.Interfaces
         BatchSummaryReportResult GetBatchSummary(BatchSummaryReportRequest request);
         byte[] ExportBatchSummaryExcel(BatchSummaryReportRequest request);
 
-        // R6 — Specimen Receipt (Section)
+        // R6 — Specimen Receipt (Laboratory Section)
         List<SpecimenReceiptSectionRow> GetSpecimenReceiptSection(SpecimenReceiptSectionRequest request);
+        byte[] ExportSpecimenReceiptSectionExcel(SpecimenReceiptSectionRequest request);
 
         // R7 — Duplicate Endorsement
         List<DuplicateEndorsementRow> GetDuplicateEndorsements(DuplicateEndorsementRequest request);
+        byte[] ExportDuplicateEndorsementsExcel(DuplicateEndorsementRequest request);
 
         // R8 — Transaction Beyond 14 Days
         List<Beyond14DaysRow> GetBeyond14Days(Beyond14DaysRequest request);
+        byte[] ExportBeyond14DaysExcel(Beyond14DaysRequest request);
 
         // R9 — Monthly Endorsement Summary
         List<MonthlyEndorsementSummaryRow> GetMonthlyEndorsementSummary(MonthlyEndorsementSummaryRequest request);

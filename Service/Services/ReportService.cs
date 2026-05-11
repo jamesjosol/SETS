@@ -65,8 +65,9 @@ namespace Service.Services
                 using var context = _factory.CreateContext(_branch);
                 using var unit = new UnitOfWork(context);
 
-                // ── 1. Sections for name lookup ───────────────────────────────
+                // ── 1. Endorser sections (Category = "1") for location name lookup ──
                 var sections = context.Section_Master
+                    .Where(s => s.Category == "1")
                     .ToList()
                     .ToDictionary(s => s.Code, s => s.Name);
 
@@ -77,18 +78,16 @@ namespace Service.Services
                         h.Endorsed.Date <= request.DateTo.Date)
                     .ToList();
 
+                // Optional location filter in-memory
                 if (!string.IsNullOrEmpty(request.LocationCode))
                     allHeaders = allHeaders.Where(h => h.Location == request.LocationCode).ToList();
-
-                if (!string.IsNullOrEmpty(request.UserID))
-                    allHeaders = allHeaders.Where(h => h.EndorsedBy == request.UserID).ToList();
 
                 if (!allHeaders.Any())
                     return new BatchSummaryReportResult();
 
                 var batchNos = allHeaders.Select(h => h.BatchNo).ToList();
 
-                // ── 3. Receiving records grouped by BatchNo ───────────────────
+                // ── 3. Receiving records grouped by BatchNo for receiver lookup ──
                 var receivingRecords = context.Batch_Specimen_Receiving
                     .ToList()
                     .Where(r => batchNos.Contains(r.BatchNo))
@@ -100,21 +99,7 @@ namespace Service.Services
                                                   .OrderBy(u => u))
                     );
 
-                // ── 4. Optional sample type filter ────────────────────────────
-                if (!string.IsNullOrEmpty(request.SampleTypeCode))
-                {
-                    var matchingBatchNos = context.Batch_Specimen
-                        .Where(s => s.SampleTypeCode == request.SampleTypeCode)
-                        .ToList()
-                        .Where(s => batchNos.Contains(s.BatchNo))
-                        .Select(s => s.BatchNo)
-                        .Distinct()
-                        .ToHashSet();
-
-                    allHeaders = allHeaders.Where(h => matchingBatchNos.Contains(h.BatchNo)).ToList();
-                }
-
-                // ── 5. Build rows ─────────────────────────────────────────────
+                // ── 4. Build rows ─────────────────────────────────────────────
                 var rows = allHeaders
                     .OrderByDescending(h => h.Endorsed)
                     .Select(h => new BatchSummaryReportRow
@@ -134,7 +119,7 @@ namespace Service.Services
                     })
                     .ToList();
 
-                // ── 6. Averages ───────────────────────────────────────────────
+                // ── 5. Averages ───────────────────────────────────────────────
                 var tatEndMinutes = allHeaders
                     .Select(h => TatMinutes(h.Endorsed, h.ProcReceived))
                     .Where(m => m != null)
@@ -184,8 +169,6 @@ namespace Service.Services
 
                 ws.Cell("A3").Value = $"Location: {(string.IsNullOrEmpty(request.LocationCode) ? "ALL" : request.LocationCode)}";
                 ws.Cell("C3").Value = $"Date: {request.DateFrom:MM/dd/yyyy} – {request.DateTo:MM/dd/yyyy}";
-                ws.Cell("E3").Value = $"Sample Type: {(string.IsNullOrEmpty(request.SampleTypeCode) ? "ALL" : request.SampleTypeCode)}";
-                ws.Cell("G3").Value = $"User: {(string.IsNullOrEmpty(request.UserID) ? "ALL" : request.UserID)}";
 
                 // ── Summary strip ─────────────────────────────────────────────
                 ws.Cell("A5").Value = "Total Batches"; ws.Cell("A5").Style.Font.Bold = true;
@@ -322,39 +305,518 @@ namespace Service.Services
         }
 
         // ══════════════════════════════════════════════════════════════════════
-        // R6 — Specimen Receipt (Section) (TODO)
+        // R6 — Specimen Receipt (Laboratory Section)
         // ══════════════════════════════════════════════════════════════════════
 
         public List<SpecimenReceiptSectionRow> GetSpecimenReceiptSection(SpecimenReceiptSectionRequest request)
         {
-            // TODO: Query Specimen_Section_Header for section received timestamp (Received column).
-            //       Join Batch_Specimen_Receiving for processing received timestamp.
-            //       TAT = SectionReceived – ProcReceived.
-            throw new NotImplementedException("Specimen Receipt (Section) report is not yet implemented.");
+            try
+            {
+                using var context = _factory.CreateContext(_branch);
+                using var unit = new UnitOfWork(context);
+
+                // ── 1. Section name lookups ───────────────────────────────────
+                var allSections = context.Section_Master
+                    .ToList()
+                    .ToDictionary(s => s.Code, s => s.Name);
+
+                // ── 2. Specimen_Section_Headers with a section received timestamp
+                //       filtered by ProcReceived date range via Batch_Specimen_Receiving ──
+                var sectionHeaders = context.Specimen_Section_Header
+                    .Where(h => h.Received != null)
+                    .ToList();
+
+                // Optional lab section filter
+                if (!string.IsNullOrEmpty(request.SectionCode))
+                    sectionHeaders = sectionHeaders
+                        .Where(h => h.SectionCode == request.SectionCode)
+                        .ToList();
+
+                if (!sectionHeaders.Any())
+                    return new List<SpecimenReceiptSectionRow>();
+
+                var specimenNos = sectionHeaders.Select(h => h.SpecimenNo).Distinct().ToList();
+
+                // ── 3. Batch_Specimen_Receiving — for ProcReceived + RoutedBy ─
+                //       RoutedBy in the receiving record = ProcReceivedBy (the processor
+                //       who received and routed the specimen to the lab section)
+                var receivingRecords = context.Batch_Specimen_Receiving
+                    .ToList()
+                    .Where(r => specimenNos.Contains(r.SpecimenNo))
+                    .GroupBy(r => r.SpecimenNo)
+                    .ToDictionary(
+                        g => g.Key,
+                        g => g.OrderByDescending(r => r.ProcReceived).First()
+                    );
+
+                // ── 4. Apply date range filter on ProcReceived ────────────────
+                var filteredSpecimenNos = receivingRecords
+                    .Where(kv =>
+                        kv.Value.ProcReceived.Date >= request.DateFrom.Date &&
+                        kv.Value.ProcReceived.Date <= request.DateTo.Date)
+                    .Select(kv => kv.Key)
+                    .ToHashSet();
+
+                sectionHeaders = sectionHeaders
+                    .Where(h => filteredSpecimenNos.Contains(h.SpecimenNo))
+                    .ToList();
+
+                if (!sectionHeaders.Any())
+                    return new List<SpecimenReceiptSectionRow>();
+
+                // ── 5. Batch_Specimen — for BatchNo, Location, PatientName, SampleType ──
+                var batchSpecimens = context.Batch_Specimen
+                    .ToList()
+                    .Where(s => filteredSpecimenNos.Contains(s.SpecimenNo))
+                    .GroupBy(s => s.SpecimenNo)
+                    .ToDictionary(
+                        g => g.Key,
+                        g => g.OrderByDescending(s => s.Id).First()
+                    );
+
+                // ── 6. Batch_Header — for Location (endorser section code) ───
+                var batchNos = batchSpecimens.Values
+                    .Select(s => s.BatchNo)
+                    .Distinct()
+                    .ToList();
+
+                var batchHeaders = context.Batch_Header
+                    .ToList()
+                    .Where(h => batchNos.Contains(h.BatchNo))
+                    .ToDictionary(h => h.BatchNo);
+
+                // ── 7. Optional endorser location filter ─────────────────────
+                if (!string.IsNullOrEmpty(request.LocationCode))
+                {
+                    var allowedSpecimenNos = batchSpecimens
+                        .Where(kv =>
+                        {
+                            batchHeaders.TryGetValue(kv.Value.BatchNo, out var bh);
+                            return bh?.Location == request.LocationCode;
+                        })
+                        .Select(kv => kv.Key)
+                        .ToHashSet();
+
+                    sectionHeaders = sectionHeaders
+                        .Where(h => allowedSpecimenNos.Contains(h.SpecimenNo))
+                        .ToList();
+                }
+
+                // ── 8. Build rows ─────────────────────────────────────────────
+                var rows = sectionHeaders
+                    .OrderBy(h => h.SectionCode)
+                    .ThenBy(h => h.Received)
+                    .Select(h =>
+                    {
+                        batchSpecimens.TryGetValue(h.SpecimenNo, out var bs);
+                        receivingRecords.TryGetValue(h.SpecimenNo, out var rcv);
+                        batchHeaders.TryGetValue(bs?.BatchNo ?? "", out var bh);
+
+                        var locationCode = bh?.Location ?? "";
+
+                        return new SpecimenReceiptSectionRow
+                        {
+                            BatchNo = bs?.BatchNo,
+                            Location = allSections.TryGetValue(locationCode, out var ln) ? ln : locationCode,
+                            SpecimenNo = h.SpecimenNo,
+                            PatientName = bs?.PatientName,
+                            SampleTypeName = bs?.SampleTypeName,
+                            ProcReceived = rcv?.ProcReceived,
+                            RoutedBy = rcv?.ProcReceivedBy,
+                            SectionReceived = h.Received,
+                            SectionReceivedBy = h.ReceivedBy,
+                            LabSection = allSections.TryGetValue(h.SectionCode, out var sn) ? sn : h.SectionCode,
+                            TatSection = FormatTat(rcv?.ProcReceived, h.Received),
+                        };
+                    })
+                    .ToList();
+
+                return rows;
+            }
+            catch { throw; }
+        }
+
+        public byte[] ExportSpecimenReceiptSectionExcel(SpecimenReceiptSectionRequest request)
+        {
+            try
+            {
+                var data = GetSpecimenReceiptSection(request);
+
+                using var wb = new XLWorkbook();
+                var ws = wb.Worksheets.Add("Specimen Receipt - Lab Section");
+
+                // ── Title block ───────────────────────────────────────────────
+                ws.Cell("A1").Value = "SPECIMEN RECEIPT (LABORATORY SECTION) REPORT";
+                ws.Cell("A1").Style.Font.Bold = true;
+                ws.Cell("A1").Style.Font.FontSize = 14;
+                ws.Range("A1:K1").Merge();
+
+                ws.Cell("A2").Value = $"Generated: {DateTime.Now:MM/dd/yyyy HH:mm}";
+                ws.Range("A2:K2").Merge();
+
+                ws.Cell("A3").Value = $"Lab Section: {(string.IsNullOrEmpty(request.SectionCode) ? "ALL" : request.SectionCode)}";
+                ws.Cell("D3").Value = $"Location: {(string.IsNullOrEmpty(request.LocationCode) ? "ALL" : request.LocationCode)}";
+                ws.Cell("G3").Value = $"Date: {request.DateFrom:MM/dd/yyyy} – {request.DateTo:MM/dd/yyyy}";
+
+                // ── Column headers ────────────────────────────────────────────
+                int headerRow = 5;
+                var headers = new[]
+                {
+                    "Batch No.", "Location", "Specimen No.", "Patient Name", "Sample Type",
+                    "Processing Received", "Routed By", "Section Received", "Received By (Section)",
+                    "Lab Section", "TAT (Section)"
+                };
+
+                for (int i = 0; i < headers.Length; i++)
+                {
+                    var cell = ws.Cell(headerRow, i + 1);
+                    cell.Value = headers[i];
+                    cell.Style.Font.Bold = true;
+                    cell.Style.Fill.BackgroundColor = XLColor.FromHtml("#4472C4");
+                    cell.Style.Font.FontColor = XLColor.White;
+                    cell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                    cell.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                }
+
+                // ── Data rows ─────────────────────────────────────────────────
+                int dataRow = headerRow + 1;
+                foreach (var r in data)
+                {
+                    ws.Cell(dataRow, 1).Value = r.BatchNo ?? "";
+                    ws.Cell(dataRow, 2).Value = r.Location ?? "";
+                    ws.Cell(dataRow, 3).Value = r.SpecimenNo ?? "";
+                    ws.Cell(dataRow, 4).Value = r.PatientName ?? "";
+                    ws.Cell(dataRow, 5).Value = r.SampleTypeName ?? "";
+                    ws.Cell(dataRow, 6).Value = r.ProcReceived.HasValue ? r.ProcReceived.Value.ToString("MM/dd/yyyy HH:mm") : "—";
+                    ws.Cell(dataRow, 7).Value = r.RoutedBy ?? "—";
+                    ws.Cell(dataRow, 8).Value = r.SectionReceived.HasValue ? r.SectionReceived.Value.ToString("MM/dd/yyyy HH:mm") : "—";
+                    ws.Cell(dataRow, 9).Value = r.SectionReceivedBy ?? "—";
+                    ws.Cell(dataRow, 10).Value = r.LabSection ?? "";
+                    ws.Cell(dataRow, 11).Value = r.TatSection ?? "—";
+
+                    if (dataRow % 2 == 0)
+                        ws.Row(dataRow).Style.Fill.BackgroundColor = XLColor.FromHtml("#F2F2F2");
+
+                    ws.Range(dataRow, 1, dataRow, 11).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+
+                    dataRow++;
+                }
+
+                // ── Column widths ─────────────────────────────────────────────
+                ws.Column(1).Width = 18;
+                ws.Column(2).Width = 20;
+                ws.Column(3).Width = 18;
+                ws.Column(4).Width = 22;
+                ws.Column(5).Width = 16;
+                ws.Column(6).Width = 22;
+                ws.Column(7).Width = 14;
+                ws.Column(8).Width = 22;
+                ws.Column(9).Width = 20;
+                ws.Column(10).Width = 20;
+                ws.Column(11).Width = 14;
+                ws.SheetView.FreezeRows(headerRow);
+
+                using var ms = new MemoryStream();
+                wb.SaveAs(ms);
+                return ms.ToArray();
+            }
+            catch { throw; }
         }
 
         // ══════════════════════════════════════════════════════════════════════
-        // R7 — Duplicate Endorsement (TODO)
+        // R7 — Duplicate Endorsement (Re-endorsed specimens)
         // ══════════════════════════════════════════════════════════════════════
 
         public List<DuplicateEndorsementRow> GetDuplicateEndorsements(DuplicateEndorsementRequest request)
         {
-            // TODO: Query Audit_Log where EventCode = AuditEvents.EndorsedDuplicate.
-            //       Pair first and second endorsement log entries per SpecimenNo.
-            //       Remarks column holds the decision (Y/N) and reason text.
-            throw new NotImplementedException("Duplicate Endorsement report is not yet implemented.");
+            try
+            {
+                using var context = _factory.CreateContext(_branch);
+                using var unit = new UnitOfWork(context);
+
+                // ── 1. Section name lookup ────────────────────────────────────
+                var sections = context.Section_Master
+                    .ToList()
+                    .ToDictionary(s => s.Code, s => s.Name);
+
+                // ── 2. All ENDORSED_DUPLICATE entries in date range ───────────
+                var duplicateLogs = unit.AuditLogs.GetAll()
+                    .Where(l => l.EventCode == AuditEvents.EndorsedDuplicate
+                             && l.LoggedAt.Date >= request.DateFrom.Date
+                             && l.LoggedAt.Date <= request.DateTo.Date)
+                    .ToList();
+
+                // Optional location filter
+                if (!string.IsNullOrEmpty(request.LocationCode))
+                    duplicateLogs = duplicateLogs
+                        .Where(l => l.FromLocation == request.LocationCode)
+                        .ToList();
+
+                if (!duplicateLogs.Any())
+                    return new List<DuplicateEndorsementRow>();
+
+                var specimenNos = duplicateLogs.Select(l => l.SpecimenNo).Distinct().ToList();
+
+                // ── 3. All prior endorsement logs for those specimens ─────────
+                //       Pull ENDORSED + ENDORSED_DUPLICATE so we can pair them
+                var allEndorseLogs = unit.AuditLogs.GetAll()
+                    .Where(l => l.EventCode == AuditEvents.Endorsed ||
+                                l.EventCode == AuditEvents.EndorsedDuplicate)
+                    .Where(l => l.SpecimenNo != null)
+                    .ToList()
+                    .Where(l => specimenNos.Contains(l.SpecimenNo))
+                    .OrderBy(l => l.SpecimenNo)
+                    .ThenBy(l => l.LoggedAt)
+                    .ToList();
+
+                // ── 4. Build rows — one per ENDORSED_DUPLICATE entry ──────────
+                var rows = duplicateLogs
+                    .OrderBy(l => l.LoggedAt)
+                    .Select(dup =>
+                    {
+                        // Most recent prior endorsement log for this specimen
+                        var prior = allEndorseLogs
+                            .Where(l => l.SpecimenNo == dup.SpecimenNo
+                                     && l.LoggedAt < dup.LoggedAt)
+                            .OrderByDescending(l => l.LoggedAt)
+                            .FirstOrDefault();
+
+                        var locationCode = dup.FromLocation ?? "";
+
+                        return new DuplicateEndorsementRow
+                        {
+                            BatchNo = dup.BatchNo,
+                            Location = sections.TryGetValue(locationCode, out var ln) ? ln : locationCode,
+                            SpecimenNo = dup.SpecimenNo,
+                            PatientName = dup.PatientName,
+                            FirstEndorsedAt = prior?.LoggedAt,
+                            FirstEndorsedBy = prior?.UserID,
+                            SecondEndorsedAt = dup.LoggedAt,
+                            SecondEndorsedBy = dup.UserID,
+                            Reason = dup.Remarks,
+                        };
+                    })
+                    .ToList();
+
+                return rows;
+            }
+            catch { throw; }
+        }
+
+        public byte[] ExportDuplicateEndorsementsExcel(DuplicateEndorsementRequest request)
+        {
+            try
+            {
+                var data = GetDuplicateEndorsements(request);
+
+                using var wb = new XLWorkbook();
+                var ws = wb.Worksheets.Add("Duplicate Endorsement");
+
+                // ── Title block ───────────────────────────────────────────────
+                ws.Cell("A1").Value = "DUPLICATE ENDORSEMENT REPORT";
+                ws.Cell("A1").Style.Font.Bold = true;
+                ws.Cell("A1").Style.Font.FontSize = 14;
+                ws.Range("A1:I1").Merge();
+
+                ws.Cell("A2").Value = $"Generated: {DateTime.Now:MM/dd/yyyy HH:mm}";
+                ws.Range("A2:I2").Merge();
+
+                ws.Cell("A3").Value = $"Location: {(string.IsNullOrEmpty(request.LocationCode) ? "ALL" : request.LocationCode)}";
+                ws.Cell("D3").Value = $"Date: {request.DateFrom:MM/dd/yyyy} – {request.DateTo:MM/dd/yyyy}";
+
+                // ── Column headers ────────────────────────────────────────────
+                int headerRow = 5;
+                var headers = new[]
+                {
+                    "Batch No.", "Location", "Specimen No.", "Patient Name",
+                    "1st Endorsed", "By (1st)",
+                    "2nd Endorsed", "By (2nd)",
+                    "Reason"
+                };
+
+                for (int i = 0; i < headers.Length; i++)
+                {
+                    var cell = ws.Cell(headerRow, i + 1);
+                    cell.Value = headers[i];
+                    cell.Style.Font.Bold = true;
+                    cell.Style.Fill.BackgroundColor = XLColor.FromHtml("#4472C4");
+                    cell.Style.Font.FontColor = XLColor.White;
+                    cell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                    cell.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                }
+
+                // ── Data rows ─────────────────────────────────────────────────
+                int dataRow = headerRow + 1;
+                foreach (var r in data)
+                {
+                    ws.Cell(dataRow, 1).Value = r.BatchNo ?? "";
+                    ws.Cell(dataRow, 2).Value = r.Location ?? "";
+                    ws.Cell(dataRow, 3).Value = r.SpecimenNo ?? "";
+                    ws.Cell(dataRow, 4).Value = r.PatientName ?? "";
+                    ws.Cell(dataRow, 5).Value = r.FirstEndorsedAt.HasValue ? r.FirstEndorsedAt.Value.ToString("MM/dd/yyyy HH:mm") : "—";
+                    ws.Cell(dataRow, 6).Value = r.FirstEndorsedBy ?? "—";
+                    ws.Cell(dataRow, 7).Value = r.SecondEndorsedAt.HasValue ? r.SecondEndorsedAt.Value.ToString("MM/dd/yyyy HH:mm") : "—";
+                    ws.Cell(dataRow, 8).Value = r.SecondEndorsedBy ?? "—";
+                    ws.Cell(dataRow, 9).Value = r.Reason ?? "—";
+
+                    if (dataRow % 2 == 0)
+                        ws.Row(dataRow).Style.Fill.BackgroundColor = XLColor.FromHtml("#F2F2F2");
+
+                    ws.Range(dataRow, 1, dataRow, 9).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+
+                    dataRow++;
+                }
+
+                // ── Column widths ─────────────────────────────────────────────
+                ws.Column(1).Width = 18;
+                ws.Column(2).Width = 20;
+                ws.Column(3).Width = 18;
+                ws.Column(4).Width = 22;
+                ws.Column(5).Width = 20;
+                ws.Column(6).Width = 14;
+                ws.Column(7).Width = 20;
+                ws.Column(8).Width = 14;
+                ws.Column(9).Width = 30;
+                ws.SheetView.FreezeRows(headerRow);
+
+                using var ms = new MemoryStream();
+                wb.SaveAs(ms);
+                return ms.ToArray();
+            }
+            catch { throw; }
         }
 
         // ══════════════════════════════════════════════════════════════════════
-        // R8 — Transaction Beyond 14 Days (TODO)
+        // R8 — Transaction Beyond 14 Days
         // ══════════════════════════════════════════════════════════════════════
 
         public List<Beyond14DaysRow> GetBeyond14Days(Beyond14DaysRequest request)
         {
-            // TODO: Query Audit_Log where EventCode = AuditEvents.Endorsed14Days.
-            //       Remarks column holds the decision (Y/N) and reason text.
-            //       Join back to Batch_Specimen for PatientName, SampleTypeName.
-            throw new NotImplementedException("Beyond 14 Days report is not yet implemented.");
+            try
+            {
+                using var context = _factory.CreateContext(_branch);
+                using var unit = new UnitOfWork(context);
+
+                // ── 1. Section name lookup ────────────────────────────────────
+                var sections = context.Section_Master
+                    .ToList()
+                    .ToDictionary(s => s.Code, s => s.Name);
+
+                // ── 2. All ENDORSED_14DAYS entries in date range ──────────────
+                var logs = unit.AuditLogs.GetAll()
+                    .Where(l => l.EventCode == AuditEvents.Endorsed14Days
+                             && l.LoggedAt.Date >= request.DateFrom.Date
+                             && l.LoggedAt.Date <= request.DateTo.Date)
+                    .ToList();
+
+                // Optional location filter
+                if (!string.IsNullOrEmpty(request.LocationCode))
+                    logs = logs
+                        .Where(l => l.FromLocation == request.LocationCode)
+                        .ToList();
+
+                if (!logs.Any())
+                    return new List<Beyond14DaysRow>();
+
+                // ── 3. Build rows ─────────────────────────────────────────────
+                var rows = logs
+                    .OrderBy(l => l.LoggedAt)
+                    .Select(l =>
+                    {
+                        var locationCode = l.FromLocation ?? "";
+                        return new Beyond14DaysRow
+                        {
+                            BatchNo = l.BatchNo,
+                            Location = sections.TryGetValue(locationCode, out var ln) ? ln : locationCode,
+                            SpecimenNo = l.SpecimenNo,
+                            PatientName = l.PatientName,
+                            EndorsedAt = l.LoggedAt,
+                            EndorsedBy = l.UserID,
+                            Reason = l.Remarks,
+                        };
+                    })
+                    .ToList();
+
+                return rows;
+            }
+            catch { throw; }
+        }
+
+        public byte[] ExportBeyond14DaysExcel(Beyond14DaysRequest request)
+        {
+            try
+            {
+                var data = GetBeyond14Days(request);
+
+                using var wb = new XLWorkbook();
+                var ws = wb.Worksheets.Add("Beyond 14 Days");
+
+                // ── Title block ───────────────────────────────────────────────
+                ws.Cell("A1").Value = "TRANSACTION BEYOND 14 DAYS REPORT";
+                ws.Cell("A1").Style.Font.Bold = true;
+                ws.Cell("A1").Style.Font.FontSize = 14;
+                ws.Range("A1:G1").Merge();
+
+                ws.Cell("A2").Value = $"Generated: {DateTime.Now:MM/dd/yyyy HH:mm}";
+                ws.Range("A2:G2").Merge();
+
+                ws.Cell("A3").Value = $"Location: {(string.IsNullOrEmpty(request.LocationCode) ? "ALL" : request.LocationCode)}";
+                ws.Cell("D3").Value = $"Date: {request.DateFrom:MM/dd/yyyy} – {request.DateTo:MM/dd/yyyy}";
+
+                // ── Column headers ────────────────────────────────────────────
+                int headerRow = 5;
+                var headers = new[]
+                {
+                    "Batch No.", "Location", "Specimen No.",
+                    "Patient Name", "Endorsed", "Endorsed By", "Reason"
+                };
+
+                for (int i = 0; i < headers.Length; i++)
+                {
+                    var cell = ws.Cell(headerRow, i + 1);
+                    cell.Value = headers[i];
+                    cell.Style.Font.Bold = true;
+                    cell.Style.Fill.BackgroundColor = XLColor.FromHtml("#4472C4");
+                    cell.Style.Font.FontColor = XLColor.White;
+                    cell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                    cell.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                }
+
+                // ── Data rows ─────────────────────────────────────────────────
+                int dataRow = headerRow + 1;
+                foreach (var r in data)
+                {
+                    ws.Cell(dataRow, 1).Value = r.BatchNo ?? "";
+                    ws.Cell(dataRow, 2).Value = r.Location ?? "";
+                    ws.Cell(dataRow, 3).Value = r.SpecimenNo ?? "";
+                    ws.Cell(dataRow, 4).Value = r.PatientName ?? "";
+                    ws.Cell(dataRow, 5).Value = r.EndorsedAt.HasValue ? r.EndorsedAt.Value.ToString("MM/dd/yyyy HH:mm") : "—";
+                    ws.Cell(dataRow, 6).Value = r.EndorsedBy ?? "—";
+                    ws.Cell(dataRow, 7).Value = r.Reason ?? "—";
+
+                    if (dataRow % 2 == 0)
+                        ws.Row(dataRow).Style.Fill.BackgroundColor = XLColor.FromHtml("#F2F2F2");
+
+                    ws.Range(dataRow, 1, dataRow, 7).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+
+                    dataRow++;
+                }
+
+                // ── Column widths ─────────────────────────────────────────────
+                ws.Column(1).Width = 18;
+                ws.Column(2).Width = 20;
+                ws.Column(3).Width = 18;
+                ws.Column(4).Width = 22;
+                ws.Column(5).Width = 20;
+                ws.Column(6).Width = 14;
+                ws.Column(7).Width = 32;
+                ws.SheetView.FreezeRows(headerRow);
+
+                using var ms = new MemoryStream();
+                wb.SaveAs(ms);
+                return ms.ToArray();
+            }
+            catch { throw; }
         }
 
         // ══════════════════════════════════════════════════════════════════════

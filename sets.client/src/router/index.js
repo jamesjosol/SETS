@@ -40,7 +40,7 @@ const routes = [
     path: '/reports',
     name: 'EndorserReports',
     component: () => import('../views/shared/Reports.vue'),
-    meta: { requiresAuth: true, category: '1', requiresTL: true }
+    meta: { requiresAuth: true, category: '1' }
   },
   // ── Receiver (category 2) ──────────────────────────────────────────
   {
@@ -83,7 +83,7 @@ const routes = [
     path: '/receiver/reports',
     name: 'ReceiverReports',
     component: () => import('../views/shared/Reports.vue'),
-    meta: { requiresAuth: true, category: '2', requiresTL: true }
+    meta: { requiresAuth: true, category: '2' }
   },
 
   // ── Runner (category 3) ───────────────────────────────────────────
@@ -131,7 +131,7 @@ const routes = [
     path: '/runner/reports',
     name: 'RunnerReports',
     component: () => import('../views/shared/Reports.vue'),
-    meta: { requiresAuth: true, category: '3', requiresTL: true }
+    meta: { requiresAuth: true, category: '3' }
   },
 
   // ── Shared ────────────────────────────────────────────────────────────

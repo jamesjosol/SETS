@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Model.Main
 {
@@ -92,9 +89,7 @@ namespace Model.Main
 
     public class BatchSummaryReportRequest : ReportDateRangeRequest
     {
-        public string? LocationCode { get; set; }       // null = ALL
-        public string? SampleTypeCode { get; set; }     // null = ALL
-        public string? UserID { get; set; }             // null = ALL
+        public string? LocationCode { get; set; }       // null = ALL (endorser section code)
     }
 
     public class BatchSummaryReportRow
@@ -111,7 +106,7 @@ namespace Model.Main
         public string Status { get; set; } = string.Empty;
         // TAT (Batch Endorsement) = ProcReceived – Endorsed   (how long specimen arrives from branch)
         public string? TatEndorsement { get; set; }     // hh:mm, null if ProcReceived is null
-                                                        // TAT (Batch Completion)   = Completed – ProcReceived (how long batch is fully received)
+        // TAT (Batch Completion)   = Completed – ProcReceived (how long batch is fully received)
         public string? TatCompletion { get; set; }      // hh:mm, null if either timestamp is null
     }
 
@@ -131,20 +126,23 @@ namespace Model.Main
 
     public class SpecimenReceiptSectionRequest : ReportDateRangeRequest
     {
-        public string? LocationCode { get; set; }       // null = ALL
-        public string? SectionCode { get; set; }        // null = ALL
-        public string? TestCode { get; set; }           // null = ALL
-        public string? UserID { get; set; }             // null = ALL
+        public string? SectionCode { get; set; }        // lab section (Category 3), null = ALL
+        public string? LocationCode { get; set; }       // endorser section (Category 1), null = ALL
     }
 
     public class SpecimenReceiptSectionRow
     {
-        public string BatchNo { get; set; } = string.Empty;
-        public string Location { get; set; } = string.Empty;
-        public string? LabNo { get; set; }
-        public DateTime? ProcReceivedAt { get; set; }
-        public DateTime? SectionReceivedAt { get; set; }
-        public string? TatSection { get; set; }         // hh:mm
+        public string? BatchNo { get; set; }
+        public string? Location { get; set; }           // endorser section name
+        public string? SpecimenNo { get; set; }
+        public string? PatientName { get; set; }
+        public string? SampleTypeName { get; set; }
+        public DateTime? ProcReceived { get; set; }     // when processing received it
+        public string? RoutedBy { get; set; }           // who routed it (processing staff)
+        public DateTime? SectionReceived { get; set; }  // when lab section received it
+        public string? SectionReceivedBy { get; set; }  // who received it in lab section
+        public string? LabSection { get; set; }         // lab section name
+        public string? TatSection { get; set; }         // hh:mm — SectionReceived – ProcReceived
     }
 
     // ══════════════════════════════════════════════════════════════════════════
@@ -153,22 +151,20 @@ namespace Model.Main
 
     public class DuplicateEndorsementRequest : ReportDateRangeRequest
     {
-        public string? LocationCode { get; set; }       // null = ALL
+        public string? LocationCode { get; set; }       // endorser section (Category 1), null = ALL
     }
 
     public class DuplicateEndorsementRow
     {
         public string? BatchNo { get; set; }
-        public string? Location { get; set; }
-        public string? LabNo { get; set; }
+        public string? Location { get; set; }           // endorser section name
+        public string? SpecimenNo { get; set; }
         public string? PatientName { get; set; }
-        public string? SpecimenType { get; set; }
         public DateTime? FirstEndorsedAt { get; set; }
         public string? FirstEndorsedBy { get; set; }
         public DateTime? SecondEndorsedAt { get; set; }
         public string? SecondEndorsedBy { get; set; }
-        public string? Decision { get; set; }           // Y / N
-        public string? Reason { get; set; }
+        public string? Reason { get; set; }             // Remarks from the duplicate log entry
     }
 
     // ══════════════════════════════════════════════════════════════════════════
@@ -177,20 +173,18 @@ namespace Model.Main
 
     public class Beyond14DaysRequest : ReportDateRangeRequest
     {
-        public string? LocationCode { get; set; }       // null = ALL
+        public string? LocationCode { get; set; }       // endorser section (Category 1), null = ALL
     }
 
     public class Beyond14DaysRow
     {
         public string? BatchNo { get; set; }
-        public string? Location { get; set; }
-        public string? LabNo { get; set; }
+        public string? Location { get; set; }           // endorser section name
+        public string? SpecimenNo { get; set; }
         public string? PatientName { get; set; }
-        public string? SpecimenType { get; set; }
         public DateTime? EndorsedAt { get; set; }
         public string? EndorsedBy { get; set; }
-        public string? Decision { get; set; }           // Y / N
-        public string? Reason { get; set; }
+        public string? Reason { get; set; }             // Remarks from the log entry
     }
 
     // ══════════════════════════════════════════════════════════════════════════
@@ -214,4 +208,3 @@ namespace Model.Main
         public int Beyond14Days { get; set; }
     }
 }
-

@@ -205,10 +205,10 @@
     { name: 'Endorsements', path: '/endorsements', icon: 'inventory_2' },
     { name: 'Audit Trail', path: '/audit-trail', icon: 'manage_search' },
     { name: 'Contingency', path: '/contingency/endorse', icon: 'offline_bolt' },
+    { name: 'Reports', path: '/reports', icon: 'description' },
   ]
 
   const endorserRestrictedItems = [
-    { name: 'Reports', path: '/reports', icon: 'description' },
     { name: 'Settings', path: '/settings', icon: 'settings' },
   ]
 
@@ -219,10 +219,11 @@
     { name: 'Audit Trail', path: '/receiver/audit-trail', icon: 'manage_search' },
     { name: 'Issues Log', path: '/receiver/issues-log', icon: 'folder_special' },
     { name: 'Contingency', path: '/receiver/contingency', icon: 'offline_bolt' },
+    { name: 'Reports', path: '/receiver/reports', icon: 'description' },
   ]
 
   const receiverRestrictedItems = [
-    { name: 'Reports', path: '/receiver/reports', icon: 'description' },
+
     { name: 'Settings', path: '/receiver/settings', icon: 'settings' },
   ]
 

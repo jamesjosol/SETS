@@ -95,6 +95,7 @@ namespace Service.Services
                     bool isOutsideProcTat = false;
                     if (newBatchStatus == "C" && header.ProcReceived != null)
                     {
+                        header.Completed = now;
                         try
                         {
                             using var master = new MasterService(_branch_raw);
@@ -259,6 +260,7 @@ namespace Service.Services
 
                     if (newBatchStatus == "C" && header.ProcReceived != null)
                     {
+                        header.Completed = now;
                         try
                         {
                             using var master = new MasterService(_branch_raw);
