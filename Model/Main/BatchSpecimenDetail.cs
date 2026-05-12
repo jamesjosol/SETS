@@ -25,5 +25,6 @@ namespace Model.Main
         public string? CancelReason { get; set; }
         public string? CancelledBy { get; set; }
         public DateTime? CancelledAt { get; set; }
+        public bool IsPostedToDest { get; set; }
     }
 }

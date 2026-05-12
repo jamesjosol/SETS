@@ -11,6 +11,7 @@ namespace Model.SETSDB
         public string Code { get; set; }
         public string Name { get; set; }
         public bool Active { get; set; }
+        public bool IsExternal { get; set; }
         public DateTime Created { get; set; }
         public string CreatedBy  { get; set; }
         public DateTime? Updated { get; set; }

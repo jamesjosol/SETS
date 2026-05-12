@@ -23,8 +23,14 @@ namespace Service.Services
         {
             try
             {
+                var isOutbound = !string.IsNullOrEmpty(request.DestBranchCode) &&
+                                 request.DestBranchCode != _branch_raw;
+
                 using var context = _factory.CreateContext(_branch);
                 using var tx = context.Database.BeginTransaction();
+
+                string batchNo;
+                DateTime now;
 
                 try
                 {
@@ -35,13 +41,11 @@ namespace Service.Services
 
                     section.AutoNo += 1;
 
-                    // 2. Generate batch number: e.g. WS26-00001
                     var yy = DateTime.Now.ToString("yy");
-                    var batchNo = $"{section.Code}{yy}-{section.AutoNo:D5}";
+                    batchNo = $"{section.Code}{yy}-{section.AutoNo:D5}";
+                    now = DateTime.Now;
 
-                    var now = DateTime.Now;
-
-                    // 3. Insert Batch_Header
+                    // 2. Insert Batch_Header on Branch A (originating)
                     var header = new Batch_Header
                     {
                         BatchNo = batchNo,
@@ -49,12 +53,15 @@ namespace Service.Services
                         Endorsed = now,
                         Location = request.SectionCode,
                         ProcDestination = request.ProcDestination,
-                        Status = "P"
+                        Status = "P",
+                        IsOutbound = isOutbound,
+                        IsInbound = false,
+                        DestBranchCode = isOutbound ? request.DestBranchCode : null
                     };
                     context.Batch_Header.Add(header);
-                    context.SaveChanges();  
+                    context.SaveChanges();
 
-                    // 4. Insert Batch_Specimen records
+                    // 3. Insert Batch_Specimen on Branch A
                     foreach (var s in request.Specimens)
                     {
                         context.Batch_Specimen.Add(new Batch_Specimen
@@ -62,9 +69,9 @@ namespace Service.Services
                             SpecimenNo = s.SpecimenNo,
                             BatchNo = batchNo,
                             LabNo = s.LabNo,
-                            TrxDate = s.TrxDate.Kind == DateTimeKind.Unspecified        // ← fix datetime2
-                                    ? DateTime.SpecifyKind(s.TrxDate, DateTimeKind.Local)
-                                    : s.TrxDate,
+                            TrxDate = s.TrxDate.Kind == DateTimeKind.Unspecified
+                                                ? DateTime.SpecifyKind(s.TrxDate, DateTimeKind.Local)
+                                                : s.TrxDate,
                             PID = s.PID,
                             PatientName = s.PatientName,
                             SampleTypeCode = s.SampleTypeCode,
@@ -76,14 +83,14 @@ namespace Service.Services
                         });
                     }
 
-                    // 5. Insert Batch_NonBarcoded records
+                    // 4. Insert Batch_NonBarcoded on Branch A
                     foreach (var nb in request.NonBarcoded)
                     {
                         context.Batch_NonBarcoded.Add(new Batch_NonBarcoded
                         {
                             BatchNo = batchNo,
-                            Type = nb.Type ?? "others",   
-                            LabNo = nb.LabNo,        
+                            Type = nb.Type ?? "others",
+                            LabNo = nb.LabNo,
                             Description = nb.Description,
                             Quantity = nb.Quantity,
                             Endorsed = now,
@@ -93,56 +100,153 @@ namespace Service.Services
                         });
                     }
 
-                    // 6. Single commit — AutoNo + all inserts atomic
+                    // 5. Commit Branch A
                     context.SaveChanges();
                     tx.Commit();
-
-                    bool isOutsideTat = false;
-                    try
-                    {
-                        using var master = new MasterService(_branch_raw);
-                        isOutsideTat = master.Tat.EvaluateAndCycle(request.SectionCode, batchNo, now);
-
-                        if (isOutsideTat)
-                        {
-                            var committed = context.Batch_Header
-                                .FirstOrDefault(h => h.BatchNo == batchNo);
-                            if (committed != null)
-                            {
-                                committed.IsOutsideTat = true;
-                                context.SaveChanges();
-                            }
-                        }
-                    }
-                    catch (Exception tatEx)
-                    {
-                        Console.WriteLine($"[TAT] EvaluateAndCycle failed for {batchNo}: {tatEx.Message}");
-                    }
-
-                    // ── Audit Logging ─────────────────────────────────────────────────────
-                    try
-                    {
-                        using var master = new MasterService(_branch_raw);
-                        foreach (var s in request.Specimens)
-                            master.Audit.Log(Audit_Log.Endorsed(s, batchNo, request.SectionCode, request.ProcDestination, request.UserID, isOutsideTat));
-                    }
-                    catch (Exception auditEx)
-                    {
-                        Console.WriteLine($"[AUDIT] Logging failed for batch {batchNo}: {auditEx.Message}");
-                    }
-
-                    return new EndorseResult
-                    {
-                        BatchNo = batchNo,
-                        ProcDestination = request.ProcDestination,
-                        LocationName = section.Name   
-                    };
                 }
                 catch
                 {
                     tx.Rollback();
                     throw;
                 }
+
+                // ── Dual-write: Branch B (destination) ───────────────────────────
+                // Runs AFTER Branch A commits — Branch A is source of truth.
+                // If Branch B write fails, middleware will retry on next sync tick.
+                if (isOutbound)
+                {
+                    try
+                    {
+                        var destConn = SetsConnection.ConnectionString(request.DestBranchCode!);
+                        using var destContext = _factory.CreateContext(destConn);
+                        using var destTx = destContext.Database.BeginTransaction();
+
+                        try
+                        {
+                            // Mirror Batch_Header on Branch B
+                            // IsInbound=true so Branch B's processing module can identify it
+                            // ProcDestination = the processing section code on Branch B
+                            var destHeader = new Batch_Header
+                            {
+                                BatchNo = batchNo,
+                                EndorsedBy = request.UserID,
+                                Endorsed = now,
+                                Location = request.SectionCode,
+                                ProcDestination = request.ProcDestination,
+                                Status = "P",
+                                IsOutbound = false,
+                                IsInbound = true,
+                                DestBranchCode = _branch_raw   // from Branch B's perspective, origin = Branch A
+                            };
+                            destContext.Batch_Header.Add(destHeader);
+                            destContext.SaveChanges();
+
+                            // Mirror Batch_Specimen on Branch B
+                            foreach (var s in request.Specimens)
+                            {
+                                destContext.Batch_Specimen.Add(new Batch_Specimen
+                                {
+                                    SpecimenNo = s.SpecimenNo,
+                                    BatchNo = batchNo,
+                                    LabNo = s.LabNo,
+                                    TrxDate = s.TrxDate.Kind == DateTimeKind.Unspecified
+                                                         ? DateTime.SpecifyKind(s.TrxDate, DateTimeKind.Local)
+                                                         : s.TrxDate,
+                                    PID = s.PID,
+                                    PatientName = s.PatientName,
+                                    SampleTypeCode = s.SampleTypeCode,
+                                    SampleTypeName = s.SampleTypeName,
+                                    Endorsed = now,
+                                    EndorsedBy = request.UserID,
+                                    Status = "P",
+                                    Remarks = s.Remarks
+                                });
+                            }
+
+                            // Mirror Batch_NonBarcoded on Branch B
+                            foreach (var nb in request.NonBarcoded)
+                            {
+                                destContext.Batch_NonBarcoded.Add(new Batch_NonBarcoded
+                                {
+                                    BatchNo = batchNo,
+                                    Type = nb.Type ?? "others",
+                                    LabNo = nb.LabNo,
+                                    Description = nb.Description,
+                                    Quantity = nb.Quantity,
+                                    Endorsed = now,
+                                    EndorsedBy = request.UserID,
+                                    Status = "P",
+                                    Remarks = nb.Remarks
+                                });
+                            }
+
+                            destContext.SaveChanges();
+                            destTx.Commit();
+
+                            Console.WriteLine($"[OUTBOUND] Batch {batchNo} mirrored to {request.DestBranchCode} successfully.");
+                        }
+                        catch
+                        {
+                            destTx.Rollback();
+                            throw;
+                        }
+                    }
+                    catch (Exception destEx)
+                    {
+                        // Branch B write failed — log it, don't throw.
+                        // Middleware OutboundStatusSyncTask will retry on next tick.
+                        Console.WriteLine($"[OUTBOUND] Branch B write failed for {batchNo} → {request.DestBranchCode}: {destEx.Message}");
+                    }
+                }
+
+                // ── TAT evaluation (Branch A only) ────────────────────────────────
+                bool isOutsideTat = false;
+                try
+                {
+                    using var master = new MasterService(_branch_raw);
+                    isOutsideTat = master.Tat.EvaluateAndCycle(request.SectionCode, batchNo, now);
+
+                    if (isOutsideTat)
+                    {
+                        using var ctx2 = _factory.CreateContext(_branch);
+                        var committed = ctx2.Batch_Header.FirstOrDefault(h => h.BatchNo == batchNo);
+                        if (committed != null)
+                        {
+                            committed.IsOutsideTat = true;
+                            ctx2.SaveChanges();
+                        }
+                    }
+                }
+                catch (Exception tatEx)
+                {
+                    Console.WriteLine($"[TAT] EvaluateAndCycle failed for {batchNo}: {tatEx.Message}");
+                }
+
+                // ── Audit Logging ─────────────────────────────────────────────────
+                try
+                {
+                    using var master = new MasterService(_branch_raw);
+                    foreach (var s in request.Specimens)
+                        master.Audit.Log(Audit_Log.Endorsed(
+                            s, batchNo, request.SectionCode,
+                            request.ProcDestination, request.UserID, isOutsideTat));
+                }
+                catch (Exception auditEx)
+                {
+                    Console.WriteLine($"[AUDIT] Logging failed for batch {batchNo}: {auditEx.Message}");
+                }
+
+                // ── Fetch section name for result ─────────────────────────────────
+                using var finalCtx = _factory.CreateContext(_branch);
+                var sectionForResult = finalCtx.Section_Master
+                    .FirstOrDefault(s => s.Code == request.SectionCode);
+
+                return new EndorseResult
+                {
+                    BatchNo = batchNo,
+                    ProcDestination = request.ProcDestination,
+                    LocationName = sectionForResult?.Name ?? request.SectionCode
+                };
             }
             catch { throw; }
         }
@@ -232,8 +336,6 @@ namespace Service.Services
             try
             {
                 using var context = _factory.CreateContext(_branch);
-
-                // Load section name lookup in one query
                 var sections = context.Section_Master
                     .ToDictionary(s => s.Code, s => s.Name);
 
@@ -243,6 +345,9 @@ namespace Service.Services
                     .OrderByDescending(b => b.Endorsed)
                     .ToList();
 
+                var batchNos = batches.Select(b => b.BatchNo).ToList();
+                var unpostedBatchNos = GetBatchNosWithUnpostedSpecimens(context, batchNos);
+
                 return batches.Select(b => new BatchRecentItem
                 {
                     BatchNo = b.BatchNo,
@@ -250,7 +355,8 @@ namespace Service.Services
                     Endorsed = b.Endorsed,
                     EndorsedBy = b.EndorsedBy,
                     Destination = sections.TryGetValue(b.ProcDestination, out var dest) ? dest : b.ProcDestination,
-                    Status = b.Status
+                    Status = b.Status,
+                    HasUnpostedSpecimens = unpostedBatchNos.Contains(b.BatchNo) 
                 }).ToList();
             }
             catch { throw; }
@@ -278,6 +384,9 @@ namespace Service.Services
                 )
                 .ToList();
 
+                var batchNos = batches.Select(b => b.BatchNo).ToList();
+                var unpostedBatchNos = GetBatchNosWithUnpostedSpecimens(context, batchNos);
+
                 return batches.Select(b => new BatchRecentItem
                 {
                     BatchNo = b.BatchNo,
@@ -285,7 +394,8 @@ namespace Service.Services
                     Endorsed = b.Endorsed,
                     EndorsedBy = b.EndorsedBy,
                     Destination = sections.TryGetValue(b.ProcDestination, out var dest) ? dest : b.ProcDestination,
-                    Status = b.Status
+                    Status = b.Status,
+                    HasUnpostedSpecimens = unpostedBatchNos.Contains(b.BatchNo)
                 }).ToList();
             }
             catch { throw; }
@@ -335,7 +445,7 @@ namespace Service.Services
                     Completed = header.Completed,
                     Temp = header.Temp,        
                     TempRemarks = header.TempRemarks,  
-                    BagNo = header.BagNo,      
+                    BagNo = header.BagNo,
                     Specimens = specimens.Select(s => new BatchSpecimenDetail
                     {
                         Id = s.Id,
@@ -351,13 +461,14 @@ namespace Service.Services
                         EndorsedBy = s.EndorsedBy,
                         Status = s.Status,
                         Remarks = s.Remarks,
-                        ReceivingRemarks = receivingRecords.TryGetValue(s.SpecimenNo, out var rr) ?
-                            rr : null,
+                        ReceivingRemarks = receivingRecords.TryGetValue(s.SpecimenNo, out var rr) ? rr : null,
                         CancelReason = s.CancelReason,
                         CancelledBy = s.CancelledBy,
-                        CancelledAt = s.CancelledAt
+                        CancelledAt = s.CancelledAt,
+                        IsPostedToDest = s.IsPostedToDest  
                     }).ToList(),
-                    NonBarcoded = nonBarcoded
+                    NonBarcoded = nonBarcoded,
+                    IsOutbound = header.IsOutbound,
                 };
             }
             catch { throw; }
@@ -444,6 +555,32 @@ namespace Service.Services
             return result;
         }
 
+        private HashSet<string> GetBatchNosWithUnpostedSpecimens(
+            AppDbContext context, List<string> batchNos)
+        {
+            if (!batchNos.Any()) return new HashSet<string>();
+
+            // Step 1: From the given batch nos, find which ones are outbound
+            var outboundBatchNos = context.Batch_Header
+                .Where(h => h.IsOutbound)
+                .ToList()
+                .Where(h => batchNos.Contains(h.BatchNo))
+                .Select(h => h.BatchNo)
+                .ToHashSet();
+
+            if (!outboundBatchNos.Any()) return new HashSet<string>();
+
+            // Step 2: From those outbound batches, find which have at least one unposted specimen
+            var unposted = context.Batch_Specimen
+                .Where(s => !s.IsPostedToDest && s.Status != "X")
+                .ToList()
+                .Where(s => outboundBatchNos.Contains(s.BatchNo))
+                .Select(s => s.BatchNo)
+                .ToHashSet();
+
+            return unposted;
+        }
+
         public List<BatchRecentItem> GetEndorsements(string sectionCode, DateTime dateFrom, DateTime dateTo)
         {
             try
@@ -461,6 +598,9 @@ namespace Service.Services
                     .OrderByDescending(b => b.Endorsed)
                     .ToList();
 
+                var batchNos = batches.Select(b => b.BatchNo).ToList();
+                var unpostedBatchNos = GetBatchNosWithUnpostedSpecimens(context, batchNos);
+
                 return batches.Select(b => new BatchRecentItem
                 {
                     BatchNo = b.BatchNo,
@@ -469,7 +609,8 @@ namespace Service.Services
                     EndorsedBy = b.EndorsedBy,
                     Destination = sections.TryGetValue(b.ProcDestination, out var dest) ? dest : b.ProcDestination,
                     Status = b.Status,
-                    IsOutsideTat = b.IsOutsideTat
+                    IsOutsideTat = b.IsOutsideTat,
+                    HasUnpostedSpecimens = unpostedBatchNos.Contains(b.BatchNo)
                 }).ToList();
             }
             catch { throw; }
@@ -495,6 +636,9 @@ namespace Service.Services
                     select b
                 ).ToList();
 
+                var batchNos = batches.Select(b => b.BatchNo).ToList();
+                var unpostedBatchNos = GetBatchNosWithUnpostedSpecimens(context, batchNos);
+
                 return batches.Select(b => new BatchRecentItem
                 {
                     BatchNo = b.BatchNo,
@@ -503,7 +647,8 @@ namespace Service.Services
                     EndorsedBy = b.EndorsedBy,
                     Destination = sections.TryGetValue(b.ProcDestination, out var dest) ? dest : b.ProcDestination,
                     Status = b.Status,
-                    IsOutsideTat = b.IsOutsideTat
+                    IsOutsideTat = b.IsOutsideTat,
+                    HasUnpostedSpecimens = unpostedBatchNos.Contains(b.BatchNo)
                 }).ToList();
             }
             catch { throw; }

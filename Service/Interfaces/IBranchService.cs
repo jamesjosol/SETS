@@ -11,5 +11,11 @@ namespace Service.Interfaces
         void Update(Branch_Master branch);
         bool CodeExists(string code);
         void Toggle(string code, string updatedBy);
+        List<Branch_Master> GetExternal();
+        List<Branch_Master> GetActiveExternal();
+        List<Branch_Master> GetEligibleForPartner(string localBranchCode);
+        void RegisterAsExternal(string code, string updatedBy);
+        void ToggleExternal(string code, string updatedBy);
+        void UnregisterExternal(string code, string updatedBy);
     }
 }

@@ -229,7 +229,22 @@
                     @mouseenter="(e) => (e.currentTarget.style.backgroundColor = 'var(--color-surface-low)')"
                     @mouseleave="(e) => (e.currentTarget.style.backgroundColor = 'transparent')"
                     @click="openDrawer(batch.batchNo)">
-                  <td class="px-8 py-4 font-mono text-sm font-bold" style="color: var(--color-primary);">{{ batch.batchNo }}</td>
+                  <td class="px-8 py-4">
+                    <div class="flex items-center gap-2">
+                      <span class="font-mono text-sm font-bold" style="color: var(--color-primary);">
+                        {{ batch.batchNo }}
+                      </span>
+                      <div v-if="batch.hasUnpostedSpecimens"
+                           class="relative group flex-shrink-0">
+                        <span class="material-symbols-outlined"
+                              style="font-size: 14px; color: var(--color-warning);">cloud_off</span>
+                        <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2.5 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest whitespace-nowrap shadow-lg pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity z-50"
+                             style="background-color: var(--color-warning); color: #ffffff;">
+                          Unposted specimen(s) to destination
+                        </div>
+                      </div>
+                    </div>
+                  </td>
                   <td v-if="authStore.isAdmin" class="px-4 py-4 text-sm" style="color: var(--color-text);">{{ batch.location }}</td>
                   <td class="px-4 py-4 text-sm" style="color: var(--color-text-muted);">{{ formatDateTime(batch.endorsed) }}</td>
                   <td class="px-4 py-4 text-xs font-bold" style="color: var(--color-text);">{{ batch.endorsedBy }}</td>

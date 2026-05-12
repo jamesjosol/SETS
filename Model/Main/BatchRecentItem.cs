@@ -15,5 +15,6 @@ namespace Model.Main
         public string Destination { get; set; }       // processing section full name
         public string Status { get; set; }
         public bool IsOutsideTat { get; set; }
+        public bool HasUnpostedSpecimens { get; set; }
     }
 }

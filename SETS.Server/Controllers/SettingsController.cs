@@ -34,6 +34,7 @@ namespace SETS.Server.Controllers
 
                 using var master = new MasterService(branch);
                 var sections = master.Section.GetAll()
+                    .Where(a => a.BranchCode == branch)
                     .OrderBy(s => s.Name)
                     .Select(s => new
                     {
@@ -66,12 +67,13 @@ namespace SETS.Server.Controllers
                 using var master = new MasterService(branch);
                 var branches = master.Branch.GetAll()
                     .OrderBy(b => b.Code)
-                    .Select(b => new
-                    {
-                        code = b.Code,
-                        name = b.Name,
-                        active = b.Active
-                    })
+                     .Select(b => new
+                     {
+                         code = b.Code,
+                         name = b.Name,
+                         active = b.Active,
+                         isExternal = b.IsExternal   // ← add this
+                     })
                     .ToList();
 
                 return Ok(branches);
@@ -115,6 +117,7 @@ namespace SETS.Server.Controllers
                     updatedBy = b.UpdatedBy,
                     inSets = setsKeys.Contains(b.Code.ToUpper()),
                     inHclab = hclabKeys.Contains(b.Code.ToUpper()),
+                    isExternal = b.IsExternal   
                 }).OrderBy(b => b.code).ToList();
 
                 return Ok(result);

@@ -13,7 +13,13 @@ namespace Reposi.Repositories
         public List<Section_Master> GetByBranch(string branchCode)
             => dbSet.Where(s => s.BranchCode == branchCode && s.Active == true).ToList();
 
+        public List<Section_Master> GetByBranchIncludeInactive(string branchCode)
+            => dbSet.Where(s => s.BranchCode == branchCode).ToList();
+
         public Section_Master? GetByCode(string code)
             => dbSet.FirstOrDefault(s => s.Code == code);
+
+        public Section_Master? GetByCodeAndBranch(string code, string branchCode)
+            => dbSet.FirstOrDefault(s => s.Code == code && s.BranchCode == branchCode);
     }
 }

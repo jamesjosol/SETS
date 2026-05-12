@@ -181,12 +181,19 @@
 
                 <!-- Top row: specimen no + status badge + cancel button -->
                 <div class="flex justify-between items-start mb-2">
-                  <p class="text-xs font-bold font-mono"
+                  <p class="text-xs font-bold font-mono flex items-center gap-1.5"
                      :style="sp.status === 'X'
-                       ? 'color: var(--color-text-muted); text-decoration: line-through;'
-                       : 'color: var(--color-primary);'">
+                 ? 'color: var(--color-text-muted); text-decoration: line-through;'
+                 : 'color: var(--color-primary);'">
                     {{ sp.specimenNo }}
+                    <span v-if="data.isOutbound && !sp.isPostedToDest && sp.status !== 'X'"
+                          class="material-symbols-outlined flex-shrink-0"
+                          style="font-size: 13px; color: var(--color-warning);"
+                          title="Transaction not yet posted to destination HCLAB">
+                      cloud_off
+                    </span>
                   </p>
+
                   <div class="flex items-center gap-2">
                     <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase"
                           :style="sp.status === 'R'

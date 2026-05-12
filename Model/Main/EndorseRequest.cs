@@ -11,6 +11,7 @@ namespace Model.Main
         public string SectionCode { get; set; }
         public string UserID { get; set; }
         public string ProcDestination { get; set; }
+        public string? DestBranchCode { get; set; }
         public List<EndorseSpecimen> Specimens { get; set; } = new();
         public List<EndorseNonBarcoded> NonBarcoded { get; set; } = new();
     }

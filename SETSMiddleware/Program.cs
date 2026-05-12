@@ -28,7 +28,7 @@ namespace SETSMiddleware
             // ── Branch for this instance ─────────────────────────────────────────
             // Change this to match the branch this deployment serves.
             // Each branch runs its own instance of SETSMiddleware.
-            const string BRANCH = "WES";
+            const string BRANCH = "DIAMOND";
 
             Application.Run(new MiddlewareForm(BRANCH, config));
         }

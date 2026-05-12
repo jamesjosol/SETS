@@ -20,7 +20,6 @@
             {{ tatCountdown }}
           </p>
         </div>
-        <!-- Mini progress bar -->
         <div class="w-16 h-1 rounded-full overflow-hidden ml-1" style="background-color: var(--color-surface-low);">
           <div class="h-full rounded-full transition-all duration-1000"
                :style="`width: ${tatProgressPct}%;
@@ -45,7 +44,7 @@
     <div class="rounded-2xl overflow-hidden" style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
 
       <!-- Card Header: Endorsed To -->
-      <div class="px-8 py-5 flex flex-wrap items-center gap-6" style="border-bottom: 1px solid var(--color-surface-low);">
+      <div class="px-8 py-5 flex flex-wrap items-start gap-6" style="border-bottom: 1px solid var(--color-surface-low);">
 
         <!-- Endorsed To: Local (auto-filled) -->
         <div class="flex items-center gap-3">
@@ -59,21 +58,52 @@
         </div>
 
         <!-- Divider -->
-        <div class="h-8 w-px hidden md:block" style="background-color: var(--color-border);"></div>
+        <div class="h-8 w-px hidden md:block mt-1" style="background-color: var(--color-border);"></div>
 
-        <!-- Endorsed To: Outbound (disabled for now) -->
-        <div class="flex items-center gap-3 opacity-40">
-          <div class="p-2 rounded-xl" style="background-color: var(--color-surface-low);">
-            <span class="material-symbols-outlined text-lg" style="color: var(--color-text-muted);">alt_route</span>
-          </div>
+        <!-- Endorsed To: Outbound -->
+        <div class="flex items-center gap-3" :class="{ 'opacity-40': !outboundEnabled }">
+          <div class="p-2 rounded-xl"
+               :style="isOutbound
+           ? 'background-color: var(--color-primary-soft)'
+           : 'background-color: var(--color-surface-low)'">
+              <span class="material-symbols-outlined text-lg"
+                    :style="isOutbound
+              ? 'color: var(--color-primary)'
+              : 'color: var(--color-text-muted)'">alt_route</span>
+            </div>
           <div>
-            <p class="text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Endorsed To (Outbound)</p>
-            <select disabled
-                    class="text-sm font-bold border-none outline-none cursor-not-allowed rounded-lg px-2 py-1"
-                    style="background-color: var(--color-surface-low); color: var(--color-text-muted);">
-              <option>Coming Soon</option>
-            </select>
+            <p class="text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">
+              Endorsed To (Outbound)
+            </p>
+
+            <!-- Feature disabled -->
+            <p v-if="!outboundEnabled"
+               class="text-sm font-bold"
+               style="color: var(--color-text-muted)">
+              Outbound endorsement is disabled
+            </p>
+
+            <!-- No partners configured -->
+            <p v-else-if="outboundBranches.length === 0"
+               class="text-sm font-bold"
+               style="color: var(--color-text-muted)">
+              No partners configured
+            </p>
+
+            <!-- Dropdown -->
+            <DropdownSelect v-else
+                            v-model="outboundBranchCode"
+                            placeholder="— Local only —"
+                            :options="outboundBranchOptions"
+                            @change="onOutboundBranchSelect" />
           </div>
+
+          <!-- Partner check banner -->
+          <PartnerCheckBanner v-if="isOutbound"
+                              :checking="partnerChecking"
+                              :status-banner="statusBanner"
+                              :latency-badge="latencyBadge"
+                              @retry="runCheck(selectedOutboundBranch?.code, authStore.sectionCode)" />
         </div>
 
         <!-- Batch No (shown after endorsement) -->
@@ -96,7 +126,6 @@
           <span v-if="activeTab === tab.key"
                 class="absolute bottom-0 left-0 w-full h-0.5"
                 style="background-color: var(--color-primary);"></span>
-          <!-- Item count badge -->
           <span v-if="tab.key === 'barcoded' && barcodedItems.length > 0"
                 class="ml-2 px-2 py-0.5 rounded-full text-[10px] font-bold"
                 style="background-color: var(--color-primary-soft); color: var(--color-primary);">{{ barcodedItems.length }}</span>
@@ -111,8 +140,6 @@
 
         <!-- ===== SPECIMENS TAB ===== -->
         <div v-if="activeTab === 'barcoded'">
-
-          <!-- Input Row -->
           <div class="flex items-end gap-4 mb-6">
             <div class="flex-1">
               <label class="block text-[11px] font-bold uppercase tracking-widest mb-2" style="color: var(--color-text-muted);">
@@ -124,7 +151,7 @@
                        v-model="specimenNoInput"
                        type="text"
                        :placeholder="isSearching ? 'Looking up specimen...' : 'Scan or enter specimen number...'"
-                       :disabled="isSearching || isEndorsed"
+                       :disabled="isSearching || isEndorsed || inputsBlocked"
                        class="w-full border-none outline-none rounded-xl py-4 pl-12 pr-4 text-sm transition-colors"
                        style="background-color: var(--color-surface-low); color: var(--color-text);"
                        @focus="e => e.target.style.backgroundColor = 'var(--color-surface-high)'"
@@ -134,7 +161,7 @@
             </div>
             <button class="px-6 py-4 rounded-xl text-xs font-bold uppercase tracking-widest transition-all active:scale-95 flex items-center gap-2"
                     style="background-color: var(--color-primary); color: #ffffff;"
-                    :disabled="isSearching || isEndorsed"
+                    :disabled="isSearching || isEndorsed || inputsBlocked"
                     @click="addBarcodedItem">
               <span v-if="isSearching" class="material-symbols-outlined text-sm animate-spin">progress_activity</span>
               <span v-else class="material-symbols-outlined text-sm">add</span>
@@ -148,7 +175,7 @@
             </button>
           </div>
 
-          <!-- Barcoded Table -->
+          <!-- Barcoded Table — unchanged -->
           <div class="rounded-xl overflow-hidden" style="border: 1px solid var(--color-border);">
             <table class="w-full text-left">
               <thead>
@@ -208,11 +235,7 @@
 
         <!-- ===== MISCELLANEOUS ITEMS TAB ===== -->
         <div v-if="activeTab === 'nonbarcoded'">
-
-          <!-- Input Row -->
           <div class="flex items-end gap-4 mb-6">
-
-            <!-- Type Dropdown -->
             <div>
               <label class="block text-[11px] font-bold uppercase tracking-widest mb-2" style="color: var(--color-text-muted);">
                 Type
@@ -225,7 +248,6 @@
               </div>
             </div>
 
-            <!-- Job Order: Lab No. scan field -->
             <div v-if="nonBarcodedInput.type === 'joborder'" class="flex-1">
               <label class="block text-[11px] font-bold uppercase tracking-widest mb-2" style="color: var(--color-text-muted);">
                 Lab No.
@@ -238,7 +260,7 @@
                        v-model="nonBarcodedInput.labNo"
                        type="text"
                        :placeholder="isJobOrderSearching ? 'Looking up job order...' : 'Scan or enter lab number...'"
-                       :disabled="isJobOrderSearching || isEndorsed"
+                       :disabled="isJobOrderSearching || isEndorsed || inputsBlocked"
                        class="w-full border-none outline-none rounded-xl py-4 pl-12 pr-4 text-sm transition-colors"
                        style="background-color: var(--color-surface-low); color: var(--color-text);"
                        @focus="e => e.target.style.backgroundColor = 'var(--color-surface-high)'"
@@ -247,7 +269,6 @@
               </div>
             </div>
 
-            <!-- Others: free-text description -->
             <div v-else class="flex-1">
               <label class="block text-[11px] font-bold uppercase tracking-widest mb-2" style="color: var(--color-text-muted);">
                 Item Description
@@ -255,7 +276,7 @@
               <input v-model="nonBarcodedInput.description"
                      type="text"
                      placeholder="e.g. Request Form, Slide, Documents..."
-                     :disabled="isEndorsed"
+                     :disabled="isEndorsed || inputsBlocked"
                      class="w-full border-none outline-none rounded-xl py-4 px-6 text-sm transition-colors"
                      style="background-color: var(--color-surface-low); color: var(--color-text);"
                      @focus="e => e.target.style.backgroundColor = 'var(--color-surface-high)'"
@@ -263,7 +284,6 @@
                      @keyup.enter="addOthersItem" />
             </div>
 
-            <!-- Quantity — only for Others -->
             <div v-if="nonBarcodedInput.type === 'others'" style="width: 120px;">
               <label class="block text-[11px] font-bold uppercase tracking-widest mb-2" style="color: var(--color-text-muted);">
                 Quantity
@@ -272,24 +292,22 @@
                      type="number"
                      min="1"
                      placeholder="1"
-                     :disabled="isEndorsed"
+                     :disabled="isEndorsed || inputsBlocked"
                      class="w-full border-none outline-none rounded-xl py-4 px-4 text-sm transition-colors text-center"
                      style="background-color: var(--color-surface-low); color: var(--color-text);"
                      @focus="e => e.target.style.backgroundColor = 'var(--color-surface-high)'"
                      @blur="e => e.target.style.backgroundColor = 'var(--color-surface-low)'" />
             </div>
 
-            <!-- Add button — only for Others (Job Order auto-adds on scan) -->
             <button v-if="nonBarcodedInput.type === 'others'"
                     class="px-6 py-4 rounded-xl text-xs font-bold uppercase tracking-widest transition-all active:scale-95 flex items-center gap-2"
                     style="background-color: var(--color-primary); color: #ffffff;"
-                    :disabled="isEndorsed"
+                    :disabled="isEndorsed || inputsBlocked"
                     @click="addOthersItem">
               <span class="material-symbols-outlined text-sm">add</span>
               Add to List
             </button>
 
-            <!-- Cancel / Clear -->
             <button class="px-6 py-4 rounded-xl text-xs font-bold uppercase tracking-widest transition-all active:scale-95 flex items-center gap-2"
                     style="background-color: var(--color-surface-low); color: var(--color-text-muted);"
                     @click="clearNonBarcodedInput(true)">
@@ -298,7 +316,6 @@
             </button>
           </div>
 
-          <!-- Job Order hint -->
           <div v-if="nonBarcodedInput.type === 'joborder'"
                class="mb-4 flex items-center gap-2 px-4 py-2 rounded-xl text-xs"
                style="background-color: var(--color-primary-soft); color: var(--color-primary);">
@@ -306,7 +323,7 @@
             Scan or enter a Lab No. and press Enter — patient name will be fetched automatically.
           </div>
 
-          <!-- Miscellaneous Table -->
+          <!-- Non-barcoded table — unchanged -->
           <div class="rounded-xl overflow-hidden" style="border: 1px solid var(--color-border);">
             <table class="w-full text-left">
               <thead>
@@ -334,7 +351,6 @@
                     style="border-top: 1px solid var(--color-surface-low);"
                     @mouseenter="e => e.currentTarget.style.backgroundColor = 'var(--color-surface-low)'"
                     @mouseleave="e => e.currentTarget.style.backgroundColor = 'transparent'">
-                  <!-- Type badge -->
                   <td class="px-6 py-4">
                     <span class="px-2 py-1 rounded-lg text-[10px] font-bold uppercase tracking-widest"
                           :style="item.type === 'joborder'
@@ -385,13 +401,14 @@
                   @click="clearAll">
             {{ isEndorsed ? 'New Endorsement' : 'Clear All' }}
           </button>
+
           <!-- Specimens tab: Proceed button -->
           <button v-if="activeTab === 'barcoded'"
                   class="px-8 py-3 rounded-xl text-xs font-bold uppercase tracking-widest transition-all active:scale-95 flex items-center gap-2 shadow-lg"
                   :disabled="barcodedItems.length === 0"
                   :style="barcodedItems.length === 0
-          ? 'background: var(--color-surface-low); color: var(--color-text-muted); cursor: not-allowed;'
-          : 'background: var(--color-primary-gradient); color: #ffffff; cursor: pointer;'"
+                    ? 'background: var(--color-surface-low); color: var(--color-text-muted); cursor: not-allowed;'
+                    : 'background: var(--color-primary-gradient); color: #ffffff; cursor: pointer;'"
                   @click="activeTab = 'nonbarcoded'">
             <span class="material-symbols-outlined text-sm">arrow_forward</span>
             Proceed
@@ -400,10 +417,10 @@
           <!-- Miscellaneous tab: Endorse button -->
           <button v-else
                   class="px-8 py-3 rounded-xl text-xs font-bold uppercase tracking-widest transition-all active:scale-95 flex items-center gap-2 shadow-lg"
-                  :disabled="isEndorsed || isEndorsing || (barcodedItems.length === 0 && nonBarcodedItems.length === 0)"
-                  :style="(isEndorsed || isEndorsing || (barcodedItems.length === 0 && nonBarcodedItems.length === 0))
-          ? 'background: var(--color-surface-low); color: var(--color-text-muted); cursor: not-allowed;'
-          : 'background: var(--color-primary-gradient); color: #ffffff; cursor: pointer;'"
+                  :disabled="endorseButtonDisabled"
+                  :style="endorseButtonDisabled
+                    ? 'background: var(--color-surface-low); color: var(--color-text-muted); cursor: not-allowed;'
+                    : 'background: var(--color-primary-gradient); color: #ffffff; cursor: pointer;'"
                   @click="handleEndorse">
             <span v-if="isEndorsing" class="material-symbols-outlined text-sm animate-spin">progress_activity</span>
             <span v-else-if="isEndorsed" class="material-symbols-outlined text-sm">check_circle</span>
@@ -447,13 +464,89 @@
   import RemarkModal from '@/components/common/RemarkModal.vue'
   import ConfirmModal from '@/components/common/ConfirmModal.vue'
   import DropdownSelect from '@/components/common/DropdownSelect.vue'
+  import PartnerCheckBanner from '@/components/common/PartnerCheckBanner.vue'
   import { useAuthStore } from '@/stores/authStore'
+  import { usePartnerCheck } from '@/composables/usePartnerCheck'
   import { transactionApi } from '@/api/transactionApi'
   import { tatApi } from '@/api/tatApi'
+  import endorsementSetupApi from '@/api/endorsementSetupApi'
   import NProgress from 'nprogress'
 
   const authStore = useAuthStore()
+  const outboundEnabled = ref(false)
 
+  // ── Partner check composable ──────────────────────────────────────────────
+  const {
+    checking: partnerChecking,
+    checked: partnerChecked,
+    blocked: partnerBlocked,
+    statusBanner,
+    latencyBadge,
+    checkResult,
+    runCheck,
+    reset: resetPartnerCheck
+  } = usePartnerCheck()
+
+  // ── Outbound branch state ─────────────────────────────────────────────────
+  const outboundBranches = ref([])
+  const outboundBranchCode = ref('') 
+
+  // Computed: options shape for DropdownSelect
+  const outboundBranchOptions = computed(() =>
+    outboundBranches.value.map(b => ({
+      value: b.code,
+      label: b.code
+    }))
+  )
+
+  // Derived selected branch object
+  const selectedOutboundBranch = computed(() =>
+    outboundBranches.value.find(b => b.code === outboundBranchCode.value) ?? null
+  )
+
+  const isOutbound = computed(() => !!outboundBranchCode.value)
+
+  const inputsBlocked = computed(() =>
+    isOutbound.value && (partnerChecking.value || partnerBlocked.value)
+  )
+
+  const endorseButtonDisabled = computed(() =>
+    isEndorsed.value ||
+    isEndorsing.value ||
+    (barcodedItems.value.length === 0 && nonBarcodedItems.value.length === 0) ||
+    inputsBlocked.value
+  )
+
+  // ── Load outbound partners on mount ───────────────────────────────────────
+  async function loadOutboundBranches() {
+    try {
+      const settings = await endorsementSetupApi.getSettings()
+      outboundEnabled.value = settings.isOutboundEnabled
+
+      if (!settings.isOutboundEnabled) {
+        outboundBranches.value = []
+        return
+      }
+
+      outboundBranches.value = await endorsementSetupApi.getActivePartners()
+    } catch {
+      outboundBranches.value = []
+    }
+  }
+
+  // ── Outbound branch selection handler ─────────────────────────────────────
+  async function onOutboundBranchSelect(branchCode) {
+    if (!branchCode) {
+      outboundBranchCode.value = ''
+      resetPartnerCheck()
+      return
+    }
+    // runCheck uses the computed selectedOutboundBranch
+    resetPartnerCheck()
+    await runCheck(branchCode, authStore.sectionCode)
+  }
+
+  // ── Existing state (unchanged) ────────────────────────────────────────────
   const activeTab = ref('barcoded')
   const specimenInput = ref(null)
   const jobOrderInput = ref(null)
@@ -467,16 +560,12 @@
     { key: 'nonbarcoded', label: '📋 Miscellaneous Items' },
   ]
 
-  // Barcoded items list
   const barcodedItems = ref([])
-
-  // Non-barcoded items list
   const nonBarcodedItems = ref([])
   const nonBarcodedInput = ref({ type: 'joborder', labNo: '', description: '', quantity: 1 })
   const isEndorsed = ref(false)
   const isEndorsing = ref(false)
 
-  // Remark modal
   const remarkModal = ref({
     visible: false,
     index: null,
@@ -488,6 +577,7 @@
 
   onMounted(async () => {
     await loadTatCycle()
+    await loadOutboundBranches()
     tatTick = setInterval(() => { nowTick.value = Date.now() }, 1000)
     tatRefreshInterval = setInterval(loadTatCycle, 5000)
   })
@@ -497,6 +587,7 @@
     clearInterval(tatRefreshInterval)
   })
 
+  // ── Remark modal (unchanged) ──────────────────────────────────────────────
   function openRequiredRemarkModal(template) {
     return new Promise((resolve) => {
       remarkModal.value = {
@@ -524,7 +615,6 @@
 
   function saveRemark(text) {
     const { index, type, required, resolve } = remarkModal.value
-
     if (required) {
       const lines = text.split('\n')
       const hasReason = lines.every(line => {
@@ -540,7 +630,6 @@
       resolve(text)
       return
     }
-
     if (type === 'barcoded') {
       barcodedItems.value[index].remarks = text
     } else {
@@ -552,20 +641,16 @@
   function cancelRemark() {
     const { required, resolve } = remarkModal.value
     remarkModal.value.visible = false
-    if (required && resolve) {
-      resolve(null)
-    }
+    if (required && resolve) resolve(null)
   }
 
-  // Alert modal
+  // ── Alert modal ───────────────────────────────────────────────────────────
   const alert = ref({ isVisible: false, type: 'error', title: '', message: '' })
-
   function showAlert(type, title, message) {
     alert.value = { isVisible: true, type, title, message }
   }
 
-  // ── Barcoded ──────────────────────────────────────────────────────────────
-
+  // ── Barcoded (unchanged) ──────────────────────────────────────────────────
   async function addBarcodedItem() {
     const input = specimenNoInput.value.trim().toUpperCase()
     if (!input) return
@@ -660,21 +745,14 @@
     }
   }
 
-  function removeBarcodedItem(index) {
-    barcodedItems.value.splice(index, 1)
-  }
+  function removeBarcodedItem(index) { barcodedItems.value.splice(index, 1) }
+  function clearBarcodedInput() { specimenNoInput.value = '' }
 
-  function clearBarcodedInput() {
-    specimenNoInput.value = ''
-  }
-
-  // ── Miscellaneous: Job Order ──────────────────────────────────────────────
-
+  // ── Miscellaneous (unchanged) ─────────────────────────────────────────────
   async function addJobOrderItem() {
     const input = nonBarcodedInput.value.labNo.trim().toUpperCase()
     if (!input) return
 
-    // Duplicate guard
     if (nonBarcodedItems.value.some(i => i.type === 'joborder' && i.labNo === input)) {
       showAlert('warning', 'Duplicate Job Order', `Lab No. ${input} has already been added to this batch.`)
       nonBarcodedInput.value.labNo = ''
@@ -686,7 +764,6 @@
 
     try {
       const data = await transactionApi.getJobOrder(input)
-
       nonBarcodedItems.value.unshift({
         type: 'joborder',
         labNo: data.data.labNo,
@@ -694,11 +771,8 @@
         quantity: 1,
         remarks: ''
       })
-
       nonBarcodedInput.value.labNo = ''
       await nextTick()
-
-
     } catch (err) {
       if (err.response?.status === 404) {
         showAlert('error', 'Not Found', err.response?.data?.message ?? `Job Order ${input} not found.`)
@@ -716,8 +790,6 @@
     }
   }
 
-  // ── Miscellaneous: Others ─────────────────────────────────────────────────
-
   function addOthersItem() {
     if (!nonBarcodedInput.value.description.trim()) {
       showAlert('warning', 'Missing Description', 'Please enter an item description.')
@@ -727,7 +799,6 @@
       showAlert('warning', 'Invalid Quantity', 'Please enter a valid quantity.')
       return
     }
-
     nonBarcodedItems.value.unshift({
       type: 'others',
       labNo: null,
@@ -735,23 +806,17 @@
       quantity: nonBarcodedInput.value.quantity,
       remarks: ''
     })
-
     clearNonBarcodedInput(true)
   }
 
-  function removeNonBarcodedItem(index) {
-    nonBarcodedItems.value.splice(index, 1)
-  }
+  function removeNonBarcodedItem(index) { nonBarcodedItems.value.splice(index, 1) }
 
-  // keepType: true = only clear fields, preserve selected type
-  //           false = reset triggered by type change, clear fields only
   function clearNonBarcodedInput(keepType = true) {
     const currentType = keepType ? nonBarcodedInput.value.type : nonBarcodedInput.value.type
     nonBarcodedInput.value = { type: currentType, labNo: '', description: '', quantity: 1 }
   }
 
   // ── Clear All ─────────────────────────────────────────────────────────────
-
   function clearAll() {
     barcodedItems.value = []
     nonBarcodedItems.value = []
@@ -759,13 +824,20 @@
     nonBarcodedInput.value = { type: 'joborder', labNo: '', description: '', quantity: 1 }
     batchNo.value = null
     isEndorsed.value = false
+    outboundBranchCode.value = ''   // ← reset string ref
+    resetPartnerCheck()
   }
 
   // ── Endorse ───────────────────────────────────────────────────────────────
-
   async function handleEndorse() {
     if (barcodedItems.value.length === 0 && nonBarcodedItems.value.length === 0) {
       showAlert('warning', 'No Items', 'Please add at least one item before endorsing.')
+      return
+    }
+
+    // Safety guard — re-check partner state before writing
+    if (isOutbound.value && partnerBlocked.value) {
+      showAlert('error', 'Cannot Endorse', 'Connection check failed. Please retry the connection check before endorsing.')
       return
     }
 
@@ -776,7 +848,12 @@
       const payload = {
         sectionCode: authStore.sectionCode,
         userID: authStore.userID,
-        procDestination: authStore.branchCode,
+        // If outbound, pass dest branch code + resolved processing section
+        // If local, procDestination is resolved server-side as before
+        destBranchCode: isOutbound.value ? selectedOutboundBranch.value?.code ?? null : null,
+        procDestination: isOutbound.value
+          ? checkResult.value?.remoteProcessingSectionCode ?? null
+          : authStore.branchCode,
         specimens: barcodedItems.value.map(i => ({
           specimenNo: i.specimenNo,
           labNo: i.labNo,
@@ -802,7 +879,11 @@
       batchNo.value = response.data.batchNo
       isEndorsed.value = true
 
-      showAlert('success', 'Endorsement Successful', `Batch ${batchNo.value} has been created.`)
+      const successMsg = isOutbound.value
+        ? `Batch ${batchNo.value} has been created and sent to ${selectedOutboundBranch.value.name}.`
+        : `Batch ${batchNo.value} has been created.`
+
+      showAlert('success', 'Endorsement Successful', successMsg)
       await loadTatCycle()
 
     } catch (err) {
@@ -819,8 +900,7 @@
     }
   }
 
-  // ── Confirm Prompt ────────────────────────────────────────────────────────
-
+  // ── Confirm Prompt (unchanged) ────────────────────────────────────────────
   const confirmPrompt = ref({ visible: false, title: '', message: '', resolve: null })
 
   function showConfirmPrompt(title, message) {
@@ -839,8 +919,7 @@
     confirmPrompt.value.resolve(false)
   }
 
-  // ── TAT Countdown ─────────────────────────────────────────────────────────
-
+  // ── TAT Countdown (unchanged) ─────────────────────────────────────────────
   const tatCycle = ref({ hasOpenCycle: false, cycleStart: null, thresholdMins: null, canAppeal: false })
   const nowTick = ref(Date.now())
   let tatTick = null

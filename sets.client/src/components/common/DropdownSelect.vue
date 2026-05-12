@@ -39,6 +39,7 @@
           ">
         <li v-for="option in options" :key="option.value">
           <button type="button"
+                  :disabled="disabled"
                   class="w-full flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs font-bold uppercase tracking-widest transition-all text-left"
                   :style="modelValue === option.value
                     ? 'background-color: var(--color-primary-soft); color: var(--color-primary);'
@@ -79,6 +80,10 @@
       type: String,
       default: null,
     },
+    disabled: {
+      type: Boolean,
+      default: false
+    }
   })
 
   const emit = defineEmits(['update:modelValue', 'change'])

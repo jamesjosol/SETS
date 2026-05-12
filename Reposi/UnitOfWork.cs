@@ -49,6 +49,7 @@ namespace Reposi
         public ContingencySpecimenRepo ContingencySpecimens { get; private set; }
         public AnnouncementRepo Announcement { get; private set; }
         public NotificationRepo Notifications { get; private set; }
+        public BranchSettingsRepo BranchSettings { get; }
 
         public UnitOfWork(AppDbContext context)
         {
@@ -89,6 +90,7 @@ namespace Reposi
             ContingencySpecimens = new ContingencySpecimenRepo(_context);
             Announcement = new AnnouncementRepo(context);
             Notifications = new NotificationRepo(context);
+            BranchSettings = new BranchSettingsRepo(context);
         }
 
         public void Dispose()

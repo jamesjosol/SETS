@@ -1,9 +1,10 @@
-﻿using System;
+﻿using Microsoft.Extensions.Configuration;
+using Reposi.Context;
+using SETSMiddleware.Tasks;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
-using Microsoft.Extensions.Configuration;
-using SETSMiddleware.Tasks;
 
 namespace SETSMiddleware
 {
@@ -59,14 +60,23 @@ namespace SETSMiddleware
             int releaseInterval = int.TryParse(_config["TaskIntervals:TestResultRelease"], out var v3) ? v3 : 60;
             int syncInterval = int.TryParse(_config["TaskIntervals:HclabReferenceSync"], out var v4) ? v4 : 43200;
             int tatResetInterval = int.TryParse(_config["TaskIntervals:EndorsementTatReset"], out var v5) ? v5 : 60;
+            int outboundSyncInterval = int.TryParse(_config["TaskIntervals:OutboundStatusSync"], out var v6) ? v6 : 60;
+            int hclabPostCheckInterval = int.TryParse(_config["TaskIntervals:OutboundHclabPostCheck"], out var v7) ? v7 : 120;
+
+            var dbFactory = new AppDbContextFactory();
+
 
             var hclabTask = new HclabRoutingTask(_branch, hclabInterval);
             var schedTask = new ScheduledSpecimenReleaseTask(_branch, schedInterval);
             var releaseTask = new TestResultReleaseTask(_branch, releaseInterval);
             var syncTask = new HclabReferenceSyncTask(_branch, syncInterval);
             var tatResetTask = new EndorsementTatResetTask(_branch, tatResetInterval);
+            var outboundSyncTask = new OutboundStatusSyncTask(
+                    _branch, outboundSyncInterval, dbFactory);
+            var hclabPostCheckTask = new OutboundHclabPostCheckTask(
+                    _branch, hclabPostCheckInterval, dbFactory);
 
-            foreach (var task in new TaskBase[] { hclabTask, schedTask, releaseTask, syncTask, tatResetTask })
+            foreach (var task in new TaskBase[] { hclabTask, schedTask, releaseTask, syncTask, tatResetTask, outboundSyncTask, hclabPostCheckTask })
             {
                 _tasks.Add(task);
                 _logs[task.TaskName] = new List<(string, TaskBase.LogLevel, DateTime)>();

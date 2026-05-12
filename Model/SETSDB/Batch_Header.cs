@@ -21,5 +21,8 @@ namespace Model.SETSDB
         public string? BagNo { get; set; }
         public bool IsOutsideTat { get; set; }
         public bool IsOutsideProcTat { get; set; }
+        public bool IsOutbound { get; set; }
+        public bool IsInbound { get; set; }
+        public string? DestBranchCode { get; set; }
     }
 }

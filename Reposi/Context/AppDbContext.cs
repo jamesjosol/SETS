@@ -43,6 +43,7 @@ namespace Reposi.Context
         public DbSet<Contingency_Specimen> ContingencySpecimens { get; set; }
         public DbSet<Announcement> Announcement { get; set; }
         public DbSet<Notification_Log> Notification_Log { get; set; }
+        public DbSet<Branch_Settings> Branch_Settings { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -256,6 +257,11 @@ namespace Reposi.Context
             // Notification_Log
             modelBuilder.Entity<Notification_Log>().ToTable("Notification_Log");
             modelBuilder.Entity<Notification_Log>().HasKey(n => n.NotifID);
+
+            // Branch_Settings
+            modelBuilder.Entity<Branch_Settings>().ToTable("Branch_Settings");
+            modelBuilder.Entity<Branch_Settings>().HasKey(a => a.Id);
+
         }
     }
 }

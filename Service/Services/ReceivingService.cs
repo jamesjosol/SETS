@@ -117,6 +117,37 @@ namespace Service.Services
                     context.Batch_Header.Update(header);
                     context.SaveChanges();
 
+                    // ── Inbound HCLAB post check ──────────────────────────────────────
+                    // For inbound batches, verify the lab order exists in THIS branch's
+                    // HCLAB before routing. If not posted yet, block the receive.
+                    if (header.IsInbound)
+                    {
+                        try
+                        {
+                            var hclabConn = HclabConnection.ConnectionString(_branch_raw);
+                            var tests = await HclabMaster.HCLABTransactions
+                                .GetOrd_Dtl(hclabConn, specimen.LabNo, specimen.SampleTypeCode);
+
+                            if (tests == null || !tests.Any())
+                            {
+              
+                                throw new Exception(
+                                    $"Transaction for specimen '{specimen.SpecimenNo}' (Lab No: {specimen.LabNo}) " +
+                                    $"has not been posted to this branch yet. ");
+                            }
+                        }
+                        catch (Exception ex) when (ex.Message.Contains("not been posted"))
+                        {
+                            throw; // re-throw our own message as-is
+                        }
+                        catch (Exception ex)
+                        {
+                            tx.Rollback();
+                            throw new Exception(
+                                $"Could not verify HCLAB transaction for specimen '{specimen.SpecimenNo}': {ex.Message}");
+                        }
+                    }
+
                     // Route specimen to lab sections
                     var routedSectionCode = await RouteToLabSections(context, specimen, request.UserID, now);
 

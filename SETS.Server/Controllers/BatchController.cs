@@ -42,25 +42,42 @@ namespace API.Controllers
 
                 using var master = new MasterService(branch);
 
-                var processingSection = master.Section
-                    .GetByBranch(branch)
-                    .FirstOrDefault(s => s.Category == "2" && s.Active);
+                var isOutbound = !string.IsNullOrEmpty(request.DestBranchCode) &&
+                                 request.DestBranchCode != branch;
 
-                if (processingSection == null)
-                    return StatusCode(500, new { message = "No active Processing section found for this branch." });
+                if (isOutbound)
+                {
+                    // Outbound — ProcDestination must be supplied by client
+                    // (resolved from checkResult.remoteProcessingSectionCode)
+                    if (string.IsNullOrEmpty(request.ProcDestination))
+                        return BadRequest(new { message = "Processing destination is required for outbound endorsement." });
+                }
+                else
+                {
+                    // Local — resolve processing section server-side as before
+                    var processingSection = master.Section
+                        .GetByBranch(branch)
+                        .FirstOrDefault(s => s.Category == "2" && s.Active);
 
-                request.ProcDestination = processingSection.Code;
+                    if (processingSection == null)
+                        return StatusCode(500, new { message = "No active Processing section found for this branch." });
+
+                    request.ProcDestination = processingSection.Code;
+                    request.DestBranchCode = null; // ensure clean
+                }
 
                 var result = master.Batch.Endorse(request);
 
-                // ── Notification: BATCH_ENDORSED → all receivers ──────────────
+                // ── Notification ──────────────────────────────────────────────────
                 try
                 {
                     var notif = master.Notification.Create(new CreateNotificationRequest
                     {
                         NotifType = NotifType.BatchEndorsed,
                         Title = "New Batch Endorsed",
-                        Message = $"Batch {result.BatchNo} endorsed from {result.LocationName}.",
+                        Message = isOutbound
+                            ? $"Batch {result.BatchNo} endorsed from {result.LocationName} → {request.DestBranchCode}."
+                            : $"Batch {result.BatchNo} endorsed from {result.LocationName}.",
                         TargetCategory = "2",
                         ReferenceID = result.BatchNo
                     });
@@ -83,7 +100,12 @@ namespace API.Controllers
                     Console.WriteLine($"[NOTIF] BATCH_ENDORSED failed for {result.BatchNo}: {ex.Message}");
                 }
 
-                return Ok(new { success = true, batchNo = result.BatchNo });
+                return Ok(new
+                {
+                    success = true,
+                    batchNo = result.BatchNo,
+                    isOutbound
+                });
             }
             catch (Exception ex)
             {

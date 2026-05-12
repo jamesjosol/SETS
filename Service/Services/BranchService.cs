@@ -97,5 +97,104 @@ namespace Service.Services
             }
             catch { throw; }
         }
+
+        // ── External partner methods ───────────────────────────────────────
+
+        public List<Branch_Master> GetExternal()
+        {
+            try
+            {
+                using var context = _factory.CreateContext(_branch);
+                using var unit = new UnitOfWork(context);
+                return unit.Branches.GetExternal();
+            }
+            catch { throw; }
+        }
+
+        public List<Branch_Master> GetActiveExternal()
+        {
+            try
+            {
+                using var context = _factory.CreateContext(_branch);
+                using var unit = new UnitOfWork(context);
+                return unit.Branches.GetActiveExternal();
+            }
+            catch { throw; }
+        }
+
+        public List<Branch_Master> GetEligibleForPartner(string localBranchCode)
+        {
+            try
+            {
+                using var context = _factory.CreateContext(_branch);
+                using var unit = new UnitOfWork(context);
+                return unit.Branches.GetEligibleForPartner()
+                    .Where(b => b.Code != localBranchCode)
+                    .ToList();
+            }
+            catch { throw; }
+        }
+
+        public void RegisterAsExternal(string code, string updatedBy)
+        {
+            try
+            {
+                using var context = _factory.CreateContext(_branch);
+                using var unit = new UnitOfWork(context);
+                var branch = unit.Branches.GetByCode(code)
+                    ?? throw new Exception($"Branch '{code}' not found.");
+
+                if (branch.IsExternal)
+                    throw new Exception($"Branch '{code}' is already registered as an external partner.");
+
+                branch.IsExternal = true;
+                branch.Active = true;
+                branch.Updated = DateTime.Now;
+                branch.UpdatedBy = updatedBy;
+                unit.Branches.Update(branch);
+            }
+            catch { throw; }
+        }
+
+        public void ToggleExternal(string code, string updatedBy)
+        {
+            try
+            {
+                using var context = _factory.CreateContext(_branch);
+                using var unit = new UnitOfWork(context);
+                var branch = unit.Branches.GetByCode(code)
+                    ?? throw new Exception($"Branch '{code}' not found.");
+
+                if (!branch.IsExternal)
+                    throw new Exception($"Branch '{code}' is not an external partner.");
+
+                branch.Active = !branch.Active;
+                branch.Updated = DateTime.Now;
+                branch.UpdatedBy = updatedBy;
+                unit.Branches.Update(branch);
+            }
+            catch { throw; }
+        }
+
+        public void UnregisterExternal(string code, string updatedBy)
+        {
+            try
+            {
+                using var context = _factory.CreateContext(_branch);
+                using var unit = new UnitOfWork(context);
+                var branch = unit.Branches.GetByCode(code)
+                    ?? throw new Exception($"Branch '{code}' not found.");
+
+                if (!branch.IsExternal)
+                    throw new Exception($"Branch '{code}' is not an external partner.");
+
+                branch.IsExternal = false;
+                branch.Active = true;
+                branch.Updated = DateTime.Now;
+                branch.UpdatedBy = updatedBy;
+                unit.Branches.Update(branch);
+            }
+            catch { throw; }
+        }
     }
 }

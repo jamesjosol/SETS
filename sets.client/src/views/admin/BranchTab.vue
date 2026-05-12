@@ -1,5 +1,6 @@
+<!-- sets.client/src/views/admin/BranchTab.vue -->
 <template>
-  <!-- Notice Banner -->
+  <!-- Notice Banner — unchanged -->
   <div class="flex items-start gap-3 px-5 py-4 rounded-2xl mb-4"
        style="background-color: rgba(234,179,8,0.08); border: 1.5px solid rgba(234,179,8,0.35);">
     <span class="material-symbols-outlined text-base flex-shrink-0 mt-0.5" style="color: #ca8a04;">warning</span>
@@ -16,7 +17,7 @@
 
   <div class="rounded-2xl overflow-hidden"
        style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow)">
-    <!-- Header -->
+    <!-- Header — unchanged -->
     <div class="px-8 py-5 flex items-center gap-4" style="border-bottom: 1px solid var(--color-border)">
       <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
            style="background-color: var(--color-primary-soft)">
@@ -30,7 +31,7 @@
 
     <div class="px-8 py-6 space-y-8">
 
-      <!-- Add New Branch -->
+      <!-- Add New Branch — unchanged -->
       <div>
         <p class="text-[10px] font-bold uppercase tracking-widest mb-3" style="color: var(--color-text-muted)">Add New Branch</p>
         <div class="flex items-start gap-3">
@@ -46,17 +47,13 @@
                    @blur="(e) => (e.target.style.borderColor = 'var(--color-border)')"
                    @keyup.enter="addBranch" />
 
-            <!-- Config check feedback -->
             <div v-if="newCode.length >= 3" class="mt-2 flex items-center gap-3">
-              <!-- Spinner while checking -->
               <template v-if="configChecking">
                 <span class="flex items-center gap-1 text-[10px] font-bold" style="color: var(--color-text-muted)">
                   <span class="material-symbols-outlined text-sm animate-spin">progress_activity</span>
                   Checking configs...
                 </span>
               </template>
-
-              <!-- Results -->
               <template v-else-if="configResult">
                 <span class="flex items-center gap-1 text-[10px] font-bold"
                       :style="configResult.inSets ? 'color: #059669' : 'color: #f59e0b'">
@@ -93,86 +90,167 @@
       <div>
         <p class="text-[10px] font-bold uppercase tracking-widest mb-3" style="color: var(--color-text-muted)">Configured Branches</p>
 
-        <!-- Loading -->
         <div v-if="loading" class="flex items-center justify-center py-12 gap-3" style="color: var(--color-text-muted)">
           <span class="material-symbols-outlined animate-spin text-xl">progress_activity</span>
           <span class="text-sm font-medium">Loading branches...</span>
         </div>
 
-        <!-- Empty -->
         <div v-else-if="!branches.length" class="py-10 flex flex-col items-center gap-2" style="color: var(--color-text-muted)">
           <span class="material-symbols-outlined text-3xl">location_city</span>
           <p class="text-sm font-medium">No branches configured yet.</p>
         </div>
 
-        <!-- Table -->
-        <div v-else class="rounded-xl overflow-hidden" style="border: 1px solid var(--color-border)">
-          <table class="w-full text-sm">
-            <thead>
-              <tr style="border-bottom: 1px solid var(--color-border)">
-                <th class="text-left px-5 py-3 text-[10px] font-bold uppercase tracking-widest"
-                    style="background-color: var(--color-surface-low); color: var(--color-text-muted)">Branch</th>
-                <th class="text-left px-5 py-3 text-[10px] font-bold uppercase tracking-widest"
-                    style="background-color: var(--color-surface-low); color: var(--color-text-muted)">Config Status</th>
-                <th class="text-left px-5 py-3 text-[10px] font-bold uppercase tracking-widest"
-                    style="background-color: var(--color-surface-low); color: var(--color-text-muted)">Added By</th>
-                <th class="px-5 py-3" style="background-color: var(--color-surface-low)"></th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="(branch, idx) in branches" :key="branch.code"
-                  :style="idx < branches.length - 1 ? 'border-bottom: 1px solid var(--color-border);' : ''">
+        <template v-else>
 
-                <!-- Branch code -->
-                <td class="px-5 py-4">
-                  <span class="font-mono font-extrabold text-sm" style="color: var(--color-primary)">{{ branch.code }}</span>
-                </td>
+          <!-- ── Local branches table — fully editable ── -->
+          <div class="rounded-xl overflow-hidden" style="border: 1px solid var(--color-border)">
+            <table class="w-full text-sm">
+              <thead>
+                <tr style="border-bottom: 1px solid var(--color-border)">
+                  <th class="text-left px-5 py-3 text-[10px] font-bold uppercase tracking-widest"
+                      style="background-color: var(--color-surface-low); color: var(--color-text-muted)">Branch</th>
+                  <th class="text-left px-5 py-3 text-[10px] font-bold uppercase tracking-widest"
+                      style="background-color: var(--color-surface-low); color: var(--color-text-muted)">Config Status</th>
+                  <th class="text-left px-5 py-3 text-[10px] font-bold uppercase tracking-widest"
+                      style="background-color: var(--color-surface-low); color: var(--color-text-muted)">Added By</th>
+                  <th class="px-5 py-3" style="background-color: var(--color-surface-low)"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(branch, idx) in localBranches" :key="branch.code"
+                    :style="idx < localBranches.length - 1 ? 'border-bottom: 1px solid var(--color-border);' : ''">
 
-                <!-- Config status badges -->
-                <td class="px-5 py-4">
-                  <div class="flex items-center gap-2">
-                    <span class="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold"
-                          :style="branch.inSets
-                            ? 'background-color: rgba(5,150,105,0.1); color: #059669;'
-                            : 'background-color: rgba(245,158,11,0.1); color: #f59e0b;'">
-                      <span class="material-symbols-outlined text-xs">{{ branch.inSets ? 'check_circle' : 'warning' }}</span>
-                      appsettings
-                    </span>
-                    <span class="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold"
-                          :style="branch.inHclab
-                            ? 'background-color: rgba(5,150,105,0.1); color: #059669;'
-                            : 'background-color: rgba(245,158,11,0.1); color: #f59e0b;'">
-                      <span class="material-symbols-outlined text-xs">{{ branch.inHclab ? 'check_circle' : 'warning' }}</span>
-                      HCLAB
-                    </span>
-                  </div>
-                </td>
+                  <td class="px-5 py-4">
+                    <span class="font-mono font-extrabold text-sm" style="color: var(--color-primary)">{{ branch.code }}</span>
+                  </td>
 
-                <!-- Added by -->
-                <td class="px-5 py-4">
-                  <p class="text-xs font-bold" style="color: var(--color-text)">{{ branch.createdBy }}</p>
-                  <p class="text-[10px] mt-0.5" style="color: var(--color-text-muted)">
-                    {{ new Date(branch.created).toLocaleDateString() }}
-                  </p>
-                </td>
+                  <td class="px-5 py-4">
+                    <div class="flex items-center gap-2">
+                      <span class="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold"
+                            :style="branch.inSets
+                              ? 'background-color: rgba(5,150,105,0.1); color: #059669;'
+                              : 'background-color: rgba(245,158,11,0.1); color: #f59e0b;'">
+                        <span class="material-symbols-outlined text-xs">{{ branch.inSets ? 'check_circle' : 'warning' }}</span>
+                        appsettings
+                      </span>
+                      <span class="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold"
+                            :style="branch.inHclab
+                              ? 'background-color: rgba(5,150,105,0.1); color: #059669;'
+                              : 'background-color: rgba(245,158,11,0.1); color: #f59e0b;'">
+                        <span class="material-symbols-outlined text-xs">{{ branch.inHclab ? 'check_circle' : 'warning' }}</span>
+                        HCLAB
+                      </span>
+                    </div>
+                  </td>
 
-                <!-- Status toggle -->
-                <td class="px-5 py-4">
-                  <button class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all"
-                          :style="branch.active
-                            ? 'background-color: var(--color-primary-soft); color: var(--color-primary);'
-                            : 'background-color: var(--color-surface-low); color: var(--color-text-muted); border: 1px solid var(--color-border);'"
-                          @click="toggleBranch(branch)">
-                    <span class="material-symbols-outlined text-xs">{{ branch.active ? 'check_circle' : 'cancel' }}</span>
-                    {{ branch.active ? 'Active' : 'Inactive' }}
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+                  <td class="px-5 py-4">
+                    <p class="text-xs font-bold" style="color: var(--color-text)">{{ branch.createdBy }}</p>
+                    <p class="text-[10px] mt-0.5" style="color: var(--color-text-muted)">
+                      {{ new Date(branch.created).toLocaleDateString() }}
+                    </p>
+                  </td>
 
-        <!-- Config legend -->
+                  <td class="px-5 py-4">
+                    <button class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all"
+                            :style="branch.active
+                              ? 'background-color: var(--color-primary-soft); color: var(--color-primary);'
+                              : 'background-color: var(--color-surface-low); color: var(--color-text-muted); border: 1px solid var(--color-border);'"
+                            @click="toggleBranch(branch)">
+                      <span class="material-symbols-outlined text-xs">{{ branch.active ? 'check_circle' : 'cancel' }}</span>
+                      {{ branch.active ? 'Active' : 'Inactive' }}
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- ── External partners section — read-only ── -->
+          <template v-if="externalBranches.length > 0">
+
+            <!-- Divider -->
+            <div class="flex items-center gap-3 mt-6 mb-3">
+              <div class="flex-1 h-px" style="background-color: var(--color-border)"></div>
+              <p class="text-[10px] font-bold uppercase tracking-widest flex-shrink-0 flex items-center gap-1.5"
+                 style="color: var(--color-text-muted)">
+                <span class="material-symbols-outlined" style="font-size: 13px">device_hub</span>
+                External partners — managed in Endorsement Setup
+              </p>
+              <div class="flex-1 h-px" style="background-color: var(--color-border)"></div>
+            </div>
+
+            <div class="rounded-xl overflow-hidden" style="border: 1px dashed var(--color-border)">
+              <table class="w-full text-sm opacity-70">
+                <thead>
+                  <tr style="border-bottom: 1px solid var(--color-border)">
+                    <th class="text-left px-5 py-3 text-[10px] font-bold uppercase tracking-widest"
+                        style="background-color: var(--color-surface-low); color: var(--color-text-muted)">Branch</th>
+                    <th class="text-left px-5 py-3 text-[10px] font-bold uppercase tracking-widest"
+                        style="background-color: var(--color-surface-low); color: var(--color-text-muted)">Config Status</th>
+                    <th class="text-left px-5 py-3 text-[10px] font-bold uppercase tracking-widest"
+                        style="background-color: var(--color-surface-low); color: var(--color-text-muted)">Added By</th>
+                    <th class="px-5 py-3" style="background-color: var(--color-surface-low)"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="(branch, idx) in externalBranches" :key="branch.code"
+                      :style="idx < externalBranches.length - 1 ? 'border-bottom: 1px solid var(--color-border);' : ''">
+
+                    <td class="px-5 py-4">
+                      <div class="flex items-center gap-2">
+                        <span class="font-mono font-extrabold text-sm" style="color: var(--color-text-muted)">{{ branch.code }}</span>
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                              style="background-color: var(--color-surface-low); color: var(--color-text-muted); border: 1px solid var(--color-border)">
+                          External partner
+                        </span>
+                      </div>
+                    </td>
+
+                    <td class="px-5 py-4">
+                      <div class="flex items-center gap-2">
+                        <span class="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold"
+                              :style="branch.inSets
+                                ? 'background-color: rgba(5,150,105,0.1); color: #059669;'
+                                : 'background-color: rgba(245,158,11,0.1); color: #f59e0b;'">
+                          <span class="material-symbols-outlined text-xs">{{ branch.inSets ? 'check_circle' : 'warning' }}</span>
+                          appsettings
+                        </span>
+                        <span class="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold"
+                              :style="branch.inHclab
+                                ? 'background-color: rgba(5,150,105,0.1); color: #059669;'
+                                : 'background-color: rgba(245,158,11,0.1); color: #f59e0b;'">
+                          <span class="material-symbols-outlined text-xs">{{ branch.inHclab ? 'check_circle' : 'warning' }}</span>
+                          HCLAB
+                        </span>
+                      </div>
+                    </td>
+
+                    <td class="px-5 py-4">
+                      <p class="text-xs font-bold" style="color: var(--color-text-muted)">{{ branch.createdBy }}</p>
+                      <p class="text-[10px] mt-0.5" style="color: var(--color-text-muted)">
+                        {{ new Date(branch.created).toLocaleDateString() }}
+                      </p>
+                    </td>
+
+                    <!-- Read-only status badge, no toggle button -->
+                    <td class="px-5 py-4">
+                      <span class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest"
+                            :style="branch.active
+                              ? 'background-color: rgba(5,150,105,0.1); color: #059669;'
+                              : 'background-color: var(--color-surface-low); color: var(--color-text-muted); border: 1px solid var(--color-border);'">
+                        <span class="material-symbols-outlined text-xs">{{ branch.active ? 'check_circle' : 'cancel' }}</span>
+                        {{ branch.active ? 'Active' : 'Inactive' }}
+                      </span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </template>
+
+        </template>
+
+        <!-- Config legend — unchanged -->
         <div v-if="branches.length" class="mt-4">
           <p class="text-[10px]" style="color: var(--color-text-muted)">
             <span class="font-bold" style="color: #f59e0b">⚠ Warning</span>
@@ -187,7 +265,7 @@
 </template>
 
 <script setup>
-  import { ref, onMounted } from 'vue'
+  import { ref, computed, onMounted } from 'vue'
   import { branchApi } from '@/api/branchApi'
 
   const emit = defineEmits(['toast'])
@@ -199,8 +277,17 @@
   const addError = ref('')
   const newCode = ref('')
   const configChecking = ref(false)
-  const configResult = ref(null)   // { inSets, inHclab } | null
+  const configResult = ref(null)
   let configCheckTimer = null
+
+  // ── Split local vs external ────────────────────────────────────────────────
+  const localBranches = computed(() =>
+    branches.value.filter(b => !b.isExternal)
+  )
+
+  const externalBranches = computed(() =>
+    branches.value.filter(b => b.isExternal)
+  )
 
   // ── Data loading ───────────────────────────────────────────────────────────
   async function load() {
@@ -216,7 +303,7 @@
 
   onMounted(() => load())
 
-  // ── Input handler — debounced live config check ────────────────────────────
+  // ── Input handler — unchanged ──────────────────────────────────────────────
   function onNewCodeInput(e) {
     newCode.value = e.target.value.toUpperCase()
     addError.value = ''

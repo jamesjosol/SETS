@@ -31,6 +31,7 @@ namespace Service
         public AnnouncementService Announcement { get; private set; }
         public NotificationService Notification { get; private set; }
         public ReportService Report { get; set; }
+        public BranchSettingsService BranchSettings { get; private set; }
 
         private readonly AppDbContextFactory _factory;
         private readonly string _branch;
@@ -69,6 +70,7 @@ namespace Service
             Announcement = new AnnouncementService(_factory, _branch);
             Notification = new NotificationService(_factory, _branch);
             Report = new ReportService(_factory, _branch);
+            BranchSettings = new BranchSettingsService(_factory, _branch);
         }
 
         public void Dispose()
