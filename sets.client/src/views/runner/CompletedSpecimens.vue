@@ -56,7 +56,7 @@
       </div>
 
       <!-- Table Card -->
-      <div class="rounded-2xl overflow-hidden" style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
+      <div ref="tableCardRef" class="rounded-2xl overflow-hidden" style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
 
         <!-- Loading skeleton -->
         <div v-if="loading" class="p-6 flex flex-col gap-3">
@@ -65,7 +65,7 @@
         </div>
 
         <!-- Empty state -->
-        <div v-else-if="!filteredSpecimens.length" class="p-16 flex flex-col items-center gap-3">
+        <div v-else-if="!filteredSpecimens.length" ref="emptyRef" class="p-16 flex flex-col items-center gap-3">
           <span class="material-symbols-outlined text-5xl" style="color: var(--color-text-muted);">task_alt</span>
           <p class="text-sm font-bold" style="color: var(--color-text);">No completed specimens</p>
           <p class="text-xs" style="color: var(--color-text-muted);">No specimens have been completed in this date range.</p>
@@ -85,11 +85,12 @@
                 <th class="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Completed By</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody ref="tableBodyRef">
               <template v-for="item in paginatedSpecimens" :key="item.headerId">
 
                 <!-- Main row -->
                 <tr class="transition-colors cursor-pointer"
+                    :data-specimenno="item.specimenNo"
                     :style="expandedId === item.headerId
                       ? 'background-color: var(--color-primary-soft);'
                       : 'background-color: transparent;'"
@@ -177,7 +178,7 @@
             <AppPagination :total="filteredSpecimens.length"
                            :page-size="pageSize"
                            :current-page="currentPage"
-                           @page-change="p => { currentPage = p; expandedId = null }" />
+                           @page-change="p => { currentPage = p; expandedId = null; animateTableRows() }" />
           </div>
         </div>
       </div>
@@ -215,6 +216,7 @@
 
       <!-- Empty -->
       <div v-else-if="!adminFilteredGroups.length"
+           ref="adminEmptyRef"
            class="rounded-2xl p-16 flex flex-col items-center gap-3"
            style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
         <span class="material-symbols-outlined text-5xl" style="color: var(--color-text-muted);">task_alt</span>
@@ -223,13 +225,14 @@
       </div>
 
       <!-- Grouped tables -->
-      <div v-else class="flex flex-col gap-5">
+      <div v-else ref="adminGroupsRef" class="flex flex-col gap-5">
         <div v-for="group in adminFilteredGroups" :key="group.sectionCode"
-             class="rounded-2xl overflow-hidden"
+             class="admin-group-card rounded-2xl overflow-hidden"
              style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
 
           <!-- Section header -->
           <div class="px-6 py-3 flex items-center gap-3 cursor-pointer select-none"
+               :data-sectioncode="group.sectionCode"
                style="background-color: var(--color-primary-soft); border-bottom: 1.5px solid var(--color-border);"
                @click="toggleCollapse(group.sectionCode)">
             <span class="material-symbols-outlined text-base" style="color: var(--color-primary);">science</span>
@@ -266,6 +269,7 @@
 
                     <!-- Main row -->
                     <tr class="transition-colors cursor-pointer"
+                        :data-specimenno="item.specimenNo"
                         :style="adminExpandedKey === `${group.sectionCode}-${item.headerId}`
                           ? 'background-color: var(--color-primary-soft);'
                           : 'background-color: transparent;'"
@@ -367,7 +371,9 @@
 </template>
 
 <script setup>
-  import { ref, computed, onMounted, watch } from 'vue'
+  import { ref, computed, onMounted, nextTick, watch } from 'vue'
+  import { useRoute, useRouter } from 'vue-router'
+  import { gsap } from 'gsap'
   import AppLayout from '@/components/layout/AppLayout.vue'
   import AlertModal from '@/components/common/AlertModal.vue'
   import AppPagination from '@/components/common/AppPagination.vue'
@@ -376,6 +382,8 @@
   import { runnerApi } from '@/api/runnerApi'
 
   const authStore = useAuthStore()
+  const route = useRoute()
+  const router = useRouter()
 
   // ── Alert ─────────────────────────────────────────────────────────────────────
 
@@ -484,6 +492,152 @@
   }
 
   // ══════════════════════════════════════════════════════════════════════════
+  // GSAP — REFS
+  // ══════════════════════════════════════════════════════════════════════════
+
+  const tableCardRef = ref(null)
+  const tableBodyRef = ref(null)
+  const emptyRef = ref(null)
+  const adminGroupsRef = ref(null)
+  const adminEmptyRef = ref(null)
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // GSAP — ANIMATION FUNCTIONS
+  // ══════════════════════════════════════════════════════════════════════════
+
+  async function animateTableEntrance() {
+    await nextTick()
+    if (!tableCardRef.value) return
+    gsap.set(tableCardRef.value, { opacity: 0, y: 16 })
+    gsap.to(tableCardRef.value, { opacity: 1, y: 0, duration: 0.28, ease: 'power2.out' })
+    if (tableBodyRef.value) {
+      const rows = tableBodyRef.value.querySelectorAll('tr')
+      if (rows.length) {
+        gsap.set(rows, { opacity: 0, x: -8 })
+        gsap.to(rows, {
+          opacity: 1, x: 0, duration: 0.18, stagger: 0.025,
+          ease: 'power1.out', delay: 0.14, clearProps: 'opacity,x',
+        })
+      }
+    }
+  }
+
+  // Re-animate rows on pagination change (no card slide, just rows)
+  async function animateTableRows() {
+    await nextTick()
+    if (!tableBodyRef.value) return
+    const rows = tableBodyRef.value.querySelectorAll('tr')
+    if (!rows.length) return
+    gsap.set(rows, { opacity: 0, x: -6 })
+    gsap.to(rows, {
+      opacity: 1, x: 0, duration: 0.18, stagger: 0.025,
+      ease: 'power1.out', clearProps: 'opacity,x',
+    })
+  }
+
+  async function animateEmptyState(emptyRefArg) {
+    await nextTick()
+    if (!emptyRefArg.value) return
+    gsap.set(emptyRefArg.value, { scale: 0.92, opacity: 0 })
+    gsap.to(emptyRefArg.value, { scale: 1, opacity: 1, duration: 0.32, ease: 'back.out(1.5)', clearProps: 'scale,opacity' })
+  }
+
+  async function animateAdminGroups() {
+    await nextTick()
+    if (!adminGroupsRef.value) return
+    const cards = adminGroupsRef.value.querySelectorAll('.admin-group-card')
+    if (!cards.length) return
+    gsap.set(cards, { opacity: 0, y: 20 })
+    gsap.to(cards, { opacity: 1, y: 0, duration: 0.3, stagger: 0.07, ease: 'power2.out' })
+    cards.forEach((card, i) => {
+      const rows = card.querySelectorAll('tbody tr')
+      if (!rows.length) return
+      gsap.set(rows, { opacity: 0, x: -6 })
+      gsap.to(rows, {
+        opacity: 1, x: 0, duration: 0.15, stagger: 0.02,
+        ease: 'power1.out', delay: 0.18 + i * 0.05, clearProps: 'opacity,x',
+      })
+    })
+  }
+
+  async function runHighlight() {
+    const specimenNo = route.query.highlight
+    if (!specimenNo) return
+
+    // For paginated regular view: find which page holds this specimen and jump to it
+    if (!authStore.isAdmin) {
+      const idx = filteredSpecimens.value.findIndex(s => s.specimenNo === specimenNo)
+      if (idx !== -1) {
+        const targetPage = Math.floor(idx / pageSize) + 1
+        if (currentPage.value !== targetPage) {
+          currentPage.value = targetPage
+          await nextTick()
+        }
+      }
+    }
+
+    await nextTick()
+    const row = document.querySelector(`tr[data-specimenno="${specimenNo}"]`)
+    if (!row) return
+
+    // For admin: un-collapse the section containing this row if needed
+    const groupCard = row.closest('.admin-group-card')
+    if (groupCard) {
+      const headerEl = groupCard.querySelector('[data-sectioncode]')
+      if (headerEl) {
+        const sc = headerEl.dataset.sectioncode
+        if (collapsedSections.value.has(sc)) {
+          const next = new Set(collapsedSections.value)
+          next.delete(sc)
+          collapsedSections.value = next
+          await nextTick()
+        }
+      }
+    }
+
+    row.scrollIntoView({ behavior: 'smooth', block: 'center' })
+
+    // Double pulse
+    await new Promise(r => setTimeout(r, 350))
+    gsap.set(row, { backgroundColor: 'transparent' })
+    gsap.to(row, {
+      backgroundColor: 'var(--color-primary-soft)',
+      duration: 0.5,
+      ease: 'sine.inOut',
+      yoyo: true,
+      repeat: 3,
+      repeatDelay: 0.12,
+      onComplete: () => gsap.set(row, { clearProps: 'backgroundColor' }),
+    })
+
+    router.replace({ query: {} })
+  }
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // GSAP — WATCHERS
+  // ══════════════════════════════════════════════════════════════════════════
+
+  watch(loading, async (isLoading) => {
+    if (isLoading) return
+    if (filteredSpecimens.value.length) {
+      await animateTableEntrance()
+      await runHighlight()
+    } else {
+      await animateEmptyState(emptyRef)
+    }
+  })
+
+  watch(adminLoading, async (isLoading) => {
+    if (isLoading) return
+    if (adminFilteredGroups.value.length) {
+      await animateAdminGroups()
+      await runHighlight()
+    } else {
+      await animateEmptyState(adminEmptyRef)
+    }
+  })
+
+  // ══════════════════════════════════════════════════════════════════════════
   // LOAD
   // ══════════════════════════════════════════════════════════════════════════
 
@@ -495,8 +649,6 @@
       try {
         const data = await runnerApi.getCompletedSpecimens(dateFrom.value, dateTo.value)
         specimens.value = Array.isArray(data) ? data : []
-
-        console.log(specimens.value)
       } catch (e) {
         if (e?.response?.status === 401) {
           showAlert('error', 'Session Expired', 'Your session has expired. Please log in again.')

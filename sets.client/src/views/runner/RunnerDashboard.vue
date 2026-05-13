@@ -17,7 +17,7 @@
     <template v-if="!authStore.isAdmin">
 
       <!-- KPI Cards -->
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-5 mb-8">
+      <div ref="kpiCardsRef" class="grid grid-cols-2 md:grid-cols-4 gap-5 mb-8">
 
         <router-link to="/runner/pending" class="block">
           <div class="rounded-2xl p-6 relative overflow-hidden group cursor-pointer transition-all hover:-translate-y-0.5"
@@ -30,7 +30,7 @@
             </div>
             <h3 class="text-4xl font-extrabold mb-1" style="color: var(--color-text);">
               <span v-if="summaryLoading" class="block h-9 w-16 rounded-lg animate-pulse" style="background-color: var(--color-surface-low);"></span>
-              <span v-else>{{ summary.pending }}</span>
+              <span v-else>{{ displayPending }}</span>
             </h3>
             <p class="text-xs font-bold uppercase tracking-tighter" style="color: var(--color-text-muted);">Pending</p>
             <div class="absolute bottom-0 left-0 w-full h-0.5 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-500" style="background-color: var(--color-primary);"></div>
@@ -48,7 +48,7 @@
             </div>
             <h3 class="text-4xl font-extrabold mb-1" style="color: var(--color-info, #4a626d);">
               <span v-if="summaryLoading" class="block h-9 w-16 rounded-lg animate-pulse" style="background-color: var(--color-surface-low);"></span>
-              <span v-else>{{ summary.scheduled }}</span>
+              <span v-else>{{ displayScheduled }}</span>
             </h3>
             <p class="text-xs font-bold uppercase tracking-tighter" style="color: var(--color-text-muted);">Scheduled</p>
             <div class="absolute bottom-0 left-0 w-full h-0.5 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-500" style="background-color: var(--color-info, #4a626d);"></div>
@@ -66,7 +66,7 @@
             </div>
             <h3 class="text-4xl font-extrabold mb-1" style="color: var(--color-warning);">
               <span v-if="summaryLoading" class="block h-9 w-16 rounded-lg animate-pulse" style="background-color: var(--color-surface-low);"></span>
-              <span v-else>{{ summary.running }}</span>
+              <span v-else>{{ displayRunning }}</span>
             </h3>
             <p class="text-xs font-bold uppercase tracking-tighter" style="color: var(--color-text-muted);">Running</p>
             <div class="absolute bottom-0 left-0 w-full h-0.5 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-500" style="background-color: var(--color-warning);"></div>
@@ -84,7 +84,7 @@
             </div>
             <h3 class="text-4xl font-extrabold mb-1" style="color: var(--color-success, #16a34a);">
               <span v-if="summaryLoading" class="block h-9 w-16 rounded-lg animate-pulse" style="background-color: var(--color-surface-low);"></span>
-              <span v-else>{{ summary.completedToday }}</span>
+              <span v-else>{{ displayCompleted }}</span>
             </h3>
             <p class="text-xs font-bold uppercase tracking-tighter" style="color: var(--color-text-muted);">Completed</p>
             <div class="absolute bottom-0 left-0 w-full h-0.5 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-500" style="background-color: var(--color-success, #16a34a);"></div>
@@ -97,7 +97,7 @@
         <div class="col-span-12 lg:col-span-8 flex flex-col gap-6">
 
           <!-- My Running Tests -->
-          <div class="rounded-2xl overflow-hidden" style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
+          <div ref="runningCardRef" class="rounded-2xl overflow-hidden" style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
             <div class="px-6 py-4 flex items-center justify-between" style="border-bottom: 1px solid var(--color-border);">
               <div class="flex items-center gap-2">
                 <span class="material-symbols-outlined text-base" style="color: var(--color-warning);">labs</span>
@@ -130,14 +130,14 @@
             <div v-if="runningLoading" class="p-6 flex flex-col gap-3">
               <div v-for="i in 3" :key="i" class="h-12 rounded-xl animate-pulse" style="background-color: var(--color-surface-low);"></div>
             </div>
-            <div v-else-if="!displayedRunning.length" class="p-10 flex flex-col items-center gap-3">
+            <div v-else-if="!displayedRunning.length" ref="runningEmptyRef" class="p-10 flex flex-col items-center gap-3">
               <span class="material-symbols-outlined text-4xl" style="color: var(--color-text-muted);">labs</span>
               <p class="text-sm font-bold" style="color: var(--color-text);">No running tests</p>
               <p class="text-xs" style="color: var(--color-text-muted);">You have no tests currently running.</p>
             </div>
-            <div v-else>
+            <div v-else ref="runningListRef">
               <div v-for="specimen in displayedRunning" :key="specimen.headerId"
-                   class="px-6 py-4 flex flex-col gap-2" style="border-bottom: 1px solid var(--color-border);">
+                   class="running-item px-6 py-4 flex flex-col gap-2" style="border-bottom: 1px solid var(--color-border);">
                 <div class="flex items-center justify-between">
                   <div class="flex items-center gap-3">
                     <div class="p-2 rounded-xl" style="background-color: rgba(217,119,6,0.1);">
@@ -172,7 +172,7 @@
           </div>
 
           <!-- Due Today -->
-          <div class="rounded-2xl overflow-hidden" style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
+          <div ref="dueTodayCardRef" class="rounded-2xl overflow-hidden" style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
             <div class="px-6 py-4 flex items-center justify-between" style="border-bottom: 1px solid var(--color-border);">
               <div class="flex items-center gap-2">
                 <span class="material-symbols-outlined text-base" style="color: var(--color-primary);">today</span>
@@ -183,14 +183,14 @@
             <div v-if="scheduledLoading" class="p-6 flex flex-col gap-3">
               <div v-for="i in 3" :key="i" class="h-12 rounded-xl animate-pulse" style="background-color: var(--color-surface-low);"></div>
             </div>
-            <div v-else-if="!dueToday.length" class="p-10 flex flex-col items-center gap-3">
+            <div v-else-if="!dueToday.length" ref="dueTodayEmptyRef" class="p-10 flex flex-col items-center gap-3">
               <span class="material-symbols-outlined text-4xl" style="color: var(--color-text-muted);">event_available</span>
               <p class="text-sm font-bold" style="color: var(--color-text);">Nothing due today</p>
               <p class="text-xs" style="color: var(--color-text-muted);">No specimens scheduled to run today.</p>
             </div>
-            <div v-else>
+            <div v-else ref="dueTodayListRef">
               <div v-for="specimen in dueToday" :key="specimen.headerId"
-                   class="px-6 py-3 flex items-center justify-between gap-4" style="border-bottom: 1px solid var(--color-border);">
+                   class="due-today-item px-6 py-3 flex items-center justify-between gap-4" style="border-bottom: 1px solid var(--color-border);">
                 <div class="flex items-center gap-3 min-w-0">
                   <div class="p-2 rounded-xl flex-shrink-0" style="background-color: var(--color-primary-soft);">
                     <span class="material-symbols-outlined text-sm" style="color: var(--color-primary);">labs</span>
@@ -218,7 +218,7 @@
         <div class="col-span-12 lg:col-span-4 flex flex-col gap-6">
 
           <!-- Recently Routed -->
-          <div class="rounded-2xl overflow-hidden" style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
+          <div ref="routedCardRef" class="rounded-2xl overflow-hidden" style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
             <div class="px-6 py-4 flex items-center justify-between" style="border-bottom: 1px solid var(--color-border);">
               <div class="flex items-center gap-2">
                 <span class="material-symbols-outlined text-base" style="color: var(--color-primary);">move_to_inbox</span>
@@ -235,9 +235,9 @@
               <p class="text-sm font-bold" style="color: var(--color-text);">All caught up</p>
               <p class="text-xs" style="color: var(--color-text-muted);">No unreceived specimens at the moment.</p>
             </div>
-            <div v-else>
+            <div v-else ref="routedListRef">
               <div v-for="item in recentlyRouted" :key="item.id"
-                   class="px-6 py-3 flex items-center justify-between gap-4" style="border-bottom: 1px solid var(--color-border);">
+                   class="routed-item px-6 py-3 flex items-center justify-between gap-4" style="border-bottom: 1px solid var(--color-border);">
                 <div class="flex items-center gap-3 min-w-0">
                   <div class="p-2 rounded-xl flex-shrink-0" style="background-color: var(--color-primary-soft);">
                     <span class="material-symbols-outlined text-sm" style="color: var(--color-primary);">labs</span>
@@ -256,7 +256,7 @@
           </div>
 
           <!-- Completed Today -->
-          <div class="rounded-2xl overflow-hidden" style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
+          <div ref="completedCardRef" class="rounded-2xl overflow-hidden" style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
             <div class="px-6 py-4 flex items-center gap-2" style="border-bottom: 1px solid var(--color-border);">
               <span class="material-symbols-outlined text-base" style="color: var(--color-success, #16a34a);">check_circle</span>
               <h2 class="text-sm font-bold uppercase tracking-widest" style="color: var(--color-text);">Completed Today</h2>
@@ -268,9 +268,9 @@
               <span class="material-symbols-outlined text-3xl" style="color: var(--color-text-muted);">check_circle</span>
               <p class="text-xs font-bold" style="color: var(--color-text-muted);">None completed yet</p>
             </div>
-            <div v-else>
+            <div v-else ref="completedListRef">
               <div v-for="item in completedTodayList" :key="item.id"
-                   class="px-6 py-3 flex items-center justify-between gap-3" style="border-bottom: 1px solid var(--color-border);">
+                   class="completed-item px-6 py-3 flex items-center justify-between gap-3" style="border-bottom: 1px solid var(--color-border);">
                 <div class="flex items-center gap-3 min-w-0">
                   <div class="p-2 rounded-xl flex-shrink-0" style="background-color: rgba(22,163,74,0.1);">
                     <span class="material-symbols-outlined text-sm" style="color: var(--color-success, #16a34a);">check_circle</span>
@@ -313,10 +313,10 @@
           <span class="material-symbols-outlined text-4xl" style="color: var(--color-text-muted);">science</span>
           <p class="text-sm font-bold" style="color: var(--color-text-muted);">No active lab sections found</p>
         </div>
-        <div v-else class="grid gap-4"
+        <div v-else ref="adminKpiRef" class="grid gap-4"
              :style="`grid-template-columns: repeat(${Math.min(adminSectionSummaries.length, 4)}, minmax(0, 1fr));`">
           <div v-for="sec in adminSectionSummaries" :key="sec.sectionCode"
-               class="rounded-2xl p-5 relative overflow-hidden transition-all hover:-translate-y-0.5"
+               class="admin-kpi-card rounded-2xl p-5 relative overflow-hidden transition-all hover:-translate-y-0.5"
                style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
             <p class="text-[10px] font-bold uppercase tracking-widest mb-3 truncate" style="color: var(--color-primary);">{{ sec.sectionName }}</p>
             <div class="grid grid-cols-4 gap-1 text-center">
@@ -347,7 +347,7 @@
         <div class="col-span-12 lg:col-span-8 flex flex-col gap-6">
 
           <!-- All Running Tests — grouped by section -->
-          <div class="rounded-2xl overflow-hidden" style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
+          <div ref="adminRunningCardRef" class="rounded-2xl overflow-hidden" style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
             <div class="px-6 py-4 flex items-center gap-2" style="border-bottom: 1px solid var(--color-border);">
               <span class="material-symbols-outlined text-base" style="color: var(--color-warning);">labs</span>
               <h2 class="text-sm font-bold uppercase tracking-widest" style="color: var(--color-text);">All Running Tests</h2>
@@ -356,12 +356,12 @@
             <div v-if="adminRunningLoading" class="p-6 flex flex-col gap-3">
               <div v-for="i in 3" :key="i" class="h-12 rounded-xl animate-pulse" style="background-color: var(--color-surface-low);"></div>
             </div>
-            <div v-else-if="!adminRunning.length" class="p-10 flex flex-col items-center gap-3">
+            <div v-else-if="!adminRunning.length" ref="adminRunningEmptyRef" class="p-10 flex flex-col items-center gap-3">
               <span class="material-symbols-outlined text-4xl" style="color: var(--color-text-muted);">labs</span>
               <p class="text-sm font-bold" style="color: var(--color-text);">No running tests</p>
               <p class="text-xs" style="color: var(--color-text-muted);">No tests are currently running across all sections.</p>
             </div>
-            <div v-else>
+            <div v-else ref="adminRunningListRef">
               <div v-for="group in adminRunning" :key="group.sectionCode">
                 <div class="px-6 py-2 flex items-center gap-2" style="background-color: var(--color-surface-low); border-bottom: 1px solid var(--color-border); border-top: 1px solid var(--color-border);">
                   <span class="material-symbols-outlined text-sm" style="color: var(--color-primary);">science</span>
@@ -372,7 +372,7 @@
                   </span>
                 </div>
                 <div v-for="specimen in group.specimens" :key="specimen.headerId"
-                     class="px-6 py-4 flex flex-col gap-2" style="border-bottom: 1px solid var(--color-border);">
+                     class="admin-running-item px-6 py-4 flex flex-col gap-2" style="border-bottom: 1px solid var(--color-border);">
                   <div class="flex items-center justify-between">
                     <div class="flex items-center gap-3">
                       <div class="p-2 rounded-xl" style="background-color: rgba(217,119,6,0.1);">
@@ -404,7 +404,7 @@
           </div>
 
           <!-- Due Today — all sections -->
-          <div class="rounded-2xl overflow-hidden" style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
+          <div ref="adminDueTodayCardRef" class="rounded-2xl overflow-hidden" style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
             <div class="px-6 py-4 flex items-center gap-2" style="border-bottom: 1px solid var(--color-border);">
               <span class="material-symbols-outlined text-base" style="color: var(--color-primary);">today</span>
               <h2 class="text-sm font-bold uppercase tracking-widest" style="color: var(--color-text);">Due Today</h2>
@@ -413,19 +413,19 @@
             <div v-if="adminDueTodayLoading" class="p-6 flex flex-col gap-3">
               <div v-for="i in 3" :key="i" class="h-12 rounded-xl animate-pulse" style="background-color: var(--color-surface-low);"></div>
             </div>
-            <div v-else-if="!adminDueToday.length" class="p-10 flex flex-col items-center gap-3">
+            <div v-else-if="!adminDueToday.length" ref="adminDueTodayEmptyRef" class="p-10 flex flex-col items-center gap-3">
               <span class="material-symbols-outlined text-4xl" style="color: var(--color-text-muted);">event_available</span>
               <p class="text-sm font-bold" style="color: var(--color-text);">Nothing due today</p>
               <p class="text-xs" style="color: var(--color-text-muted);">No specimens scheduled across all sections today.</p>
             </div>
-            <div v-else>
+            <div v-else ref="adminDueTodayListRef">
               <div v-for="group in adminDueToday" :key="group.sectionCode">
                 <div class="px-6 py-2 flex items-center gap-2" style="background-color: var(--color-surface-low); border-bottom: 1px solid var(--color-border); border-top: 1px solid var(--color-border);">
                   <span class="material-symbols-outlined text-sm" style="color: var(--color-primary);">science</span>
                   <span class="text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-primary);">{{ group.sectionName }}</span>
                 </div>
                 <div v-for="specimen in group.specimens" :key="specimen.headerId"
-                     class="px-6 py-3 flex items-center justify-between gap-4" style="border-bottom: 1px solid var(--color-border);">
+                     class="admin-due-item px-6 py-3 flex items-center justify-between gap-4" style="border-bottom: 1px solid var(--color-border);">
                   <div class="flex items-center gap-3 min-w-0">
                     <div class="p-2 rounded-xl flex-shrink-0" style="background-color: var(--color-primary-soft);">
                       <span class="material-symbols-outlined text-sm" style="color: var(--color-primary);">labs</span>
@@ -454,7 +454,7 @@
         <div class="col-span-12 lg:col-span-4 flex flex-col gap-6">
 
           <!-- Recently Routed — all sections -->
-          <div class="rounded-2xl overflow-hidden" style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
+          <div ref="adminRoutedCardRef" class="rounded-2xl overflow-hidden" style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
             <div class="px-6 py-4 flex items-center gap-2" style="border-bottom: 1px solid var(--color-border);">
               <span class="material-symbols-outlined text-base" style="color: var(--color-primary);">move_to_inbox</span>
               <h2 class="text-sm font-bold uppercase tracking-widest" style="color: var(--color-text);">Recently Routed</h2>
@@ -468,7 +468,7 @@
               <p class="text-sm font-bold" style="color: var(--color-text);">All caught up</p>
               <p class="text-xs" style="color: var(--color-text-muted);">No unreceived specimens across all sections.</p>
             </div>
-            <div v-else>
+            <div v-else ref="adminRoutedListRef">
               <div v-for="group in adminRecentlyRouted" :key="group.sectionCode">
                 <div class="px-6 py-2 flex items-center gap-2" style="background-color: var(--color-surface-low); border-bottom: 1px solid var(--color-border); border-top: 1px solid var(--color-border);">
                   <span class="material-symbols-outlined text-sm" style="color: var(--color-primary);">science</span>
@@ -479,7 +479,7 @@
                   </span>
                 </div>
                 <div v-for="item in group.specimens.slice(0, 6)" :key="item.id"
-                     class="px-6 py-3 flex items-center justify-between gap-4" style="border-bottom: 1px solid var(--color-border);">
+                     class="admin-routed-item px-6 py-3 flex items-center justify-between gap-4" style="border-bottom: 1px solid var(--color-border);">
                   <div class="flex items-center gap-3 min-w-0">
                     <div class="p-2 rounded-xl flex-shrink-0" style="background-color: var(--color-primary-soft);">
                       <span class="material-symbols-outlined text-sm" style="color: var(--color-primary);">labs</span>
@@ -499,7 +499,7 @@
           </div>
 
           <!-- Completed Today — all sections -->
-          <div class="rounded-2xl overflow-hidden" style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
+          <div ref="adminCompletedCardRef" class="rounded-2xl overflow-hidden" style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
             <div class="px-6 py-4 flex items-center gap-2" style="border-bottom: 1px solid var(--color-border);">
               <span class="material-symbols-outlined text-base" style="color: var(--color-success, #16a34a);">check_circle</span>
               <h2 class="text-sm font-bold uppercase tracking-widest" style="color: var(--color-text);">Completed Today</h2>
@@ -511,7 +511,7 @@
               <span class="material-symbols-outlined text-3xl" style="color: var(--color-text-muted);">inbox</span>
               <p class="text-xs font-bold" style="color: var(--color-text-muted);">None completed yet</p>
             </div>
-            <div v-else>
+            <div v-else ref="adminCompletedListRef">
               <div v-for="group in adminCompletedToday" :key="group.sectionCode">
                 <div class="px-6 py-2 flex items-center gap-2" style="background-color: var(--color-surface-low); border-bottom: 1px solid var(--color-border); border-top: 1px solid var(--color-border);">
                   <span class="material-symbols-outlined text-sm" style="color: var(--color-success, #16a34a);">science</span>
@@ -522,7 +522,7 @@
                   </span>
                 </div>
                 <div v-for="item in group.specimens.slice(0, 5)" :key="item.id"
-                     class="px-6 py-3 flex items-center justify-between gap-3" style="border-bottom: 1px solid var(--color-border);">
+                     class="admin-completed-item px-6 py-3 flex items-center justify-between gap-3" style="border-bottom: 1px solid var(--color-border);">
                   <div class="min-w-0">
                     <p class="text-xs font-bold font-mono truncate" style="color: var(--color-text);">{{ item.specimenNo }}</p>
                     <p class="text-[10px] truncate" style="color: var(--color-text-muted);">{{ item.patientName ?? '—' }}</p>
@@ -554,7 +554,8 @@
 </template>
 
 <script setup>
-  import { ref, computed, onMounted, onUnmounted } from 'vue'
+  import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
+  import { gsap } from 'gsap'
   import AppLayout from '@/components/layout/AppLayout.vue'
   import AlertModal from '@/components/common/AlertModal.vue'
   import SystemStatus from '@/components/common/SystemStatus.vue'
@@ -634,7 +635,7 @@
   const dueToday = computed(() =>
     scheduledSpecimens.value.filter(s =>
       s.tests.some(t =>
-        (t.scheduleTag === 'END' || t.scheduleTag === 'CRD' ||  t.scheduleTag === 'SRD') && t.runningDate === todayStr
+        (t.scheduleTag === 'END' || t.scheduleTag === 'CRD' || t.scheduleTag === 'SRD') && t.runningDate === todayStr
       )
     )
   )
@@ -644,11 +645,7 @@
   const completedTodayLoading = ref(true)
 
   async function fetchCompletedToday() {
-    try { const d = await runnerApi.getCompletedToday(authStore.sectionCode); completedTodayList.value = Array.isArray(d) ? d : []
-
-      console.log(d)
-      console.log('called')
-    }
+    try { const d = await runnerApi.getCompletedToday(authStore.sectionCode); completedTodayList.value = Array.isArray(d) ? d : [] }
     catch (e) { if (e?.response?.status !== 401) showAlert('error', 'Error', 'Unable to load completed today.') }
   }
 
@@ -657,8 +654,6 @@
       ? runningSpecimens.value
       : allRunningSpecimens.value
   )
-
-
 
   // ══════════════════════════════════════════════════════════════════════════
   // ADMIN DATA
@@ -723,6 +718,215 @@
     })
   }
 
+  // ══════════════════════════════════════════════════════════════════════════
+  // GSAP — REFS
+  // ══════════════════════════════════════════════════════════════════════════
+
+  // Regular view
+  const kpiCardsRef = ref(null)
+  const runningCardRef = ref(null)
+  const runningListRef = ref(null)
+  const runningEmptyRef = ref(null)
+  const dueTodayCardRef = ref(null)
+  const dueTodayListRef = ref(null)
+  const dueTodayEmptyRef = ref(null)
+  const routedCardRef = ref(null)
+  const routedListRef = ref(null)
+  const completedCardRef = ref(null)
+  const completedListRef = ref(null)
+
+  // Admin view
+  const adminKpiRef = ref(null)
+  const adminRunningCardRef = ref(null)
+  const adminRunningListRef = ref(null)
+  const adminRunningEmptyRef = ref(null)
+  const adminDueTodayCardRef = ref(null)
+  const adminDueTodayListRef = ref(null)
+  const adminDueTodayEmptyRef = ref(null)
+  const adminRoutedCardRef = ref(null)
+  const adminRoutedListRef = ref(null)
+  const adminCompletedCardRef = ref(null)
+  const adminCompletedListRef = ref(null)
+
+  // Count-up display values
+  const displayPending = ref(0)
+  const displayScheduled = ref(0)
+  const displayRunning = ref(0)
+  const displayCompleted = ref(0)
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // GSAP — ANIMATION FUNCTIONS
+  // ══════════════════════════════════════════════════════════════════════════
+
+  function countUp(displayRef, target) {
+    const obj = { val: 0 }
+    gsap.killTweensOf(obj)
+    gsap.to(obj, {
+      val: target,
+      duration: 0.75,
+      ease: 'power2.out',
+      onUpdate: () => { displayRef.value = Math.round(obj.val) },
+    })
+  }
+
+  async function animateKpiCards() {
+    await nextTick()
+    if (!kpiCardsRef.value) return
+    const cards = kpiCardsRef.value.querySelectorAll(':scope > a > div')
+    if (!cards.length) return
+    gsap.set(cards, { opacity: 0, y: 20 })
+    gsap.to(cards, {
+      opacity: 1,
+      y: 0,
+      duration: 0.3,
+      stagger: 0.07,
+      ease: 'power2.out',
+    })
+  }
+
+  async function animateAdminKpiCards() {
+    await nextTick()
+    if (!adminKpiRef.value) return
+    const cards = adminKpiRef.value.querySelectorAll('.admin-kpi-card')
+    if (!cards.length) return
+    gsap.set(cards, { opacity: 0, y: 20 })
+    gsap.to(cards, {
+      opacity: 1,
+      y: 0,
+      duration: 0.35,
+      stagger: 0.06,
+      ease: 'power2.out',
+    })
+  }
+
+  // Generic: animate a card container sliding in, then stagger its items
+  async function animateCard(cardRef, itemSelector, delay = 0) {
+    await nextTick()
+    if (!cardRef.value) return
+    gsap.set(cardRef.value, { opacity: 0, y: 16 })
+    gsap.to(cardRef.value, { opacity: 1, y: 0, duration: 0.3, ease: 'power2.out', delay })
+    const items = cardRef.value.querySelectorAll(itemSelector)
+    if (items.length) {
+      gsap.set(items, { opacity: 0, x: -8 })
+      gsap.to(items, {
+        opacity: 1,
+        x: 0,
+        duration: 0.2,
+        stagger: 0.04,
+        ease: 'power1.out',
+        delay: delay + 0.14,
+        clearProps: 'opacity,x',
+      })
+    }
+  }
+
+  async function animateEmptyState(emptyRef) {
+    await nextTick()
+    if (!emptyRef.value) return
+    gsap.set(emptyRef.value, { scale: 0.92, opacity: 0 })
+    gsap.to(emptyRef.value, { scale: 1, opacity: 1, duration: 0.32, ease: 'back.out(1.5)', clearProps: 'scale,opacity' })
+  }
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // GSAP — WATCHERS (fire once on initial load, not on silent refresh)
+  // ══════════════════════════════════════════════════════════════════════════
+
+  // Regular view — KPI cards + count-up
+  watch(summaryLoading, async (isLoading) => {
+    if (isLoading) return
+    // await animateKpiCards()
+    countUp(displayPending, summary.value.pending)
+    countUp(displayScheduled, summary.value.scheduled)
+    countUp(displayRunning, summary.value.running)
+    countUp(displayCompleted, summary.value.completedToday)
+  })
+
+  // Keep display values in sync on silent refresh (no re-animation)
+  watch(summary, (val) => {
+    if (summaryLoading.value) return
+    displayPending.value = val.pending
+    displayScheduled.value = val.scheduled
+    displayRunning.value = val.running
+    displayCompleted.value = val.completedToday
+  }, { deep: true })
+
+  // Running card
+  watch(runningLoading, async (isLoading) => {
+    if (isLoading) return
+    if (displayedRunning.value.length) {
+      await animateCard(runningCardRef, '.running-item')
+    } else {
+      await animateEmptyState(runningEmptyRef)
+    }
+  })
+
+  // Due Today card
+  watch(scheduledLoading, async (isLoading) => {
+    if (isLoading) return
+    if (dueToday.value.length) {
+      await animateCard(dueTodayCardRef, '.due-today-item', 0.05)
+    } else {
+      await animateEmptyState(dueTodayEmptyRef)
+    }
+  })
+
+  // Recently Routed card
+  watch(pendingLoading, async (isLoading) => {
+    if (isLoading) return
+    if (recentlyRouted.value.length) {
+      await animateCard(routedCardRef, '.routed-item', 0)
+    }
+  })
+
+  // Completed Today card
+  watch(completedTodayLoading, async (isLoading) => {
+    if (isLoading) return
+    if (completedTodayList.value.length) {
+      await animateCard(completedCardRef, '.completed-item', 0.05)
+    }
+  })
+
+  // Admin — section KPI cards
+  watch(adminSummaryLoading, async (isLoading) => {
+    if (isLoading) return
+    await animateAdminKpiCards()
+  })
+
+  // Admin — Running card
+  watch(adminRunningLoading, async (isLoading) => {
+    if (isLoading) return
+    if (adminRunning.value.length) {
+      await animateCard(adminRunningCardRef, '.admin-running-item')
+    } else {
+      await animateEmptyState(adminRunningEmptyRef)
+    }
+  })
+
+  // Admin — Due Today card
+  watch(adminDueTodayLoading, async (isLoading) => {
+    if (isLoading) return
+    if (adminDueToday.value.length) {
+      await animateCard(adminDueTodayCardRef, '.admin-due-item', 0.05)
+    } else {
+      await animateEmptyState(adminDueTodayEmptyRef)
+    }
+  })
+
+  // Admin — Recently Routed card
+  watch(adminRoutedLoading, async (isLoading) => {
+    if (isLoading) return
+    if (adminRecentlyRouted.value.length) {
+      await animateCard(adminRoutedCardRef, '.admin-routed-item')
+    }
+  })
+
+  // Admin — Completed Today card
+  watch(adminCompletedLoading, async (isLoading) => {
+    if (isLoading) return
+    if (adminCompletedToday.value.length) {
+      await animateCard(adminCompletedCardRef, '.admin-completed-item', 0.05)
+    }
+  })
 
   // ══════════════════════════════════════════════════════════════════════════
   // MOUNT / UNMOUNT
@@ -741,7 +945,6 @@
   }
 
   let dataInterval = null
-  let statusInterval = null
 
   onMounted(async () => {
     if (!authStore.isAdmin) {

@@ -26,5 +26,7 @@ namespace Service.Interfaces
         List<SectionScheduledGroup> GetAllSectionsScheduled();
         List<CompletedSpecimenItem> GetCompletedSpecimens(string sectionCode, DateTime from, DateTime to);
         List<SectionCompletedGroup> GetAllSectionsCompleted(DateTime from, DateTime to);
+        void CancelSpecimen(CancelSectionSpecimenRequest request);
+        void AbortRunningTest(AbortRunningTestRequest request);
     }
 }

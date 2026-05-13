@@ -24,5 +24,7 @@ namespace Service.Interfaces
         void MarkTestReleased(int testId);
         bool TryCompleteHeader(int headerId);
         List<OnSite_Section_Test> GetTestsByHeaderId(int headerId);
+        void CancelSpecimen(CancelSectionSpecimenRequest request);
+        void AbortRunningTest(AbortRunningTestRequest request);
     }
 }

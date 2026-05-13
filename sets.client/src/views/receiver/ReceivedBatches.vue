@@ -109,6 +109,7 @@
       <template #body>
         <tr v-for="batch in paginatedBatches"
             :key="batch.batchNo"
+            :data-batchno="batch.batchNo"
             class="cursor-pointer transition-colors"
             style="border-top: 1px solid var(--color-surface-low);"
             @mouseenter="e => e.currentTarget.style.backgroundColor = 'var(--color-surface-low)'"
@@ -178,7 +179,9 @@
 </template>
 
 <script setup>
-  import { ref, computed, onMounted, watch } from 'vue'
+  import { ref, computed, onMounted, watch, nextTick } from 'vue'
+  import { useRoute, useRouter } from 'vue-router'
+  import { gsap } from 'gsap'
   import AppLayout from '@/components/layout/AppLayout.vue'
   import AppBatchTable from '@/components/common/AppBatchTable.vue'
   import BatchDetailDrawer from '@/components/common/BatchDetailDrawer.vue'
@@ -190,6 +193,8 @@
   import { batchApi } from '@/api/batchApi'
 
   const authStore = useAuthStore()
+  const route = useRoute()
+  const router = useRouter()
 
   // ── Alert ──────────────────────────────────────────────────────────────────
 
@@ -282,6 +287,49 @@
   watch([searchQuery, statusFilter], () => {
     currentPage.value = 1
     tableRef.value?.animateTableRows()
+  })
+
+  // ── Highlight — fired after load when ?highlight=<batchNo> is present ──────
+
+  async function runHighlight() {
+    const batchNo = route.query.highlight
+    if (!batchNo) return
+
+    // Find which page holds this batch and jump to it
+    const idx = filteredBatches.value.findIndex(b => b.batchNo === batchNo)
+    if (idx === -1) return
+
+    const targetPage = Math.floor(idx / PAGE_SIZE) + 1
+    if (currentPage.value !== targetPage) {
+      currentPage.value = targetPage
+      await nextTick()
+    }
+
+    await nextTick()
+    const row = document.querySelector(`tr[data-batchno="${batchNo}"]`)
+    if (!row) return
+
+    row.scrollIntoView({ behavior: 'smooth', block: 'center' })
+
+    // Double pulse
+    await new Promise(r => setTimeout(r, 350))
+    gsap.set(row, { backgroundColor: 'transparent' })
+    gsap.to(row, {
+      backgroundColor: 'var(--color-primary-soft)',
+      duration: 0.5,
+      ease: 'sine.inOut',
+      yoyo: true,
+      repeat: 3,
+      repeatDelay: 0.12,
+      onComplete: () => gsap.set(row, { clearProps: 'backgroundColor' }),
+    })
+
+    router.replace({ query: {} })
+  }
+
+  watch(loading, async (isLoading) => {
+    if (isLoading) return
+    await runHighlight()
   })
 
   // ── Client-side filtering ──────────────────────────────────────────────────

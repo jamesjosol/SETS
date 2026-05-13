@@ -622,5 +622,94 @@ namespace SETS.Server.Controllers
                 return StatusCode(400, new { message = ex.Message });
             }
         }
+
+        // POST api/runner/cancel-specimen
+        // Cancels an entire specimen (header + all non-released tests) from the runner/section side.
+        // Restricted to Team Lead (RoleID == 2) and Admin.
+        [HttpPost("cancel-specimen")]
+        public IActionResult CancelSpecimen([FromBody] CancelSectionSpecimenRequest request)
+        {
+            try
+            {
+                var branch = Branch;
+                if (string.IsNullOrEmpty(branch))
+                    return Unauthorized(new { message = "Session expired." });
+
+                var roleID = HttpContext.Session.GetInt32("RoleID") ?? 0;
+                var isAdmin = HttpContext.Session.GetString("IsAdmin") == "True";
+                if (roleID < 2 && !isAdmin)
+                    return Unauthorized(new { message = "Team Lead or Administrator access required." });
+
+                if (string.IsNullOrEmpty(request.SpecimenNo))
+                    return BadRequest(new { message = "Specimen number is required." });
+
+                if (string.IsNullOrEmpty(request.SectionCode))
+                    return BadRequest(new { message = "Section code is required." });
+
+                if (string.IsNullOrWhiteSpace(request.Reason))
+                    return BadRequest(new { message = "A cancellation reason is required." });
+
+                if (string.IsNullOrEmpty(request.UserID))
+                    return BadRequest(new { message = "User ID is required." });
+
+                using var master = new MasterService(branch);
+
+                if (request.IsOnSite)
+                    master.OnSite.CancelSpecimen(request);
+                else
+                    master.Runner.CancelSpecimen(request);
+
+                return Ok(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(400, new { message = ex.Message });
+            }
+        }
+
+        // POST api/runner/abort-test
+        // Aborts a single running test back to pending.
+        // Available to all users (no role restriction).
+        [HttpPost("abort-test")]
+        public IActionResult AbortRunningTest([FromBody] AbortRunningTestRequest request)
+        {
+            try
+            {
+                var branch = Branch;
+                if (string.IsNullOrEmpty(branch))
+                    return Unauthorized(new { message = "Session expired." });
+
+                if (request.TestId <= 0)
+                    return BadRequest(new { message = "Test ID is required." });
+
+                if (request.HeaderId <= 0)
+                    return BadRequest(new { message = "Header ID is required." });
+
+                if (string.IsNullOrEmpty(request.SpecimenNo))
+                    return BadRequest(new { message = "Specimen number is required." });
+
+                if (string.IsNullOrEmpty(request.SectionCode))
+                    return BadRequest(new { message = "Section code is required." });
+
+                if (string.IsNullOrWhiteSpace(request.Reason))
+                    return BadRequest(new { message = "An abort reason is required." });
+
+                if (string.IsNullOrEmpty(request.UserID))
+                    return BadRequest(new { message = "User ID is required." });
+
+                using var master = new MasterService(branch);
+
+                if (request.IsOnSite)
+                    master.OnSite.AbortRunningTest(request);
+                else
+                    master.Runner.AbortRunningTest(request);
+
+                return Ok(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(400, new { message = ex.Message });
+            }
+        }
     }
 }

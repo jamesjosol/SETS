@@ -119,6 +119,8 @@ namespace Service.Services
             AuditEvents.SpecimenStored => "Specimen Stored",
             AuditEvents.TestScheduled => "Test Scheduled",
             AuditEvents.TestRescheduled => "Test Rescheduled",
+            AuditEvents.SpecimenCancelledSection => "Specimen Cancelled (Section)",
+            AuditEvents.TestAborted => "Test Aborted",
             _ => eventCode
         };
     }

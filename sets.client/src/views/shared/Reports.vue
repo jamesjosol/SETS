@@ -150,7 +150,7 @@
       sublabel: 'TAT endorsement & completion',
       icon: 'table_chart',
       roles: ['Endorser/Processing', 'TL', 'Admin'],
-      hasAccess: isTLorAdmin.value,
+      hasAccess: isTLorAdmin.value && (authStore.sectionCategory === '1' || authStore.sectionCategory === '2'),
     },
     {
       key: 'specimen-receipt-section',

@@ -44,11 +44,11 @@
         </div>
       </div>
 
-      <div class="rounded-2xl overflow-hidden" style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
+      <div ref="tableCardRef" class="rounded-2xl overflow-hidden" style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
         <div v-if="loading" class="p-6 flex flex-col gap-3">
           <div v-for="i in 5" :key="i" class="h-14 rounded-xl animate-pulse" style="background-color: var(--color-surface-low);"></div>
         </div>
-        <div v-else-if="!filteredSpecimens.length" class="p-16 flex flex-col items-center gap-3">
+        <div v-else-if="!filteredSpecimens.length" ref="emptyRef" class="p-16 flex flex-col items-center gap-3">
           <span class="material-symbols-outlined text-5xl" style="color: var(--color-text-muted);">event_busy</span>
           <p class="text-sm font-bold" style="color: var(--color-text);">No scheduled specimens</p>
           <p class="text-xs" style="color: var(--color-text-muted);">No specimens are currently tagged for a future running date.</p>
@@ -65,11 +65,13 @@
                 <th class="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Received</th>
                 <th class="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Tests</th>
                 <th class="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Remarks</th>
+                <th class="px-4 py-3 w-10"></th>
               </tr>
             </thead>
-            <tbody>
+            <tbody ref="tableBodyRef">
               <template v-for="item in filteredSpecimens" :key="item.headerId">
                 <tr class="transition-colors cursor-pointer"
+                    :data-specimenno="item.specimenNo"
                     :style="expandedId === item.headerId ? 'background-color: var(--color-primary-soft);' : 'background-color: transparent;'"
                     @mouseenter="e => { if (expandedId !== item.headerId) e.currentTarget.style.backgroundColor = 'var(--color-surface-low)' }"
                     @mouseleave="e => { if (expandedId !== item.headerId) e.currentTarget.style.backgroundColor = 'transparent' }"
@@ -118,10 +120,21 @@
                       <span class="material-symbols-outlined text-sm">{{ item.remarks ? 'chat_bubble' : 'chat_bubble_outline' }}</span>
                     </button>
                   </td>
+                  <td v-if="authStore.isTL" class="px-3 py-3" @click.stop>
+                    <button class="p-1.5 rounded-lg transition-all group/cancel relative"
+                            style="color: var(--color-text-muted);"
+                            title="Cancel Specimen"
+                            @mouseenter="e => e.currentTarget.style.cssText = 'color: var(--color-error, #dc2626); background-color: rgba(220,38,38,0.08);'"
+                            @mouseleave="e => e.currentTarget.style.cssText = 'color: var(--color-text-muted);'"
+                            @click="openCancelModal(item)">
+                      <span class="material-symbols-outlined text-sm">do_not_disturb_on</span>
+                    </button>
+                  </td>
+                  <td v-else class="px-3 py-3"></td>
                 </tr>
                 <Transition name="expand">
                   <tr v-if="expandedId === item.headerId" :key="`exp-${item.headerId}`">
-                    <td colspan="8" class="px-0 py-0">
+                    <td colspan="9" class="px-0 py-0">
                       <div class="mx-4 mb-3 rounded-xl overflow-hidden" style="border: 1.5px solid var(--color-border);">
                         <table class="w-full text-xs">
                           <thead>
@@ -193,17 +206,20 @@
              style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow); height: 120px;"></div>
       </div>
 
-      <div v-else-if="!adminFilteredGroups.length" class="rounded-2xl p-16 flex flex-col items-center gap-3"
+      <div v-else-if="!adminFilteredGroups.length"
+           ref="adminEmptyRef"
+           class="rounded-2xl p-16 flex flex-col items-center gap-3"
            style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
         <span class="material-symbols-outlined text-5xl" style="color: var(--color-text-muted);">event_busy</span>
         <p class="text-sm font-bold" style="color: var(--color-text);">No scheduled specimens</p>
         <p class="text-xs" style="color: var(--color-text-muted);">No specimens are tagged for a future running date across all sections.</p>
       </div>
 
-      <div v-else class="flex flex-col gap-5">
+      <div v-else ref="adminGroupsRef" class="flex flex-col gap-5">
         <div v-for="group in adminFilteredGroups" :key="group.sectionCode"
-             class="rounded-2xl overflow-hidden" style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
+             class="admin-group-card rounded-2xl overflow-hidden" style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
           <div class="px-6 py-3 flex items-center gap-3 cursor-pointer select-none"
+               :data-sectioncode="group.sectionCode"
                style="background-color: var(--color-primary-soft); border-bottom: 1.5px solid var(--color-border);"
                @click="toggleCollapse(group.sectionCode)">
             <span class="material-symbols-outlined text-base" style="color: var(--color-primary);">science</span>
@@ -232,11 +248,13 @@
                     <th class="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Received</th>
                     <th class="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Tests</th>
                     <th class="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Remarks</th>
+                    <th class="px-4 py-3 w-10"></th>
                   </tr>
                 </thead>
                 <tbody>
                   <template v-for="item in group.filteredSpecimens" :key="item.headerId">
                     <tr class="transition-colors cursor-pointer"
+                        :data-specimenno="item.specimenNo"
                         :style="adminExpandedKey === `${group.sectionCode}-${item.headerId}` ? 'background-color: var(--color-primary-soft);' : 'background-color: transparent;'"
                         @mouseenter="e => { if (adminExpandedKey !== `${group.sectionCode}-${item.headerId}`) e.currentTarget.style.backgroundColor = 'var(--color-surface-low)' }"
                         @mouseleave="e => { if (adminExpandedKey !== `${group.sectionCode}-${item.headerId}`) e.currentTarget.style.backgroundColor = 'transparent' }"
@@ -286,11 +304,21 @@
                           <span class="material-symbols-outlined text-sm">{{ item.remarks ? 'chat_bubble' : 'chat_bubble_outline' }}</span>
                         </button>
                       </td>
+                      <td class="px-3 py-3" @click.stop>
+                        <button class="p-1.5 rounded-lg transition-all group/cancel relative"
+                                style="color: var(--color-text-muted);"
+                                title="Cancel Specimen"
+                                @mouseenter="e => e.currentTarget.style.cssText = 'color: var(--color-error, #dc2626); background-color: rgba(220,38,38,0.08);'"
+                                @mouseleave="e => e.currentTarget.style.cssText = 'color: var(--color-text-muted);'"
+                                @click="openCancelModal(item)">
+                          <span class="material-symbols-outlined text-sm">do_not_disturb_on</span>
+                        </button>
+                      </td>
                     </tr>
                     <Transition name="expand">
                       <tr v-if="adminExpandedKey === `${group.sectionCode}-${item.headerId}`"
                           :key="`exp-${group.sectionCode}-${item.headerId}`">
-                        <td colspan="8" class="px-0 py-0">
+                        <td colspan="9" class="px-0 py-0">
                           <div class="mx-4 mb-3 rounded-xl overflow-hidden" style="border: 1.5px solid var(--color-border);">
                             <table class="w-full text-xs">
                               <thead>
@@ -336,26 +364,89 @@
                   title="Specimen Remarks"
                   :text="remarkViewer.text"
                   @close="remarkViewer.visible = false" />
+
+    <!-- Cancel Specimen Modal -->
+
+    <CancelSpecimenModal :isVisible="cancelModal.visible"
+                         :specimenNo="cancelModal.specimenNo"
+                         :loading="cancelModal.loading"
+                         @confirm="submitCancel"
+                         @close="cancelModal.visible = false" />
+
+
     <AlertModal :isVisible="alert.isVisible" :type="alert.type" :title="alert.title" :message="alert.message"
                 @close="alert.isVisible = false" @confirm="alert.isVisible = false" />
   </AppLayout>
 </template>
 
 <script setup>
-  import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+  import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
+  import { useRoute, useRouter } from 'vue-router'
+  import { gsap } from 'gsap'
   import AppLayout from '@/components/layout/AppLayout.vue'
   import AlertModal from '@/components/common/AlertModal.vue'
   import RemarkViewer from '@/components/common/RemarkViewer.vue'
+  import CancelSpecimenModal from '@/components/common/CancelSpecimenModal.vue'
   import { useAuthStore } from '@/stores/authStore'
   import { runnerApi } from '@/api/runnerApi'
 
   const authStore = useAuthStore()
+  const route = useRoute()
+  const router = useRouter()
+
   const alert = ref({ isVisible: false, type: 'error', title: '', message: '' })
   function showAlert(type, title, message) { alert.value = { isVisible: true, type, title, message } }
   const remarkViewer = ref({ visible: false, text: '' })
 
   function openRemarks(item) {
     remarkViewer.value = { visible: true, text: item.remarks ?? '' }
+  }
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // CANCEL SPECIMEN
+  // ══════════════════════════════════════════════════════════════════════════
+
+  const cancelModal = ref({
+    visible: false,
+    headerId: null,
+    specimenNo: '',
+    sectionCode: '',
+    isOnSite: false,
+    reason: '',
+    loading: false,
+  })
+
+  function openCancelModal(item) {
+    cancelModal.value = {
+      visible: true,
+      headerId: item.headerId,
+      specimenNo: item.specimenNo,
+      sectionCode: item.sectionCode,
+      isOnSite: item.isOnSite ?? false,
+      reason: '',
+      loading: false,
+    }
+  }
+
+  async function submitCancel(reason) {
+    cancelModal.value.loading = true
+    try {
+      await runnerApi.cancelSpecimen({
+        headerId: cancelModal.value.headerId,
+        specimenNo: cancelModal.value.specimenNo,
+        sectionCode: cancelModal.value.sectionCode,
+        reason,                          // ← comes from the emit now
+        userID: authStore.userID,
+        isOnSite: cancelModal.value.isOnSite,
+      })
+      cancelModal.value.visible = false
+      showAlert('success', 'Specimen Cancelled', `Specimen ${cancelModal.value.specimenNo} has been cancelled.`)
+      await silentRefresh()
+    } catch (e) {
+      showAlert('error', 'Cancel Failed', e?.response?.data?.message ?? 'Could not cancel specimen.')
+    } finally {
+      cancelModal.value.loading = false
+    }
   }
 
   const tagFilters = [
@@ -365,7 +456,10 @@
     { value: 'SRD', label: 'SRD', activeBg: 'rgba(74,98,109,0.12)', activeColor: 'var(--color-info, #4a626d)', countBg: 'rgba(74,98,109,0.2)' },
   ]
 
-  // Regular
+  // ══════════════════════════════════════════════════════════════════════════
+  // REGULAR / TEAM LEAD
+  // ══════════════════════════════════════════════════════════════════════════
+
   const loading = ref(true), specimens = ref([]), searchQuery = ref(''), expandedId = ref(null), activeTag = ref('ALL')
 
   const filteredSpecimens = computed(() => {
@@ -382,10 +476,13 @@
   }
   function toggleExpand(item) { expandedId.value = expandedId.value === item.headerId ? null : item.headerId }
 
-  // Admin
-  const adminLoading = ref(true), adminGroups = ref([]), adminSearchQuery = ref(''), adminExpandedKey = ref(null), adminActiveTag = ref('ALL')
+  // ══════════════════════════════════════════════════════════════════════════
+  // ADMIN
+  // ══════════════════════════════════════════════════════════════════════════
 
-  // Watch search query — auto-uncollapse sections with matches
+  const adminLoading = ref(true), adminGroups = ref([]), adminSearchQuery = ref(''), adminExpandedKey = ref(null), adminActiveTag = ref('ALL')
+  const collapsedSections = ref(new Set())
+
   watch(adminSearchQuery, (q) => {
     if (!q) return
     const next = new Set(collapsedSections.value)
@@ -402,7 +499,6 @@
     collapsedSections.value = next
   })
 
-  // Keep computed pure — no mutations
   const adminFilteredGroups = computed(() => {
     const q = adminSearchQuery.value.toLowerCase()
     return adminGroups.value.map(group => {
@@ -429,8 +525,6 @@
     adminExpandedKey.value = adminExpandedKey.value === key ? null : key
   }
 
-  const collapsedSections = ref(new Set())
-
   function toggleCollapse(sectionCode) {
     const next = new Set(collapsedSections.value)
     if (next.has(sectionCode)) next.delete(sectionCode)
@@ -438,11 +532,130 @@
     collapsedSections.value = next
   }
 
-  // Load
+  // ══════════════════════════════════════════════════════════════════════════
+  // GSAP — REFS
+  // ══════════════════════════════════════════════════════════════════════════
+
+  const tableCardRef = ref(null)
+  const tableBodyRef = ref(null)
+  const emptyRef = ref(null)
+  const adminGroupsRef = ref(null)
+  const adminEmptyRef = ref(null)
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // GSAP — ANIMATION FUNCTIONS
+  // ══════════════════════════════════════════════════════════════════════════
+
+  async function animateTableEntrance() {
+    await nextTick()
+    if (!tableCardRef.value) return
+    gsap.set(tableCardRef.value, { opacity: 0, y: 16 })
+    gsap.to(tableCardRef.value, { opacity: 1, y: 0, duration: 0.28, ease: 'power2.out' })
+    if (tableBodyRef.value) {
+      const rows = tableBodyRef.value.querySelectorAll('tr')
+      if (rows.length) {
+        gsap.set(rows, { opacity: 0, x: -8 })
+        gsap.to(rows, {
+          opacity: 1, x: 0, duration: 0.18, stagger: 0.025,
+          ease: 'power1.out', delay: 0.14, clearProps: 'opacity,x',
+        })
+      }
+    }
+  }
+
+  async function animateEmptyState(emptyRefArg) {
+    await nextTick()
+    if (!emptyRefArg.value) return
+    gsap.set(emptyRefArg.value, { scale: 0.92, opacity: 0 })
+    gsap.to(emptyRefArg.value, { scale: 1, opacity: 1, duration: 0.32, ease: 'back.out(1.5)', clearProps: 'scale,opacity' })
+  }
+
+  async function animateAdminGroups() {
+    await nextTick()
+    if (!adminGroupsRef.value) return
+    const cards = adminGroupsRef.value.querySelectorAll('.admin-group-card')
+    if (!cards.length) return
+    gsap.set(cards, { opacity: 0, y: 20 })
+    gsap.to(cards, { opacity: 1, y: 0, duration: 0.3, stagger: 0.07, ease: 'power2.out' })
+    cards.forEach((card, i) => {
+      const rows = card.querySelectorAll('tbody tr')
+      if (!rows.length) return
+      gsap.set(rows, { opacity: 0, x: -6 })
+      gsap.to(rows, {
+        opacity: 1, x: 0, duration: 0.15, stagger: 0.02,
+        ease: 'power1.out', delay: 0.18 + i * 0.05, clearProps: 'opacity,x',
+      })
+    })
+  }
+
+  async function runHighlight() {
+    const specimenNo = route.query.highlight
+    if (!specimenNo) return
+    await nextTick()
+    const row = document.querySelector(`tr[data-specimenno="${specimenNo}"]`)
+    if (!row) return
+    // For admin: un-collapse the section containing this row if needed
+    const groupCard = row.closest('.admin-group-card')
+    if (groupCard) {
+      const headerEl = groupCard.querySelector('[data-sectioncode]')
+      if (headerEl) {
+        const sc = headerEl.dataset.sectioncode
+        if (collapsedSections.value.has(sc)) {
+          const next = new Set(collapsedSections.value)
+          next.delete(sc)
+          collapsedSections.value = next
+          await nextTick()
+        }
+      }
+    }
+    row.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    // Double pulse
+    await new Promise(r => setTimeout(r, 350))
+    gsap.set(row, { backgroundColor: 'transparent' })
+    gsap.to(row, {
+      backgroundColor: 'var(--color-primary-soft)',
+      duration: 0.5,
+      ease: 'sine.inOut',
+      yoyo: true,
+      repeat: 3,
+      repeatDelay: 0.12,
+      onComplete: () => gsap.set(row, { clearProps: 'backgroundColor' }),
+    })
+    router.replace({ query: {} })
+  }
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // GSAP — WATCHERS
+  // ══════════════════════════════════════════════════════════════════════════
+
+  watch(loading, async (isLoading) => {
+    if (isLoading) return
+    if (filteredSpecimens.value.length) {
+      await animateTableEntrance()
+      await runHighlight()
+    } else {
+      await animateEmptyState(emptyRef)
+    }
+  })
+
+  watch(adminLoading, async (isLoading) => {
+    if (isLoading) return
+    if (adminFilteredGroups.value.length) {
+      await animateAdminGroups()
+      await runHighlight()
+    } else {
+      await animateEmptyState(adminEmptyRef)
+    }
+  })
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // LOAD
+  // ══════════════════════════════════════════════════════════════════════════
+
   async function load() {
     if (!authStore.isAdmin) {
       loading.value = true; expandedId.value = null
-      try { const d = await runnerApi.getScheduledSpecimens(authStore.sectionCode); specimens.value = Array.isArray(d) ? d : [];         console.log(specimens.value ) }
+      try { const d = await runnerApi.getScheduledSpecimens(authStore.sectionCode); specimens.value = Array.isArray(d) ? d : [] }
       catch (e) { showAlert('error', 'Load Failed', e?.response?.data?.message ?? 'Could not load scheduled specimens.') }
       finally { loading.value = false }
     } else {
@@ -460,7 +673,10 @@
     } catch { }
   }
 
-  // Helpers
+  // ══════════════════════════════════════════════════════════════════════════
+  // HELPERS
+  // ══════════════════════════════════════════════════════════════════════════
+
   function getDistinctTags(item) {
     const seen = new Set()
     for (const t of item.tests) { if (t.scheduleTag) seen.add(t.scheduleTag) }
@@ -472,6 +688,10 @@
     const map = { END: 'background-color: rgba(70,21,153,0.1); color: var(--color-primary);', CRD: 'background-color: rgba(217,119,6,0.1); color: var(--color-warning);', SRD: 'background-color: rgba(74,98,109,0.1); color: var(--color-info, #4a626d);' }
     return map[tag] ?? 'background-color: var(--color-surface-low); color: var(--color-text-muted);'
   }
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // MOUNT / UNMOUNT
+  // ══════════════════════════════════════════════════════════════════════════
 
   let refreshInterval = null
   onMounted(() => { load(); refreshInterval = setInterval(silentRefresh, 10000) })

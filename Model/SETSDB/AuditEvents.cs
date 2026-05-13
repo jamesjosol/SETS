@@ -20,5 +20,7 @@ namespace Model.SETSDB
         public const string TestRun = "TEST_RUN";
         public const string ResultReleased = "RESULT_RELEASED";
         public const string ScheduleDue = "SCHEDULE_DUE";
+        public const string SpecimenCancelledSection = "SPECIMEN_CANCELLED_SECTION";
+        public const string TestAborted = "TEST_ABORTED";
     }
 }

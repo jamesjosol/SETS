@@ -969,6 +969,8 @@
       RESULT_RELEASED:     'background-color: var(--color-success-soft); color: var(--color-success);',
       SCHEDULE_DUE:        'background-color: rgba(37,99,235,0.08); color: #2563eb;',
       TEST_RUN:            'background-color: rgba(124,58,237,0.08); color: #7c3aed;',
+      SPECIMEN_CANCELLED_SECTION: 'background-color: rgba(239,68,68,0.10); color: var(--color-error);',
+      TEST_ABORTED:               'background-color: rgba(217,119,6,0.1); color: var(--color-warning);',
     }
     return map[eventCode] ?? 'background-color: var(--color-surface-low); color: var(--color-text-muted);'
   }
@@ -987,6 +989,8 @@
       RESULT_RELEASED:    'var(--color-success)',
       SCHEDULE_DUE:       '#2563eb',
       TEST_RUN:           '#7c3aed',
+      SPECIMEN_CANCELLED_SECTION: 'var(--color-error)',
+      TEST_ABORTED:               'var(--color-warning)',
     }
     return map[eventCode] ?? 'var(--color-text-muted)'
   }

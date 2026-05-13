@@ -618,10 +618,9 @@
 
   // Table — fire once after first table load resolves
   watch(tableLoading, async (isLoading) => {
-    if (!isLoading && recentBatches.value.length > 0) {
-      await animateTableEntrance()
-      await animateFlowBars()
-    }
+    if (isLoading) return
+    if (recentBatches.value.length > 0) await animateTableEntrance()
+    if (weeklyFlow.value.length > 0)    await animateFlowBars()
   })
 
   // Re-animate rows on pagination change

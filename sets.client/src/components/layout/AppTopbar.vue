@@ -300,7 +300,7 @@
       <div class="h-8 w-px" style="background-color: var(--color-border-strong);"></div>
 
       <!-- User Info -->
-      <div class="relative flex items-center gap-3">
+      <div ref="profileRef" class="relative flex items-center gap-3">
         <div class="text-right">
           <p class="text-sm font-bold" style="color: var(--color-text);">{{ authStore.userName }}</p>
           <p class="text-[10px] uppercase tracking-widest font-bold" style="color: var(--color-text-muted);">
@@ -311,14 +311,15 @@
         <!-- Avatar Button -->
         <button class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all active:scale-95"
                 style="background: var(--color-primary-gradient); color: #ffffff;"
-                @click="toggleDropdown">
+                @click.stop="toggleDropdown">
           {{ userInitials }}
         </button>
 
-        <!-- Dropdown -->
-        <div v-if="dropdownOpen"
+        <!-- Dropdown — v-show so GSAP can animate in/out -->
+        <div v-show="dropdownOpen"
+             ref="dropdownRef"
              class="absolute right-0 top-12 w-64 rounded-2xl shadow-xl border z-50"
-             style="background-color: var(--color-surface); border-color: var(--color-border);">
+             style="background-color: var(--color-surface); border-color: var(--color-border); transform-origin: top right;">
 
           <div class="px-5 py-4" style="border-bottom: 1px solid var(--color-border);">
             <p class="font-bold text-sm" style="color: var(--color-text);">{{ authStore.userName }}</p>
@@ -383,9 +384,6 @@
 
           </div>
         </div>
-
-        <!-- Backdrop -->
-        <div v-if="dropdownOpen" class="fixed inset-0 z-40" @click="dropdownOpen = false"></div>
       </div>
     </div>
 
@@ -393,7 +391,8 @@
 </template>
 
 <script setup>
-  import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
+  import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
+  import { gsap } from 'gsap'
   import NProgress from 'nprogress'
   import { useRouter } from 'vue-router'
   import { useAuthStore } from '@/stores/authStore'
@@ -494,13 +493,16 @@
       focusedIndex.value = -1
     }
   }
+
   onMounted(() => {
     document.addEventListener('mousedown', onClickOutside)
     document.addEventListener('click', handleNotifOutside)
+    document.addEventListener('click', handleProfileOutside)
   })
   onUnmounted(() => {
-    document.removeEventListener('click', handleNotifOutside)
     document.removeEventListener('mousedown', onClickOutside)
+    document.removeEventListener('click', handleNotifOutside)
+    document.removeEventListener('click', handleProfileOutside)
   })
 
   // ── Navigation ─────────────────────────────────────────────────────────────
@@ -551,7 +553,7 @@
 
   // ── Status helpers ─────────────────────────────────────────────────────────
   function statusLabel(s) {
-    return { P: 'Pending', R: 'Received', C: 'Completed', X: 'Cancelled', S: 'Saved', PA:'Partial' }[s] ?? s
+    return { P: 'Pending', R: 'Received', C: 'Completed', X: 'Cancelled', S: 'Saved', PA: 'Partial' }[s] ?? s
   }
 
   function statusDotStyle(s) {
@@ -585,6 +587,8 @@
 
   // ── Profile dropdown ───────────────────────────────────────────────────────
   const dropdownOpen = ref(false)
+  const dropdownRef = ref(null)
+  const profileRef = ref(null)
 
   const themes = [
     { value: 0, label: '☀️ Light' },
@@ -614,9 +618,56 @@
     }
   })
 
-  function toggleDropdown() {
-    dropdownOpen.value = !dropdownOpen.value
+  // ── GSAP dropdown open / close ─────────────────────────────────────────────
+
+  async function animateDropdownOpen() {
+    await nextTick()
+    if (!dropdownRef.value) return
+    gsap.killTweensOf(dropdownRef.value)
+    gsap.set(dropdownRef.value, { opacity: 0, scale: 0.93, y: -8 })
+    gsap.to(dropdownRef.value, {
+      opacity: 1,
+      scale: 1,
+      y: 0,
+      duration: 0.22,
+      ease: 'back.out(1.6)',
+    })
   }
+
+  function animateDropdownClose(onComplete) {
+    if (!dropdownRef.value) { onComplete?.(); return }
+    gsap.killTweensOf(dropdownRef.value)
+    gsap.to(dropdownRef.value, {
+      opacity: 0,
+      scale: 0.95,
+      y: -6,
+      duration: 0.14,
+      ease: 'power2.in',
+      onComplete,
+    })
+  }
+
+  function toggleDropdown() {
+    if (dropdownOpen.value) {
+      animateDropdownClose(() => { dropdownOpen.value = false })
+    } else {
+      dropdownOpen.value = true
+      animateDropdownOpen()
+    }
+  }
+
+  function closeDropdown() {
+    if (!dropdownOpen.value) return
+    animateDropdownClose(() => { dropdownOpen.value = false })
+  }
+
+  function handleProfileOutside(e) {
+    if (profileRef.value && !profileRef.value.contains(e.target)) {
+      closeDropdown()
+    }
+  }
+
+  // ── Theme / Accent / Logout ────────────────────────────────────────────────
 
   async function handleThemeChange(themeValue) {
     authStore.setTheme(themeValue)
@@ -631,6 +682,7 @@
   }
 
   async function handleLogout() {
+    closeDropdown()
     NProgress.start()
     try {
       await authApi.logout()
@@ -660,7 +712,6 @@
       await notifStore.markRead(notif.notifID)
     }
     notifOpen.value = false
-    // Navigate to relevant page based on notif type + role
     navigateToRef(notif)
   }
 
@@ -729,7 +780,6 @@
     return d.toLocaleDateString('en-PH', { month: 'short', day: 'numeric' })
   }
 
-  // Close on outside click
   function handleNotifOutside(e) {
     if (notifRef.value && !notifRef.value.contains(e.target)) {
       notifOpen.value = false

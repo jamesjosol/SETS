@@ -1330,5 +1330,173 @@ namespace Service.Services
             }
             catch { throw; }
         }
+
+
+        // ── Cancel specimen (runner/section side) ──────────────────────────
+        // TL / Admin only (enforced at controller level).
+        // Sets header Status = "X" and cascades to all non-released child tests.
+        public void CancelSpecimen(CancelSectionSpecimenRequest request)
+        {
+            try
+            {
+                using var context = _factory.CreateContext(_branch);
+                using var tx = context.Database.BeginTransaction();
+
+                try
+                {
+                    var now = DateTime.Now;
+
+                    // 1. Find the header
+                    var header = context.Specimen_Section_Header
+                        .FirstOrDefault(h => h.Id == request.HeaderId
+                                          && h.SectionCode == request.SectionCode)
+                        ?? throw new Exception(
+                            $"Specimen '{request.SpecimenNo}' not found in section '{request.SectionCode}'.");
+
+                    if (header.Status == "X")
+                        throw new Exception($"Specimen '{request.SpecimenNo}' is already cancelled.");
+
+                    if (header.Status == "C")
+                        throw new Exception($"Specimen '{request.SpecimenNo}' is already completed and cannot be cancelled.");
+
+                    // 2. Cancel the header
+                    header.Status = "X";
+                    header.UpdatedBy = request.UserID;
+                    header.Updated = now;
+                    context.Specimen_Section_Header.Update(header);
+
+                    // 3. Cancel all non-released child tests
+                    var tests = context.Specimen_Section_Test
+                        .Where(t => t.HeaderId == header.Id && t.Status != "X")
+                        .ToList();
+
+                    foreach (var test in tests)
+                    {
+                        test.Status = "X";
+                        test.UpdatedBy = request.UserID;
+                        test.Updated = now;
+                        context.Specimen_Section_Test.Update(test);
+                    }
+
+                    context.SaveChanges();
+                    tx.Commit();
+
+                    // 4. Audit — fire-and-forget
+                    try
+                    {
+                        // Resolve patient info from Batch_Specimen for the audit entry
+                        var bs = context.Batch_Specimen
+                            .FirstOrDefault(b => b.SpecimenNo == request.SpecimenNo);
+
+                        using var auditMaster = new MasterService(_branch_raw);
+                        auditMaster.Audit.Log(Audit_Log.SpecimenCancelledSection(
+                            request.SpecimenNo,
+                            request.SectionCode,
+                            bs?.PatientName ?? string.Empty,
+                            bs?.PID ?? string.Empty,
+                            request.Reason,
+                            request.UserID));
+                    }
+                    catch (Exception auditEx)
+                    {
+                        Console.WriteLine($"[AUDIT] CancelSpecimen logging failed for {request.SpecimenNo}: {auditEx.Message}");
+                    }
+                }
+                catch
+                {
+                    tx.Rollback();
+                    throw;
+                }
+            }
+            catch { throw; }
+        }
+
+        // ── Abort a single running test back to pending ────────────────────
+        // Available to all users.
+        // Resets test Status R → P, clears assignment fields.
+        // Re-derives header status from all sibling tests.
+        public void AbortRunningTest(AbortRunningTestRequest request)
+        {
+            try
+            {
+                using var context = _factory.CreateContext(_branch);
+                using var tx = context.Database.BeginTransaction();
+
+                try
+                {
+                    var now = DateTime.Now;
+
+                    // 1. Find the test
+                    var test = context.Specimen_Section_Test
+                        .FirstOrDefault(t => t.Id == request.TestId)
+                        ?? throw new Exception($"Test ID {request.TestId} not found.");
+
+                    if (test.Status != "R")
+                        throw new Exception($"Only running tests can be aborted. Current status: {test.Status}.");
+
+                    // 2. Reset the test
+                    test.Status = "P";
+                    test.AssignedRMT = null;
+                    test.Assigned = null;
+                    test.RunAt = null;
+                    test.UpdatedBy = request.UserID;
+                    test.Updated = now;
+                    context.Specimen_Section_Test.Update(test);
+
+                    // 3. Re-derive header status from all sibling tests
+                    var header = context.Specimen_Section_Header
+                        .FirstOrDefault(h => h.Id == request.HeaderId)
+                        ?? throw new Exception($"Header ID {request.HeaderId} not found.");
+
+                    var allSiblingTests = context.Specimen_Section_Test
+                        .Where(t => t.HeaderId == request.HeaderId)
+                        .ToList();
+
+                    // Apply the aborted test's new status in-memory before deriving
+                    var sibling = allSiblingTests.FirstOrDefault(t => t.Id == request.TestId);
+                    if (sibling != null) sibling.Status = "P";
+
+                    string newHeaderStatus;
+                    if (allSiblingTests.All(t => t.Status == "X"))
+                        newHeaderStatus = "C";
+                    else
+                        newHeaderStatus = "P";
+
+                    if (header.Status != newHeaderStatus)
+                    {
+                        header.Status = newHeaderStatus;
+                        header.UpdatedBy = request.UserID;
+                        header.Updated = now;
+                        context.Specimen_Section_Header.Update(header);
+                    }
+
+                    context.SaveChanges();
+                    tx.Commit();
+
+                    // 4. Audit — fire-and-forget
+                    try
+                    {
+                        using var auditMaster = new MasterService(_branch_raw);
+                        auditMaster.Audit.Log(Audit_Log.TestAborted(
+                            request.SpecimenNo,
+                            request.SectionCode,
+                            test.TestCode,
+                            test.TestName,
+                            request.Reason,
+                            request.UserID));
+                    }
+                    catch (Exception auditEx)
+                    {
+                        Console.WriteLine($"[AUDIT] AbortRunningTest logging failed for {request.SpecimenNo} / test {request.TestId}: {auditEx.Message}");
+                    }
+                }
+                catch
+                {
+                    tx.Rollback();
+                    throw;
+                }
+            }
+            catch { throw; }
+        }
     }
 }

@@ -154,5 +154,28 @@ namespace Model.SETSDB
                 Remarks = $"RMT: {rmtUserID}",
                 UserID = userID
             };
+
+        public static Audit_Log SpecimenCancelledSection(string specimenNo, string sectionCode, string patientName, string pid, string reason, string userID)
+            => new()
+            {
+                EventCode = AuditEvents.SpecimenCancelledSection,
+                SpecimenNo = specimenNo,
+                PatientName = patientName,
+                PID = pid,
+                ToLocation = sectionCode,
+                Remarks = reason,
+                UserID = userID
+            };
+
+        public static Audit_Log TestAborted(string specimenNo, string sectionCode, string testCode, string testName, string reason, string userID)
+           => new()
+           {
+               EventCode = AuditEvents.TestAborted,
+               SpecimenNo = specimenNo,
+               ToLocation = sectionCode,
+               Tests = $"{testCode}:{testName}",
+               Remarks = reason,
+               UserID = userID
+           };
     }
 }

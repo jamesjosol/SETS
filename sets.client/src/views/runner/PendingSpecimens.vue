@@ -40,7 +40,7 @@
       </div>
 
       <!-- Table -->
-      <div class="rounded-2xl overflow-hidden" style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
+      <div ref="tableCardRef" class="rounded-2xl overflow-hidden" style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
 
         <!-- Loading skeleton -->
         <div v-if="loading" class="p-6 flex flex-col gap-3">
@@ -48,7 +48,7 @@
         </div>
 
         <!-- Empty state -->
-        <div v-else-if="!filteredSpecimens.length" class="p-16 flex flex-col items-center gap-3">
+        <div v-else-if="!filteredSpecimens.length" ref="emptyRef" class="p-16 flex flex-col items-center gap-3">
           <span class="material-symbols-outlined text-5xl" style="color: var(--color-text-muted);">inbox</span>
           <p class="text-sm font-bold" style="color: var(--color-text);">No pending specimens</p>
           <p class="text-xs" style="color: var(--color-text-muted);">All specimens for this section have been processed.</p>
@@ -67,12 +67,14 @@
                 <th class="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Received</th>
                 <th class="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Status</th>
                 <th class="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Remarks</th>
+                <th class="px-4 py-3 w-10"></th>
               </tr>
             </thead>
-            <tbody>
+            <tbody ref="tableBodyRef">
               <template v-for="item in filteredSpecimens" :key="item.id">
                 <!-- Main row -->
                 <tr class="transition-colors cursor-pointer"
+                    :data-specimenno="item.specimenNo"
                     :style="expandedId === item.id
                       ? 'background-color: var(--color-primary-soft);'
                       : 'background-color: transparent;'"
@@ -129,12 +131,24 @@
                       </span>
                     </button>
                   </td>
+                  <!-- Cancel — TL only (Regular view) -->
+                  <td v-if="authStore.isTL" class="px-3 py-3" @click.stop>
+                    <button class="p-1.5 rounded-lg transition-all group/cancel relative"
+                            style="color: var(--color-text-muted);"
+                            title="Cancel Specimen"
+                            @mouseenter="e => e.currentTarget.style.cssText = 'color: var(--color-error, #dc2626); background-color: rgba(220,38,38,0.08);'"
+                            @mouseleave="e => e.currentTarget.style.cssText = 'color: var(--color-text-muted);'"
+                            @click="openCancelModal(item)">
+                      <span class="material-symbols-outlined text-sm">do_not_disturb_on</span>
+                    </button>
+                  </td>
+                  <td v-else class="px-3 py-3"></td>
                 </tr>
 
                 <!-- Expanded test rows -->
                 <Transition name="expand">
                   <tr v-if="expandedId === item.id" :key="`exp-${item.id}`">
-                    <td colspan="8" class="px-0 py-0">
+                    <td colspan="9" class="px-0 py-0">
                       <div class="mx-4 mb-3 rounded-xl overflow-hidden"
                            style="border: 1.5px solid var(--color-border);">
                         <div v-if="testsLoading" class="p-4 flex flex-col gap-2">
@@ -218,6 +232,7 @@
 
       <!-- Empty -->
       <div v-else-if="!adminFilteredGroups.length"
+           ref="adminEmptyRef"
            class="rounded-2xl p-16 flex flex-col items-center gap-3"
            style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
         <span class="material-symbols-outlined text-5xl" style="color: var(--color-text-muted);">inbox</span>
@@ -226,13 +241,14 @@
       </div>
 
       <!-- Grouped tables -->
-      <div v-else class="flex flex-col gap-5">
+      <div v-else ref="adminGroupsRef" class="flex flex-col gap-5">
         <div v-for="group in adminFilteredGroups" :key="group.sectionCode"
-             class="rounded-2xl overflow-hidden"
+             class="admin-group-card rounded-2xl overflow-hidden"
              style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
 
           <!-- Section header -->
           <div class="px-6 py-3 flex items-center gap-3 cursor-pointer select-none"
+               :data-sectioncode="group.sectionCode"
                style="background-color: var(--color-primary-soft); border-bottom: 1.5px solid var(--color-border);"
                @click="toggleCollapse(group.sectionCode)">
             <span class="material-symbols-outlined text-base" style="color: var(--color-primary);">science</span>
@@ -264,6 +280,7 @@
                     <th class="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Received</th>
                     <th class="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Status</th>
                     <th class="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Remarks</th>
+                    <th class="px-4 py-3 w-10"></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -271,6 +288,7 @@
 
                     <!-- Main row -->
                     <tr class="transition-colors cursor-pointer"
+                        :data-specimenno="item.specimenNo"
                         :style="adminExpandedKey === `${group.sectionCode}-${item.id}`
                         ? 'background-color: var(--color-primary-soft);'
                         : 'background-color: transparent;'"
@@ -328,13 +346,23 @@
                           </span>
                         </button>
                       </td>
+                      <td class="px-3 py-3" @click.stop>
+                        <button class="p-1.5 rounded-lg transition-all group/cancel relative"
+                                style="color: var(--color-text-muted);"
+                                title="Cancel Specimen"
+                                @mouseenter="e => e.currentTarget.style.cssText = 'color: var(--color-error, #dc2626); background-color: rgba(220,38,38,0.08);'"
+                                @mouseleave="e => e.currentTarget.style.cssText = 'color: var(--color-text-muted);'"
+                                @click="openCancelModal(item)">
+                          <span class="material-symbols-outlined text-sm">do_not_disturb_on</span>
+                        </button>
+                      </td>
                     </tr>
 
                     <!-- Expanded test rows -->
                     <Transition name="expand">
                       <tr v-if="adminExpandedKey === `${group.sectionCode}-${item.id}`"
                           :key="`exp-${group.sectionCode}-${item.id}`">
-                        <td colspan="8" class="px-0 py-0">
+                        <td colspan="9" class="px-0 py-0">
                           <div class="mx-4 mb-3 rounded-xl overflow-hidden"
                                style="border: 1.5px solid var(--color-border);">
                             <div v-if="adminTestsLoading" class="p-4 flex flex-col gap-2">
@@ -391,6 +419,11 @@
 
     </template>
 
+    <CancelSpecimenModal :isVisible="cancelModal.visible"
+                         :specimenNo="cancelModal.specimenNo"
+                         :loading="cancelModal.loading"
+                         @confirm="submitCancel"
+                         @close="cancelModal.visible = false" />
 
     <RemarkViewer :isVisible="remarkViewer.visible"
                   title="Specimen Remarks"
@@ -408,14 +441,19 @@
 </template>
 
 <script setup>
-  import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+  import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
+  import { useRoute, useRouter } from 'vue-router'
+  import { gsap } from 'gsap'
   import AppLayout from '@/components/layout/AppLayout.vue'
   import AlertModal from '@/components/common/AlertModal.vue'
   import RemarkViewer from '@/components/common/RemarkViewer.vue'
+  import CancelSpecimenModal from '@/components/common/CancelSpecimenModal.vue'
   import { useAuthStore } from '@/stores/authStore'
   import { runnerApi } from '@/api/runnerApi'
 
   const authStore = useAuthStore()
+  const route = useRoute()
+  const router = useRouter()
 
   const alert = ref({ isVisible: false, type: 'error', title: '', message: '' })
   function showAlert(type, title, message) {
@@ -429,6 +467,53 @@
   }
 
   // ══════════════════════════════════════════════════════════════════════════
+  // CANCEL SPECIMEN
+  // ══════════════════════════════════════════════════════════════════════════
+
+  const cancelModal = ref({
+    visible: false,
+    headerId: null,
+    specimenNo: '',
+    sectionCode: '',
+    isOnSite: false,
+    reason: '',
+    loading: false,
+  })
+
+  function openCancelModal(item) {
+    cancelModal.value = {
+      visible: true,
+      headerId: item.id,
+      specimenNo: item.specimenNo,
+      sectionCode: item.sectionCode,
+      isOnSite: item.isOnSite ?? false,
+      reason: '',
+      loading: false,
+    }
+  }
+
+async function submitCancel(reason) {
+  cancelModal.value.loading = true
+  try {
+    await runnerApi.cancelSpecimen({
+      headerId:   cancelModal.value.headerId,
+      specimenNo: cancelModal.value.specimenNo,
+      sectionCode: cancelModal.value.sectionCode,
+      reason,                          // ← comes from the emit now
+      userID:     authStore.userID,
+      isOnSite:   cancelModal.value.isOnSite,
+    })
+    cancelModal.value.visible = false
+    showAlert('success', 'Specimen Cancelled', `Specimen ${cancelModal.value.specimenNo} has been cancelled.`)
+    await silentRefresh()
+  } catch (e) {
+    showAlert('error', 'Cancel Failed', e?.response?.data?.message ?? 'Could not cancel specimen.')
+  } finally {
+    cancelModal.value.loading = false
+  }
+}
+
+  // ══════════════════════════════════════════════════════════════════════════
   // REGULAR / TEAM LEAD
   // ══════════════════════════════════════════════════════════════════════════
 
@@ -437,6 +522,7 @@
   const specimens = ref([])
   const searchQuery = ref('')
   const expandedId = ref(null)
+
   const expandedTests = ref([])
 
   const filteredSpecimens = computed(() => {
@@ -539,6 +625,164 @@
     else next.add(sectionCode)
     collapsedSections.value = next
   }
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // GSAP — REFS
+  // ══════════════════════════════════════════════════════════════════════════
+
+  // Regular view
+  const tableCardRef = ref(null)
+  const tableBodyRef = ref(null)
+  const emptyRef = ref(null)
+
+  // Admin view
+  const adminGroupsRef = ref(null)
+  const adminEmptyRef = ref(null)
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // GSAP — ANIMATION FUNCTIONS
+  // ══════════════════════════════════════════════════════════════════════════
+
+  async function animateTableEntrance() {
+    await nextTick()
+    if (!tableCardRef.value) return
+    // Slide the whole card in
+    gsap.set(tableCardRef.value, { opacity: 0, y: 16 })
+    gsap.to(tableCardRef.value, { opacity: 1, y: 0, duration: 0.28, ease: 'power2.out' })
+    // Stagger rows
+    if (tableBodyRef.value) {
+      const rows = tableBodyRef.value.querySelectorAll('tr')
+      if (rows.length) {
+        gsap.set(rows, { opacity: 0, x: -8 })
+        gsap.to(rows, {
+          opacity: 1,
+          x: 0,
+          duration: 0.18,
+          stagger: 0.025,
+          ease: 'power1.out',
+          delay: 0.14,
+          clearProps: 'opacity,x',
+        })
+      }
+    }
+  }
+
+  async function animateEmptyState(emptyRefArg) {
+    await nextTick()
+    if (!emptyRefArg.value) return
+    gsap.set(emptyRefArg.value, { scale: 0.92, opacity: 0 })
+    gsap.to(emptyRefArg.value, {
+      scale: 1,
+      opacity: 1,
+      duration: 0.32,
+      ease: 'back.out(1.5)',
+      clearProps: 'scale,opacity',
+    })
+  }
+
+  async function animateAdminGroups() {
+    await nextTick()
+    if (!adminGroupsRef.value) return
+    const cards = adminGroupsRef.value.querySelectorAll('.admin-group-card')
+    if (!cards.length) return
+    gsap.set(cards, { opacity: 0, y: 20 })
+    gsap.to(cards, {
+      opacity: 1,
+      y: 0,
+      duration: 0.3,
+      stagger: 0.07,
+      ease: 'power2.out',
+    })
+    // Stagger table rows within each card
+    cards.forEach((card, i) => {
+      const rows = card.querySelectorAll('tbody tr')
+      if (!rows.length) return
+      gsap.set(rows, { opacity: 0, x: -6 })
+      gsap.to(rows, {
+        opacity: 1,
+        x: 0,
+        duration: 0.15,
+        stagger: 0.02,
+        ease: 'power1.out',
+        delay: 0.18 + i * 0.05,
+        clearProps: 'opacity,x',
+      })
+    })
+  }
+
+  // ── Highlight — fired after data loads when ?highlight=<specimenNo> is present
+  async function runHighlight() {
+    const specimenNo = route.query.highlight
+    if (!specimenNo) return
+
+    await nextTick()
+
+    // Find the row across both regular and admin tables
+    const row = document.querySelector(`tr[data-specimenno="${specimenNo}"]`)
+    if (!row) return
+
+    // For admin view: make sure the parent section card isn't collapsed
+    const groupCard = row.closest('.admin-group-card')
+    if (groupCard) {
+      // Find which sectionCode this card belongs to by reading its header text
+      // We resolve it by checking collapsedSections against the card's header
+      const headerEl = groupCard.querySelector('[data-sectioncode]')
+      if (headerEl) {
+        const sc = headerEl.dataset.sectioncode
+        if (collapsedSections.value.has(sc)) {
+          const next = new Set(collapsedSections.value)
+          next.delete(sc)
+          collapsedSections.value = next
+          await nextTick()
+        }
+      }
+    }
+
+    // Scroll into view with a little offset
+    row.scrollIntoView({ behavior: 'smooth', block: 'center' })
+
+    // Double pulse: flash the background twice smoothly
+    await new Promise(r => setTimeout(r, 350)) // let scroll settle
+    gsap.set(row, { backgroundColor: 'transparent' })
+    gsap.to(row, {
+      backgroundColor: 'var(--color-primary-soft)',
+      duration: 0.5,
+      ease: 'sine.inOut',
+      yoyo: true,
+      repeat: 3,         // 4 steps total = 2 full in→out pulses
+      repeatDelay: 0.12,
+      onComplete: () => gsap.set(row, { clearProps: 'backgroundColor' }),
+    })
+
+    // Clean the query param so a hard refresh doesn't re-fire
+    router.replace({ query: {} })
+  }
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // GSAP — WATCHERS
+  // Watches both loading flags so animations fire on initial load AND
+  // every manual Refresh button press.
+  // ══════════════════════════════════════════════════════════════════════════
+
+  watch(loading, async (isLoading) => {
+    if (isLoading) return
+    if (filteredSpecimens.value.length) {
+      await animateTableEntrance()
+      await runHighlight()
+    } else {
+      await animateEmptyState(emptyRef)
+    }
+  })
+
+  watch(adminLoading, async (isLoading) => {
+    if (isLoading) return
+    if (adminFilteredGroups.value.length) {
+      await animateAdminGroups()
+      await runHighlight()
+    } else {
+      await animateEmptyState(adminEmptyRef)
+    }
+  })
 
   // ══════════════════════════════════════════════════════════════════════════
   // LOAD

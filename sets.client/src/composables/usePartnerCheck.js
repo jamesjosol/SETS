@@ -11,9 +11,9 @@ export function usePartnerCheck() {
   const latencyBadge = computed(() => {
     if (!checkResult.value || !checkResult.value.reachable) return null
     const ms = checkResult.value.latencyMs
-    if (ms < 100) return null
-    if (ms < 200) return { text: 'Slight delay', color: '#d97706', bg: 'rgba(253,230,138,0.3)' }
-    if (ms < 400) return { text: 'Delayed', color: '#b45309', bg: 'rgba(253,211,77,0.25)' }
+    if (ms < 200) return null
+    if (ms < 400) return { text: 'Slight delay', color: '#d97706', bg: 'rgba(253,230,138,0.3)' }
+    if (ms < 600) return { text: 'Delayed', color: '#b45309', bg: 'rgba(253,211,77,0.25)' }
     return { text: 'Severe delay', color: '#ea580c', bg: 'rgba(254,215,170,0.3)' }
   })
 

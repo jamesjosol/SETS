@@ -47,6 +47,7 @@ export const useAuthStore = defineStore('auth', {
     userID: (state) => state.user?.userID ?? '',
     userName: (state) => state.user?.userName ?? '',
     isAdmin: (state) => state.user?.isAdmin ?? false,
+    isTL: (state) => state.section?.roleID == 2 ?? false,
     sectionCode: (state) => state.section?.code ?? '',
     sectionName: (state) => state.section?.name ?? '',
     roleID: (state) => state.section?.roleID ?? null,

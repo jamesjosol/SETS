@@ -34,4 +34,8 @@ export const runnerApi = {
   deleteAllowedLabNo: (id) => api.delete(`${BASE_URL}/onsite/allowed-labnos/${id}`),
   scanOnSiteSpecimen: (payload) => api.post(`${BASE_URL}/onsite/scan`, payload).then(r => r.data),
   saveOnSiteAssignments: (payload) => api.post(`${BASE_URL}/onsite/assign`, payload),
+
+
+  cancelSpecimen: (payload) => api.post(`${BASE_URL}/cancel-specimen`, payload),
+  abortRunningTest: (payload) => api.post(`${BASE_URL}/abort-test`, payload),
 }
