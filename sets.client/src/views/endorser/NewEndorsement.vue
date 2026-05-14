@@ -44,73 +44,107 @@
     <div class="rounded-2xl overflow-hidden" style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
 
       <!-- Card Header: Endorsed To -->
-      <div class="px-8 py-5 flex flex-wrap items-start gap-6" style="border-bottom: 1px solid var(--color-surface-low);">
+      <div class="px-8 py-5 flex flex-wrap items-center gap-6"
+           style="border-bottom: 1px solid var(--color-surface-low);">
 
-        <!-- Endorsed To: Local (auto-filled) -->
-        <div class="flex items-center gap-3">
-          <div class="p-2 rounded-xl" style="background-color: var(--color-primary-soft);">
-            <span class="material-symbols-outlined text-lg" style="color: var(--color-primary);">arrow_forward</span>
-          </div>
-          <div>
-            <p class="text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Endorsed To (Local)</p>
-            <p class="font-bold text-sm" style="color: var(--color-text);">Processing — {{ authStore.branchCode }}</p>
+        <!-- Endorsed To label + segmented control -->
+        <div class="flex flex-col gap-2">
+          <p class="text-[10px] font-bold uppercase tracking-widest"
+             style="color: var(--color-text-muted);">Endorsed To</p>
+
+          <!-- Segmented control -->
+          <div class="flex rounded-xl overflow-hidden"
+               style="background-color: var(--color-surface-low); padding: 3px; gap: 2px;">
+
+            <!-- Local tab -->
+            <button class="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-all"
+                    :style="!isOutbound
+          ? 'background-color: var(--color-surface); color: var(--color-primary); box-shadow: 0 1px 3px var(--color-shadow);'
+          : 'background-color: transparent; color: var(--color-text-muted);'"
+                    @click="selectLocal">
+              <span class="material-symbols-outlined" style="font-size: 15px;">arrow_forward</span>
+              Local
+            </button>
+
+            <!-- Outbound tab -->
+            <button class="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-all"
+                    :disabled="!outboundEnabled || outboundBranches.length === 0"
+                    :title="!outboundEnabled
+          ? 'Outbound endorsement is disabled'
+          : outboundBranches.length === 0
+            ? 'No partner branches configured'
+            : ''"
+                    :style="isOutbound
+          ? 'background-color: var(--color-surface); color: var(--color-primary); box-shadow: 0 1px 3px var(--color-shadow);'
+          : (!outboundEnabled || outboundBranches.length === 0)
+            ? 'background-color: transparent; color: var(--color-text-muted); opacity: 0.4; cursor: not-allowed;'
+            : 'background-color: transparent; color: var(--color-text-muted);'"
+                    @click="selectOutbound">
+              <span class="material-symbols-outlined" style="font-size: 15px;">alt_route</span>
+              Outbound
+            </button>
+
           </div>
         </div>
 
         <!-- Divider -->
-        <div class="h-8 w-px hidden md:block mt-1" style="background-color: var(--color-border);"></div>
+        <div class="h-10 w-px hidden md:block" style="background-color: var(--color-border);"></div>
 
-        <!-- Endorsed To: Outbound -->
-        <div class="flex items-center gap-3" :class="{ 'opacity-40': !outboundEnabled }">
-          <div class="p-2 rounded-xl"
-               :style="isOutbound
-           ? 'background-color: var(--color-primary-soft)'
-           : 'background-color: var(--color-surface-low)'">
-              <span class="material-symbols-outlined text-lg"
-                    :style="isOutbound
-              ? 'color: var(--color-primary)'
-              : 'color: var(--color-text-muted)'">alt_route</span>
+        <!-- Content: changes based on selection -->
+        <div class="flex items-center gap-3 flex-1 min-w-0">
+
+          <!-- Local content -->
+          <template v-if="!isOutbound">
+            <div class="p-2 rounded-xl" style="background-color: var(--color-primary-soft);">
+              <span class="material-symbols-outlined text-lg" style="color: var(--color-primary);">
+                location_on
+              </span>
             </div>
-          <div>
-            <p class="text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">
-              Endorsed To (Outbound)
-            </p>
+            <div>
+              <p class="text-[10px] font-bold uppercase tracking-widest"
+                 style="color: var(--color-text-muted);">Destination</p>
+              <p class="font-bold text-sm" style="color: var(--color-text);">
+                Processing — {{ authStore.branchCode }}
+              </p>
+            </div>
+          </template>
 
-            <!-- Feature disabled -->
-            <p v-if="!outboundEnabled"
-               class="text-sm font-bold"
-               style="color: var(--color-text-muted)">
-              Outbound endorsement is disabled
-            </p>
+          <!-- Outbound content -->
+          <template v-else>
+            <div class="p-2 rounded-xl" style="background-color: var(--color-primary-soft);">
+              <span class="material-symbols-outlined text-lg" style="color: var(--color-primary);">
+                alt_route
+              </span>
+            </div>
+            <div>
+              <p class="text-[10px] font-bold uppercase tracking-widest"
+                 style="color: var(--color-text-muted);">Partner Branch</p>
+              <DropdownSelect v-model="outboundBranchCode"
+                              placeholder="Select branch..."
+                              :options="outboundBranchOptions"
+                              @change="onOutboundBranchSelect" />
+            </div>
 
-            <!-- No partners configured -->
-            <p v-else-if="outboundBranches.length === 0"
-               class="text-sm font-bold"
-               style="color: var(--color-text-muted)">
-              No partners configured
-            </p>
+            <!-- Partner check banner inline -->
+            <div class="mt-2">
+              <PartnerCheckBanner v-if="outboundBranchCode"
+                                  :checking="partnerChecking"
+                                  :status-banner="statusBanner"
+                                  :latency-badge="latencyBadge"
+                                  @retry="runCheck(selectedOutboundBranch?.code, authStore.sectionCode)" />
+            </div>
+          </template>
 
-            <!-- Dropdown -->
-            <DropdownSelect v-else
-                            v-model="outboundBranchCode"
-                            placeholder="— Local only —"
-                            :options="outboundBranchOptions"
-                            @change="onOutboundBranchSelect" />
-          </div>
-
-          <!-- Partner check banner -->
-          <PartnerCheckBanner v-if="isOutbound"
-                              :checking="partnerChecking"
-                              :status-banner="statusBanner"
-                              :latency-badge="latencyBadge"
-                              @retry="runCheck(selectedOutboundBranch?.code, authStore.sectionCode)" />
         </div>
 
         <!-- Batch No (shown after endorsement) -->
-        <div v-if="batchNo" class="ml-auto flex items-center gap-2 px-4 py-2 rounded-xl" style="background-color: var(--color-primary-soft);">
+        <div v-if="batchNo"
+             class="ml-auto flex items-center gap-2 px-4 py-2 rounded-xl"
+             style="background-color: var(--color-primary-soft);">
           <span class="material-symbols-outlined text-sm" style="color: var(--color-primary);">tag</span>
           <span class="text-sm font-bold" style="color: var(--color-primary);">Batch: {{ batchNo }}</span>
         </div>
+
       </div>
 
       <!-- Tabs -->
@@ -475,6 +509,23 @@
   const authStore = useAuthStore()
   const outboundEnabled = ref(false)
 
+  const outboundMode = ref(false)
+
+
+function selectLocal() {
+  outboundMode.value = false
+  outboundBranchCode.value = ''
+  resetPartnerCheck()
+}
+
+function selectOutbound() {
+  if (!outboundEnabled.value || outboundBranches.value.length === 0) return
+  outboundMode.value = true
+}
+
+
+
+
   // ── Partner check composable ──────────────────────────────────────────────
   const {
     checking: partnerChecking,
@@ -504,18 +555,23 @@
     outboundBranches.value.find(b => b.code === outboundBranchCode.value) ?? null
   )
 
-  const isOutbound = computed(() => !!outboundBranchCode.value)
+const isOutbound = computed(() => outboundMode.value && !!outboundBranchCode.value
+  ? true
+  : outboundMode.value  // tab is active even before branch picked
+)
 
   const inputsBlocked = computed(() =>
-    isOutbound.value && (partnerChecking.value || partnerBlocked.value)
+    outboundMode.value && (partnerChecking.value || partnerBlocked.value)
   )
 
   const endorseButtonDisabled = computed(() =>
     isEndorsed.value ||
     isEndorsing.value ||
     (barcodedItems.value.length === 0 && nonBarcodedItems.value.length === 0) ||
+    // Block if outbound mode active but no branch selected yet
+    (outboundMode.value && !outboundBranchCode.value) ||
     inputsBlocked.value
-  )
+)
 
   // ── Load outbound partners on mount ───────────────────────────────────────
   async function loadOutboundBranches() {
@@ -535,16 +591,15 @@
   }
 
   // ── Outbound branch selection handler ─────────────────────────────────────
-  async function onOutboundBranchSelect(branchCode) {
-    if (!branchCode) {
-      outboundBranchCode.value = ''
-      resetPartnerCheck()
-      return
-    }
-    // runCheck uses the computed selectedOutboundBranch
+async function onOutboundBranchSelect(branchCode) {
+  if (!branchCode) {
+    outboundBranchCode.value = ''
     resetPartnerCheck()
-    await runCheck(branchCode, authStore.sectionCode)
+    return
   }
+  resetPartnerCheck()
+  await runCheck(branchCode, authStore.sectionCode)
+}
 
   // ── Existing state (unchanged) ────────────────────────────────────────────
   const activeTab = ref('barcoded')
@@ -824,7 +879,9 @@
     nonBarcodedInput.value = { type: 'joborder', labNo: '', description: '', quantity: 1 }
     batchNo.value = null
     isEndorsed.value = false
+    outboundMode.value = false   
     outboundBranchCode.value = ''   // ← reset string ref
+    activeTab.value = 'barcoded'
     resetPartnerCheck()
   }
 
@@ -850,10 +907,10 @@
         userID: authStore.userID,
         // If outbound, pass dest branch code + resolved processing section
         // If local, procDestination is resolved server-side as before
-        destBranchCode: isOutbound.value ? selectedOutboundBranch.value?.code ?? null : null,
-        procDestination: isOutbound.value
-          ? checkResult.value?.remoteProcessingSectionCode ?? null
-          : authStore.branchCode,
+        destBranchCode: outboundMode.value ? selectedOutboundBranch.value?.code ?? null : null,
+      procDestination: outboundMode.value
+        ? checkResult.value?.remoteProcessingSectionCode ?? null
+        : authStore.branchCode,
         specimens: barcodedItems.value.map(i => ({
           specimenNo: i.specimenNo,
           labNo: i.labNo,
@@ -879,9 +936,9 @@
       batchNo.value = response.data.batchNo
       isEndorsed.value = true
 
-      const successMsg = isOutbound.value
-        ? `Batch ${batchNo.value} has been created and sent to ${selectedOutboundBranch.value.name}.`
-        : `Batch ${batchNo.value} has been created.`
+    const successMsg = outboundMode.value
+      ? `Batch ${batchNo.value} has been created and sent to ${selectedOutboundBranch.value?.name ?? outboundBranchCode.value}.`
+      : `Batch ${batchNo.value} has been created.`
 
       showAlert('success', 'Endorsement Successful', successMsg)
       await loadTatCycle()

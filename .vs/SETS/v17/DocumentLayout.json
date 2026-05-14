@@ -3,16 +3,12 @@
   "WorkspaceRootPath": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\sets.client\\src\\views\\runner\\pendingspecimens.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|solutionrelative:sets.client\\src\\views\\runner\\pendingspecimens.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\sets.client\\index.html||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|solutionrelative:sets.client\\index.html||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\sets.client\\src\\components\\common\\abortrunningtestmodal.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}",
       "RelativeMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|solutionrelative:sets.client\\src\\components\\common\\abortrunningtestmodal.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\sets.client\\src\\views\\runner\\pendingspecimens.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|solutionrelative:sets.client\\src\\views\\runner\\pendingspecimens.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{BD9ED67C-9663-4A71-9490-22712D3ED118}|SETS.Server\\SETS.Server.csproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\sets.server\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
@@ -118,7 +114,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 3,
               "Title": "AuditTrail.vue",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\shared\\AuditTrail.vue",
               "RelativeDocumentMoniker": "sets.client\\src\\views\\shared\\AuditTrail.vue",
@@ -126,12 +122,11 @@
               "RelativeToolTip": "sets.client\\src\\views\\shared\\AuditTrail.vue",
               "ViewState": "AgIAAHgDAAAAAAAAAAAvwLoDAABDAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
-              "WhenOpened": "2026-05-13T05:04:12.672Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-13T05:04:12.672Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 1,
               "Title": "PendingSpecimens.vue",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\runner\\PendingSpecimens.vue",
               "RelativeDocumentMoniker": "sets.client\\src\\views\\runner\\PendingSpecimens.vue",
@@ -144,7 +139,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 20,
+              "DocumentIndex": 19,
               "Title": "Reports.vue",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\shared\\Reports.vue",
               "RelativeDocumentMoniker": "sets.client\\src\\views\\shared\\Reports.vue",
@@ -152,12 +147,11 @@
               "RelativeToolTip": "sets.client\\src\\views\\shared\\Reports.vue",
               "ViewState": "AgIAAGYAAAAAAAAAAAAAAKEAAAAGAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
-              "WhenOpened": "2026-05-13T01:24:09.652Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-13T01:24:09.652Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 21,
+              "DocumentIndex": 20,
               "Title": "ReceivedBatches.vue",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\receiver\\ReceivedBatches.vue",
               "RelativeDocumentMoniker": "sets.client\\src\\views\\receiver\\ReceivedBatches.vue",
@@ -165,12 +159,11 @@
               "RelativeToolTip": "sets.client\\src\\views\\receiver\\ReceivedBatches.vue",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAEIAAAAhAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
-              "WhenOpened": "2026-05-13T01:12:28.961Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-13T01:12:28.961Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 2,
               "Title": "appsettings.json",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\SETS.Server\\appsettings.json",
               "RelativeDocumentMoniker": "SETS.Server\\appsettings.json",
@@ -178,12 +171,11 @@
               "RelativeToolTip": "SETS.Server\\appsettings.json",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAAAeAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2026-05-12T01:19:47.101Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-12T01:19:47.101Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 24,
+              "DocumentIndex": 23,
               "Title": "ReceiverDashboard.vue",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\receiver\\ReceiverDashboard.vue",
               "RelativeDocumentMoniker": "sets.client\\src\\views\\receiver\\ReceiverDashboard.vue",
@@ -195,7 +187,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 22,
+              "DocumentIndex": 21,
               "Title": "Endorsements.vue",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\endorser\\Endorsements.vue",
               "RelativeDocumentMoniker": "sets.client\\src\\views\\endorser\\Endorsements.vue",
@@ -203,12 +195,11 @@
               "RelativeToolTip": "sets.client\\src\\views\\endorser\\Endorsements.vue",
               "ViewState": "AgIAAOQAAAAAAAAAAAAvwPgAAAAhAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
-              "WhenOpened": "2026-05-11T07:38:59.716Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-11T07:38:59.716Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 4,
               "Title": "RunningSpecimens.vue",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\runner\\RunningSpecimens.vue",
               "RelativeDocumentMoniker": "sets.client\\src\\views\\runner\\RunningSpecimens.vue",
@@ -216,8 +207,7 @@
               "RelativeToolTip": "sets.client\\src\\views\\runner\\RunningSpecimens.vue",
               "ViewState": "AgIAAKQBAAAAAAAAAAAvwNQBAAATAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
-              "WhenOpened": "2026-05-13T00:39:37.672Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-13T00:39:37.672Z"
             }
           ]
         },
@@ -231,33 +221,20 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "index.html",
-              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\index.html",
-              "RelativeDocumentMoniker": "sets.client\\index.html",
-              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\index.html",
-              "RelativeToolTip": "sets.client\\index.html",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA8AAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001512|",
-              "WhenOpened": "2026-05-13T08:48:14.1Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 0,
               "Title": "AbortRunningTestModal.vue",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\components\\common\\AbortRunningTestModal.vue",
               "RelativeDocumentMoniker": "sets.client\\src\\components\\common\\AbortRunningTestModal.vue",
               "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\components\\common\\AbortRunningTestModal.vue",
               "RelativeToolTip": "sets.client\\src\\components\\common\\AbortRunningTestModal.vue",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAGAAAAARAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAFEAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
               "WhenOpened": "2026-05-13T05:41:34.02Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 6,
               "Title": "CancelSpecimenModal.vue",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\components\\common\\CancelSpecimenModal.vue",
               "RelativeDocumentMoniker": "sets.client\\src\\components\\common\\CancelSpecimenModal.vue",
@@ -265,12 +242,11 @@
               "RelativeToolTip": "sets.client\\src\\components\\common\\CancelSpecimenModal.vue",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABAAAAAOAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
-              "WhenOpened": "2026-05-13T05:34:01.027Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-13T05:34:01.027Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 8,
+              "DocumentIndex": 7,
               "Title": "AssignRMT.vue",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\runner\\AssignRMT.vue",
               "RelativeDocumentMoniker": "sets.client\\src\\views\\runner\\AssignRMT.vue",
@@ -278,12 +254,11 @@
               "RelativeToolTip": "sets.client\\src\\views\\runner\\AssignRMT.vue",
               "ViewState": "AgIAABUCAAAAAAAAAAAvwC8CAAAcAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
-              "WhenOpened": "2026-05-13T05:31:01.313Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-13T05:31:01.313Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 5,
               "Title": "ScheduledSpecimens.vue",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\runner\\ScheduledSpecimens.vue",
               "RelativeDocumentMoniker": "sets.client\\src\\views\\runner\\ScheduledSpecimens.vue",
@@ -291,12 +266,11 @@
               "RelativeToolTip": "sets.client\\src\\views\\runner\\ScheduledSpecimens.vue",
               "ViewState": "AgIAABgBAAAAAAAAAAAvwFwBAAAgAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
-              "WhenOpened": "2026-05-13T04:55:02.508Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-13T04:55:02.508Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 9,
+              "DocumentIndex": 8,
               "Title": "authStore.js",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\stores\\authStore.js",
               "RelativeDocumentMoniker": "sets.client\\src\\stores\\authStore.js",
@@ -304,12 +278,11 @@
               "RelativeToolTip": "sets.client\\src\\stores\\authStore.js",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAACoAAAAfAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2026-05-13T05:14:04.153Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-13T05:14:04.153Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 11,
+              "DocumentIndex": 10,
               "Title": "runnerApi.js",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\api\\runnerApi.js",
               "RelativeDocumentMoniker": "sets.client\\src\\api\\runnerApi.js",
@@ -317,12 +290,11 @@
               "RelativeToolTip": "sets.client\\src\\api\\runnerApi.js",
               "ViewState": "AgIAAAYAAAAAAAAAAAAAACkAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2026-05-13T04:53:23.025Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-13T04:53:23.025Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 15,
+              "DocumentIndex": 14,
               "Title": "usePartnerCheck.js",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\composables\\usePartnerCheck.js",
               "RelativeDocumentMoniker": "sets.client\\src\\composables\\usePartnerCheck.js",
@@ -330,12 +302,11 @@
               "RelativeToolTip": "sets.client\\src\\composables\\usePartnerCheck.js",
               "ViewState": "AgIAAAUAAAAAAAAAAAAlwEYAAAAZAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2026-05-13T04:32:11.353Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-13T04:32:11.353Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 12,
+              "DocumentIndex": 11,
               "Title": "CancelSectionSpecimenRequest.cs",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Model\\Main\\CancelSectionSpecimenRequest.cs",
               "RelativeDocumentMoniker": "Model\\Main\\CancelSectionSpecimenRequest.cs",
@@ -343,12 +314,11 @@
               "RelativeToolTip": "Model\\Main\\CancelSectionSpecimenRequest.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAACkAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-13T04:50:15.485Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-13T04:50:15.485Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 14,
+              "DocumentIndex": 13,
               "Title": "Audit_Log.cs",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Model\\SETSDB\\Audit_Log.cs",
               "RelativeDocumentMoniker": "Model\\SETSDB\\Audit_Log.cs",
@@ -356,12 +326,11 @@
               "RelativeToolTip": "Model\\SETSDB\\Audit_Log.cs",
               "ViewState": "AgIAAEYAAAAAAAAAAAAgwHUAAAAhAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-13T04:47:08.954Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-13T04:47:08.954Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 13,
+              "DocumentIndex": 12,
               "Title": "AuditService.cs",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Service\\Services\\AuditService.cs",
               "RelativeDocumentMoniker": "Service\\Services\\AuditService.cs",
@@ -369,12 +338,11 @@
               "RelativeToolTip": "Service\\Services\\AuditService.cs",
               "ViewState": "AgIAACEAAAAAAAAAAAAowHsAAAANAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-13T04:49:07.659Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-13T04:49:07.659Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 16,
+              "DocumentIndex": 15,
               "Title": "BatchController.cs",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\SETS.Server\\Controllers\\BatchController.cs",
               "RelativeDocumentMoniker": "SETS.Server\\Controllers\\BatchController.cs",
@@ -382,12 +350,11 @@
               "RelativeToolTip": "SETS.Server\\Controllers\\BatchController.cs",
               "ViewState": "AgIAAAcBAAAAAAAAAADwvwAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-13T04:29:21.405Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-13T04:29:21.405Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 17,
+              "DocumentIndex": 16,
               "Title": "PartnerCheckBanner.vue",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\components\\common\\PartnerCheckBanner.vue",
               "RelativeDocumentMoniker": "sets.client\\src\\components\\common\\PartnerCheckBanner.vue",
@@ -395,12 +362,11 @@
               "RelativeToolTip": "sets.client\\src\\components\\common\\PartnerCheckBanner.vue",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAADwAAAAKAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
-              "WhenOpened": "2026-05-13T04:28:13.559Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-13T04:28:13.559Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 19,
+              "DocumentIndex": 18,
               "Title": "AppTopbar.vue",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\components\\layout\\AppTopbar.vue",
               "RelativeDocumentMoniker": "sets.client\\src\\components\\layout\\AppTopbar.vue",
@@ -408,12 +374,11 @@
               "RelativeToolTip": "sets.client\\src\\components\\layout\\AppTopbar.vue",
               "ViewState": "AgIAACECAAAAAAAAAAAvwIsCAABAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
-              "WhenOpened": "2026-05-13T00:11:41.235Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-13T00:11:41.235Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 23,
+              "DocumentIndex": 22,
               "Title": "OutboundHclabPostCheckTask.cs",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\SETSMiddleware\\OutboundHclabPostCheckTask.cs",
               "RelativeDocumentMoniker": "SETSMiddleware\\OutboundHclabPostCheckTask.cs",
@@ -425,7 +390,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 10,
+              "DocumentIndex": 9,
               "Title": "NewEndorsement.vue",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\endorser\\NewEndorsement.vue",
               "RelativeDocumentMoniker": "sets.client\\src\\views\\endorser\\NewEndorsement.vue",
@@ -433,12 +398,11 @@
               "RelativeToolTip": "sets.client\\src\\views\\endorser\\NewEndorsement.vue",
               "ViewState": "AgIAAJgBAAAAAAAAAAAvwNMBAAAyAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
-              "WhenOpened": "2026-05-12T03:03:10.698Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-12T03:03:10.698Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 18,
+              "DocumentIndex": 17,
               "Title": "BatchDetailDrawer.vue",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\components\\common\\BatchDetailDrawer.vue",
               "RelativeDocumentMoniker": "sets.client\\src\\components\\common\\BatchDetailDrawer.vue",
@@ -446,8 +410,7 @@
               "RelativeToolTip": "sets.client\\src\\components\\common\\BatchDetailDrawer.vue",
               "ViewState": "AgIAAGIAAAAAAAAAAAAEwKgAAAA+AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
-              "WhenOpened": "2026-05-12T07:27:21.828Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-12T07:27:21.828Z"
             }
           ]
         }

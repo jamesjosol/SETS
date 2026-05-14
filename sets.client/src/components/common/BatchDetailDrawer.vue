@@ -205,11 +205,14 @@
                     </span>
                     <!-- Cancel button — TL or admin only, received specimens only -->
                     <button v-if="allowCancel && (sp.status === 'R' || sp.status === 'P') && (authStore.roleID === 2 || authStore.isAdmin)"
-                            class="w-5 h-5 rounded-full flex items-center justify-center transition-all opacity-20 hover:opacity-60"
+                            class="group w-5 h-5 rounded-full flex items-center justify-center transition-all opacity-20 hover:opacity-60"
                             style="color: var(--color-text-muted);"
                             title="Cancel receiving"
                             @click.stop="openCancelModal(sp)">
-                      <span class="material-symbols-outlined" style="font-size: 13px;">cancel</span>
+                      <span class="material-symbols-outlined transition-colors group-hover:text-red-500"
+                            style="font-size: 13px;">
+                        cancel
+                      </span>
                     </button>
                   </div>
                 </div>

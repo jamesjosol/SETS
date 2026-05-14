@@ -126,8 +126,7 @@
               "RelativeToolTip": "sets.client\\src\\views\\shared\\AuditTrail.vue",
               "ViewState": "AgIAAHgDAAAAAAAAAAAvwLoDAABDAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
-              "WhenOpened": "2026-05-13T05:04:12.672Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-13T05:04:12.672Z"
             },
             {
               "$type": "Document",
@@ -152,8 +151,7 @@
               "RelativeToolTip": "sets.client\\src\\views\\shared\\Reports.vue",
               "ViewState": "AgIAAGYAAAAAAAAAAAAAAKEAAAAGAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
-              "WhenOpened": "2026-05-13T01:24:09.652Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-13T01:24:09.652Z"
             },
             {
               "$type": "Document",
@@ -165,8 +163,7 @@
               "RelativeToolTip": "sets.client\\src\\views\\receiver\\ReceivedBatches.vue",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAEIAAAAhAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
-              "WhenOpened": "2026-05-13T01:12:28.961Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-13T01:12:28.961Z"
             },
             {
               "$type": "Document",
@@ -178,8 +175,7 @@
               "RelativeToolTip": "SETS.Server\\appsettings.json",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAAAeAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2026-05-12T01:19:47.101Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-12T01:19:47.101Z"
             },
             {
               "$type": "Document",
@@ -203,8 +199,7 @@
               "RelativeToolTip": "sets.client\\src\\views\\endorser\\Endorsements.vue",
               "ViewState": "AgIAAOQAAAAAAAAAAAAvwPgAAAAhAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
-              "WhenOpened": "2026-05-11T07:38:59.716Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-11T07:38:59.716Z"
             },
             {
               "$type": "Document",
@@ -216,8 +211,7 @@
               "RelativeToolTip": "sets.client\\src\\views\\runner\\RunningSpecimens.vue",
               "ViewState": "AgIAAKQBAAAAAAAAAAAvwNQBAAATAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
-              "WhenOpened": "2026-05-13T00:39:37.672Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-13T00:39:37.672Z"
             }
           ]
         },
@@ -252,8 +246,7 @@
               "RelativeToolTip": "sets.client\\src\\components\\common\\AbortRunningTestModal.vue",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAGAAAAARAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
-              "WhenOpened": "2026-05-13T05:41:34.02Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-13T05:41:34.02Z"
             },
             {
               "$type": "Document",
@@ -265,8 +258,7 @@
               "RelativeToolTip": "sets.client\\src\\components\\common\\CancelSpecimenModal.vue",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABAAAAAOAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
-              "WhenOpened": "2026-05-13T05:34:01.027Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-13T05:34:01.027Z"
             },
             {
               "$type": "Document",
@@ -278,8 +270,7 @@
               "RelativeToolTip": "sets.client\\src\\views\\runner\\AssignRMT.vue",
               "ViewState": "AgIAABUCAAAAAAAAAAAvwC8CAAAcAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
-              "WhenOpened": "2026-05-13T05:31:01.313Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-13T05:31:01.313Z"
             },
             {
               "$type": "Document",
@@ -291,8 +282,7 @@
               "RelativeToolTip": "sets.client\\src\\views\\runner\\ScheduledSpecimens.vue",
               "ViewState": "AgIAABgBAAAAAAAAAAAvwFwBAAAgAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
-              "WhenOpened": "2026-05-13T04:55:02.508Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-13T04:55:02.508Z"
             },
             {
               "$type": "Document",
@@ -304,8 +294,7 @@
               "RelativeToolTip": "sets.client\\src\\stores\\authStore.js",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAACoAAAAfAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2026-05-13T05:14:04.153Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-13T05:14:04.153Z"
             },
             {
               "$type": "Document",
@@ -317,8 +306,7 @@
               "RelativeToolTip": "sets.client\\src\\api\\runnerApi.js",
               "ViewState": "AgIAAAYAAAAAAAAAAAAAACkAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2026-05-13T04:53:23.025Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-13T04:53:23.025Z"
             },
             {
               "$type": "Document",
@@ -330,8 +318,7 @@
               "RelativeToolTip": "sets.client\\src\\composables\\usePartnerCheck.js",
               "ViewState": "AgIAAAUAAAAAAAAAAAAlwEYAAAAZAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2026-05-13T04:32:11.353Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-13T04:32:11.353Z"
             },
             {
               "$type": "Document",
@@ -343,8 +330,7 @@
               "RelativeToolTip": "Model\\Main\\CancelSectionSpecimenRequest.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAACkAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-13T04:50:15.485Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-13T04:50:15.485Z"
             },
             {
               "$type": "Document",
@@ -356,8 +342,7 @@
               "RelativeToolTip": "Model\\SETSDB\\Audit_Log.cs",
               "ViewState": "AgIAAEYAAAAAAAAAAAAgwHUAAAAhAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-13T04:47:08.954Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-13T04:47:08.954Z"
             },
             {
               "$type": "Document",
@@ -369,8 +354,7 @@
               "RelativeToolTip": "Service\\Services\\AuditService.cs",
               "ViewState": "AgIAACEAAAAAAAAAAAAowHsAAAANAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-13T04:49:07.659Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-13T04:49:07.659Z"
             },
             {
               "$type": "Document",
@@ -382,8 +366,7 @@
               "RelativeToolTip": "SETS.Server\\Controllers\\BatchController.cs",
               "ViewState": "AgIAAAcBAAAAAAAAAADwvwAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-13T04:29:21.405Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-13T04:29:21.405Z"
             },
             {
               "$type": "Document",
@@ -395,8 +378,7 @@
               "RelativeToolTip": "sets.client\\src\\components\\common\\PartnerCheckBanner.vue",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAADwAAAAKAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
-              "WhenOpened": "2026-05-13T04:28:13.559Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-13T04:28:13.559Z"
             },
             {
               "$type": "Document",
@@ -408,8 +390,7 @@
               "RelativeToolTip": "sets.client\\src\\components\\layout\\AppTopbar.vue",
               "ViewState": "AgIAACECAAAAAAAAAAAvwIsCAABAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
-              "WhenOpened": "2026-05-13T00:11:41.235Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-13T00:11:41.235Z"
             },
             {
               "$type": "Document",
@@ -433,8 +414,7 @@
               "RelativeToolTip": "sets.client\\src\\views\\endorser\\NewEndorsement.vue",
               "ViewState": "AgIAAJgBAAAAAAAAAAAvwNMBAAAyAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
-              "WhenOpened": "2026-05-12T03:03:10.698Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-12T03:03:10.698Z"
             },
             {
               "$type": "Document",
@@ -446,8 +426,7 @@
               "RelativeToolTip": "sets.client\\src\\components\\common\\BatchDetailDrawer.vue",
               "ViewState": "AgIAAGIAAAAAAAAAAAAEwKgAAAA+AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
-              "WhenOpened": "2026-05-12T07:27:21.828Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-12T07:27:21.828Z"
             }
           ]
         }
