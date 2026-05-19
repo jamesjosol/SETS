@@ -17,4 +17,8 @@ export const receivingApi = {
   getIncomingSpecimens: (sectionCode) => api.get(`${BASE_URL}/incoming-specimens`, { params: { sectionCode } }).then(r => r.data),
   getReceivedBatches: (sectionCode, dateFrom, dateTo) => api.get(`${BASE_URL}/received-batches`, { params: { sectionCode, dateFrom, dateTo } }).then(r => r.data),
   cancelSpecimen: (payload) => api.patch(`${BASE_URL}/specimen-cancel`, payload),
+  checkSpecimen: (specimenNo, currentBatchNo) => {
+    const params = currentBatchNo ? `?currentBatchNo=${currentBatchNo}` : ''
+    return api.get(`${BASE_URL}/check/${specimenNo}${params}`).then(r => r.data)
+  },
 }

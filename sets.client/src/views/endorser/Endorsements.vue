@@ -113,6 +113,8 @@
               <span class="font-mono text-sm font-bold" style="color: var(--color-primary);">
                 {{ batch.batchNo }}
               </span>
+
+              <!-- Unposted indicator -->
               <div v-if="batch.hasUnpostedSpecimens"
                    class="relative group flex-shrink-0">
                 <span class="material-symbols-outlined"
@@ -120,6 +122,17 @@
                 <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2.5 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest whitespace-nowrap shadow-lg pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity z-50"
                      style="background-color: var(--color-warning); color: #ffffff;">
                   Unposted specimen(s) to destination
+                </div>
+              </div>
+
+              <!-- Flagged indicator -->
+              <div v-if="batch.hasFlaggedSpecimens"
+                   class="relative group flex-shrink-0">
+                <span class="material-symbols-outlined"
+                      style="font-size: 14px; color: orangered; font-variation-settings: 'FILL' 1;">flag</span>
+                <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2.5 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest whitespace-nowrap shadow-lg pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity z-50"
+                     style="background-color: orangered; color: #ffffff; ">
+                  Has flagged specimen(s)
                 </div>
               </div>
             </div>
@@ -169,7 +182,10 @@
     <BatchDetailDrawer :isOpen="drawerOpen"
                        :loading="drawerLoading"
                        :data="drawerData"
-                       @close="closeDrawer" />
+                       :allowFlag="true"
+                       @close="closeDrawer"
+                       @specimen-flagged="onSpecimenFlagged"
+                       @specimen-unflagged="onSpecimenUnflagged" />
 
     <!-- Alert Modal -->
     <AlertModal :isVisible="alert.isVisible"
@@ -183,256 +199,292 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch, nextTick } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { gsap } from 'gsap'
-import AppLayout from '@/components/layout/AppLayout.vue'
-import AppBatchTable from '@/components/common/AppBatchTable.vue'
-import BatchDetailDrawer from '@/components/common/BatchDetailDrawer.vue'
-import DatePicker from '@/components/common/DatePicker.vue'
-import DropdownSelect from '@/components/common/DropdownSelect.vue'
-import AlertModal from '@/components/common/AlertModal.vue'
-import { useAuthStore } from '@/stores/authStore'
-import { batchApi } from '@/api/batchApi'
+  import { ref, computed, onMounted, watch, nextTick } from 'vue'
+  import { useRoute, useRouter } from 'vue-router'
+  import { gsap } from 'gsap'
+  import AppLayout from '@/components/layout/AppLayout.vue'
+  import AppBatchTable from '@/components/common/AppBatchTable.vue'
+  import BatchDetailDrawer from '@/components/common/BatchDetailDrawer.vue'
+  import DatePicker from '@/components/common/DatePicker.vue'
+  import DropdownSelect from '@/components/common/DropdownSelect.vue'
+  import AlertModal from '@/components/common/AlertModal.vue'
+  import { useAuthStore } from '@/stores/authStore'
+  import { batchApi } from '@/api/batchApi'
 
-const authStore = useAuthStore()
-const route = useRoute()
-const router = useRouter()
+  const authStore = useAuthStore()
+  const route = useRoute()
+  const router = useRouter()
 
-// ── Alert ──────────────────────────────────────────────────────────────────
+  // ── Alert ──────────────────────────────────────────────────────────────────
 
-const alert = ref({ isVisible: false, type: 'error', title: '', message: '' })
+  const alert = ref({ isVisible: false, type: 'error', title: '', message: '' })
 
-function showAlert(type, title, message) {
-  alert.value = { isVisible: true, type, title, message }
-}
-
-// ── Date range helpers ─────────────────────────────────────────────────────
-
-function toInputDate(date) {
-  return date.toISOString().slice(0, 10)
-}
-
-function defaultDateFrom() {
-  const d = new Date()
-  d.setDate(d.getDate() - 30)
-  return toInputDate(d)
-}
-
-function defaultDateTo() {
-  return toInputDate(new Date())
-}
-
-// ── Server-side date range ─────────────────────────────────────────────────
-
-const dateFrom = ref(defaultDateFrom())
-const dateTo   = ref(defaultDateTo())
-
-// ── Client-side filters ────────────────────────────────────────────────────
-
-const searchQuery  = ref('')
-const statusFilter = ref('')
-
-const hasActiveClientFilters = computed(() =>
-  !!searchQuery.value || !!statusFilter.value
-)
-
-const hasActiveFilters = computed(() =>
-  hasActiveClientFilters.value ||
-  dateFrom.value !== defaultDateFrom() ||
-  dateTo.value   !== defaultDateTo()
-)
-
-function clearFilters() {
-  searchQuery.value  = ''
-  statusFilter.value = ''
-  const prevFrom = dateFrom.value
-  const prevTo   = dateTo.value
-  dateFrom.value = defaultDateFrom()
-  dateTo.value   = defaultDateTo()
-  if (prevFrom !== dateFrom.value || prevTo !== dateTo.value) load()
-}
-
-// ── Data ───────────────────────────────────────────────────────────────────
-
-const batches     = ref([])
-const loading     = ref(true)
-const error       = ref(null)
-const currentPage = ref(1)
-const tableRef    = ref(null)
-
-async function load() {
-  if (dateFrom.value && dateTo.value && dateFrom.value > dateTo.value) {
-    showAlert('warning', 'Invalid Date Range', '"Date From" cannot be later than "Date To".')
-    return
+  function showAlert(type, title, message) {
+    alert.value = { isVisible: true, type, title, message }
   }
 
-  loading.value     = true
-  error.value       = null
-  currentPage.value = 1
+  // ── Date range helpers ─────────────────────────────────────────────────────
 
-  try {
-    if (authStore.isAdmin) {
-      batches.value = await batchApi.getAllEndorsements(dateFrom.value, dateTo.value)
-    } else {
-      batches.value = await batchApi.getEndorsements(authStore.sectionCode, dateFrom.value, dateTo.value)
+  function toInputDate(date) {
+    return date.toISOString().slice(0, 10)
+  }
+
+  function defaultDateFrom() {
+    const d = new Date()
+    d.setDate(d.getDate() - 30)
+    return toInputDate(d)
+  }
+
+  function defaultDateTo() {
+    return toInputDate(new Date())
+  }
+
+  // ── Server-side date range ─────────────────────────────────────────────────
+
+  const dateFrom = ref(defaultDateFrom())
+  const dateTo = ref(defaultDateTo())
+
+  // ── Client-side filters ────────────────────────────────────────────────────
+
+  const searchQuery = ref('')
+  const statusFilter = ref('')
+
+  const hasActiveClientFilters = computed(() =>
+    !!searchQuery.value || !!statusFilter.value
+  )
+
+  const hasActiveFilters = computed(() =>
+    hasActiveClientFilters.value ||
+    dateFrom.value !== defaultDateFrom() ||
+    dateTo.value !== defaultDateTo()
+  )
+
+  function clearFilters() {
+    searchQuery.value = ''
+    statusFilter.value = ''
+    const prevFrom = dateFrom.value
+    const prevTo = dateTo.value
+    dateFrom.value = defaultDateFrom()
+    dateTo.value = defaultDateTo()
+    if (prevFrom !== dateFrom.value || prevTo !== dateTo.value) load()
+  }
+
+  // ── Data ───────────────────────────────────────────────────────────────────
+
+  const batches = ref([])
+  const loading = ref(true)
+  const error = ref(null)
+  const currentPage = ref(1)
+  const tableRef = ref(null)
+
+  async function load() {
+    if (dateFrom.value && dateTo.value && dateFrom.value > dateTo.value) {
+      showAlert('warning', 'Invalid Date Range', '"Date From" cannot be later than "Date To".')
+      return
     }
-  } catch (err) {
-    error.value = err.response?.data?.message ?? 'Failed to load endorsements.'
-    showAlert('error', 'Load Error', error.value)
-  } finally {
-    loading.value = false
+
+    loading.value = true
+    error.value = null
+    currentPage.value = 1
+
+    try {
+      if (authStore.isAdmin) {
+        batches.value = await batchApi.getAllEndorsements(dateFrom.value, dateTo.value)
+      } else {
+        batches.value = await batchApi.getEndorsements(authStore.sectionCode, dateFrom.value, dateTo.value)
+      }
+    } catch (err) {
+      error.value = err.response?.data?.message ?? 'Failed to load endorsements.'
+      showAlert('error', 'Load Error', error.value)
+    } finally {
+      loading.value = false
+    }
   }
-}
 
-onMounted(load)
+  onMounted(load)
 
-watch([searchQuery, statusFilter], () => {
-  currentPage.value = 1
-  tableRef.value?.animateTableRows()
-})
+  watch([searchQuery, statusFilter], () => {
+    currentPage.value = 1
+    tableRef.value?.animateTableRows()
+  })
 
-// ── Highlight — fired after load when ?highlight=<batchNo> is present ──────
+  // ── Highlight — fired after load when ?highlight=<batchNo> is present ──────
 
-async function runHighlight() {
-  const batchNo = route.query.highlight
-  if (!batchNo) return
+  async function runHighlight() {
+    const batchNo = route.query.highlight
+    if (!batchNo) return
 
-  // Find which page holds this batch and jump to it
-  const idx = filteredBatches.value.findIndex(b => b.batchNo === batchNo)
-  if (idx === -1) return
+    const idx = filteredBatches.value.findIndex(b => b.batchNo === batchNo)
+    if (idx === -1) return
 
-  const targetPage = Math.floor(idx / PAGE_SIZE) + 1
-  if (currentPage.value !== targetPage) {
-    currentPage.value = targetPage
+    const targetPage = Math.floor(idx / PAGE_SIZE) + 1
+    if (currentPage.value !== targetPage) {
+      currentPage.value = targetPage
+      await nextTick()
+    }
+
     await nextTick()
+    const row = document.querySelector(`tr[data-batchno="${batchNo}"]`)
+    if (!row) return
+
+    row.scrollIntoView({ behavior: 'smooth', block: 'center' })
+
+    await new Promise(r => setTimeout(r, 350))
+    gsap.set(row, { backgroundColor: 'transparent' })
+    gsap.to(row, {
+      backgroundColor: 'var(--color-primary-soft)',
+      duration: 0.5,
+      ease: 'sine.inOut',
+      yoyo: true,
+      repeat: 3,
+      repeatDelay: 0.12,
+      onComplete: () => gsap.set(row, { clearProps: 'backgroundColor' }),
+    })
+
+    router.replace({ query: {} })
   }
 
-  await nextTick()
-  const row = document.querySelector(`tr[data-batchno="${batchNo}"]`)
-  if (!row) return
-
-  row.scrollIntoView({ behavior: 'smooth', block: 'center' })
-
-  // Double pulse
-  await new Promise(r => setTimeout(r, 350))
-  gsap.set(row, { backgroundColor: 'transparent' })
-  gsap.to(row, {
-    backgroundColor: 'var(--color-primary-soft)',
-    duration: 0.5,
-    ease: 'sine.inOut',
-    yoyo: true,
-    repeat: 3,
-    repeatDelay: 0.12,
-    onComplete: () => gsap.set(row, { clearProps: 'backgroundColor' }),
+  watch(loading, async (isLoading) => {
+    if (isLoading) return
+    await runHighlight()
   })
 
-  router.replace({ query: {} })
-}
+  // ── Client-side filtering ──────────────────────────────────────────────────
 
-watch(loading, async (isLoading) => {
-  if (isLoading) return
-  await runHighlight()
-})
+  const filteredBatches = computed(() => {
+    let list = batches.value
 
-// ── Client-side filtering ──────────────────────────────────────────────────
-
-const filteredBatches = computed(() => {
-  let list = batches.value
-
-  if (searchQuery.value.trim()) {
-    const q = searchQuery.value.trim().toLowerCase()
-    list = list.filter(b =>
-      b.batchNo.toLowerCase().includes(q) ||
-      b.endorsedBy?.toLowerCase().includes(q)
-    )
-  }
-
-  if (statusFilter.value) {
-    list = list.filter(b => b.status === statusFilter.value)
-  }
-
-  return list
-})
-
-// ── Pagination ─────────────────────────────────────────────────────────────
-
-const PAGE_SIZE = 20
-
-const totalPages = computed(() =>
-  Math.max(1, Math.ceil(filteredBatches.value.length / PAGE_SIZE))
-)
-
-const paginatedBatches = computed(() => {
-  const start = (currentPage.value - 1) * PAGE_SIZE
-  return filteredBatches.value.slice(start, start + PAGE_SIZE)
-})
-
-const pageNumbers = computed(() => {
-  const total = totalPages.value
-  const cur   = currentPage.value
-  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1)
-  let start = Math.max(1, cur - 2)
-  let end   = Math.min(total, start + 4)
-  start     = Math.max(1, end - 4)
-  return Array.from({ length: end - start + 1 }, (_, i) => start + i)
-})
-
-// ── Drawer ─────────────────────────────────────────────────────────────────
-
-const drawerOpen    = ref(false)
-const drawerLoading = ref(false)
-const drawerData    = ref(null)
-
-async function openDrawer(batchNo) {
-  drawerOpen.value    = true
-  drawerLoading.value = true
-  drawerData.value    = null
-  try {
-    drawerData.value = await batchApi.getBatchDetail(batchNo)
-  } catch (err) {
-    if (err.response?.status === 401) {
-      showAlert('error', 'Session Expired', 'Your session has expired. Please log in again.')
-    } else {
-      showAlert('error', 'Error', 'Unable to load batch details.')
+    if (searchQuery.value.trim()) {
+      const q = searchQuery.value.trim().toLowerCase()
+      list = list.filter(b =>
+        b.batchNo.toLowerCase().includes(q) ||
+        b.endorsedBy?.toLowerCase().includes(q)
+      )
     }
-    drawerOpen.value = false
-  } finally {
-    drawerLoading.value = false
-  }
-}
 
-function closeDrawer() {
-  drawerOpen.value = false
-  drawerData.value = null
-}
+    if (statusFilter.value) {
+      list = list.filter(b => b.status === statusFilter.value)
+    }
 
-// ── Helpers ────────────────────────────────────────────────────────────────
-
-function formatDateTime(dt) {
-  if (!dt) return '—'
-  return new Date(dt).toLocaleString('en-US', {
-    month: 'short', day: 'numeric',
-    hour: '2-digit', minute: '2-digit', hour12: true
+    return list
   })
-}
 
-function getBatchStatusLabel(status) {
-  const map = { P: 'Pending', PA: 'Partial', C: 'Completed' }
-  return map[status] ?? status
-}
+  // ── Pagination ─────────────────────────────────────────────────────────────
 
-function getBatchStatusStyle(status) {
-  const map = {
-    P:  'background-color: var(--color-warning-soft); color: var(--color-warning);',
-    PA: 'background-color: rgba(37,99,235,0.08); color: #2563eb;',
-    C:  'background-color: var(--color-success-soft); color: var(--color-success);',
+  const PAGE_SIZE = 20
+
+  const totalPages = computed(() =>
+    Math.max(1, Math.ceil(filteredBatches.value.length / PAGE_SIZE))
+  )
+
+  const paginatedBatches = computed(() => {
+    const start = (currentPage.value - 1) * PAGE_SIZE
+    return filteredBatches.value.slice(start, start + PAGE_SIZE)
+  })
+
+  const pageNumbers = computed(() => {
+    const total = totalPages.value
+    const cur = currentPage.value
+    if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1)
+    let start = Math.max(1, cur - 2)
+    let end = Math.min(total, start + 4)
+    start = Math.max(1, end - 4)
+    return Array.from({ length: end - start + 1 }, (_, i) => start + i)
+  })
+
+  // ── Drawer ─────────────────────────────────────────────────────────────────
+
+  const drawerOpen = ref(false)
+  const drawerLoading = ref(false)
+  const drawerData = ref(null)
+
+  async function openDrawer(batchNo) {
+    drawerOpen.value = true
+    drawerLoading.value = true
+    drawerData.value = null
+    try {
+      drawerData.value = await batchApi.getBatchDetail(batchNo)
+    } catch (err) {
+      if (err.response?.status === 401) {
+        showAlert('error', 'Session Expired', 'Your session has expired. Please log in again.')
+      } else {
+        showAlert('error', 'Error', 'Unable to load batch details.')
+      }
+      drawerOpen.value = false
+    } finally {
+      drawerLoading.value = false
+    }
   }
-  return map[status] ?? 'background-color: var(--color-surface-low); color: var(--color-text-muted);'
-}
 
-function getBatchStatusDot(status) {
-  const map = { P: 'var(--color-warning)', PA: '#2563eb', C: 'var(--color-success)' }
-  return map[status] ?? 'var(--color-text-muted)'
-}
+  function closeDrawer() {
+    drawerOpen.value = false
+    drawerData.value = null
+  }
+
+  // ── Flag / Unflag handlers ─────────────────────────────────────────────────
+
+  function onSpecimenFlagged({ specimenNo, batchNo, flagReason, flaggedBy, flaggedAt }) {
+    // Update specimen in drawerData so the drawer reflects immediately
+    if (drawerData.value?.specimens) {
+      const sp = drawerData.value.specimens.find(s => s.specimenNo === specimenNo)
+      if (sp) {
+        sp.isFlagged = true
+        sp.flagReason = flagReason
+        sp.flaggedBy = flaggedBy
+        sp.flaggedAt = flaggedAt
+      }
+    }
+
+    // Update batch row indicator in the list
+    const batch = batches.value.find(b => b.batchNo === batchNo)
+    if (batch) batch.hasFlaggedSpecimens = true
+  }
+
+  function onSpecimenUnflagged({ specimenNo, batchNo }) {
+    // Update specimen in drawerData
+    if (drawerData.value?.specimens) {
+      const sp = drawerData.value.specimens.find(s => s.specimenNo === specimenNo)
+      if (sp) {
+        sp.isFlagged = false
+        sp.flagReason = null
+        sp.flaggedBy = null
+        sp.flaggedAt = null
+      }
+    }
+
+    // Recompute batch row indicator — only clear if no flagged specimens remain
+    const batch = batches.value.find(b => b.batchNo === batchNo)
+    if (batch && drawerData.value?.specimens) {
+      batch.hasFlaggedSpecimens = drawerData.value.specimens.some(s => s.isFlagged)
+    }
+  }
+
+  // ── Helpers ────────────────────────────────────────────────────────────────
+
+  function formatDateTime(dt) {
+    if (!dt) return '—'
+    return new Date(dt).toLocaleString('en-US', {
+      month: 'short', day: 'numeric',
+      hour: '2-digit', minute: '2-digit', hour12: true
+    })
+  }
+
+  function getBatchStatusLabel(status) {
+    const map = { P: 'Pending', PA: 'Partial', C: 'Completed' }
+    return map[status] ?? status
+  }
+
+  function getBatchStatusStyle(status) {
+    const map = {
+      P: 'background-color: var(--color-warning-soft); color: var(--color-warning);',
+      PA: 'background-color: rgba(37,99,235,0.08); color: #2563eb;',
+      C: 'background-color: var(--color-success-soft); color: var(--color-success);',
+    }
+    return map[status] ?? 'background-color: var(--color-surface-low); color: var(--color-text-muted);'
+  }
+
+  function getBatchStatusDot(status) {
+    const map = { P: 'var(--color-warning)', PA: '#2563eb', C: 'var(--color-success)' }
+    return map[status] ?? 'var(--color-text-muted)'
+  }
 </script>

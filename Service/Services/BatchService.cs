@@ -347,6 +347,7 @@ namespace Service.Services
 
                 var batchNos = batches.Select(b => b.BatchNo).ToList();
                 var unpostedBatchNos = GetBatchNosWithUnpostedSpecimens(context, batchNos);
+                var flaggedBatchNos = GetBatchNosWithFlaggedSpecimens(context, batchNos);
 
                 return batches.Select(b => new BatchRecentItem
                 {
@@ -356,7 +357,8 @@ namespace Service.Services
                     EndorsedBy = b.EndorsedBy,
                     Destination = sections.TryGetValue(b.ProcDestination, out var dest) ? dest : b.ProcDestination,
                     Status = b.Status,
-                    HasUnpostedSpecimens = unpostedBatchNos.Contains(b.BatchNo) 
+                    HasUnpostedSpecimens = unpostedBatchNos.Contains(b.BatchNo),
+                    HasFlaggedSpecimens = flaggedBatchNos.Contains(b.BatchNo),
                 }).ToList();
             }
             catch { throw; }
@@ -386,6 +388,7 @@ namespace Service.Services
 
                 var batchNos = batches.Select(b => b.BatchNo).ToList();
                 var unpostedBatchNos = GetBatchNosWithUnpostedSpecimens(context, batchNos);
+                var flaggedBatchNos = GetBatchNosWithFlaggedSpecimens(context, batchNos);
 
                 return batches.Select(b => new BatchRecentItem
                 {
@@ -395,7 +398,8 @@ namespace Service.Services
                     EndorsedBy = b.EndorsedBy,
                     Destination = sections.TryGetValue(b.ProcDestination, out var dest) ? dest : b.ProcDestination,
                     Status = b.Status,
-                    HasUnpostedSpecimens = unpostedBatchNos.Contains(b.BatchNo)
+                    HasUnpostedSpecimens = unpostedBatchNos.Contains(b.BatchNo),
+                    HasFlaggedSpecimens = flaggedBatchNos.Contains(b.BatchNo)
                 }).ToList();
             }
             catch { throw; }
@@ -465,7 +469,11 @@ namespace Service.Services
                         CancelReason = s.CancelReason,
                         CancelledBy = s.CancelledBy,
                         CancelledAt = s.CancelledAt,
-                        IsPostedToDest = s.IsPostedToDest  
+                        IsPostedToDest = s.IsPostedToDest,
+                        IsFlagged = s.IsFlagged,
+                        FlagReason = s.FlagReason,
+                        FlaggedBy = s.FlaggedBy,
+                        FlaggedAt = s.FlaggedAt
                     }).ToList(),
                     NonBarcoded = nonBarcoded,
                     IsOutbound = header.IsOutbound,
@@ -581,6 +589,19 @@ namespace Service.Services
             return unposted;
         }
 
+        private HashSet<string> GetBatchNosWithFlaggedSpecimens(
+            AppDbContext context, List<string> batchNos)
+        {
+            if (!batchNos.Any()) return new HashSet<string>();
+
+            return context.Batch_Specimen
+                .Where(s => s.IsFlagged && s.Status == "P")
+                .ToList()
+                .Where(s => batchNos.Contains(s.BatchNo))
+                .Select(s => s.BatchNo)
+                .ToHashSet();
+        }
+
         public List<BatchRecentItem> GetEndorsements(string sectionCode, DateTime dateFrom, DateTime dateTo)
         {
             try
@@ -600,6 +621,7 @@ namespace Service.Services
 
                 var batchNos = batches.Select(b => b.BatchNo).ToList();
                 var unpostedBatchNos = GetBatchNosWithUnpostedSpecimens(context, batchNos);
+                var flaggedBatchNos = GetBatchNosWithFlaggedSpecimens(context, batchNos);
 
                 return batches.Select(b => new BatchRecentItem
                 {
@@ -610,7 +632,8 @@ namespace Service.Services
                     Destination = sections.TryGetValue(b.ProcDestination, out var dest) ? dest : b.ProcDestination,
                     Status = b.Status,
                     IsOutsideTat = b.IsOutsideTat,
-                    HasUnpostedSpecimens = unpostedBatchNos.Contains(b.BatchNo)
+                    HasUnpostedSpecimens = unpostedBatchNos.Contains(b.BatchNo),
+                    HasFlaggedSpecimens = flaggedBatchNos.Contains(b.BatchNo)
                 }).ToList();
             }
             catch { throw; }
@@ -638,6 +661,7 @@ namespace Service.Services
 
                 var batchNos = batches.Select(b => b.BatchNo).ToList();
                 var unpostedBatchNos = GetBatchNosWithUnpostedSpecimens(context, batchNos);
+                var flaggedBatchNos = GetBatchNosWithFlaggedSpecimens(context, batchNos);
 
                 return batches.Select(b => new BatchRecentItem
                 {
@@ -648,7 +672,8 @@ namespace Service.Services
                     Destination = sections.TryGetValue(b.ProcDestination, out var dest) ? dest : b.ProcDestination,
                     Status = b.Status,
                     IsOutsideTat = b.IsOutsideTat,
-                    HasUnpostedSpecimens = unpostedBatchNos.Contains(b.BatchNo)
+                    HasUnpostedSpecimens = unpostedBatchNos.Contains(b.BatchNo),
+                    HasFlaggedSpecimens = flaggedBatchNos.Contains(b.BatchNo)
                 }).ToList();
             }
             catch { throw; }

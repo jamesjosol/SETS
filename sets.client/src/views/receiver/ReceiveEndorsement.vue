@@ -523,6 +523,63 @@
       </div>
     </div>
 
+    <!-- ── Flagged Specimen Warning Modal ─────────────────────────────── -->
+    <div v-if="flagWarning.visible"
+         class="fixed inset-0 z-[80] flex items-center justify-center p-4">
+      <div class="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
+      <div class="relative w-full max-w-md rounded-2xl shadow-2xl p-6 flex flex-col gap-4 animate-modal"
+           style="background-color: var(--color-surface);">
+
+        <!-- Header -->
+        <div class="flex items-center gap-3">
+          <span class="material-symbols-outlined text-2xl"
+                style="color: darkred; font-variation-settings: 'FILL' 1;">flag</span>
+          <div>
+            <p class="font-bold text-sm" style="color: var(--color-text);">Flagged Specimen</p>
+            <p class="text-xs font-mono mt-0.5" style="color: var(--color-text-muted);">
+              {{ flagWarning.specimenNo }}
+            </p>
+          </div>
+        </div>
+
+        <!-- Flag details -->
+        <div class="rounded-xl p-4 flex flex-col gap-2"
+             style="background-color: rgba(186,117,23,0.08); border: 1px solid rgba(186,117,23,0.2);">
+          <p class="text-[10px] font-bold uppercase tracking-widest"
+             style="color: #BA7517;">Flag Reason</p>
+          <p class="text-sm italic"
+             style="color: var(--color-text);">"{{ flagWarning.flagReason }}"</p>
+          <p class="text-[10px]"
+             style="color: var(--color-text-muted);">
+            Flagged by {{ flagWarning.flaggedBy }} · {{ formatDateTime(flagWarning.flaggedAt) }}
+          </p>
+        </div>
+
+        <p class="text-xs" style="color: var(--color-text-muted);">
+          This specimen has been flagged by the endorser. Do you still want to receive it?
+        </p>
+
+        <!-- Actions -->
+        <div class="flex gap-3 justify-end">
+          <button class="px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all active:scale-95"
+                  style="background-color: var(--color-surface-low); color: var(--color-text-muted);"
+                  :disabled="flagWarning.saving"
+                  @click="declineFlaggedSpecimen">
+            Do Not Receive
+          </button>
+          <button class="px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all active:scale-95 disabled:opacity-40 flex items-center gap-1.5"
+                  style="background-color: darkred; color: #ffffff;"
+                  :disabled="flagWarning.saving"
+                  @click="confirmFlaggedSpecimen">
+            <span v-if="flagWarning.saving"
+                  class="material-symbols-outlined text-sm animate-spin">progress_activity</span>
+            <span v-else>Receive Anyway</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+
     <!-- Remark Modal (reused for receiving remarks) -->
     <RemarkModal :isVisible="remarkModal.visible"
                  title="Receiving Remarks"
@@ -543,52 +600,53 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, nextTick } from 'vue'
-import AppLayout from '@/components/layout/AppLayout.vue'
-import AlertModal from '@/components/common/AlertModal.vue'
-import RemarkModal from '@/components/common/RemarkModal.vue'
-import { useAuthStore } from '@/stores/authStore'
-import { receivingApi } from '@/api/receivingApi'
-import { processingOptionsApi } from '@/api/processingOptionsApi'
-import NProgress from 'nprogress'
+  import { ref, computed, onMounted, nextTick } from 'vue'
+  import AppLayout from '@/components/layout/AppLayout.vue'
+  import AlertModal from '@/components/common/AlertModal.vue'
+  import RemarkModal from '@/components/common/RemarkModal.vue'
+  import { useAuthStore } from '@/stores/authStore'
+  import { receivingApi } from '@/api/receivingApi'
+  import { flagApi } from '@/api/flagApi'
+  import { processingOptionsApi } from '@/api/processingOptionsApi'
+  import NProgress from 'nprogress'
 
-const authStore = useAuthStore()
+  const authStore = useAuthStore()
 
-// ── Tabs ───────────────────────────────────────────────────────────────────
+  // ── Tabs ───────────────────────────────────────────────────────────────────
 
-const activeTab = ref('barcoded')
-const tabs = [
-  { key: 'barcoded',    label: '🔬 Receive by Specimen' },
-  { key: 'nonbarcoded', label: '📋 Miscellaneous Items' },
-]
+  const activeTab = ref('barcoded')
+  const tabs = [
+    { key: 'barcoded', label: '🔬 Receive by Specimen' },
+    { key: 'nonbarcoded', label: '📋 Miscellaneous Items' },
+  ]
 
-// ── Alert ──────────────────────────────────────────────────────────────────
+  // ── Alert ──────────────────────────────────────────────────────────────────
 
-const alert = ref({ isVisible: false, type: 'error', title: '', message: '' })
+  const alert = ref({ isVisible: false, type: 'error', title: '', message: '' })
 
-function showAlert(type, title, message) {
-  alert.value = { isVisible: true, type, title, message }
-}
+  function showAlert(type, title, message) {
+    alert.value = { isVisible: true, type, title, message }
+  }
 
-// ── Endorsement Remark Viewer ──────────────────────────────────────────────
+  // ── Endorsement Remark Viewer ──────────────────────────────────────────────
 
-const endorsementRemarkViewer = ref({ visible: false, text: '' })
+  const endorsementRemarkViewer = ref({ visible: false, text: '' })
 
-function viewEndorsementRemark(text) {
-  if (!text) return
-  endorsementRemarkViewer.value = { visible: true, text }
-}
+  function viewEndorsementRemark(text) {
+    if (!text) return
+    endorsementRemarkViewer.value = { visible: true, text }
+  }
 
-// ── Receiving Remark Modal ─────────────────────────────────────────────────
+  // ── Receiving Remark Modal ─────────────────────────────────────────────────
 
-const remarkModal = ref({ visible: false, index: null, type: null, text: '' })
+  const remarkModal = ref({ visible: false, index: null, type: null, text: '' })
 
-function openReceivingRemark(index, type) {
-  const item = type === 'barcoded'
-    ? receivedSpecimens.value[index]
-    : filteredNonBarcoded.value[index]
-  remarkModal.value = { visible: true, index, type, text: item.receivingRemarks ?? '' }
-}
+  function openReceivingRemark(index, type) {
+    const item = type === 'barcoded'
+      ? receivedSpecimens.value[index]
+      : filteredNonBarcoded.value[index]
+    remarkModal.value = { visible: true, index, type, text: item.receivingRemarks ?? '' }
+  }
 
   async function saveReceivingRemark(text) {
     const { index, type } = remarkModal.value
@@ -607,9 +665,7 @@ function openReceivingRemark(index, type) {
         remarkModal.value.visible = false
         return
       }
-
     } else {
-      // Non-barcoded — now persisted
       const filtered = filteredNonBarcoded.value[index]
       const real = pendingNonBarcoded.value.find(n => n.itemID === filtered.itemID)
       if (!real) {
@@ -632,39 +688,112 @@ function openReceivingRemark(index, type) {
     remarkModal.value.visible = false
   }
 
+  // ── Barcoded Tab ───────────────────────────────────────────────────────────
 
-// ── Barcoded Tab ───────────────────────────────────────────────────────────
+  const specimenInput = ref(null)
+  const specimenNoInput = ref('')
+  const isScanning = ref(false)
+  const receivedSpecimens = ref([])
 
-const specimenInput = ref(null)
-const specimenNoInput = ref('')
-const isScanning = ref(false)
-const receivedSpecimens = ref([])
+  // ── Flag Warning ───────────────────────────────────────────────────────────
 
-async function handleScan() {
-  const input = specimenNoInput.value.trim().toUpperCase()
-  if (!input) return
+  const flagWarning = ref({
+    visible: false,
+    specimenNo: null,
+    batchNo: null,
+    flagReason: null,
+    flaggedBy: null,
+    flaggedAt: null,
+    saving: false,
+    // Pending specimen data to add after confirmation
+    pendingData: null,
+  })
 
-  // Duplicate check in current session only
-  if (receivedSpecimens.value.some(s => s.specimenNo === input)) {
-    showAlert('warning', 'Already Received', `Specimen ${input} has already been received in this session.`)
-    specimenNoInput.value = ''
-    return
+  async function confirmFlaggedSpecimen() {
+    flagWarning.value.saving = true
+    try {
+      await doReceive(flagWarning.value.specimenNo)
+    } catch (err) {
+      const msg = err.response?.data?.message
+      showAlert('error', 'Cannot Receive', msg || 'An error occurred.')
+    } finally {
+      flagWarning.value.saving = false
+      flagWarning.value.visible = false
+      await nextTick()
+      specimenInput.value?.focus()
+    }
   }
 
-  isScanning.value = true
-  NProgress.start()
+  async function declineFlaggedSpecimen() {
+    specimenNoInput.value = ''
+    flagWarning.value.visible = false
 
-  try {
+    await nextTick()
+    specimenInput.value?.focus()
+  }
+
+  async function handleScan() {
+    const input = specimenNoInput.value.trim().toUpperCase()
+    if (!input) return
+
+    if (receivedSpecimens.value.some(s => s.specimenNo === input)) {
+      showAlert('warning', 'Already Received', `Specimen ${input} has already been received in this session.`)
+      specimenNoInput.value = ''
+      return
+    }
+
+    isScanning.value = true
+    NProgress.start()
+
+    try {
+      // Step 1 — pre-check: validate + get flag info, no DB write
+      const check = await receivingApi.checkSpecimen(input, activeBatchNo.value ?? null)
+
+      // Step 2 — if flagged, show warning and hold
+      if (check.isFlagged) {
+        flagWarning.value = {
+          visible: true,
+          specimenNo: check.specimenNo,
+          batchNo: check.batchNo,
+          flagReason: check.flagReason,
+          flaggedBy: check.flaggedBy,
+          flaggedAt: check.flaggedAt,
+          saving: false,
+          pendingData: null,   // no pending data yet — actual receive happens on confirm
+        }
+        return
+      }
+
+      // Step 3 — not flagged, proceed with actual receive
+      await doReceive(input)
+
+    } catch (err) {
+      const msg = err.response?.data?.message
+      if (err.response?.status === 401) {
+        showAlert('error', 'Session Expired', 'Your session has expired. Please log in again.')
+      } else {
+        showAlert('error', 'Cannot Receive', msg || 'An error occurred.')
+      }
+    } finally {
+      isScanning.value = false
+      NProgress.done()
+      if (!flagWarning.value.visible) {
+        await nextTick()
+        specimenInput.value?.focus()
+      }
+    }
+  }
+
+  async function doReceive(specimenNo) {
     const response = await receivingApi.receiveSpecimen({
       userID: authStore.userID,
-      specimenNo: input,
-      currentBatchNo: activeBatchNo.value ?? null,  // ← pass active batch
+      specimenNo: specimenNo,
+      currentBatchNo: activeBatchNo.value ?? null,
       receivingRemarks: null
     })
 
     const data = response.data.data
 
-    // First scan — set active batch and pre-populate temp fields
     if (!activeBatchNo.value) {
       activeBatchNo.value = data.batchNo
       activeBatchName.value = data.locationName
@@ -682,36 +811,22 @@ async function handleScan() {
       sampleTypeName: data.sampleTypeName,
       endorsementRemarks: data.endorsementRemarks,
       receivingRemarks: null,
-      batchStatus: data.batchStatus
+      batchStatus: data.batchStatus,
     })
 
     specimenNoInput.value = ''
-
-  } catch (err) {
-    const msg = err.response?.data?.message
-    if (err.response?.status === 401) {
-      showAlert('error', 'Session Expired', 'Your session has expired. Please log in again.')
-    } else {
-      // This now catches the batch restriction error from backend too
-      showAlert('error', 'Cannot Receive', msg || 'An error occurred.')
-    }
-  } finally {
-    isScanning.value = false
-    NProgress.done()
-    await nextTick()
-    specimenInput.value?.focus()
   }
-}
 
-// ── Non-Barcoded Tab ───────────────────────────────────────────────────────
+  // ── Non-Barcoded Tab ───────────────────────────────────────────────────────
 
-const nonBarcodedLoading = ref(false)
-const pendingNonBarcoded = ref([])
-const selectedItemIDs = ref([])
-const locationFilter = ref('')
+  const nonBarcodedLoading = ref(false)
+  const pendingNonBarcoded = ref([])
+  const selectedItemIDs = ref([])
+  const locationFilter = ref('')
   const isReceivingNonBarcoded = ref(false)
 
   // ── Job Order Scan ─────────────────────────────────────────────────────────
+
   const jobOrderScanInput = ref(null)
   const jobOrderScanValue = ref('')
 
@@ -739,105 +854,100 @@ const locationFilter = ref('')
     jobOrderScanValue.value = ''
   }
 
-const availableLocations = computed(() => {
-  const seen = new Map()
-  for (const item of pendingNonBarcoded.value) {
-    if (!seen.has(item.location)) {
-      seen.set(item.location, { code: item.location, name: item.locationName })
+  const availableLocations = computed(() => {
+    const seen = new Map()
+    for (const item of pendingNonBarcoded.value) {
+      if (!seen.has(item.location)) {
+        seen.set(item.location, { code: item.location, name: item.locationName })
+      }
     }
-  }
-  return Array.from(seen.values()).sort((a, b) => a.name.localeCompare(b.name))
-})
+    return Array.from(seen.values()).sort((a, b) => a.name.localeCompare(b.name))
+  })
 
-const filteredNonBarcoded = computed(() => {
-  if (!locationFilter.value) return pendingNonBarcoded.value
-  return pendingNonBarcoded.value.filter(n => n.location === locationFilter.value)
-})
+  const filteredNonBarcoded = computed(() => {
+    if (!locationFilter.value) return pendingNonBarcoded.value
+    return pendingNonBarcoded.value.filter(n => n.location === locationFilter.value)
+  })
 
-const isAllSelected = computed(() =>
-  filteredNonBarcoded.value.length > 0 &&
-  filteredNonBarcoded.value.every(n => selectedItemIDs.value.includes(n.itemID))
-)
+  const isAllSelected = computed(() =>
+    filteredNonBarcoded.value.length > 0 &&
+    filteredNonBarcoded.value.every(n => selectedItemIDs.value.includes(n.itemID))
+  )
 
-const isSomeSelected = computed(() =>
-  filteredNonBarcoded.value.some(n => selectedItemIDs.value.includes(n.itemID)) &&
-  !isAllSelected.value
-)
+  const isSomeSelected = computed(() =>
+    filteredNonBarcoded.value.some(n => selectedItemIDs.value.includes(n.itemID)) &&
+    !isAllSelected.value
+  )
 
-function toggleSelectAll() {
-  if (isAllSelected.value) {
-    // Deselect all filtered items
-    const filteredIDs = filteredNonBarcoded.value.map(n => n.itemID)
-    selectedItemIDs.value = selectedItemIDs.value.filter(id => !filteredIDs.includes(id))
-  } else {
-    // Select all filtered items
-    const filteredIDs = filteredNonBarcoded.value.map(n => n.itemID)
-    const merged = new Set([...selectedItemIDs.value, ...filteredIDs])
-    selectedItemIDs.value = Array.from(merged)
-  }
-}
-
-function toggleItem(itemID) {
-  if (selectedItemIDs.value.includes(itemID)) {
-    selectedItemIDs.value = selectedItemIDs.value.filter(id => id !== itemID)
-  } else {
-    selectedItemIDs.value.push(itemID)
-  }
-}
-
-async function loadPendingNonBarcoded() {
-  nonBarcodedLoading.value = true
-  try {
-    const data = await receivingApi.getPendingNonBarcoded(authStore.sectionCode)
-    // ReceivingRemarks now comes from API — no need to override with null
-    pendingNonBarcoded.value = Array.isArray(data) ? data : []
-  } catch (err) {
-    if (err.response?.status === 401) {
-      showAlert('error', 'Session Expired', 'Your session has expired. Please log in again.')
+  function toggleSelectAll() {
+    if (isAllSelected.value) {
+      const filteredIDs = filteredNonBarcoded.value.map(n => n.itemID)
+      selectedItemIDs.value = selectedItemIDs.value.filter(id => !filteredIDs.includes(id))
     } else {
-      showAlert('error', 'Load Failed', 'Unable to load pending non-barcoded items.')
+      const filteredIDs = filteredNonBarcoded.value.map(n => n.itemID)
+      const merged = new Set([...selectedItemIDs.value, ...filteredIDs])
+      selectedItemIDs.value = Array.from(merged)
     }
-  } finally {
-    nonBarcodedLoading.value = false
   }
-}
 
-async function handleReceiveNonBarcoded() {
-  if (selectedItemIDs.value.length === 0) return
-
-  isReceivingNonBarcoded.value = true
-  NProgress.start()
-
-  try {
-    // Attach receiving remarks per selected item
-    // For now remarks are stored locally — future enhancement
-    await receivingApi.receiveNonBarcoded({
-      userID: authStore.userID,
-      itemIDs: selectedItemIDs.value
-    })
-
-    // Remove received items from the list
-    pendingNonBarcoded.value = pendingNonBarcoded.value
-      .filter(n => !selectedItemIDs.value.includes(n.itemID))
-
-    selectedItemIDs.value = []
-
-    showAlert('success', 'Received', 'Selected non-barcoded items have been marked as received.')
-
-  } catch (err) {
-    const msg = err.response?.data?.message
-    if (err.response?.status === 401) {
-      showAlert('error', 'Session Expired', 'Your session has expired. Please log in again.')
+  function toggleItem(itemID) {
+    if (selectedItemIDs.value.includes(itemID)) {
+      selectedItemIDs.value = selectedItemIDs.value.filter(id => id !== itemID)
     } else {
-      showAlert('error', 'Receive Failed', msg || 'Unable to receive selected items.')
+      selectedItemIDs.value.push(itemID)
     }
-  } finally {
-    isReceivingNonBarcoded.value = false
-    NProgress.done()
   }
-}
+
+  async function loadPendingNonBarcoded() {
+    nonBarcodedLoading.value = true
+    try {
+      const data = await receivingApi.getPendingNonBarcoded(authStore.sectionCode)
+      pendingNonBarcoded.value = Array.isArray(data) ? data : []
+    } catch (err) {
+      if (err.response?.status === 401) {
+        showAlert('error', 'Session Expired', 'Your session has expired. Please log in again.')
+      } else {
+        showAlert('error', 'Load Failed', 'Unable to load pending non-barcoded items.')
+      }
+    } finally {
+      nonBarcodedLoading.value = false
+    }
+  }
+
+  async function handleReceiveNonBarcoded() {
+    if (selectedItemIDs.value.length === 0) return
+
+    isReceivingNonBarcoded.value = true
+    NProgress.start()
+
+    try {
+      await receivingApi.receiveNonBarcoded({
+        userID: authStore.userID,
+        itemIDs: selectedItemIDs.value
+      })
+
+      pendingNonBarcoded.value = pendingNonBarcoded.value
+        .filter(n => !selectedItemIDs.value.includes(n.itemID))
+
+      selectedItemIDs.value = []
+
+      showAlert('success', 'Received', 'Selected non-barcoded items have been marked as received.')
+
+    } catch (err) {
+      const msg = err.response?.data?.message
+      if (err.response?.status === 401) {
+        showAlert('error', 'Session Expired', 'Your session has expired. Please log in again.')
+      } else {
+        showAlert('error', 'Receive Failed', msg || 'Unable to receive selected items.')
+      }
+    } finally {
+      isReceivingNonBarcoded.value = false
+      NProgress.done()
+    }
+  }
 
   // ── Active Batch ───────────────────────────────────────────────────────────
+
   const activeBatchNo = ref(null)
   const activeBatchName = ref(null)
   const temp = ref('')
@@ -852,7 +962,7 @@ async function handleReceiveNonBarcoded() {
     procOptions.value.showTemperature ||
     procOptions.value.showTempRemarks ||
     procOptions.value.showBagNo ||
-    temp.value || tempRemarks.value || bagNo.value  // always show if data already exists
+    temp.value || tempRemarks.value || bagNo.value
   )
 
   async function handleSaveTemp() {
@@ -894,14 +1004,24 @@ async function handleReceiveNonBarcoded() {
     }
   }
 
-// ── Lifecycle ──────────────────────────────────────────────────────────────
+  // ── Helpers ────────────────────────────────────────────────────────────────
 
-onMounted(async () => {
-  await loadPendingNonBarcoded()
-  await loadProcessingOptions()
-  await nextTick()
-  specimenInput.value?.focus()
-})
+  function formatDateTime(dt) {
+    if (!dt) return '—'
+    return new Date(dt).toLocaleString('en-US', {
+      month: 'short', day: 'numeric',
+      hour: '2-digit', minute: '2-digit', hour12: true
+    })
+  }
+
+  // ── Lifecycle ──────────────────────────────────────────────────────────────
+
+  onMounted(async () => {
+    await loadPendingNonBarcoded()
+    await loadProcessingOptions()
+    await nextTick()
+    specimenInput.value?.focus()
+  })
 
   function clearReceivedList() {
     receivedSpecimens.value = []
@@ -913,3 +1033,21 @@ onMounted(async () => {
     batchDetailsExpanded.value = true
   }
 </script>
+
+<style scoped>
+  .animate-modal {
+    animation: modalIn 0.2s ease;
+  }
+
+  @keyframes modalIn {
+    from {
+      opacity: 0;
+      transform: scale(0.9) translateY(10px);
+    }
+
+    to {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+  }
+</style>

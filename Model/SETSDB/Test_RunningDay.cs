@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Model.SETSDB
 {
@@ -16,6 +14,13 @@ namespace Model.SETSDB
         /// Semicolon-separated running days, e.g. "Monday;Wednesday;Friday"
         /// </summary>
         public string RunningDays { get; set; } = string.Empty;
+
+        /// <summary>
+        /// The HCLAB test group this test belongs to (e.g. "CH", "HEMA").
+        /// Used to scope visibility: lab section TLs only see entries matching
+        /// their section's assigned test groups.
+        /// </summary>
+        public string? TestGroupCode { get; set; }
 
         public string CreatedBy { get; set; } = string.Empty;
         public DateTime Created { get; set; }

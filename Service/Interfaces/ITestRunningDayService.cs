@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-
 using Model.SETSDB;
 
 namespace Service.Interfaces
@@ -11,6 +8,7 @@ namespace Service.Interfaces
     public interface ITestRunningDayService
     {
         List<Test_RunningDay> GetAll();
+        List<Test_RunningDay> GetByTestGroupCodes(List<string> testGroupCodes);
         Test_RunningDay? GetByTestCode(string testCode);
         void Add(Test_RunningDay item);
         void Update(Test_RunningDay item);
@@ -23,6 +21,12 @@ namespace Service.Interfaces
         /// If today is a running day it returns today.
         /// </summary>
         DateOnly? GetNearestRunningDate(string testCode, DateOnly from);
-        Task<List<Model.HCLAB.Test>> GetHCLABTests(string param);
+
+        /// <summary>
+        /// Searches HCLAB tests by code/name.
+        /// Optionally filtered to the given test group codes (for section TLs).
+        /// Pass null to return all results (admin).
+        /// </summary>
+        Task<List<Model.HCLAB.Test>> GetHCLABTests(string param, List<string>? testGroupCodes = null);
     }
 }

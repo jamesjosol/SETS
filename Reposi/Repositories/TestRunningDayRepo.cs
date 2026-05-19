@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Model.SETSDB;
 using Reposi.Context;
 
@@ -17,5 +14,18 @@ namespace Reposi.Repositories
 
         public List<Test_RunningDay> GetAll()
             => dbSet.OrderBy(t => t.TestName).ToList();
+
+        /// <summary>
+        /// Returns only entries whose TestGroupCode is in the given set.
+        /// Used to scope the list for lab section TLs.
+        /// </summary>
+        public List<Test_RunningDay> GetByTestGroupCodes(List<string> testGroupCodes)
+        {
+            // Materialise first to avoid EF Core Contains() CTE issues
+            var all = dbSet.OrderBy(t => t.TestName).ToList();
+            return all
+                .Where(t => t.TestGroupCode != null && testGroupCodes.Contains(t.TestGroupCode))
+                .ToList();
+        }
     }
 }

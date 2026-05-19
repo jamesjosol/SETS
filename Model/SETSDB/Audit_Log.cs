@@ -177,5 +177,58 @@ namespace Model.SETSDB
                Remarks = reason,
                UserID = userID
            };
+
+        public static Audit_Log SpecimenFlagged(string specimenNo, string batchNo, string patientName, string pid, string fromLocation, string flagReason, string userID)
+            => new()
+            {
+                EventCode = AuditEvents.SpecimenFlagged,
+                SpecimenNo = specimenNo,
+                BatchNo = batchNo,
+                PatientName = patientName,
+                PID = pid,
+                FromLocation = fromLocation,
+                Remarks = flagReason,
+                UserID = userID
+            };
+
+        public static Audit_Log SpecimenUnflagged(string specimenNo, string batchNo, string patientName, string pid, string fromLocation, string userID)
+            => new()
+            {
+                EventCode = AuditEvents.SpecimenUnflagged,
+                SpecimenNo = specimenNo,
+                BatchNo = batchNo,
+                PatientName = patientName,
+                PID = pid,
+                FromLocation = fromLocation,
+                UserID = userID
+            };
+
+        public static Audit_Log FlaggedSpecimenReceived(string specimenNo, string batchNo, string patientName, string pid, string fromLocation, string toLocation, string flagReason, string userID)
+            => new()
+            {
+                EventCode = AuditEvents.FlaggedSpecimenReceived,
+                SpecimenNo = specimenNo,
+                BatchNo = batchNo,
+                PatientName = patientName,
+                PID = pid,
+                FromLocation = fromLocation,
+                ToLocation = toLocation,
+                Remarks = flagReason,
+                UserID = userID
+            };
+
+        public static Audit_Log FlaggedSpecimenDeclined(string specimenNo, string batchNo, string patientName, string pid, string fromLocation, string toLocation, string flagReason, string userID)
+            => new()
+            {
+                EventCode = AuditEvents.FlaggedSpecimenDeclined,
+                SpecimenNo = specimenNo,
+                BatchNo = batchNo,
+                PatientName = patientName,
+                PID = pid,
+                FromLocation = fromLocation,
+                ToLocation = toLocation,
+                Remarks = flagReason,
+                UserID = userID
+            };
     }
 }

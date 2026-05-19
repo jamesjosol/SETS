@@ -163,6 +163,19 @@ namespace Service.Services
                             header.ProcDestination,
                             request.UserID,
                             header.IsOutsideProcTat));
+
+                        if (specimen.IsFlagged)
+                        {
+                            auditMaster.Audit.Log(Audit_Log.FlaggedSpecimenReceived(
+                                specimen.SpecimenNo,
+                                specimen.BatchNo,
+                                specimen.PatientName,
+                                specimen.PID,
+                                header.Location,
+                                header.ProcDestination,
+                                specimen.FlagReason ?? string.Empty,
+                                request.UserID));
+                        }
                     }
                     catch (Exception auditEx)
                     {
@@ -197,6 +210,45 @@ namespace Service.Services
             }
             catch { throw; }
         }
+
+        public CheckSpecimenResponse CheckSpecimen(string specimenNo, string? currentBatchNo)
+        {
+            try
+            {
+                using var context = _factory.CreateContext(_branch);
+
+                var specimen = context.Batch_Specimen
+                    .Where(s => s.SpecimenNo == specimenNo && s.Status != "X")
+                    .OrderByDescending(s => s.Endorsed)
+                    .FirstOrDefault()
+                    ?? throw new Exception($"Specimen '{specimenNo}' was not endorsed.");
+
+                if (!string.IsNullOrEmpty(currentBatchNo) &&
+                    specimen.BatchNo != currentBatchNo)
+                    throw new Exception(
+                        $"Specimen '{specimenNo}' belongs to batch {specimen.BatchNo}. " +
+                        $"Currently receiving batch {currentBatchNo}. " +
+                        $"Clear the list to receive a different batch.");
+
+                bool alreadyReceived = context.Batch_Specimen_Receiving
+                    .Any(r => r.SpecimenNo == specimenNo && r.BatchNo == specimen.BatchNo);
+
+                if (alreadyReceived && specimen.Status != "X")
+                    throw new Exception($"Specimen '{specimenNo}' has already been received.");
+
+                return new CheckSpecimenResponse
+                {
+                    SpecimenNo = specimen.SpecimenNo,
+                    BatchNo = specimen.BatchNo,
+                    IsFlagged = specimen.IsFlagged,
+                    FlagReason = specimen.FlagReason,
+                    FlaggedBy = specimen.FlaggedBy,
+                    FlaggedAt = specimen.FlaggedAt
+                };
+            }
+            catch { throw; }
+        }
+
         public void UpdateBatchTemp(UpdateBatchTempRequest request)
         {
             try

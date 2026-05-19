@@ -750,6 +750,7 @@
       SPECIMEN_ARRIVED: 'science',
       SPECIMEN_COMPLETED: 'task_alt',
       MIDDLEWARE_ISSUE: 'warning',
+      SPECIMEN_FLAGGED: 'flag',
     }
     return map[type] ?? 'notifications'
   }
@@ -763,6 +764,7 @@
       SPECIMEN_ARRIVED: 'var(--color-primary)',
       SPECIMEN_COMPLETED: 'var(--color-success)',
       MIDDLEWARE_ISSUE: 'var(--color-error)',
+      SPECIMEN_FLAGGED: 'var(--color-error)',
     }
     return map[type] ?? 'var(--color-text-muted)'
   }

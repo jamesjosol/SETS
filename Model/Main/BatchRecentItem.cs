@@ -16,5 +16,6 @@ namespace Model.Main
         public string Status { get; set; }
         public bool IsOutsideTat { get; set; }
         public bool HasUnpostedSpecimens { get; set; }
+        public bool HasFlaggedSpecimens { get; set; }
     }
 }

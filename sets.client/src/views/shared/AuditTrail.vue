@@ -2,7 +2,7 @@
   <AppLayout>
 
     <!-- Page Header -->
-    <div class="mb-6">
+    <div ref="pageHeaderRef" class="mb-6">
       <h1 class="text-2xl font-extrabold tracking-tight" style="color: var(--color-text);">Audit Trail</h1>
       <p class="text-sm mt-1" style="color: var(--color-text-muted);">
         <span :style="authStore.isAdmin ? 'color: var(--color-primary); font-weight: 700;' : ''">
@@ -13,7 +13,7 @@
     </div>
 
     <!-- Tab Navigation -->
-    <div class="flex gap-1 mb-6 p-1 rounded-2xl w-fit"
+    <div ref="tabNavRef" class="flex gap-1 mb-6 p-1 rounded-2xl w-fit"
          style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
       <button v-for="tab in visibleTabs"
               :key="tab.key"
@@ -31,7 +31,7 @@
     <template v-if="activeTab === 'by-user'">
 
       <!-- Filter Bar -->
-      <div class="rounded-2xl p-5 mb-5 flex items-end gap-4 flex-wrap"
+      <div ref="byUserFilterRef" class="rounded-2xl p-5 mb-5 flex items-end gap-4 flex-wrap"
            style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
 
         <div class="flex flex-col gap-1.5">
@@ -88,7 +88,7 @@
       </div>
 
       <!-- Table Card -->
-      <div class="rounded-2xl overflow-hidden"
+      <div ref="byUserCardRef" class="rounded-2xl overflow-hidden"
            style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
         <div class="px-8 py-5 flex items-center justify-between"
              style="border-bottom: 1px solid var(--color-surface-low);">
@@ -115,6 +115,7 @@
           </button>
         </div>
         <div v-else-if="!byUserSearched || byUserLogs.length === 0"
+             ref="byUserEmptyRef"
              class="px-8 py-16 flex flex-col items-center gap-3">
           <span class="material-symbols-outlined text-4xl" style="color: var(--color-text-muted);">
             {{ byUserSearched ? 'inbox' : 'manage_search' }}
@@ -138,7 +139,7 @@
             </thead>
             <tbody>
               <tr v-for="log in byUserPaginated" :key="log.id"
-                  class="cursor-pointer transition-colors"
+                  class="by-user-row cursor-pointer transition-colors"
                   style="border-top: 1px solid var(--color-surface-low);"
                   @mouseenter="e => e.currentTarget.style.backgroundColor = 'var(--color-surface-low)'"
                   @mouseleave="e => e.currentTarget.style.backgroundColor = 'transparent'"
@@ -248,7 +249,7 @@
       </div>
 
       <!-- Table Card -->
-      <div class="rounded-2xl overflow-hidden"
+      <div ref="bySpecimenCardRef" class="rounded-2xl overflow-hidden"
            style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
         <div class="px-8 py-5 flex items-center justify-between"
              style="border-bottom: 1px solid var(--color-surface-low);">
@@ -275,6 +276,7 @@
           </button>
         </div>
         <div v-else-if="!bySpecimenSearched || bySpecimenLogs.length === 0"
+             ref="bySpecimenEmptyRef"
              class="px-8 py-16 flex flex-col items-center gap-3">
           <span class="material-symbols-outlined text-4xl" style="color: var(--color-text-muted);">
             {{ bySpecimenSearched ? 'inbox' : 'manage_search' }}
@@ -298,7 +300,7 @@
             </thead>
             <tbody>
               <tr v-for="log in bySpecimenPaginated" :key="log.id"
-                  class="cursor-pointer transition-colors"
+                  class="by-specimen-row cursor-pointer transition-colors"
                   style="border-top: 1px solid var(--color-surface-low);"
                   @mouseenter="e => e.currentTarget.style.backgroundColor = 'var(--color-surface-low)'"
                   @mouseleave="e => e.currentTarget.style.backgroundColor = 'transparent'"
@@ -372,7 +374,7 @@
     <template v-if="activeTab === 'by-batch'">
 
       <!-- Filter Bar -->
-      <div class="rounded-2xl p-5 mb-5 flex items-end gap-4 flex-wrap"
+      <div ref="byBatchFilterRef" class="rounded-2xl p-5 mb-5 flex items-end gap-4 flex-wrap"
            style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
         <div class="flex flex-col gap-1.5">
           <label class="text-[10px] font-bold uppercase tracking-widest"
@@ -408,7 +410,7 @@
       </div>
 
       <!-- Table Card -->
-      <div class="rounded-2xl overflow-hidden"
+      <div ref="byBatchCardRef" class="rounded-2xl overflow-hidden"
            style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
         <div class="px-8 py-5 flex items-center justify-between"
              style="border-bottom: 1px solid var(--color-surface-low);">
@@ -435,6 +437,7 @@
           </button>
         </div>
         <div v-else-if="!byBatchSearched || byBatchLogs.length === 0"
+             ref="byBatchEmptyRef"
              class="px-8 py-16 flex flex-col items-center gap-3">
           <span class="material-symbols-outlined text-4xl" style="color: var(--color-text-muted);">
             {{ byBatchSearched ? 'inbox' : 'manage_search' }}
@@ -458,7 +461,7 @@
             </thead>
             <tbody>
               <tr v-for="log in byBatchPaginated" :key="log.id"
-                  class="cursor-pointer transition-colors"
+                  class="by-batch-row cursor-pointer transition-colors"
                   style="border-top: 1px solid var(--color-surface-low);"
                   @mouseenter="e => e.currentTarget.style.backgroundColor = 'var(--color-surface-low)'"
                   @mouseleave="e => e.currentTarget.style.backgroundColor = 'transparent'"
@@ -601,6 +604,7 @@
 
       <!-- Summary Cards — visible only when results are loaded -->
       <div v-if="tatCycleSearched && !tatCycleLoading && !tatCycleError && tatCycleLogs.length > 0"
+           ref="tatSummaryCardsRef"
            class="grid grid-cols-2 gap-4 mb-5" :class="authStore.isAdmin ? 'md:grid-cols-4' : 'md:grid-cols-4'">
 
         <!-- Total Cycles -->
@@ -611,7 +615,7 @@
             <span class="material-symbols-outlined text-lg" style="color: var(--color-primary);">cycle</span>
           </div>
           <div>
-            <p class="text-2xl font-extrabold tracking-tight" style="color: var(--color-text);">{{ tatCycleSummary.total }}</p>
+            <p class="text-2xl font-extrabold tracking-tight" style="color: var(--color-text);">{{ displayTatTotal }}</p>
             <p class="text-[10px] font-bold uppercase tracking-widest mt-0.5" style="color: var(--color-text-muted);">Total Cycles</p>
           </div>
         </div>
@@ -624,7 +628,7 @@
             <span class="material-symbols-outlined text-lg" style="color: var(--color-success);">check_circle</span>
           </div>
           <div>
-            <p class="text-2xl font-extrabold tracking-tight" style="color: var(--color-text);">{{ tatCycleSummary.within }}</p>
+            <p class="text-2xl font-extrabold tracking-tight" style="color: var(--color-text);">{{ displayTatWithin }}</p>
             <p class="text-[10px] font-bold uppercase tracking-widest mt-0.5" style="color: var(--color-text-muted);">Within TAT</p>
           </div>
         </div>
@@ -637,7 +641,7 @@
             <span class="material-symbols-outlined text-lg" style="color: var(--color-error);">timer_off</span>
           </div>
           <div>
-            <p class="text-2xl font-extrabold tracking-tight" style="color: var(--color-text);">{{ tatCycleSummary.outside }}</p>
+            <p class="text-2xl font-extrabold tracking-tight" style="color: var(--color-text);">{{ displayTatOutside }}</p>
             <p class="text-[10px] font-bold uppercase tracking-widest mt-0.5" style="color: var(--color-text-muted);">Outside TAT</p>
           </div>
         </div>
@@ -650,14 +654,14 @@
             <span class="material-symbols-outlined text-lg" style="color: var(--color-warning);">do_not_disturb_on</span>
           </div>
           <div>
-            <p class="text-2xl font-extrabold tracking-tight" style="color: var(--color-text);">{{ tatCycleSummary.appealed }}</p>
+            <p class="text-2xl font-extrabold tracking-tight" style="color: var(--color-text);">{{ displayTatAppealed }}</p>
             <p class="text-[10px] font-bold uppercase tracking-widest mt-0.5" style="color: var(--color-text-muted);">Appealed</p>
           </div>
         </div>
       </div>
 
       <!-- Table Card -->
-      <div class="rounded-2xl overflow-hidden"
+      <div ref="tatCycleCardRef" class="rounded-2xl overflow-hidden"
            style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
         <div class="px-8 py-5 flex items-center justify-between"
              style="border-bottom: 1px solid var(--color-surface-low);">
@@ -695,6 +699,7 @@
 
         <!-- Empty -->
         <div v-else-if="!tatCycleSearched || tatCycleLogs.length === 0"
+             ref="tatCycleEmptyRef"
              class="px-8 py-16 flex flex-col items-center gap-3">
           <span class="material-symbols-outlined text-4xl" style="color: var(--color-text-muted);">
             {{ tatCycleSearched ? 'inbox' : 'timer' }}
@@ -720,7 +725,7 @@
             </thead>
             <tbody>
               <tr v-for="cycle in tatCyclePaginated" :key="cycle.id"
-                  class="transition-colors"
+                  class="tat-cycle-row transition-colors"
                   style="border-top: 1px solid var(--color-surface-low);"
                   @mouseenter="e => e.currentTarget.style.backgroundColor = 'var(--color-surface-low)'"
                   @mouseleave="e => e.currentTarget.style.backgroundColor = 'transparent'">
@@ -891,7 +896,8 @@
 </template>
 
 <script setup>
-  import { ref, computed, onMounted } from 'vue'
+  import { ref, computed, onMounted, nextTick, watch } from 'vue'
+  import { gsap } from 'gsap'
   import AppLayout from '@/components/layout/AppLayout.vue'
   import DatePicker from '@/components/common/DatePicker.vue'
   import { useAuthStore } from '@/stores/authStore'
@@ -906,10 +912,10 @@
   // ── Tabs ───────────────────────────────────────────────────────────────────
 
   const allTabs = [
-    { key: 'by-user',    label: 'By User',       icon: 'person_search',  restricted: false },
-    { key: 'by-specimen',label: 'By Lab No.',     icon: 'barcode_scanner',restricted: false },
-    { key: 'by-batch',   label: 'Batch Details',  icon: 'inventory_2',    restricted: false },
-    { key: 'tat-cycle',  label: 'TAT Cycle Log',  icon: 'timer',          restricted: true  },
+    { key: 'by-user', label: 'By User', icon: 'person_search', restricted: false },
+    { key: 'by-specimen', label: 'By Lab No.', icon: 'barcode_scanner', restricted: false },
+    { key: 'by-batch', label: 'Batch Details', icon: 'inventory_2', restricted: false },
+    { key: 'tat-cycle', label: 'TAT Cycle Log', icon: 'timer', restricted: true },
   ]
 
   // TAT Cycle tab is only visible to endorsers (category 1) and admins
@@ -957,40 +963,44 @@
 
   function getEventStyle(eventCode) {
     const map = {
-      ENDORSED:            'background-color: var(--color-primary-soft); color: var(--color-primary);',
-      ENDORSED_14DAYS:     'background-color: var(--color-warning-soft); color: var(--color-warning);',
-      ENDORSED_DUPLICATE:  'background-color: var(--color-warning-soft); color: var(--color-warning);',
-      PROC_RECEIVED:       'background-color: var(--color-success-soft); color: var(--color-success);',
-      SPECIMEN_CANCELLED:  'background-color: rgba(239,68,68,0.10); color: var(--color-error);',
-      SECTION_RECEIVED:    'background-color: var(--color-success-soft); color: var(--color-success);',
-      SPECIMEN_STORED:     'background-color: rgba(37,99,235,0.08); color: #2563eb;',
-      TEST_SCHEDULED:      'background-color: rgba(37,99,235,0.08); color: #2563eb;',
-      TEST_RESCHEDULED:    'background-color: var(--color-warning-soft); color: var(--color-warning);',
-      RESULT_RELEASED:     'background-color: var(--color-success-soft); color: var(--color-success);',
-      SCHEDULE_DUE:        'background-color: rgba(37,99,235,0.08); color: #2563eb;',
-      TEST_RUN:            'background-color: rgba(124,58,237,0.08); color: #7c3aed;',
+      ENDORSED: 'background-color: var(--color-primary-soft); color: var(--color-primary);',
+      ENDORSED_14DAYS: 'background-color: var(--color-warning-soft); color: var(--color-warning);',
+      ENDORSED_DUPLICATE: 'background-color: var(--color-warning-soft); color: var(--color-warning);',
+      PROC_RECEIVED: 'background-color: var(--color-success-soft); color: var(--color-success);',
+      SPECIMEN_CANCELLED: 'background-color: rgba(239,68,68,0.10); color: var(--color-error);',
+      SECTION_RECEIVED: 'background-color: var(--color-success-soft); color: var(--color-success);',
+      SPECIMEN_STORED: 'background-color: rgba(37,99,235,0.08); color: #2563eb;',
+      TEST_SCHEDULED: 'background-color: rgba(37,99,235,0.08); color: #2563eb;',
+      TEST_RESCHEDULED: 'background-color: var(--color-warning-soft); color: var(--color-warning);',
+      RESULT_RELEASED: 'background-color: var(--color-success-soft); color: var(--color-success);',
+      SCHEDULE_DUE: 'background-color: rgba(37,99,235,0.08); color: #2563eb;',
+      TEST_RUN: 'background-color: rgba(124,58,237,0.08); color: #7c3aed;',
       SPECIMEN_CANCELLED_SECTION: 'background-color: rgba(239,68,68,0.10); color: var(--color-error);',
-      TEST_ABORTED:               'background-color: rgba(217,119,6,0.1); color: var(--color-warning);',
+      TEST_ABORTED: 'background-color: rgba(217,119,6,0.1); color: var(--color-warning);',
+      SPECIMEN_FLAGGED: 'background-color: rgba(239,68,68,0.10); color: var(--color-error);',
+      FLAGGED_SPECIMEN_RECEIVED: 'background-color: rgba(239,68,68,0.10); color: var(--color-error);',
     }
     return map[eventCode] ?? 'background-color: var(--color-surface-low); color: var(--color-text-muted);'
   }
 
   function getEventDot(eventCode) {
     const map = {
-      ENDORSED:           'var(--color-primary)',
-      ENDORSED_14DAYS:    'var(--color-warning)',
+      ENDORSED: 'var(--color-primary)',
+      ENDORSED_14DAYS: 'var(--color-warning)',
       ENDORSED_DUPLICATE: 'var(--color-warning)',
-      PROC_RECEIVED:      'var(--color-success)',
+      PROC_RECEIVED: 'var(--color-success)',
       SPECIMEN_CANCELLED: 'var(--color-error)',
-      SECTION_RECEIVED:   'var(--color-success)',
-      SPECIMEN_STORED:    '#2563eb',
-      TEST_SCHEDULED:     '#2563eb',
-      TEST_RESCHEDULED:   'var(--color-warning)',
-      RESULT_RELEASED:    'var(--color-success)',
-      SCHEDULE_DUE:       '#2563eb',
-      TEST_RUN:           '#7c3aed',
+      SECTION_RECEIVED: 'var(--color-success)',
+      SPECIMEN_STORED: '#2563eb',
+      TEST_SCHEDULED: '#2563eb',
+      TEST_RESCHEDULED: 'var(--color-warning)',
+      RESULT_RELEASED: 'var(--color-success)',
+      SCHEDULE_DUE: '#2563eb',
+      TEST_RUN: '#7c3aed',
       SPECIMEN_CANCELLED_SECTION: 'var(--color-error)',
-      TEST_ABORTED:               'var(--color-warning)',
+      TEST_ABORTED: 'var(--color-warning)',
+      SPECIMEN_FLAGGED: 'var(--color-error)',
+      FLAGGED_SPECIMEN_RECEIVED: 'var(--color-error)',
     }
     return map[eventCode] ?? 'var(--color-text-muted)'
   }
@@ -999,18 +1009,18 @@
 
   function getTatResultStyle(result) {
     const map = {
-      Within:    'background-color: var(--color-success-soft); color: var(--color-success);',
-      Outside:   'background-color: rgba(239,68,68,0.10); color: var(--color-error);',
-      Appealed:  'background-color: var(--color-warning-soft); color: var(--color-warning);',
-      EndOfDay:  'background-color: var(--color-surface-low); color: var(--color-text-muted);',
+      Within: 'background-color: var(--color-success-soft); color: var(--color-success);',
+      Outside: 'background-color: rgba(239,68,68,0.10); color: var(--color-error);',
+      Appealed: 'background-color: var(--color-warning-soft); color: var(--color-warning);',
+      EndOfDay: 'background-color: var(--color-surface-low); color: var(--color-text-muted);',
     }
     return map[result] ?? 'background-color: var(--color-surface-low); color: var(--color-text-muted);'
   }
 
   function getTatResultDot(result) {
     const map = {
-      Within:   'var(--color-success)',
-      Outside:  'var(--color-error)',
+      Within: 'var(--color-success)',
+      Outside: 'var(--color-error)',
       Appealed: 'var(--color-warning)',
       EndOfDay: 'var(--color-text-muted)',
     }
@@ -1019,8 +1029,8 @@
 
   function getTatResultLabel(result) {
     const map = {
-      Within:   'Within TAT',
-      Outside:  'Outside TAT',
+      Within: 'Within TAT',
+      Outside: 'Outside TAT',
       Appealed: 'Appealed',
       EndOfDay: 'End of Day',
     }
@@ -1030,7 +1040,7 @@
   function buildPageNumbers(current, total) {
     if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1)
     let start = Math.max(1, current - 2)
-    let end   = Math.min(total, start + 4)
+    let end = Math.min(total, start + 4)
     start = Math.max(1, end - 4)
     return Array.from({ length: end - start + 1 }, (_, i) => start + i)
   }
@@ -1045,21 +1055,21 @@
     if (!drawerLog.value) return []
     const l = drawerLog.value
     return [
-      { label: 'Lab No.',          value: l.specimenNo,                       extra: 'font-mono font-bold', color: 'var(--color-primary)' },
-      { label: 'Batch No.',        value: l.batchNo,                          extra: 'font-mono font-bold', color: 'var(--color-primary)' },
-      { label: 'Patient Name',     value: l.patientName,                      extra: 'font-semibold',       color: 'var(--color-text)' },
-      { label: 'Patient ID',       value: l.pid,                              extra: '',                    color: 'var(--color-text-muted)' },
-      { label: 'From',             value: l.fromLocationName,                 extra: '',                    color: 'var(--color-text)' },
-      { label: 'To',               value: l.toLocationName,                   extra: '',                    color: 'var(--color-text)' },
-      { label: 'Status',           value: l.status,                           extra: '',                    color: 'var(--color-text)' },
-      { label: 'Running Date',     value: formatDateTime(l.runningDate),      extra: '',                    color: 'var(--color-text)' },
-      { label: 'Run At',           value: formatDateTime(l.runAt),            extra: '',                    color: 'var(--color-text-muted)' },
-      { label: 'Transaction Date', value: formatDateTime(l.txDate),           extra: '',                    color: 'var(--color-warning)' },
-      { label: 'Remarks',          value: l.remarks,                          extra: '',                    color: 'var(--color-text)' },
-      { label: 'TAT Status',       value: l.isOutsideTat ? 'Outside TAT' : null,         extra: 'font-bold', color: 'var(--color-error)' },
-      { label: 'Proc TAT Status',  value: l.isOutsideProcTat ? 'Outside Processing TAT' : null, extra: 'font-bold', color: 'var(--color-error)' },
-      { label: 'Logged By',        value: l.userID,                           extra: 'font-bold',           color: l.userID === 'MIDDLEWARE' ? '#2563eb' : 'var(--color-text)' },
-      { label: 'Date & Time',      value: formatDateTime(l.loggedAt),         extra: '',                    color: 'var(--color-text-muted)' },
+      { label: 'Lab No.', value: l.specimenNo, extra: 'font-mono font-bold', color: 'var(--color-primary)' },
+      { label: 'Batch No.', value: l.batchNo, extra: 'font-mono font-bold', color: 'var(--color-primary)' },
+      { label: 'Patient Name', value: l.patientName, extra: 'font-semibold', color: 'var(--color-text)' },
+      { label: 'Patient ID', value: l.pid, extra: '', color: 'var(--color-text-muted)' },
+      { label: 'From', value: l.fromLocationName, extra: '', color: 'var(--color-text)' },
+      { label: 'To', value: l.toLocationName, extra: '', color: 'var(--color-text)' },
+      { label: 'Status', value: l.status, extra: '', color: 'var(--color-text)' },
+      { label: 'Running Date', value: formatDateTime(l.runningDate), extra: '', color: 'var(--color-text)' },
+      { label: 'Run At', value: formatDateTime(l.runAt), extra: '', color: 'var(--color-text-muted)' },
+      { label: 'Transaction Date', value: formatDateTime(l.txDate), extra: '', color: 'var(--color-warning)' },
+      { label: 'Remarks', value: l.remarks, extra: '', color: 'var(--color-text)' },
+      { label: 'TAT Status', value: l.isOutsideTat ? 'Outside TAT' : null, extra: 'font-bold', color: 'var(--color-error)' },
+      { label: 'Proc TAT Status', value: l.isOutsideProcTat ? 'Outside Processing TAT' : null, extra: 'font-bold', color: 'var(--color-error)' },
+      { label: 'Logged By', value: l.userID, extra: 'font-bold', color: l.userID === 'MIDDLEWARE' ? '#2563eb' : 'var(--color-text)' },
+      { label: 'Date & Time', value: formatDateTime(l.loggedAt), extra: '', color: 'var(--color-text-muted)' },
     ]
   })
 
@@ -1072,8 +1082,8 @@
   const byUserSearched = ref(false)
   const byUserPage = ref(1)
 
-  const byUserTotalPages  = computed(() => Math.max(1, Math.ceil(byUserLogs.value.length / PAGE_SIZE)))
-  const byUserPaginated   = computed(() => byUserLogs.value.slice((byUserPage.value - 1) * PAGE_SIZE, byUserPage.value * PAGE_SIZE))
+  const byUserTotalPages = computed(() => Math.max(1, Math.ceil(byUserLogs.value.length / PAGE_SIZE)))
+  const byUserPaginated = computed(() => byUserLogs.value.slice((byUserPage.value - 1) * PAGE_SIZE, byUserPage.value * PAGE_SIZE))
   const byUserPageNumbers = computed(() => buildPageNumbers(byUserPage.value, byUserTotalPages.value))
 
   async function loadByUser() {
@@ -1101,8 +1111,8 @@
   const bySpecimenSearched = ref(false)
   const bySpecimenPage = ref(1)
 
-  const bySpecimenTotalPages  = computed(() => Math.max(1, Math.ceil(bySpecimenLogs.value.length / PAGE_SIZE)))
-  const bySpecimenPaginated   = computed(() => bySpecimenLogs.value.slice((bySpecimenPage.value - 1) * PAGE_SIZE, bySpecimenPage.value * PAGE_SIZE))
+  const bySpecimenTotalPages = computed(() => Math.max(1, Math.ceil(bySpecimenLogs.value.length / PAGE_SIZE)))
+  const bySpecimenPaginated = computed(() => bySpecimenLogs.value.slice((bySpecimenPage.value - 1) * PAGE_SIZE, bySpecimenPage.value * PAGE_SIZE))
   const bySpecimenPageNumbers = computed(() => buildPageNumbers(bySpecimenPage.value, bySpecimenTotalPages.value))
 
   async function loadBySpecimen() {
@@ -1130,8 +1140,8 @@
   const byBatchSearched = ref(false)
   const byBatchPage = ref(1)
 
-  const byBatchTotalPages  = computed(() => Math.max(1, Math.ceil(byBatchLogs.value.length / PAGE_SIZE)))
-  const byBatchPaginated   = computed(() => byBatchLogs.value.slice((byBatchPage.value - 1) * PAGE_SIZE, byBatchPage.value * PAGE_SIZE))
+  const byBatchTotalPages = computed(() => Math.max(1, Math.ceil(byBatchLogs.value.length / PAGE_SIZE)))
+  const byBatchPaginated = computed(() => byBatchLogs.value.slice((byBatchPage.value - 1) * PAGE_SIZE, byBatchPage.value * PAGE_SIZE))
   const byBatchPageNumbers = computed(() => buildPageNumbers(byBatchPage.value, byBatchTotalPages.value))
 
   async function loadByBatch() {
@@ -1160,22 +1170,22 @@
     dateTo: todayDate(),
   })
 
-  const tatCycleLogs     = ref([])
-  const tatCycleLoading  = ref(false)
-  const tatCycleError    = ref(null)
+  const tatCycleLogs = ref([])
+  const tatCycleLoading = ref(false)
+  const tatCycleError = ref(null)
   const tatCycleSearched = ref(false)
-  const tatCyclePage     = ref(1)
+  const tatCyclePage = ref(1)
 
-  const tatCycleTotalPages  = computed(() => Math.max(1, Math.ceil(tatCycleLogs.value.length / PAGE_SIZE)))
-  const tatCyclePaginated   = computed(() => tatCycleLogs.value.slice((tatCyclePage.value - 1) * PAGE_SIZE, tatCyclePage.value * PAGE_SIZE))
+  const tatCycleTotalPages = computed(() => Math.max(1, Math.ceil(tatCycleLogs.value.length / PAGE_SIZE)))
+  const tatCyclePaginated = computed(() => tatCycleLogs.value.slice((tatCyclePage.value - 1) * PAGE_SIZE, tatCyclePage.value * PAGE_SIZE))
   const tatCyclePageNumbers = computed(() => buildPageNumbers(tatCyclePage.value, tatCycleTotalPages.value))
 
   const tatCycleSummary = computed(() => {
     const logs = tatCycleLogs.value
     return {
-      total:    logs.length,
-      within:   logs.filter(c => c.result === 'Within').length,
-      outside:  logs.filter(c => c.result === 'Outside').length,
+      total: logs.length,
+      within: logs.filter(c => c.result === 'Within').length,
+      outside: logs.filter(c => c.result === 'Outside').length,
       appealed: logs.filter(c => c.result === 'Appealed').length,
     }
   })
@@ -1195,7 +1205,7 @@
     try {
       const params = {
         dateFrom: tatCycleFilter.value.dateFrom,
-        dateTo:   tatCycleFilter.value.dateTo,
+        dateTo: tatCycleFilter.value.dateTo,
       }
       if (authStore.isAdmin && tatCycleFilter.value.sectionCode) {
         params.sectionCode = tatCycleFilter.value.sectionCode
@@ -1212,10 +1222,158 @@
     tatCycleLogs.value = []; tatCycleError.value = null; tatCycleSearched.value = false; tatCyclePage.value = 1
   }
 
+  // ══════════════════════════════════════════════════════════════════════════
+  // GSAP — REFS
+  // ══════════════════════════════════════════════════════════════════════════
+
+  const pageHeaderRef = ref(null)
+  const tabNavRef = ref(null)
+
+  // By User
+  const byUserFilterRef = ref(null)
+  const byUserCardRef = ref(null)
+  const byUserEmptyRef = ref(null)
+
+  // By Specimen
+  const bySpecimenCardRef = ref(null)
+  const bySpecimenEmptyRef = ref(null)
+
+  // By Batch
+  const byBatchCardRef = ref(null)
+  const byBatchEmptyRef = ref(null)
+
+  // TAT Cycle
+  const tatCycleCardRef = ref(null)
+  const tatCycleEmptyRef = ref(null)
+  const tatSummaryCardsRef = ref(null)
+
+  // TAT summary count-up display values
+  const displayTatTotal = ref(0)
+  const displayTatWithin = ref(0)
+  const displayTatOutside = ref(0)
+  const displayTatAppealed = ref(0)
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // GSAP — ANIMATION FUNCTIONS
+  // ══════════════════════════════════════════════════════════════════════════
+
+  async function animatePageEnter() {
+    await nextTick()
+    const els = [pageHeaderRef.value, tabNavRef.value, byUserFilterRef.value].filter(Boolean)
+    if (!els.length) return
+    gsap.set(els, { opacity: 0, y: 16 })
+    gsap.to(els, {
+      opacity: 1,
+      y: 0,
+      duration: 0.3,
+      stagger: 0.07,
+      ease: 'power2.out',
+    })
+  }
+
+  async function animateCard(cardRef, itemSelector, delay = 0) {
+    await nextTick()
+    if (!cardRef.value) return
+    gsap.set(cardRef.value, { opacity: 0, y: 16 })
+    gsap.to(cardRef.value, { opacity: 1, y: 0, duration: 0.3, ease: 'power2.out', delay })
+    const items = cardRef.value.querySelectorAll(itemSelector)
+    if (items.length) {
+      gsap.set(items, { opacity: 0, x: -8 })
+      gsap.to(items, {
+        opacity: 1,
+        x: 0,
+        duration: 0.2,
+        stagger: 0.04,
+        ease: 'power1.out',
+        delay: delay + 0.14,
+        clearProps: 'opacity,x',
+      })
+    }
+  }
+
+  async function animateEmptyState(emptyRef) {
+    await nextTick()
+    if (!emptyRef.value) return
+    gsap.set(emptyRef.value, { scale: 0.92, opacity: 0 })
+    gsap.to(emptyRef.value, { scale: 1, opacity: 1, duration: 0.32, ease: 'back.out(1.5)', clearProps: 'scale,opacity' })
+  }
+
+  function countUp(displayRef, target) {
+    const obj = { val: 0 }
+    gsap.killTweensOf(obj)
+    gsap.to(obj, {
+      val: target,
+      duration: 0.75,
+      ease: 'power2.out',
+      onUpdate: () => { displayRef.value = Math.round(obj.val) },
+    })
+  }
+
+  async function animateSummaryCards() {
+    await nextTick()
+    if (!tatSummaryCardsRef.value) return
+    const cards = tatSummaryCardsRef.value.querySelectorAll(':scope > div')
+    if (!cards.length) return
+    gsap.set(cards, { opacity: 0, y: 20 })
+    gsap.to(cards, {
+      opacity: 1,
+      y: 0,
+      duration: 0.3,
+      stagger: 0.07,
+      ease: 'power2.out',
+    })
+  }
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // GSAP — WATCHERS
+  // ══════════════════════════════════════════════════════════════════════════
+
+  watch(byUserLoading, async (isLoading) => {
+    if (isLoading) return
+    if (byUserLogs.value.length) {
+      await animateCard(byUserCardRef, '.by-user-row')
+    } else if (byUserSearched.value) {
+      await animateEmptyState(byUserEmptyRef)
+    }
+  })
+
+  watch(bySpecimenLoading, async (isLoading) => {
+    if (isLoading) return
+    if (bySpecimenLogs.value.length) {
+      await animateCard(bySpecimenCardRef, '.by-specimen-row')
+    } else if (bySpecimenSearched.value) {
+      await animateEmptyState(bySpecimenEmptyRef)
+    }
+  })
+
+  watch(byBatchLoading, async (isLoading) => {
+    if (isLoading) return
+    if (byBatchLogs.value.length) {
+      await animateCard(byBatchCardRef, '.by-batch-row')
+    } else if (byBatchSearched.value) {
+      await animateEmptyState(byBatchEmptyRef)
+    }
+  })
+
+  watch(tatCycleLoading, async (isLoading) => {
+    if (isLoading) return
+    if (tatCycleLogs.value.length) {
+      await animateSummaryCards()
+      countUp(displayTatTotal, tatCycleSummary.value.total)
+      countUp(displayTatWithin, tatCycleSummary.value.within)
+      countUp(displayTatOutside, tatCycleSummary.value.outside)
+      countUp(displayTatAppealed, tatCycleSummary.value.appealed)
+      await animateCard(tatCycleCardRef, '.tat-cycle-row', 0.05)
+    } else if (tatCycleSearched.value) {
+      await animateEmptyState(tatCycleEmptyRef)
+    }
+  })
+
   // ── Init ───────────────────────────────────────────────────────────────────
 
   onMounted(() => {
     loadEndorsingSections()
+    animatePageEnter()
   })
 </script>
 

@@ -22,15 +22,22 @@
     </div>
 
     <div class="px-8 py-6 space-y-4">
-      <div class="relative">
-        <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-sm"
-              style="color: var(--color-text-muted)">search</span>
-        <input v-model="rdSearch"
-               placeholder="Search by test code or name..."
-               class="w-full pl-10 pr-4 py-2.5 rounded-xl text-sm font-medium outline-none transition-all"
-               style="background-color: var(--color-surface-low); color: var(--color-text); border: 1.5px solid var(--color-border);"
-               @focus="(e) => (e.target.style.borderColor = 'var(--color-primary)')"
-               @blur="(e) => (e.target.style.borderColor = 'var(--color-border)')" />
+      <!-- Search + Group filter row -->
+      <div class="flex items-center gap-3">
+        <div class="relative flex-1">
+          <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-sm"
+                style="color: var(--color-text-muted)">search</span>
+          <input v-model="rdSearch"
+                 placeholder="Search by test code or name..."
+                 class="w-full pl-10 pr-4 py-2.5 rounded-xl text-sm font-medium outline-none transition-all"
+                 style="background-color: var(--color-surface-low); color: var(--color-text); border: 1.5px solid var(--color-border);"
+                 @focus="(e) => (e.target.style.borderColor = 'var(--color-primary)')"
+                 @blur="(e) => (e.target.style.borderColor = 'var(--color-border)')" />
+        </div>
+        <DropdownSelect v-model="rdGroupFilter"
+                        :options="testGroupOptions"
+                        placeholder="All Groups"
+                        icon="category" />
       </div>
 
       <AppTable :rows="filteredRd" :columns="rdColumns" row-key="id" :page-size="10"
@@ -38,7 +45,15 @@
                 empty-text="No running day setups yet." empty-icon="calendar_month">
         <template #cell-testName="{ row }">
           <div>
-            <p class="font-bold text-sm" style="color: var(--color-text)">{{ row.testName }}</p>
+            <div class="flex items-center gap-2">
+              <p class="font-bold text-sm" style="color: var(--color-text)">{{ row.testName }}</p>
+              <!-- Test group badge -->
+              <span v-if="row.testGroupCode"
+                    class="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider flex-shrink-0"
+                    style="background-color: var(--color-primary-soft); color: var(--color-primary)">
+                {{ row.testGroupCode }}
+              </span>
+            </div>
             <p class="font-mono text-[10px] mt-0.5" style="color: var(--color-text-muted)">{{ row.testCode }}</p>
           </div>
         </template>
@@ -133,7 +148,15 @@
               <div v-if="rdModal.form.testCode" class="mt-1.5 flex items-center gap-2 px-3 py-2 rounded-lg" style="background-color: var(--color-primary-soft)">
                 <span class="material-symbols-outlined text-sm" style="color: var(--color-primary)">biotech</span>
                 <div class="flex-1 min-w-0">
-                  <p class="text-xs font-bold truncate" style="color: var(--color-primary)">{{ rdModal.form.testCode }}</p>
+                  <div class="flex items-center gap-2">
+                    <p class="text-xs font-bold truncate" style="color: var(--color-primary)">{{ rdModal.form.testCode }}</p>
+                    <!-- Test group badge inside selected pill -->
+                    <span v-if="rdModal.form.testGroupCode"
+                          class="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider flex-shrink-0"
+                          style="background-color: rgba(255,255,255,0.5); color: var(--color-primary)">
+                      {{ rdModal.form.testGroupCode }}
+                    </span>
+                  </div>
                   <p class="text-[10px] truncate" style="color: var(--color-text-muted)">{{ rdModal.form.testName }}</p>
                 </div>
                 <button class="material-symbols-outlined text-sm" style="color: var(--color-text-muted)" @click="clearRdTest">close</button>
@@ -168,7 +191,12 @@
                         </div>
                         <p class="text-[10px] truncate" style="color: var(--color-text-muted)">{{ t.testName }}</p>
                       </div>
-                      <span class="text-[10px] font-mono font-bold flex-shrink-0" style="color: var(--color-text-muted)">{{ t.testGroup }}</span>
+                      <!-- Test group badge in dropdown -->
+                      <span v-if="t.testGroup"
+                            class="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider flex-shrink-0"
+                            style="background-color: var(--color-primary-soft); color: var(--color-primary)">
+                        {{ t.testGroup }}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -180,8 +208,15 @@
               <label class="block text-[10px] font-bold uppercase tracking-widest mb-1.5" style="color: var(--color-text-muted)">Test</label>
               <div class="flex items-center gap-3 px-4 py-2.5 rounded-xl" style="background-color: var(--color-surface-low)">
                 <span class="material-symbols-outlined text-sm" style="color: var(--color-primary)">biotech</span>
-                <div>
-                  <p class="text-sm font-bold" style="color: var(--color-text)">{{ rdModal.form.testName }}</p>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center gap-2">
+                    <p class="text-sm font-bold" style="color: var(--color-text)">{{ rdModal.form.testName }}</p>
+                    <span v-if="rdModal.form.testGroupCode"
+                          class="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider flex-shrink-0"
+                          style="background-color: var(--color-primary-soft); color: var(--color-primary)">
+                      {{ rdModal.form.testGroupCode }}
+                    </span>
+                  </div>
                   <p class="text-[10px] font-mono" style="color: var(--color-text-muted)">{{ rdModal.form.testCode }}</p>
                 </div>
               </div>
@@ -244,198 +279,253 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, nextTick } from "vue";
-import { testRunningDayApi } from "@/api/testRunningDayApi";
-import AppTable from "@/components/common/AppTable.vue";
-import ConfirmModal from "@/components/common/ConfirmModal.vue";
+  import { ref, computed, onMounted, nextTick } from "vue";
+  import { testRunningDayApi } from "@/api/testRunningDayApi";
+  import AppTable from "@/components/common/AppTable.vue";
+  import ConfirmModal from "@/components/common/ConfirmModal.vue";
+  import DropdownSelect from "@/components/common/DropdownSelect.vue";
 
-const emit = defineEmits(["toast"]);
+  const emit = defineEmits(["toast"]);
 
-// ── Constants ──────────────────────────────────────────────────────────────
-const allDays = [
-  { value: "Monday",    short: "Mon", color: "#1565c0", softColor: "rgba(21,101,192,0.1)" },
-  { value: "Tuesday",   short: "Tue", color: "#6a1b9a", softColor: "rgba(106,27,154,0.1)" },
-  { value: "Wednesday", short: "Wed", color: "#2e7d32", softColor: "rgba(46,125,50,0.1)" },
-  { value: "Thursday",  short: "Thu", color: "#e65100", softColor: "rgba(230,81,0,0.1)" },
-  { value: "Friday",    short: "Fri", color: "#c62828", softColor: "rgba(198,40,40,0.1)" },
-  { value: "Saturday",  short: "Sat", color: "#558b2f", softColor: "rgba(85,139,47,0.1)" },
-  { value: "Sunday",    short: "Sun", color: "#4e342e", softColor: "rgba(78,52,46,0.1)" },
-];
+  // ── Constants ──────────────────────────────────────────────────────────────
+  const allDays = [
+    { value: "Monday", short: "Mon", color: "#1565c0", softColor: "rgba(21,101,192,0.1)" },
+    { value: "Tuesday", short: "Tue", color: "#6a1b9a", softColor: "rgba(106,27,154,0.1)" },
+    { value: "Wednesday", short: "Wed", color: "#2e7d32", softColor: "rgba(46,125,50,0.1)" },
+    { value: "Thursday", short: "Thu", color: "#e65100", softColor: "rgba(230,81,0,0.1)" },
+    { value: "Friday", short: "Fri", color: "#c62828", softColor: "rgba(198,40,40,0.1)" },
+    { value: "Saturday", short: "Sat", color: "#558b2f", softColor: "rgba(85,139,47,0.1)" },
+    { value: "Sunday", short: "Sun", color: "#4e342e", softColor: "rgba(78,52,46,0.1)" },
+  ];
 
-const rdColumns = [
-  { key: "testName",    label: "Test" },
-  { key: "runningDays", label: "Running Days" },
-];
+  const rdColumns = [
+    { key: "testName", label: "Test" },
+    { key: "runningDays", label: "Running Days" },
+  ];
 
-// ── State ──────────────────────────────────────────────────────────────────
-const rdList    = ref([]);
-const rdLoading = ref(false);
-const rdSearch  = ref("");
+  // ── State ──────────────────────────────────────────────────────────────────
+  const rdList = ref([]);
+  const rdLoading = ref(false);
+  const rdSearch = ref("");
 
-const rdTestInputRef = ref(null);
-const rdDropdownPos  = ref({ top: 0, left: 0, width: 0 });
-let rdSearchTimer    = null;
+  const rdTestInputRef = ref(null);
+  const rdDropdownPos = ref({ top: 0, left: 0, width: 0 });
+  let rdSearchTimer = null;
 
-const rdModal = ref({
-  visible: false, mode: "add", id: null,
-  form: { testCode: "", testName: "", days: [] },
-  testSearch: "", testResults: [], testLoading: false,
-  dropdownOpen: false, testNoResults: false, activeIdx: -1,
-  dayError: false, saving: false, error: "",
-});
-
-const rdDeleteConfirm = ref({ visible: false, itemId: null, itemName: "" });
-
-const filteredRd = computed(() => {
-  const q = rdSearch.value.toLowerCase();
-  if (!q) return rdList.value;
-  return rdList.value.filter((r) => r.testCode.toLowerCase().includes(q) || r.testName.toLowerCase().includes(q));
-});
-
-// ── Data loading ───────────────────────────────────────────────────────────
-async function loadRunningDays() {
-  rdLoading.value = true;
-  try {
-    const res = await testRunningDayApi.getAll();
-    rdList.value = res.data;
-  } catch { rdList.value = []; }
-  finally { rdLoading.value = false; }
-}
-
-onMounted(() => loadRunningDays());
-
-// ── Modal actions ──────────────────────────────────────────────────────────
-function openAddRunningDay() {
-  rdModal.value = {
-    visible: true, mode: "add", id: null,
-    form: { testCode: "", testName: "", days: [] },
+  const rdModal = ref({
+    visible: false, mode: "add", id: null,
+    form: { testCode: "", testName: "", testGroupCode: "", days: [] },
     testSearch: "", testResults: [], testLoading: false,
     dropdownOpen: false, testNoResults: false, activeIdx: -1,
     dayError: false, saving: false, error: "",
-  };
-}
+  });
 
-function openEditRunningDay(item) {
-  rdModal.value = {
-    visible: true, mode: "edit", id: item.id,
-    form: { testCode: item.testCode, testName: item.testName, days: [...item.dayList] },
-    testSearch: "", testResults: [], testLoading: false,
-    dropdownOpen: false, testNoResults: false, activeIdx: -1,
-    dayError: false, saving: false, error: "",
-  };
-}
+  const rdDeleteConfirm = ref({ visible: false, itemId: null, itemName: "" });
 
-function closeRdModal() {
-  clearTimeout(rdSearchTimer);
-  rdModal.value.visible = false;
-}
+  const rdGroupFilter = ref("");  // "" = All
 
-function toggleRdDay(val) {
-  const idx = rdModal.value.form.days.indexOf(val);
-  if (idx === -1) rdModal.value.form.days.push(val);
-  else rdModal.value.form.days.splice(idx, 1);
-  rdModal.value.dayError = false;
-}
+  // Build dropdown options from the loaded list — distinct test group codes
+  const testGroupOptions = computed(() => {
+    const codes = [...new Set(
+      rdList.value
+        .map((r) => r.testGroupCode)
+        .filter(Boolean)
+    )].sort();
 
-function computeRdDropdownPos() {
-  const el = rdTestInputRef.value;
-  if (!el) return;
-  const rect = el.getBoundingClientRect();
-  rdDropdownPos.value = { top: rect.bottom + 6, left: rect.left, width: rect.width };
-}
+    return [
+      { value: "", label: "All Groups" },
+      ...codes.map((c) => ({ value: c, label: c })),
+    ];
+  });
 
-function onRdTestInput() {
-  rdModal.value.form.testCode = "";
-  rdModal.value.form.testName = "";
-  rdModal.value.dropdownOpen = false;
-  rdModal.value.testNoResults = false;
-  rdModal.value.activeIdx = -1;
-  clearTimeout(rdSearchTimer);
-  const q = rdModal.value.testSearch.trim();
-  if (q.length < 3) { rdModal.value.testResults = []; return; }
-  rdModal.value.testLoading = true;
-  rdSearchTimer = setTimeout(async () => {
+  const filteredRd = computed(() => {
+    let rows = rdList.value;
+
+    // Test group filter
+    if (rdGroupFilter.value)
+      rows = rows.filter((r) => r.testGroupCode === rdGroupFilter.value);
+
+    // Text search
+    const q = rdSearch.value.toLowerCase();
+    if (q)
+      rows = rows.filter(
+        (r) => r.testCode.toLowerCase().includes(q) || r.testName.toLowerCase().includes(q)
+      );
+
+    return rows;
+  });
+
+  // ── Data loading ───────────────────────────────────────────────────────────
+  async function loadRunningDays() {
+    rdLoading.value = true;
     try {
-      const res = await testRunningDayApi.search(q);
-      rdModal.value.testResults = res.data ?? [];
-      rdModal.value.testNoResults = rdModal.value.testResults.length === 0;
-      rdModal.value.dropdownOpen = true;
-      await nextTick();
-      computeRdDropdownPos();
-    } catch { rdModal.value.testResults = []; rdModal.value.testNoResults = true; }
-    finally { rdModal.value.testLoading = false; }
-  }, 350);
-}
+      const res = await testRunningDayApi.getAll();
+      rdList.value = res.data;
+    } catch { rdList.value = []; }
+    finally { rdLoading.value = false; }
+  }
 
-function onRdTestBlur(e) { setTimeout(() => { e.target.style.borderColor = "var(--color-border)"; }, 150); }
+  onMounted(() => loadRunningDays());
 
-function selectRdTest(t) {
-  rdModal.value.form.testCode = t.testCode;
-  rdModal.value.form.testName = t.testName;
-  rdModal.value.testSearch = `${t.testCode} — ${t.testName}`;
-  rdModal.value.dropdownOpen = false;
-  rdModal.value.activeIdx = -1;
-}
+  // ── Modal actions ──────────────────────────────────────────────────────────
+  function openAddRunningDay() {
+    rdModal.value = {
+      visible: true, mode: "add", id: null,
+      form: { testCode: "", testName: "", testGroupCode: "", days: [] },
+      testSearch: "", testResults: [], testLoading: false,
+      dropdownOpen: false, testNoResults: false, activeIdx: -1,
+      dayError: false, saving: false, error: "",
+    };
+  }
 
-function clearRdTest() {
-  rdModal.value.form.testCode = "";
-  rdModal.value.form.testName = "";
-  rdModal.value.testSearch = "";
-  rdModal.value.testResults = [];
-  rdModal.value.dropdownOpen = false;
-  nextTick(() => rdTestInputRef.value?.focus());
-}
+  function openEditRunningDay(item) {
+    rdModal.value = {
+      visible: true, mode: "edit", id: item.id,
+      form: {
+        testCode: item.testCode,
+        testName: item.testName,
+        testGroupCode: item.testGroupCode ?? "",
+        days: [...item.dayList],
+      },
+      testSearch: "", testResults: [], testLoading: false,
+      dropdownOpen: false, testNoResults: false, activeIdx: -1,
+      dayError: false, saving: false, error: "",
+    };
+  }
 
-function rdSelectNext() {
-  if (!rdModal.value.testResults.length) return;
-  rdModal.value.activeIdx = (rdModal.value.activeIdx + 1) % rdModal.value.testResults.length;
-}
-function rdSelectPrev() {
-  if (!rdModal.value.testResults.length) return;
-  rdModal.value.activeIdx = (rdModal.value.activeIdx - 1 + rdModal.value.testResults.length) % rdModal.value.testResults.length;
-}
-function rdConfirmSelected() {
-  const idx = rdModal.value.activeIdx;
-  if (idx >= 0 && rdModal.value.testResults[idx]) selectRdTest(rdModal.value.testResults[idx]);
-}
+  function closeRdModal() {
+    clearTimeout(rdSearchTimer);
+    rdModal.value.visible = false;
+  }
 
-async function saveRdModal() {
-  rdModal.value.error = "";
-  rdModal.value.dayError = false;
-  if (rdModal.value.mode === "add" && !rdModal.value.form.testCode) { rdModal.value.error = "Please select a test."; return; }
-  if (!rdModal.value.form.days.length) { rdModal.value.dayError = true; return; }
+  function toggleRdDay(val) {
+    const idx = rdModal.value.form.days.indexOf(val);
+    if (idx === -1) rdModal.value.form.days.push(val);
+    else rdModal.value.form.days.splice(idx, 1);
+    rdModal.value.dayError = false;
+  }
 
-  rdModal.value.saving = true;
-  try {
-    if (rdModal.value.mode === "add") {
-      await testRunningDayApi.add({ testCode: rdModal.value.form.testCode, testName: rdModal.value.form.testName, days: rdModal.value.form.days });
-      emit("toast", "Running day setup saved.");
-    } else {
-      await testRunningDayApi.update(rdModal.value.id, { days: rdModal.value.form.days });
-      emit("toast", "Running days updated.");
+  function computeRdDropdownPos() {
+    const el = rdTestInputRef.value;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    rdDropdownPos.value = { top: rect.bottom + 6, left: rect.left, width: rect.width };
+  }
+
+  function onRdTestInput() {
+    rdModal.value.form.testCode = "";
+    rdModal.value.form.testName = "";
+    rdModal.value.form.testGroupCode = "";
+    rdModal.value.dropdownOpen = false;
+    rdModal.value.testNoResults = false;
+    rdModal.value.activeIdx = -1;
+    clearTimeout(rdSearchTimer);
+    const q = rdModal.value.testSearch.trim();
+    if (q.length < 3) { rdModal.value.testResults = []; return; }
+    rdModal.value.testLoading = true;
+    rdSearchTimer = setTimeout(async () => {
+      try {
+        const res = await testRunningDayApi.search(q);
+        rdModal.value.testResults = res.data ?? [];
+        rdModal.value.testNoResults = rdModal.value.testResults.length === 0;
+        rdModal.value.dropdownOpen = true;
+        await nextTick();
+        computeRdDropdownPos();
+      } catch {
+        rdModal.value.testResults = [];
+        rdModal.value.testNoResults = true;
+      } finally {
+        rdModal.value.testLoading = false;
+      }
+    }, 350);
+  }
+
+  function onRdTestBlur(e) {
+    setTimeout(() => { e.target.style.borderColor = "var(--color-border)"; }, 150);
+  }
+
+  function selectRdTest(t) {
+    rdModal.value.form.testCode = t.testCode;
+    rdModal.value.form.testName = t.testName;
+    rdModal.value.form.testGroupCode = t.testGroup ?? "";   // ← capture test group from HCLAB result
+    rdModal.value.testSearch = `${t.testCode} — ${t.testName}`;
+    rdModal.value.dropdownOpen = false;
+    rdModal.value.activeIdx = -1;
+  }
+
+  function clearRdTest() {
+    rdModal.value.form.testCode = "";
+    rdModal.value.form.testName = "";
+    rdModal.value.form.testGroupCode = "";
+    rdModal.value.testSearch = "";
+    rdModal.value.testResults = [];
+    rdModal.value.dropdownOpen = false;
+    nextTick(() => rdTestInputRef.value?.focus());
+  }
+
+  function rdSelectNext() {
+    if (!rdModal.value.testResults.length) return;
+    rdModal.value.activeIdx = (rdModal.value.activeIdx + 1) % rdModal.value.testResults.length;
+  }
+  function rdSelectPrev() {
+    if (!rdModal.value.testResults.length) return;
+    rdModal.value.activeIdx =
+      (rdModal.value.activeIdx - 1 + rdModal.value.testResults.length) % rdModal.value.testResults.length;
+  }
+  function rdConfirmSelected() {
+    const idx = rdModal.value.activeIdx;
+    if (idx >= 0 && rdModal.value.testResults[idx]) selectRdTest(rdModal.value.testResults[idx]);
+  }
+
+  async function saveRdModal() {
+    rdModal.value.error = "";
+    rdModal.value.dayError = false;
+
+    if (rdModal.value.mode === "add" && !rdModal.value.form.testCode) {
+      rdModal.value.error = "Please select a test.";
+      return;
     }
-    closeRdModal();
-    await loadRunningDays();
-  } catch (err) {
-    rdModal.value.error = err.response?.data?.message || "An error occurred.";
-  } finally {
-    rdModal.value.saving = false;
-  }
-}
+    if (!rdModal.value.form.days.length) {
+      rdModal.value.dayError = true;
+      return;
+    }
 
-function confirmDeleteRd(item) {
-  rdDeleteConfirm.value = { visible: true, itemId: item.id, itemName: item.testName };
-}
-
-async function executeDeleteRd() {
-  try {
-    await testRunningDayApi.delete(rdDeleteConfirm.value.itemId);
-    rdList.value = rdList.value.filter((r) => r.id !== rdDeleteConfirm.value.itemId);
-    emit("toast", "Running day setup removed.");
-  } catch (err) {
-    emit("toast", err.response?.data?.message || "Failed to remove setup.");
-  } finally {
-    rdDeleteConfirm.value.visible = false;
+    rdModal.value.saving = true;
+    try {
+      if (rdModal.value.mode === "add") {
+        await testRunningDayApi.add({
+          testCode: rdModal.value.form.testCode,
+          testName: rdModal.value.form.testName,
+          testGroupCode: rdModal.value.form.testGroupCode || null,  // ← sent to API
+          days: rdModal.value.form.days,
+        });
+        emit("toast", "Running day setup saved.");
+      } else {
+        await testRunningDayApi.update(rdModal.value.id, { days: rdModal.value.form.days });
+        emit("toast", "Running days updated.");
+      }
+      closeRdModal();
+      await loadRunningDays();
+    } catch (err) {
+      rdModal.value.error = err.response?.data?.message || "An error occurred.";
+    } finally {
+      rdModal.value.saving = false;
+    }
   }
-}
+
+  function confirmDeleteRd(item) {
+    rdDeleteConfirm.value = { visible: true, itemId: item.id, itemName: item.testName };
+  }
+
+  async function executeDeleteRd() {
+    try {
+      await testRunningDayApi.delete(rdDeleteConfirm.value.itemId);
+      rdList.value = rdList.value.filter((r) => r.id !== rdDeleteConfirm.value.itemId);
+      emit("toast", "Running day setup removed.");
+    } catch (err) {
+      emit("toast", err.response?.data?.message || "Failed to remove setup.");
+    } finally {
+      rdDeleteConfirm.value.visible = false;
+    }
+  }
 </script>

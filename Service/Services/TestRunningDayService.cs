@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using HCLAB;
 using Model.SETSDB;
@@ -44,6 +43,21 @@ namespace Service.Services
                 using var context = _factory.CreateContext(_branch);
                 using var unit = new UnitOfWork(context);
                 return unit.TestRunningDays.GetAll();
+            }
+            catch { throw; }
+        }
+
+        /// <summary>
+        /// Returns only entries whose TestGroupCode matches one of the
+        /// section's assigned test groups. Used for lab section TL views.
+        /// </summary>
+        public List<Test_RunningDay> GetByTestGroupCodes(List<string> testGroupCodes)
+        {
+            try
+            {
+                using var context = _factory.CreateContext(_branch);
+                using var unit = new UnitOfWork(context);
+                return unit.TestRunningDays.GetByTestGroupCodes(testGroupCodes);
             }
             catch { throw; }
         }
@@ -120,15 +134,28 @@ namespace Service.Services
                     return candidate;
             }
 
-            return null; // Should never reach here if configuredDays is non-empty
+            return null;
         }
 
-        public async Task<List<Model.HCLAB.Test>> GetHCLABTests(string param)
+        /// <summary>
+        /// Searches HCLAB tests by code/name.
+        /// When testGroupCodes is provided (non-admin TL), results are filtered
+        /// to only those belonging to the section's test groups.
+        /// </summary>
+        public async Task<List<Model.HCLAB.Test>> GetHCLABTests(string param, List<string>? testGroupCodes = null)
         {
             try
             {
-                return await HclabMaster.HCLABTests.GetTests(
+                var results = await HclabMaster.HCLABTests.GetTests(
                     HclabConnection.ConnectionString(_branch_raw), param);
+
+                // If test group codes supplied, restrict to section's tests only
+                if (testGroupCodes != null && testGroupCodes.Any())
+                    results = results
+                        .Where(t => testGroupCodes.Contains(t.TestGroup, StringComparer.OrdinalIgnoreCase))
+                        .ToList();
+
+                return results;
             }
             catch { throw; }
         }

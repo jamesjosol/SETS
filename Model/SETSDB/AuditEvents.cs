@@ -22,5 +22,9 @@ namespace Model.SETSDB
         public const string ScheduleDue = "SCHEDULE_DUE";
         public const string SpecimenCancelledSection = "SPECIMEN_CANCELLED_SECTION";
         public const string TestAborted = "TEST_ABORTED";
+        public const string SpecimenFlagged = "SPECIMEN_FLAGGED";
+        public const string SpecimenUnflagged = "SPECIMEN_UNFLAGGED";
+        public const string FlaggedSpecimenReceived = "FLAGGED_SPECIMEN_RECEIVED";
+        public const string FlaggedSpecimenDeclined = "FLAGGED_SPECIMEN_DECLINED";
     }
 }

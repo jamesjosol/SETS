@@ -10,6 +10,7 @@ namespace Model.Main
     {
         public string TestCode { get; set; } = string.Empty;
         public string TestName { get; set; } = string.Empty;
+        public string? TestGroupCode { get; set; }
         public List<string> Days { get; set; } = new();
     }
 

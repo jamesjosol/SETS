@@ -115,6 +115,26 @@ namespace SETS.Server.Controllers
             }
         }
 
+        // GET api/receiving/check/{specimenNo}?currentBatchNo=WES26-00001
+        [HttpGet("check/{specimenNo}")]
+        public IActionResult CheckSpecimen(string specimenNo, [FromQuery] string? currentBatchNo)
+        {
+            try
+            {
+                var branch = Branch;
+                if (string.IsNullOrEmpty(branch))
+                    return Unauthorized(new { message = "Session expired." });
+
+                using var master = new MasterService(branch);
+                var result = master.Receiving.CheckSpecimen(specimenNo, currentBatchNo);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(400, new { message = ex.Message });
+            }
+        }
+
         // PATCH api/receiving/specimen-remarks
         [HttpPatch("specimen-remarks")]
         public IActionResult UpdateSpecimenRemarks([FromBody] UpdateSpecimenRemarksRequest request)

@@ -26,5 +26,9 @@ namespace Model.Main
         public string? CancelledBy { get; set; }
         public DateTime? CancelledAt { get; set; }
         public bool IsPostedToDest { get; set; }
+        public bool IsFlagged { get; set; }
+        public string? FlagReason { get; set; }
+        public string? FlaggedBy { get; set; }
+        public DateTime? FlaggedAt { get; set; }
     }
 }

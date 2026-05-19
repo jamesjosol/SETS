@@ -174,12 +174,10 @@
             <div v-else class="space-y-2">
               <div v-for="sp in visibleSpecimens"
                    :key="sp.id"
-                   class="rounded-xl p-4"
-                   :style="sp.status === 'X'
-                     ? 'background-color: var(--color-surface-low); opacity: 0.6;'
-                     : 'background-color: var(--color-surface-low);'">
+                   class="rounded-xl p-4 transition-all"
+                   :style="getSpecimenCardStyle(sp)">
 
-                <!-- Top row: specimen no + status badge + cancel button -->
+                <!-- Top row: specimen no + status badge + action buttons -->
                 <div class="flex justify-between items-start mb-2">
                   <p class="text-xs font-bold font-mono flex items-center gap-1.5"
                      :style="sp.status === 'X'
@@ -195,6 +193,14 @@
                   </p>
 
                   <div class="flex items-center gap-2">
+                    <!-- Flag badge — always visible when flagged -->
+                    <span v-if="sp.isFlagged"
+                          class="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase"
+                          style="background-color: rgba(255,69,0,0.12); color: #FF4500;">
+                      <span class="material-symbols-outlined" style="font-size: 11px;">flag</span>
+                      Flagged
+                    </span>
+
                     <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase"
                           :style="sp.status === 'R'
                             ? 'background-color: var(--color-success-soft); color: var(--color-success);'
@@ -203,7 +209,22 @@
                             : 'background-color: var(--color-warning-soft); color: var(--color-warning);'">
                       {{ sp.status === 'R' ? 'Received' : sp.status === 'X' ? 'Cancelled' : 'Pending' }}
                     </span>
-                    <!-- Cancel button — TL or admin only, received specimens only -->
+
+                    <!-- Flag / Unflag button — endorser side only, pending specimens only -->
+                    <button v-if="allowFlag && sp.status === 'P'"
+                            class="group w-5 h-5 rounded-full flex items-center justify-center transition-all cursor-pointer"
+                            :style="sp.isFlagged
+                              ? 'color: #BA7517; opacity: 0.8;'
+                              : 'color: var(--color-text-muted); opacity: 0.3;'"
+                            :title="sp.isFlagged ? 'Remove flag' : 'Flag this specimen'"
+                            @click.stop="sp.isFlagged ? openUnflagConfirm(sp) : openFlagModal(sp)">
+                      <span class="material-symbols-outlined transition-all group-hover:text-red-500"
+                            :style="sp.isFlagged ? 'font-size: 15px; font-variation-settings: \'FILL\' 1;' : 'font-size: 13px;'">
+                        flag
+                      </span>
+                    </button>
+
+                    <!-- Cancel button — receiver side, TL or admin only -->
                     <button v-if="allowCancel && (sp.status === 'R' || sp.status === 'P') && (authStore.roleID === 2 || authStore.isAdmin)"
                             class="group w-5 h-5 rounded-full flex items-center justify-center transition-all opacity-20 hover:opacity-60"
                             style="color: var(--color-text-muted);"
@@ -273,6 +294,22 @@
                     </div>
 
                   </div>
+                </div>
+
+                <!-- Flag info strip -->
+                <div v-if="sp.isFlagged"
+                     class="mt-2 pt-2"
+                     style="border-top: 1px solid rgba(186,117,23,0.2);">
+                  <p class="text-[10px] font-bold uppercase tracking-widest mb-0.5"
+                     style="color: #BA7517;">Flag Reason</p>
+                  <p class="text-[10px] italic"
+                     style="color: var(--color-text-muted);">
+                    "{{ sp.flagReason }}"
+                  </p>
+                  <p class="text-[10px] mt-0.5"
+                     style="color: var(--color-text-muted);">
+                    {{ sp.flaggedBy }} · {{ formatDateTime(sp.flaggedAt) }}
+                  </p>
                 </div>
 
                 <!-- Cancelled info strip -->
@@ -383,65 +420,193 @@
     </div>
   </transition>
 
-  <!-- ── Cancel Specimen Modal ──────────────────────────────────────────── -->
-  <transition name="fade">
-    <div v-if="cancelModal.visible"
-         class="fixed inset-0 z-[90] flex items-center justify-center"
-         style="background-color: rgba(0,0,0,0.5);">
-      <div class="rounded-2xl p-6 w-80 flex flex-col gap-4"
-           style="background-color: var(--color-surface); border: 1px solid var(--color-border); box-shadow: 0 8px 32px rgba(0,0,0,0.2);">
+  <!-- ── Flag Specimen Modal ─────────────────────────────────────────────── -->
 
-        <!-- Header -->
-        <div class="flex items-center gap-3">
-          <span class="material-symbols-outlined text-xl"
-                style="color: var(--color-text-muted);">cancel</span>
-          <div>
-            <p class="text-sm font-extrabold" style="color: var(--color-text);">Cancel Receiving</p>
-            <p class="text-[10px] font-mono" style="color: var(--color-text-muted);">
-              {{ cancelModal.specimenNo }}
-            </p>
-          </div>
-        </div>
+  <div v-if="flagModal.visible"
+        class="fixed inset-0 z-[90] flex items-center justify-center p-4">
+    <!-- Backdrop -->
+    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm"
+          @click="flagModal.visible = false"></div>
+    <!-- Modal -->
+    <div class="relative w-full max-w-md rounded-2xl shadow-2xl p-6 flex flex-col gap-4 animate-modal"
+          style="background-color: var(--color-surface);">
 
-        <!-- Reason input -->
+      <!-- Header -->
+      <div class="flex items-center gap-3">
+        <span class="material-symbols-outlined text-2xl"
+              style="color: #BA7517; font-variation-settings: 'FILL' 1;">flag</span>
         <div>
-          <label class="block text-[10px] font-bold uppercase tracking-widest mb-1.5"
-                 style="color: var(--color-text-muted);">
-            Reason <span style="color: var(--color-warning);">*</span>
-          </label>
-          <textarea v-model="cancelModal.reason"
-                    rows="3"
-                    placeholder="State the reason for cancelling..."
-                    class="w-full rounded-xl px-3 py-2 text-xs outline-none resize-none"
-                    style="background-color: var(--color-surface-low); color: var(--color-text); border: 1px solid var(--color-border);" />
-          <p v-if="cancelModal.error"
-             class="text-[10px] mt-1"
-             style="color: var(--color-warning);">
-            {{ cancelModal.error }}
+          <p class="font-bold text-sm" style="color: var(--color-text);">Flag Specimen</p>
+          <p class="text-xs font-mono mt-0.5" style="color: var(--color-text-muted);">
+            {{ flagModal.specimenNo }}
           </p>
         </div>
-
-        <!-- Actions -->
-        <div class="flex gap-2">
-          <button class="flex-1 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest transition-all"
-                  style="background-color: var(--color-surface-low); color: var(--color-text-muted);"
-                  :disabled="cancelModal.saving"
-                  @click="cancelModal.visible = false">
-            Dismiss
-          </button>
-          <button class="flex-1 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-1.5"
-                  style="background-color: var(--color-surface-low); color: var(--color-text-muted); border: 1px solid var(--color-border);"
-                  :disabled="cancelModal.saving"
-                  @click="confirmCancel">
-            <span v-if="cancelModal.saving"
-                  class="material-symbols-outlined text-sm animate-spin">progress_activity</span>
-            {{ cancelModal.saving ? 'Cancelling...' : 'Confirm' }}
-          </button>
-        </div>
-
       </div>
+
+      <!-- Warning text -->
+      <p class="text-xs" style="color: var(--color-text-muted);">
+        This specimen will be flagged. The receiver will be warned before they can scan it and must confirm whether to proceed.
+      </p>
+
+      <!-- Reason field -->
+      <div class="flex flex-col gap-1.5">
+        <label class="text-[10px] font-bold uppercase tracking-widest"
+                style="color: var(--color-text-muted);">
+          Reason <span style="color: #BA7517;">*</span>
+        </label>
+        <textarea v-model="flagModal.reason"
+                  rows="3"
+                  placeholder="Enter reason for flagging this specimen..."
+                  class="w-full px-3 py-2 rounded-xl text-sm outline-none resize-none transition-all"
+                  style="background-color: var(--color-surface-low); border: 1.5px solid var(--color-border); color: var(--color-text);" />
+        <p v-if="flagModal.error"
+            class="text-[10px]"
+            style="color: #BA7517;">
+          {{ flagModal.error }}
+        </p>
+      </div>
+
+      <!-- Actions -->
+      <div class="flex gap-3 justify-end">
+        <button class="px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all"
+                style="background-color: var(--color-surface-low); color: var(--color-text-muted);"
+                :disabled="flagModal.saving"
+                @click="flagModal.visible = false">
+          Dismiss
+        </button>
+        <button class="px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all active:scale-95 disabled:opacity-40 flex items-center gap-1.5"
+                style="background-color: #BA7517; color: #ffffff;"
+                :disabled="!flagModal.reason.trim() || flagModal.saving"
+                @click="confirmFlag">
+          <span v-if="flagModal.saving"
+                class="material-symbols-outlined text-sm animate-spin">progress_activity</span>
+          <span v-else>Confirm Flag</span>
+        </button>
+      </div>
+
     </div>
-  </transition>
+  </div>
+
+
+  <!-- ── Unflag Confirm Modal ────────────────────────────────────────────── -->
+  <div v-if="unflagModal.visible"
+        class="fixed inset-0 z-[90] flex items-center justify-center p-4">
+    <!-- Backdrop -->
+    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm"
+          @click="unflagModal.visible = false"></div>
+    <!-- Modal -->
+    <div class="relative w-full max-w-md rounded-2xl shadow-2xl p-6 flex flex-col gap-4 animate-modal"
+          style="background-color: var(--color-surface);">
+
+      <!-- Header -->
+      <div class="flex items-center gap-3">
+        <span class="material-symbols-outlined text-2xl"
+              style="color: var(--color-text-muted);">flag</span>
+        <div>
+          <p class="font-bold text-sm" style="color: var(--color-text);">Remove Flag</p>
+          <p class="text-xs font-mono mt-0.5" style="color: var(--color-text-muted);">
+            {{ unflagModal.specimenNo }}
+          </p>
+        </div>
+      </div>
+
+      <!-- Warning text -->
+      <p class="text-xs" style="color: var(--color-text-muted);">
+        Are you sure you want to remove the flag on this specimen? The receiver will no longer be warned when they scan it.
+      </p>
+
+      <p v-if="unflagModal.error"
+          class="text-[10px]"
+          style="color: var(--color-warning);">
+        {{ unflagModal.error }}
+      </p>
+
+      <!-- Actions -->
+      <div class="flex gap-3 justify-end">
+        <button class="px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all"
+                style="background-color: var(--color-surface-low); color: var(--color-text-muted);"
+                :disabled="unflagModal.saving"
+                @click="unflagModal.visible = false">
+          Dismiss
+        </button>
+        <button class="px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all active:scale-95 disabled:opacity-40 flex items-center gap-1.5"
+                style="background-color: var(--color-surface-low); color: var(--color-text-muted); border: 1px solid var(--color-border);"
+                :disabled="unflagModal.saving"
+                @click="confirmUnflag">
+          <span v-if="unflagModal.saving"
+                class="material-symbols-outlined text-sm animate-spin">progress_activity</span>
+          <span v-else>Remove Flag</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── Cancel Specimen Modal ──────────────────────────────────────────── -->
+  <div v-if="cancelModal.visible"
+        class="fixed inset-0 z-[90] flex items-center justify-center p-4">
+    <!-- Backdrop -->
+    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm"
+          @click="cancelModal.visible = false"></div>
+    <!-- Modal -->
+    <div class="relative w-full max-w-md rounded-2xl shadow-2xl p-6 flex flex-col gap-4 animate-modal"
+          style="background-color: var(--color-surface);">
+
+      <!-- Header -->
+      <div class="flex items-center gap-3">
+        <span class="material-symbols-outlined text-2xl"
+              style="color: var(--color-error, #dc2626);">cancel</span>
+        <div>
+          <p class="font-bold text-sm" style="color: var(--color-text);">Cancel Receiving</p>
+          <p class="text-xs font-mono mt-0.5" style="color: var(--color-text-muted);">
+            {{ cancelModal.specimenNo }}
+          </p>
+        </div>
+      </div>
+
+      <!-- Warning text -->
+      <p class="text-xs" style="color: var(--color-text-muted);">
+        This will cancel the specimen from this batch. This action cannot be undone.
+      </p>
+
+      <!-- Reason field -->
+      <div class="flex flex-col gap-1.5">
+        <label class="text-[10px] font-bold uppercase tracking-widest"
+                style="color: var(--color-text-muted);">
+          Reason <span style="color: var(--color-error, #dc2626);">*</span>
+        </label>
+        <textarea v-model="cancelModal.reason"
+                  rows="3"
+                  placeholder="Enter cancellation reason..."
+                  class="w-full px-3 py-2 rounded-xl text-sm outline-none resize-none transition-all"
+                  style="background-color: var(--color-surface-low); border: 1.5px solid var(--color-border); color: var(--color-text);" />
+        <p v-if="cancelModal.error"
+            class="text-[10px]"
+            style="color: var(--color-error, #dc2626);">
+          {{ cancelModal.error }}
+        </p>
+      </div>
+
+      <!-- Actions -->
+      <div class="flex gap-3 justify-end">
+        <button class="px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all"
+                style="background-color: var(--color-surface-low); color: var(--color-text-muted);"
+                :disabled="cancelModal.saving"
+                @click="cancelModal.visible = false">
+          Dismiss
+        </button>
+        <button class="px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all active:scale-95 disabled:opacity-40 flex items-center gap-1.5"
+                style="background-color: var(--color-error, #dc2626); color: #ffffff;"
+                :disabled="!cancelModal.reason.trim() || cancelModal.saving"
+                @click="confirmCancel">
+          <span v-if="cancelModal.saving"
+                class="material-symbols-outlined text-sm animate-spin">progress_activity</span>
+          <span v-else>Confirm Cancel</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
 
 </template>
 
@@ -449,6 +614,7 @@
   import { ref, watch, computed } from 'vue'
   import { useAuthStore } from '@/stores/authStore'
   import { receivingApi } from '@/api/receivingApi'
+  import { flagApi } from '@/api/flagApi'
 
   const props = defineProps({
     isOpen: { type: Boolean, default: false },
@@ -456,9 +622,10 @@
     data: { type: Object, default: null },
     pendingOnly: { type: Boolean, default: false },
     allowCancel: { type: Boolean, default: false },
+    allowFlag: { type: Boolean, default: false },
   })
 
-  const emit = defineEmits(['close', 'specimen-cancelled'])
+  const emit = defineEmits(['close', 'specimen-cancelled', 'specimen-flagged', 'specimen-unflagged'])
 
   const authStore = useAuthStore()
 
@@ -480,6 +647,113 @@
   watch(() => props.isOpen, (val) => {
     if (val) activeTab.value = 'Specimens'
   })
+
+  // ── Specimen card style ────────────────────────────────────────────────────
+
+  function getSpecimenCardStyle(sp) {
+    if (sp.status === 'X') return 'background-color: var(--color-surface-low); opacity: 0.6;'
+    if (sp.isFlagged) return 'background-color: var(--color-surface-low); border-left: 3px solid rgba(255,69,0,0.6);'
+    return 'background-color: var(--color-surface-low);'
+  }
+
+  // ── Flag ───────────────────────────────────────────────────────────────────
+
+  const flagModal = ref({
+    visible: false,
+    specimenNo: null,
+    batchNo: null,
+    reason: '',
+    saving: false,
+    error: ''
+  })
+
+  function openFlagModal(sp) {
+    flagModal.value = {
+      visible: true,
+      specimenNo: sp.specimenNo,
+      batchNo: sp.batchNo,
+      reason: '',
+      saving: false,
+      error: ''
+    }
+  }
+
+  async function confirmFlag() {
+    if (!flagModal.value.reason.trim()) {
+      flagModal.value.error = 'Please provide a reason.'
+      return
+    }
+
+    flagModal.value.saving = true
+    flagModal.value.error = ''
+
+    try {
+      await flagApi.flagSpecimen({
+        specimenNo: flagModal.value.specimenNo,
+        batchNo: flagModal.value.batchNo,
+        flagReason: flagModal.value.reason.trim(),
+        userID: authStore.userID
+      })
+
+      emit('specimen-flagged', {
+        specimenNo: flagModal.value.specimenNo,
+        batchNo: flagModal.value.batchNo,
+        flagReason: flagModal.value.reason.trim(),
+        flaggedBy: authStore.userID,
+        flaggedAt: new Date().toISOString()
+      })
+
+      flagModal.value.visible = false
+    } catch (err) {
+      flagModal.value.error = err.response?.data?.message || 'An error occurred.'
+    } finally {
+      flagModal.value.saving = false
+    }
+  }
+
+  // ── Unflag ─────────────────────────────────────────────────────────────────
+
+  const unflagModal = ref({
+    visible: false,
+    specimenNo: null,
+    batchNo: null,
+    saving: false,
+    error: ''
+  })
+
+  function openUnflagConfirm(sp) {
+    unflagModal.value = {
+      visible: true,
+      specimenNo: sp.specimenNo,
+      batchNo: sp.batchNo,
+      saving: false,
+      error: ''
+    }
+  }
+
+  async function confirmUnflag() {
+    unflagModal.value.saving = true
+    unflagModal.value.error = ''
+
+    try {
+      await flagApi.unflagSpecimen({
+        specimenNo: unflagModal.value.specimenNo,
+        batchNo: unflagModal.value.batchNo,
+        userID: authStore.userID
+      })
+
+      emit('specimen-unflagged', {
+        specimenNo: unflagModal.value.specimenNo,
+        batchNo: unflagModal.value.batchNo
+      })
+
+      unflagModal.value.visible = false
+    } catch (err) {
+      unflagModal.value.error = err.response?.data?.message || 'An error occurred.'
+    } finally {
+      unflagModal.value.saving = false
+    }
+  }
 
   // ── Cancel ─────────────────────────────────────────────────────────────────
 
@@ -578,5 +852,21 @@
 
   .slide-enter-from, .slide-leave-to {
     transform: translateX(100%);
+  }
+
+  .animate-modal {
+    animation: modalIn 0.2s ease;
+  }
+
+  @keyframes modalIn {
+    from {
+      opacity: 0;
+      transform: scale(0.9) translateY(10px);
+    }
+
+    to {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
   }
 </style>

@@ -234,6 +234,8 @@
                       <span class="font-mono text-sm font-bold" style="color: var(--color-primary);">
                         {{ batch.batchNo }}
                       </span>
+
+                      <!-- Unposted indicator -->
                       <div v-if="batch.hasUnpostedSpecimens"
                            class="relative group flex-shrink-0">
                         <span class="material-symbols-outlined"
@@ -241,6 +243,17 @@
                         <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2.5 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest whitespace-nowrap shadow-lg pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity z-50"
                              style="background-color: var(--color-warning); color: #ffffff;">
                           Unposted specimen(s) to destination
+                        </div>
+                      </div>
+
+                      <!-- Flagged indicator -->
+                      <div v-if="batch.hasFlaggedSpecimens"
+                           class="relative group flex-shrink-0">
+                        <span class="material-symbols-outlined"
+                              style="font-size: 14px; color: orangered; font-variation-settings: 'FILL' 1;">flag</span>
+                        <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2.5 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest whitespace-nowrap shadow-lg pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity z-50"
+                             style="background-color: orangered; color: #ffffff;">
+                          Has flagged specimen(s)
                         </div>
                       </div>
                     </div>
@@ -259,6 +272,7 @@
                 </tr>
               </tbody>
             </table>
+
             <!-- Pagination -->
             <div v-if="recentBatchPages > 1"
                  class="px-8 py-3 flex items-center justify-between"
@@ -303,10 +317,8 @@
           <div ref="flowBarsContainerRef" class="h-48 flex items-end justify-between gap-2 px-2">
             <div v-for="(bar, i) in flowBars" :key="i"
                  class="relative w-full h-full flex flex-col items-center justify-end group/bar">
-              <!-- Count tooltip -->
               <span class="absolute -top-5 text-[10px] font-bold opacity-0 group-hover/bar:opacity-100 transition-opacity"
                     style="color: var(--color-primary);">{{ bar.count }}</span>
-              <!-- Bar — height driven by inline style; GSAP animates scaleY from 0 -->
               <div class="w-full rounded-t-lg origin-bottom"
                    :data-bar-index="i"
                    :style="`height: ${bar.height}%; background-color: ${bar.active ? 'var(--color-primary)' : 'var(--color-primary-soft)'};`"
@@ -336,7 +348,11 @@
     <BatchDetailDrawer :isOpen="drawerOpen"
                        :loading="drawerLoading"
                        :data="drawerData"
-                       @close="closeDrawer" />
+                       :allowFlag="true"
+                       @close="closeDrawer"
+                       @specimen-flagged="onSpecimenFlagged"
+                       @specimen-unflagged="onSpecimenUnflagged" />
+
     <!-- Alert Modal -->
     <AlertModal :isVisible="alert.isVisible"
                 :type="alert.type"
@@ -382,10 +398,8 @@
   // ── KPI State ──────────────────────────────────────────────────────────────
 
   const loading = ref(true)
-
   const summary = ref({ totalEndorsed: 0, pending: 0, received: 0, outsideTAT: 0 })
 
-  // Count-up display values (regular/TL view)
   const displayTotalEndorsed = ref(0)
   const displayPending = ref(0)
   const displayReceived = ref(0)
@@ -430,17 +444,15 @@
     return recentBatches.value.slice(start, start + RECENT_PAGE_SIZE)
   })
 
-  // ── Drawer State ───────────────────────────────────────────────────────────
+  // ── Drawer ─────────────────────────────────────────────────────────────────
 
   const drawerOpen = ref(false)
   const drawerLoading = ref(false)
   const drawerData = ref(null)
-  const drawerTab = ref('Specimens')
 
   async function openDrawer(batchNo) {
     drawerOpen.value = true
     drawerLoading.value = true
-    drawerTab.value = 'Specimens'
     drawerData.value = null
     try {
       drawerData.value = await batchApi.getBatchDetail(batchNo)
@@ -458,6 +470,38 @@
   function closeDrawer() {
     drawerOpen.value = false
     drawerData.value = null
+  }
+
+  // ── Flag / Unflag handlers ─────────────────────────────────────────────────
+
+  function onSpecimenFlagged({ specimenNo, batchNo, flagReason, flaggedBy, flaggedAt }) {
+    if (drawerData.value?.specimens) {
+      const sp = drawerData.value.specimens.find(s => s.specimenNo === specimenNo)
+      if (sp) {
+        sp.isFlagged = true
+        sp.flagReason = flagReason
+        sp.flaggedBy = flaggedBy
+        sp.flaggedAt = flaggedAt
+      }
+    }
+    const batch = recentBatches.value.find(b => b.batchNo === batchNo)
+    if (batch) batch.hasFlaggedSpecimens = true
+  }
+
+  function onSpecimenUnflagged({ specimenNo, batchNo }) {
+    if (drawerData.value?.specimens) {
+      const sp = drawerData.value.specimens.find(s => s.specimenNo === specimenNo)
+      if (sp) {
+        sp.isFlagged = false
+        sp.flagReason = null
+        sp.flaggedBy = null
+        sp.flaggedAt = null
+      }
+    }
+    const batch = recentBatches.value.find(b => b.batchNo === batchNo)
+    if (batch && drawerData.value?.specimens) {
+      batch.hasFlaggedSpecimens = drawerData.value.specimens.some(s => s.isFlagged)
+    }
   }
 
   // ── GSAP Refs ──────────────────────────────────────────────────────────────
@@ -482,73 +526,36 @@
     })
   }
 
-  async function animateKpiCards() {
-    await nextTick()
-    if (!kpiCardsRef.value) return
-    const cards = kpiCardsRef.value.querySelectorAll(':scope > div')
-    if (!cards.length) return
-    gsap.set(cards, { opacity: 0, y: 20 })
-    gsap.to(cards, {
-      opacity: 1,
-      y: 0,
-      duration: 0.2,
-      stagger: 0.07,
-      ease: 'power2.out',
-    })
-  }
-
   async function animateAdminKpiCards() {
     await nextTick()
     if (!adminKpiRef.value) return
     const cards = adminKpiRef.value.querySelectorAll('.rounded-2xl')
     if (!cards.length) return
     gsap.set(cards, { opacity: 0, y: 20 })
-    gsap.to(cards, {
-      opacity: 1,
-      y: 0,
-      duration: 0.35,
-      stagger: 0.05,
-      ease: 'power2.out',
-    })
+    gsap.to(cards, { opacity: 1, y: 0, duration: 0.35, stagger: 0.05, ease: 'power2.out' })
   }
 
   async function animateTableEntrance() {
     await nextTick()
     if (!tableCardRef.value) return
-    // Animate the whole card in first
     gsap.set(tableCardRef.value, { opacity: 0, y: 16 })
     gsap.to(tableCardRef.value, { opacity: 1, y: 0, duration: 0.3, ease: 'power2.out' })
-    // Then stagger rows
     if (tableBodyRef.value) {
       const rows = tableBodyRef.value.querySelectorAll('tr')
       if (rows.length) {
         gsap.set(rows, { opacity: 0, x: -8 })
-        gsap.to(rows, {
-          opacity: 1,
-          x: 0,
-          duration: 0.3,
-          stagger: 0.05,
-          ease: 'power1.out',
-          delay: 0.18,
-        })
+        gsap.to(rows, { opacity: 1, x: 0, duration: 0.3, stagger: 0.05, ease: 'power1.out', delay: 0.18 })
       }
     }
   }
 
-  // Re-animate rows when page changes (pagination)
   async function animateTableRows() {
     await nextTick()
     if (!tableBodyRef.value) return
     const rows = tableBodyRef.value.querySelectorAll('tr')
     if (!rows.length) return
     gsap.set(rows, { opacity: 0, x: -6 })
-    gsap.to(rows, {
-      opacity: 1,
-      x: 0,
-      duration: 0.18,
-      stagger: 0.025,
-      ease: 'power1.out',
-    })
+    gsap.to(rows, { opacity: 1, x: 0, duration: 0.18, stagger: 0.025, ease: 'power1.out' })
   }
 
   async function animateFlowBars() {
@@ -556,28 +563,19 @@
     if (!flowBarsContainerRef.value) return
     const bars = flowBarsContainerRef.value.querySelectorAll('[data-bar-index]')
     if (!bars.length) return
-    // Animate the card container first
     if (flowCardRef.value) {
       gsap.set(flowCardRef.value, { opacity: 0, y: 16 })
       gsap.to(flowCardRef.value, { opacity: 1, y: 0, duration: 0.3, ease: 'power2.out' })
     }
-    // Use scaleY on origin-bottom so bars grow upward from baseline
     gsap.set(bars, { scaleY: 0, opacity: 0 })
-    gsap.to(bars, {
-      scaleY: 1,
-      opacity: 1,
-      duration: 0.45,
-      stagger: 0.06,
-      ease: 'back.out(1.4)',
-      delay: 0.15,
-    })
+    gsap.to(bars, { scaleY: 1, opacity: 1, duration: 0.45, stagger: 0.06, ease: 'back.out(1.4)', delay: 0.15 })
   }
 
   // ── Fetch ──────────────────────────────────────────────────────────────────
 
   let refreshInterval = null
+
   onMounted(async () => {
-    // First load — show spinners
     await fetchKPIs()
     loading.value = false
 
@@ -586,10 +584,7 @@
 
     await loadTatCycle()
 
-    // Start silent refresh every 5 seconds
     refreshInterval = setInterval(silentRefresh, 5000)
-
-    // Tick every second for the countdown
     tickInterval = setInterval(() => { nowTick.value = Date.now() }, 1000)
   })
 
@@ -598,16 +593,13 @@
     clearInterval(tickInterval)
   })
 
-  // ── Watchers for GSAP triggers ─────────────────────────────────────────────
+  // ── Watchers ───────────────────────────────────────────────────────────────
 
-  // KPI cards — fire once after first load resolves
   watch(loading, async (isLoading) => {
     if (!isLoading) {
       if (authStore.isAdmin) {
         await animateAdminKpiCards()
       } else {
-        //await animateKpiCards()
-        // Count-up the four numbers
         countUp(displayTotalEndorsed, summary.value.totalEndorsed)
         countUp(displayPending, summary.value.pending)
         countUp(displayReceived, summary.value.received)
@@ -616,42 +608,33 @@
     }
   })
 
-  // Table — fire once after first table load resolves
   watch(tableLoading, async (isLoading) => {
     if (isLoading) return
     if (recentBatches.value.length > 0) await animateTableEntrance()
-    if (weeklyFlow.value.length > 0)    await animateFlowBars()
+    if (weeklyFlow.value.length > 0) await animateFlowBars()
   })
 
-  // Re-animate rows on pagination change
   watch(recentBatchPage, async () => {
     await animateTableRows()
   })
 
-  // Flow bars — re-animate whenever weeklyFlow data changes (silent refresh updates)
-  // Use a flag so it only re-runs on actual data changes, not the first mount (handled above)
   const flowAnimatedOnce = ref(false)
   watch(weeklyFlow, async (newVal, oldVal) => {
     if (!newVal?.length) return
-    if (!flowAnimatedOnce.value) {
-      flowAnimatedOnce.value = true
-      return
-    }
+    if (!flowAnimatedOnce.value) { flowAnimatedOnce.value = true; return }
     const hasChanged = JSON.stringify(newVal) !== JSON.stringify(oldVal)
     if (!hasChanged) return
     await animateFlowBars()
   }, { deep: true })
 
-  // ── Fetch ──────────────────────────────────────────────────────────────────
+  // ── Data fetch ─────────────────────────────────────────────────────────────
 
   async function fetchKPIs() {
     try {
       if (authStore.isAdmin) {
-        const data = await batchApi.getAllSectionsSummary()
-        allSections.value = data
+        allSections.value = await batchApi.getAllSectionsSummary()
       } else {
-        const data = await batchApi.getDashboardSummary(authStore.sectionCode)
-        summary.value = data
+        summary.value = await batchApi.getDashboardSummary(authStore.sectionCode)
       }
     } catch (err) {
       if (err.response?.status === 401) {
@@ -688,7 +671,6 @@
     }
   }
 
-  // Silent refresh — no spinners touched
   async function silentRefresh() {
     if (!authStore.isAuthenticated) return
     await Promise.all([fetchKPIs(), fetchTableData(), loadTatCycle()])
@@ -736,7 +718,7 @@
     }))
   })
 
-  // ── TAT Countdown ─────────────────────────────────────────────────────────
+  // ── TAT Countdown ──────────────────────────────────────────────────────────
 
   const tatCycle = ref({ hasOpenCycle: false, cycleStart: null, thresholdMins: null, canAppeal: false })
   const nowTick = ref(Date.now())
@@ -754,9 +736,7 @@
 
   const appealConfirm = ref({ visible: false })
 
-  function confirmAppeal() {
-    appealConfirm.value.visible = true
-  }
+  function confirmAppeal() { appealConfirm.value.visible = true }
 
   async function handleAppeal() {
     if (tatLoading.value) return
@@ -797,7 +777,6 @@
     return Math.round((remaining / total) * 100)
   })
 
-  // green → orange (≤25%) → red (exceeded)
   const tatColorStyle = computed(() => {
     const secs = tatSecondsRemaining.value
     if (secs === null) return ''
