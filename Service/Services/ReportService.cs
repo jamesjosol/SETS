@@ -20,6 +20,174 @@ namespace Service.Services
             _branch_raw = branch;
         }
 
+        // ══════════════════════════════════════════════════════════════════════════
+        // R4 — Test Management
+        // ══════════════════════════════════════════════════════════════════════════
+
+        public List<TestManagementRow> GetTestManagement(TestManagementRequest request)
+        {
+            try
+            {
+                using var context = _factory.CreateContext(_branch);
+                using var unit = new UnitOfWork(context);
+
+                // ── 1. Section name lookup (Category 3 only) ──────────────────────
+                var sections = context.Section_Master
+                    .Where(s => s.Category == "3" && s.Active)
+                    .ToList()
+                    .ToDictionary(s => s.Code, s => s.Name);
+
+                // ── 2. Active Section_TestGroup → TestGroupCode to SectionCode map ─
+                var testGroupMap = context.Section_TestGroup
+                    .Where(s => s.Active)
+                    .ToList()
+                    .ToDictionary(s => s.TestGroupCode, s => s.SectionCode);
+
+                // ── 3. All Test_RunningDay entries ────────────────────────────────
+                var allTests = unit.TestRunningDays.GetAll();
+
+                // ── 4. Filter by section if specified ────────────────────────────
+                if (!string.IsNullOrEmpty(request.SectionCode))
+                {
+                    // Get test group codes belonging to this section
+                    var sectionTestGroups = context.Section_TestGroup
+                        .Where(s => s.Active && s.SectionCode == request.SectionCode)
+                        .ToList()
+                        .Select(s => s.TestGroupCode)
+                        .ToHashSet();
+
+                    allTests = allTests
+                        .Where(t => t.TestGroupCode != null && sectionTestGroups.Contains(t.TestGroupCode))
+                        .ToList();
+                }
+
+                // ── 5. Build rows ─────────────────────────────────────────────────
+                var rows = allTests
+                    .Select(t =>
+                    {
+                        var sectionCode = t.TestGroupCode != null && testGroupMap.TryGetValue(t.TestGroupCode, out var sc)
+                            ? sc : string.Empty;
+
+                        return new TestManagementRow
+                        {
+                            TestCode = t.TestCode,
+                            TestName = t.TestName,
+                            RunningDays = FormatRunningDays(t.RunningDays),
+                            SectionCode = sectionCode,
+                            SectionName = sections.TryGetValue(sectionCode, out var sn) ? sn : sectionCode,
+                        };
+                    })
+                    .OrderBy(r => r.SectionName)
+                    .ThenBy(r => r.TestName)
+                    .ToList();
+
+                return rows;
+            }
+            catch { throw; }
+        }
+
+        private static string FormatRunningDays(string runningDays)
+        {
+            if (string.IsNullOrWhiteSpace(runningDays)) return "—";
+
+            var abbrev = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                { "Sunday",    "Sun" },
+                { "Monday",    "Mon" },
+                { "Tuesday",   "Tue" },
+                { "Wednesday", "Wed" },
+                { "Thursday",  "Thu" },
+                { "Friday",    "Fri" },
+                { "Saturday",  "Sat" },
+            };
+
+            var days = runningDays
+                .Split(';', StringSplitOptions.RemoveEmptyEntries)
+                .Select(d => abbrev.TryGetValue(d.Trim(), out var a) ? a : d.Trim())
+                .ToList();
+
+            return string.Join(", ", days);
+        }
+        public byte[] ExportTestManagementExcel(TestManagementRequest request)
+        {
+            try
+            {
+                var data = GetTestManagement(request);
+
+                using var wb = new XLWorkbook();
+                var ws = wb.Worksheets.Add("Test Management");
+
+                // ── Title block ───────────────────────────────────────────────
+                ws.Cell("A1").Value = "TEST MANAGEMENT REPORT";
+                ws.Cell("A1").Style.Font.Bold = true;
+                ws.Cell("A1").Style.Font.FontSize = 14;
+                ws.Range("A1:D1").Merge();
+
+                ws.Cell("A2").Value = $"Generated: {DateTime.Now:MM/dd/yyyy HH:mm}";
+                ws.Range("A2:D2").Merge();
+
+                ws.Cell("A3").Value = $"Section: {(string.IsNullOrEmpty(request.SectionCode) ? "ALL" : request.SectionCode)}";
+                ws.Range("A3:D3").Merge();
+
+                // ── Column headers ────────────────────────────────────────────
+                int headerRow = 5;
+                var headers = new[] { "Section", "Test Code", "Test Name", "Running Days" };
+
+                for (int i = 0; i < headers.Length; i++)
+                {
+                    var cell = ws.Cell(headerRow, i + 1);
+                    cell.Value = headers[i];
+                    cell.Style.Font.Bold = true;
+                    cell.Style.Fill.BackgroundColor = XLColor.FromHtml("#2E4057");
+                    cell.Style.Font.FontColor = XLColor.White;
+                    cell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                    cell.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                }
+
+                // ── Data rows ─────────────────────────────────────────────────
+                int dataRow = headerRow + 1;
+                string lastSection = string.Empty;
+
+                foreach (var r in data)
+                {
+                    ws.Cell(dataRow, 1).Value = r.SectionName;
+                    ws.Cell(dataRow, 2).Value = r.TestCode;
+                    ws.Cell(dataRow, 3).Value = r.TestName;
+                    ws.Cell(dataRow, 4).Value = r.RunningDays ?? "—";
+
+                    // Alternate row shading; section group break = slightly different shade
+                    var bgColor = r.SectionName != lastSection
+                        ? XLColor.FromHtml("#EAF3DE")
+                        : (dataRow % 2 == 0 ? XLColor.FromHtml("#F2F2F2") : XLColor.White);
+
+                    ws.Row(dataRow).Style.Fill.BackgroundColor = bgColor;
+                    ws.Range(dataRow, 1, dataRow, 4).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+
+                    lastSection = r.SectionName;
+                    dataRow++;
+                }
+
+                // ── Summary footer ────────────────────────────────────────────
+                ws.Cell(dataRow, 1).Value = $"Total: {data.Count} test(s)";
+                ws.Cell(dataRow, 1).Style.Font.Bold = true;
+                ws.Range(dataRow, 1, dataRow, 4).Merge();
+                ws.Range(dataRow, 1, dataRow, 4).Style.Fill.BackgroundColor = XLColor.FromHtml("#D9E1F2");
+                ws.Range(dataRow, 1, dataRow, 4).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+
+                // ── Column widths ─────────────────────────────────────────────
+                ws.Column(1).Width = 28;
+                ws.Column(2).Width = 14;
+                ws.Column(3).Width = 36;
+                ws.Column(4).Width = 30;
+                ws.SheetView.FreezeRows(headerRow);
+
+                using var ms = new MemoryStream();
+                wb.SaveAs(ms);
+                return ms.ToArray();
+            }
+            catch { throw; }
+        }
+
         // ── TAT helpers ───────────────────────────────────────────────────────
 
         private static string? FormatTat(DateTime? from, DateTime? to)
@@ -436,17 +604,6 @@ namespace Service.Services
                 return ms.ToArray();
             }
             catch { throw; }
-        }
-
-        // ══════════════════════════════════════════════════════════════════════
-        // R4 — Test Management (TODO)
-        // ══════════════════════════════════════════════════════════════════════
-
-        public List<TestManagementRow> GetTestManagement(TestManagementRequest request)
-        {
-            // TODO: Query Section_TestGroup joined to test master data.
-            //       Include running days, TAT, and Active/Inactive status.
-            throw new NotImplementedException("Test Management report is not yet implemented.");
         }
 
         // ══════════════════════════════════════════════════════════════════════

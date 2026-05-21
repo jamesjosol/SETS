@@ -18,6 +18,7 @@ namespace Model.Main
         public const string SpecimenCompleted = "SPECIMEN_COMPLETED";
         public const string MiddlewareIssue = "MIDDLEWARE_ISSUE";
         public const string SpecimenFlagged = "SPECIMEN_FLAGGED";
+        public const string SpecimenAlert = "SPECIMEN_ALERT";
     }
 
     public class NotificationDto

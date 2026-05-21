@@ -16,6 +16,7 @@ namespace Service.Interfaces
 
         // R4 — Test Management
         List<TestManagementRow> GetTestManagement(TestManagementRequest request);
+        byte[] ExportTestManagementExcel(TestManagementRequest request);
 
         // R5 — Batch Summary (data + Excel export)
         BatchSummaryReportResult GetBatchSummary(BatchSummaryReportRequest request);

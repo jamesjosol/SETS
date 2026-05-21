@@ -238,7 +238,7 @@
                 <template v-else>
                   <button v-for="notif in notifStore.items"
                           :key="notif.notifID"
-                          class="w-full flex items-start gap-3 px-5 py-3.5 transition-all text-left"
+                          class="w-full flex items-start gap-3 px-5 py-3.5 transition-all text-left cursor-pointer"
                           :style="!notif.isRead
                       ? 'background-color: var(--color-primary-soft);'
                       : 'background-color: transparent;'"
@@ -751,6 +751,7 @@
       SPECIMEN_COMPLETED: 'task_alt',
       MIDDLEWARE_ISSUE: 'warning',
       SPECIMEN_FLAGGED: 'flag',
+      SPECIMEN_ALERT: 'info'
     }
     return map[type] ?? 'notifications'
   }
@@ -765,6 +766,7 @@
       SPECIMEN_COMPLETED: 'var(--color-success)',
       MIDDLEWARE_ISSUE: 'var(--color-error)',
       SPECIMEN_FLAGGED: 'var(--color-error)',
+      SPECIMEN_ALERT: '#2563eb',
     }
     return map[type] ?? 'var(--color-text-muted)'
   }

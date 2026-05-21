@@ -71,7 +71,7 @@ namespace API.Controllers
                     var notif = notifMaster.Notification.Create(new CreateNotificationRequest
                     {
                         NotifType = NotifType.SpecimenFlagged,
-                        Title = "Flagged Specimen",
+                        Title = "Action Required Specimen",
                         Message = $"Specimen {request.SpecimenNo} in batch {request.BatchNo} has been flagged. Reason: {request.FlagReason}",
                         TargetCategory = "2",
                         ReferenceID = request.BatchNo

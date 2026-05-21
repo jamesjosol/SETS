@@ -42,10 +42,6 @@ namespace Service.Services
                     throw new Exception("On-Site scanning is currently disabled.");
 
                 // 2. Validate lab no. prefix (chars 3-4, zero-indexed [2..4] of labNo)
-                // SpecimenNo e.g. "265112661827" → labNo = first 10 chars = "2651126618"
-                // prefix = chars at index 2,3 = "51" — wait, per spec: chars 3-4 = "51"
-                // Example given: 2652126595 → allowed chars 3-4 = "52"
-                // So index 2 and 3 of the labNo (0-based)
                 if (request.SpecimenNo.Length < 10)
                     throw new Exception("Invalid specimen number.");
 
@@ -126,8 +122,8 @@ namespace Service.Services
                         using var auditMaster = new MasterService(_branch_raw);
                         auditMaster.Audit.Log(Audit_Log.SectionReceived(
                             header.SpecimenNo,
-                            header.PatientName,
-                            header.PID,
+                            header.PatientName ?? string.Empty,
+                            header.PID ?? string.Empty,
                             request.UserID,
                             request.SectionCode,
                             request.UserID));
@@ -335,7 +331,7 @@ namespace Service.Services
                     {
                         using var auditMaster = new MasterService(_branch_raw);
 
-                        // TEST_RUN
+                        // ── TEST_RUN ───────────────────────────────────────────────────────
                         var runGroups = justRunTests
                             .GroupBy(x => x.Test.HeaderId)
                             .ToList();
@@ -350,6 +346,8 @@ namespace Service.Services
 
                             auditMaster.Audit.Log(Audit_Log.TestRun(
                                 header.SpecimenNo,
+                                header.PatientName ?? string.Empty,
+                                header.PID ?? string.Empty,
                                 header.SectionCode,
                                 testNames,
                                 rmtUserID,
@@ -357,7 +355,7 @@ namespace Service.Services
                                 now));
                         }
 
-                        // SPECIMEN_STORED / TEST_SCHEDULED / TEST_RESCHEDULED
+                        // ── SPECIMEN_STORED / TEST_SCHEDULED / TEST_RESCHEDULED ───────────
                         var scheduledGroups = justScheduledTests
                             .GroupBy(x => x.Test.HeaderId)
                             .ToList();
@@ -367,8 +365,13 @@ namespace Service.Services
                             var header = context.OnSite_Section_Header.Find(group.Key);
                             if (header == null) continue;
 
+                            var patientName = header.PatientName ?? string.Empty;
+                            var pid = header.PID ?? string.Empty;
+
                             auditMaster.Audit.Log(Audit_Log.SpecimenStored(
                                 header.SpecimenNo,
+                                patientName,
+                                pid,
                                 header.SectionCode,
                                 request.UserID));
 
@@ -384,6 +387,8 @@ namespace Service.Services
                                 {
                                     auditMaster.Audit.Log(Audit_Log.TestScheduled(
                                         header.SpecimenNo,
+                                        patientName,
+                                        pid,
                                         header.SectionCode,
                                         testEntry,
                                         item.Test.ScheduleTag!,
@@ -394,6 +399,8 @@ namespace Service.Services
                                 {
                                     auditMaster.Audit.Log(Audit_Log.TestRescheduled(
                                         header.SpecimenNo,
+                                        patientName,
+                                        pid,
                                         header.SectionCode,
                                         testEntry,
                                         item.PreviousTag,
@@ -831,11 +838,14 @@ namespace Service.Services
                     tx.Commit();
 
                     // 4. Audit — fire-and-forget
+                    // OnSite_Section_Header carries PatientName/PID directly — no extra lookup needed.
                     try
                     {
                         using var auditMaster = new MasterService(_branch_raw);
                         auditMaster.Audit.Log(Audit_Log.TestAborted(
                             request.SpecimenNo,
+                            header.PatientName ?? string.Empty,
+                            header.PID ?? string.Empty,
                             request.SectionCode,
                             test.TestCode,
                             test.TestName,

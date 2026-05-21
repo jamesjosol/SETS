@@ -53,6 +53,13 @@ namespace Service.Services
                     if (!header.IsHclabRouted)
                         throw new Exception($"Specimen '{request.SpecimenNo}' has not been routed in HCLAB yet.");
 
+                    var receivingRecord = context.Batch_Specimen_Receiving
+                        .FirstOrDefault(r => r.SpecimenNo == request.SpecimenNo);
+
+                    string? specimenAlert = receivingRecord?.SpecimenAlert;
+                    string? specimenAlertSetBy = receivingRecord?.SpecimenAlertSetBy;
+                    DateTime? specimenAlertSetAt = receivingRecord?.SpecimenAlertSetAt;
+
                     // 2. Stamp received — ONLY if first scan
                     bool firstScan = header.ReceivedBy == null;
                     if (firstScan)
@@ -82,7 +89,8 @@ namespace Service.Services
                             using var master = new MasterService(_branch_raw);
                             temp = context.Batch_Specimen.FirstOrDefault(a => a.SpecimenNo == header.SpecimenNo);
                             string? loc = null;
-                            if (temp != null) {
+                            if (temp != null)
+                            {
                                 loc = context.Batch_Header.FirstOrDefault(a => a.BatchNo == temp.BatchNo)?.ProcDestination;
                             }
                             master.Audit.Log(Audit_Log.SectionReceived(
@@ -106,7 +114,7 @@ namespace Service.Services
                         ? $"{(int)section.CutOffTime.Value.TotalHours:D2}:{section.CutOffTime.Value.Minutes:D2}"
                         : null;
 
-                    var todayDayName = DateTime.Now.DayOfWeek.ToString(); 
+                    var todayDayName = DateTime.Now.DayOfWeek.ToString();
 
                     var testCodes = tests.Select(t => t.TestCode).ToList();
                     var allRunningDayRecords = context.Test_RunningDay
@@ -124,11 +132,10 @@ namespace Service.Services
                         .Select(r => r.TestCode)
                         .ToHashSet();
 
-
                     var sampleTypeName = context.Sample_Type
                         .FirstOrDefault(s => s.Code == header.SampleTypeCode)?.Name;
 
-                    var batchSpecimen = temp != null ? 
+                    var batchSpecimen = temp != null ?
                         temp : context.Batch_Specimen
                         .FirstOrDefault(b => b.SpecimenNo == header.SpecimenNo);
 
@@ -145,9 +152,12 @@ namespace Service.Services
                         Received = header.Received,
                         ReceivedBy = header.ReceivedBy,
                         Remarks = header.Remarks,
-                        PatientName = batchSpecimen?.PatientName, 
+                        PatientName = batchSpecimen?.PatientName,
                         PID = batchSpecimen?.PID,
                         CutOffTime = cutOffTimeStr,
+                        SpecimenAlert = specimenAlert,
+                        SpecimenAlertSetBy = specimenAlertSetBy,
+                        SpecimenAlertSetAt = specimenAlertSetAt,
                         Tests = tests.Select(t => new ScanSpecimenTestItem
                         {
                             Id = t.Id,
@@ -331,7 +341,6 @@ namespace Service.Services
                         .Where(h => affectedHeaderIds.Contains(h.Id))
                         .ToList();
 
-
                     var justCompletedHeaders = new List<CompletedHeaderInfo>();
                     foreach (var header in headers)
                     {
@@ -353,7 +362,6 @@ namespace Service.Services
                             context.Specimen_Section_Header.Update(header);
                         }
 
-
                         if (newStatus == "C" && header.Status != "C") // was not already C
                         {
                             justCompletedHeaders.Add(new CompletedHeaderInfo
@@ -372,6 +380,15 @@ namespace Service.Services
                     {
                         using var auditMaster = new MasterService(_branch_raw);
 
+                        // ── Pre-load Batch_Specimen for all affected headers in one query ──
+                        // Avoids a per-header DB hit inside the loops below.
+                        var auditSpecimenNos = headers.Select(h => h.SpecimenNo).ToHashSet();
+                        var batchSpecimenMap = context.Batch_Specimen
+                            .ToList()
+                            .Where(b => auditSpecimenNos.Contains(b.SpecimenNo))
+                            .GroupBy(b => b.SpecimenNo)
+                            .ToDictionary(g => g.Key, g => g.OrderBy(b => b.Status == "X" ? 1 : 0).First());
+
                         // ── TEST_RUN — one entry per specimen for tests flipped to R ──────
                         var runGroups = justRunTests
                             .GroupBy(x => x.Test.HeaderId)
@@ -382,11 +399,14 @@ namespace Service.Services
                             var header = headers.FirstOrDefault(h => h.Id == group.Key);
                             if (header == null) continue;
 
+                            batchSpecimenMap.TryGetValue(header.SpecimenNo, out var bs);
                             var testNames = string.Join(",", group.Select(x => $"{x.Test.TestCode}:{x.Test.TestName}"));
                             var rmtUserID = group.First().AssignedRMT;
 
                             auditMaster.Audit.Log(Audit_Log.TestRun(
                                 header.SpecimenNo,
+                                bs?.PatientName ?? string.Empty,
+                                bs?.PID ?? string.Empty,
                                 header.SectionCode,
                                 testNames,
                                 rmtUserID,
@@ -395,7 +415,6 @@ namespace Service.Services
                         }
 
                         // ── SPECIMEN_STORED / TEST_SCHEDULED / TEST_RESCHEDULED ───────────
-                        // Group scheduled assignments by header for SPECIMEN_STORED
                         var scheduledByHeader = justScheduledTests
                             .GroupBy(x => x.Test.HeaderId)
                             .ToList();
@@ -405,9 +424,15 @@ namespace Service.Services
                             var header = headers.FirstOrDefault(h => h.Id == group.Key);
                             if (header == null) continue;
 
+                            batchSpecimenMap.TryGetValue(header.SpecimenNo, out var bs);
+                            var patientName = bs?.PatientName ?? string.Empty;
+                            var pid = bs?.PID ?? string.Empty;
+
                             // Fire SPECIMEN_STORED once per specimen
                             auditMaster.Audit.Log(Audit_Log.SpecimenStored(
                                 header.SpecimenNo,
+                                patientName,
+                                pid,
                                 header.SectionCode,
                                 request.UserID));
 
@@ -418,10 +443,13 @@ namespace Service.Services
                                     ? item.Test.RunningDate.Value.ToDateTime(TimeOnly.MinValue)
                                     : DateTime.Today;
                                 var testEntry = $"{item.Test.TestCode}:{item.Test.TestName}";
+
                                 if (item.PreviousTag == null)
                                 {
                                     auditMaster.Audit.Log(Audit_Log.TestScheduled(
                                         header.SpecimenNo,
+                                        patientName,
+                                        pid,
                                         header.SectionCode,
                                         testEntry,
                                         item.Test.ScheduleTag!,
@@ -432,6 +460,8 @@ namespace Service.Services
                                 {
                                     auditMaster.Audit.Log(Audit_Log.TestRescheduled(
                                         header.SpecimenNo,
+                                        patientName,
+                                        pid,
                                         header.SectionCode,
                                         testEntry,
                                         item.PreviousTag,
@@ -565,11 +595,6 @@ namespace Service.Services
                 var relevantHeaders = headers.Where(h => relevantHeaderIds.Contains(h.Id)).ToList();
 
                 var specimenNos = relevantHeaders.Select(h => h.SpecimenNo).ToList();
-                //var batchSpecimens = context.Batch_Specimen
-                //    .ToList()
-                //    .Where(b => specimenNos.Contains(b.SpecimenNo))
-                //    .ToDictionary(b => b.SpecimenNo, b => b);
-
 
                 var batchSpecimens = context.Batch_Specimen
                        .ToList()
@@ -696,10 +721,6 @@ namespace Service.Services
                 var relevantHeaders = headers.Where(h => relevantHeaderIds.Contains(h.Id)).ToList();
 
                 var specimenNos = relevantHeaders.Select(h => h.SpecimenNo).ToList();
-                //var batchSpecimens = context.Batch_Specimen
-                //    .ToList()
-                //    .Where(b => specimenNos.Contains(b.SpecimenNo))
-                //    .ToDictionary(b => b.SpecimenNo, b => b);
 
                 var batchSpecimens = context.Batch_Specimen
                        .ToList()
@@ -1012,7 +1033,7 @@ namespace Service.Services
 
                 foreach (var section in sections)
                 {
-                    var completed = GetCompletedToday(section.Code); 
+                    var completed = GetCompletedToday(section.Code);
                     if (!completed.Any()) continue;
 
                     result.Add(new SectionPendingGroup
@@ -1166,7 +1187,7 @@ namespace Service.Services
                 }
 
                 return result;
-            }   
+            }
             catch { throw; }
         }
 
@@ -1331,7 +1352,6 @@ namespace Service.Services
             catch { throw; }
         }
 
-
         // ── Cancel specimen (runner/section side) ──────────────────────────
         // TL / Admin only (enforced at controller level).
         // Sets header Status = "X" and cascades to all non-released child tests.
@@ -1384,7 +1404,6 @@ namespace Service.Services
                     // 4. Audit — fire-and-forget
                     try
                     {
-                        // Resolve patient info from Batch_Specimen for the audit entry
                         var bs = context.Batch_Specimen
                             .FirstOrDefault(b => b.SpecimenNo == request.SpecimenNo);
 
@@ -1476,9 +1495,15 @@ namespace Service.Services
                     // 4. Audit — fire-and-forget
                     try
                     {
+                        // Resolve patient info from Batch_Specimen
+                        var bs = context.Batch_Specimen
+                            .FirstOrDefault(b => b.SpecimenNo == request.SpecimenNo);
+
                         using var auditMaster = new MasterService(_branch_raw);
                         auditMaster.Audit.Log(Audit_Log.TestAborted(
                             request.SpecimenNo,
+                            bs?.PatientName ?? string.Empty,
+                            bs?.PID ?? string.Empty,
                             request.SectionCode,
                             test.TestCode,
                             test.TestName,

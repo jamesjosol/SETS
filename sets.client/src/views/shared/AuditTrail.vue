@@ -979,6 +979,7 @@
       TEST_ABORTED: 'background-color: rgba(217,119,6,0.1); color: var(--color-warning);',
       SPECIMEN_FLAGGED: 'background-color: rgba(239,68,68,0.10); color: var(--color-error);',
       FLAGGED_SPECIMEN_RECEIVED: 'background-color: rgba(239,68,68,0.10); color: var(--color-error);',
+      SPECIMEN_ALERT_SET: 'background-color: rgba(37,99,235,0.08); color: #2563eb;',
     }
     return map[eventCode] ?? 'background-color: var(--color-surface-low); color: var(--color-text-muted);'
   }
@@ -1001,6 +1002,7 @@
       TEST_ABORTED: 'var(--color-warning)',
       SPECIMEN_FLAGGED: 'var(--color-error)',
       FLAGGED_SPECIMEN_RECEIVED: 'var(--color-error)',
+      SPECIMEN_ALERT_SET:'#2563eb',
     }
     return map[eventCode] ?? 'var(--color-text-muted)'
   }

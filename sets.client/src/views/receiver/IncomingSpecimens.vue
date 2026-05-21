@@ -300,8 +300,11 @@
                        :loading="drawerLoading"
                        :data="drawerData"
                        :allowCancel="true"
+                       :allowProcNote="true"
                        @close="closeDrawer"
-                       @specimen-cancelled="onSpecimenCancelled" />
+                       @specimen-cancelled="onSpecimenCancelled"
+                       @specimen-alert-set="onSpecimenAlertSet"
+                       @specimen-alert-cleared="onSpecimenAlertCleared" />
 
     <!-- Alert Modal -->
     <AlertModal :isVisible="alert.isVisible"
@@ -502,12 +505,31 @@ function closeDrawer() {
   drawerData.value = null
 }
 
-  async function onSpecimenCancelled({ batchNo }) {
+async function onSpecimenCancelled({ batchNo }) {
     // Silently refresh the drawer with updated data
     try {
-      drawerData.value = await batchApi.getBatchDetail(batchNo)
+        drawerData.value = await batchApi.getBatchDetail(batchNo)
     } catch { /* silent */ }
-  }
+}
+function onSpecimenAlertSet({ specimenNo, specimenAlert, specimenAlertSetBy, specimenAlertSetAt }) {
+    if (!drawerData.value?.specimens) return
+    const sp = drawerData.value.specimens.find(s => s.specimenNo === specimenNo)
+    if (sp) {
+        sp.specimenAlert = specimenAlert
+        sp.specimenAlertSetBy = specimenAlertSetBy
+        sp.specimenAlertSetAt = specimenAlertSetAt
+    }
+}
+
+function onSpecimenAlertCleared({ specimenNo }) {
+    if (!drawerData.value?.specimens) return
+    const sp = drawerData.value.specimens.find(s => s.specimenNo === specimenNo)
+    if (sp) {
+        sp.specimenAlert = null
+        sp.specimenAlertSetBy = null
+        sp.specimenAlertSetAt = null
+    }
+}
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 

@@ -198,7 +198,15 @@
                           class="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase"
                           style="background-color: rgba(255,69,0,0.12); color: #FF4500;">
                       <span class="material-symbols-outlined" style="font-size: 11px;">flag</span>
-                      Flagged
+                      ACTION REQUIRED
+                    </span>
+
+                    <!-- Specimen Alert badge — always visible when alert is set -->
+                    <span v-if="sp.specimenAlert"
+                          class="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase"
+                          style="background-color: rgba(37,99,235,0.1); color: #2563eb;">
+                      <span class="material-symbols-outlined" style="font-size: 11px;">info</span>
+                      Specimen Alert
                     </span>
 
                     <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase"
@@ -216,7 +224,7 @@
                             :style="sp.isFlagged
                               ? 'color: #BA7517; opacity: 0.8;'
                               : 'color: var(--color-text-muted); opacity: 0.3;'"
-                            :title="sp.isFlagged ? 'Remove flag' : 'Flag this specimen'"
+                            :title="sp.isFlagged ? 'Clear' : 'Action Required'"
                             @click.stop="sp.isFlagged ? openUnflagConfirm(sp) : openFlagModal(sp)">
                       <span class="material-symbols-outlined transition-all group-hover:text-red-500"
                             :style="sp.isFlagged ? 'font-size: 15px; font-variation-settings: \'FILL\' 1;' : 'font-size: 13px;'">
@@ -224,11 +232,25 @@
                       </span>
                     </button>
 
+                    <!-- Specimen Alert button — processing side only, received specimens only -->
+                    <button v-if="allowProcNote && sp.status === 'R'"
+                            class="group w-5 h-5 rounded-full flex items-center justify-center transition-all cursor-pointer"
+                            :style="sp.specimenAlert
+                              ? 'color: #2563eb; opacity: 0.8;'
+                              : 'color: var(--color-text-muted); opacity: 0.3;'"
+                            :title="sp.specimenAlert ? 'Clear Specimen Alert' : 'Add Specimen Alert'"
+                            @click.stop="sp.specimenAlert ? openClearAlertConfirm(sp) : openAlertModal(sp)">
+                      <span class="material-symbols-outlined transition-colors group-hover:text-blue-500"
+                            :style="sp.specimenAlert ? 'font-size: 15px; font-variation-settings: \'FILL\' 1;' : 'font-size: 13px;'">
+                        info
+                      </span>
+                    </button>
+
                     <!-- Cancel button — receiver side, TL or admin only -->
                     <button v-if="allowCancel && (sp.status === 'R' || sp.status === 'P') && (authStore.roleID === 2 || authStore.isAdmin)"
                             class="group w-5 h-5 rounded-full flex items-center justify-center transition-all opacity-20 hover:opacity-60"
                             style="color: var(--color-text-muted);"
-                            title="Cancel receiving"
+                            title="Cancel Receiving"
                             @click.stop="openCancelModal(sp)">
                       <span class="material-symbols-outlined transition-colors group-hover:text-red-500"
                             style="font-size: 13px;">
@@ -301,7 +323,7 @@
                      class="mt-2 pt-2"
                      style="border-top: 1px solid rgba(186,117,23,0.2);">
                   <p class="text-[10px] font-bold uppercase tracking-widest mb-0.5"
-                     style="color: #BA7517;">Flag Reason</p>
+                     style="color: #BA7517;">Reason</p>
                   <p class="text-[10px] italic"
                      style="color: var(--color-text-muted);">
                     "{{ sp.flagReason }}"
@@ -309,6 +331,22 @@
                   <p class="text-[10px] mt-0.5"
                      style="color: var(--color-text-muted);">
                     {{ sp.flaggedBy }} · {{ formatDateTime(sp.flaggedAt) }}
+                  </p>
+                </div>
+
+                <!-- Specimen Alert info strip -->
+                <div v-if="sp.specimenAlert"
+                     class="mt-2 pt-2"
+                     style="border-top: 1px solid rgba(37,99,235,0.2);">
+                  <p class="text-[10px] font-bold uppercase tracking-widest mb-0.5"
+                     style="color: #2563eb;">Specimen Alert</p>
+                  <p class="text-[10px] italic"
+                     style="color: var(--color-text-muted);">
+                    "{{ sp.specimenAlert }}"
+                  </p>
+                  <p class="text-[10px] mt-0.5"
+                     style="color: var(--color-text-muted);">
+                    {{ sp.specimenAlertSetBy }} · {{ formatDateTime(sp.specimenAlertSetAt) }}
                   </p>
                 </div>
 
@@ -423,20 +461,20 @@
   <!-- ── Flag Specimen Modal ─────────────────────────────────────────────── -->
 
   <div v-if="flagModal.visible"
-        class="fixed inset-0 z-[90] flex items-center justify-center p-4">
+       class="fixed inset-0 z-[90] flex items-center justify-center p-4">
     <!-- Backdrop -->
     <div class="absolute inset-0 bg-black/40 backdrop-blur-sm"
-          @click="flagModal.visible = false"></div>
+         @click="flagModal.visible = false"></div>
     <!-- Modal -->
     <div class="relative w-full max-w-md rounded-2xl shadow-2xl p-6 flex flex-col gap-4 animate-modal"
-          style="background-color: var(--color-surface);">
+         style="background-color: var(--color-surface);">
 
       <!-- Header -->
       <div class="flex items-center gap-3">
         <span class="material-symbols-outlined text-2xl"
-              style="color: #BA7517; font-variation-settings: 'FILL' 1;">flag</span>
+              style="color: orangered; font-variation-settings: 'FILL' 1;">flag</span>
         <div>
-          <p class="font-bold text-sm" style="color: var(--color-text);">Flag Specimen</p>
+          <p class="font-bold text-sm" style="color: var(--color-text);">Action Required</p>
           <p class="text-xs font-mono mt-0.5" style="color: var(--color-text-muted);">
             {{ flagModal.specimenNo }}
           </p>
@@ -445,23 +483,23 @@
 
       <!-- Warning text -->
       <p class="text-xs" style="color: var(--color-text-muted);">
-        This specimen will be flagged. The receiver will be warned before they can scan it and must confirm whether to proceed.
+        This specimen will be put on hold. The receiver will be warned before they can scan it and must confirm whether to proceed.
       </p>
 
       <!-- Reason field -->
       <div class="flex flex-col gap-1.5">
         <label class="text-[10px] font-bold uppercase tracking-widest"
-                style="color: var(--color-text-muted);">
+               style="color: var(--color-text-muted);">
           Reason <span style="color: #BA7517;">*</span>
         </label>
         <textarea v-model="flagModal.reason"
                   rows="3"
-                  placeholder="Enter reason for flagging this specimen..."
+                  placeholder="Enter reason for holding this specimen..."
                   class="w-full px-3 py-2 rounded-xl text-sm outline-none resize-none transition-all"
                   style="background-color: var(--color-surface-low); border: 1.5px solid var(--color-border); color: var(--color-text);" />
         <p v-if="flagModal.error"
-            class="text-[10px]"
-            style="color: #BA7517;">
+           class="text-[10px]"
+           style="color: #BA7517;">
           {{ flagModal.error }}
         </p>
       </div>
@@ -475,7 +513,7 @@
           Dismiss
         </button>
         <button class="px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all active:scale-95 disabled:opacity-40 flex items-center gap-1.5"
-                style="background-color: #BA7517; color: #ffffff;"
+                style="background-color: orangered; color: #ffffff;"
                 :disabled="!flagModal.reason.trim() || flagModal.saving"
                 @click="confirmFlag">
           <span v-if="flagModal.saving"
@@ -487,23 +525,22 @@
     </div>
   </div>
 
-
   <!-- ── Unflag Confirm Modal ────────────────────────────────────────────── -->
   <div v-if="unflagModal.visible"
-        class="fixed inset-0 z-[90] flex items-center justify-center p-4">
+       class="fixed inset-0 z-[90] flex items-center justify-center p-4">
     <!-- Backdrop -->
     <div class="absolute inset-0 bg-black/40 backdrop-blur-sm"
-          @click="unflagModal.visible = false"></div>
+         @click="unflagModal.visible = false"></div>
     <!-- Modal -->
     <div class="relative w-full max-w-md rounded-2xl shadow-2xl p-6 flex flex-col gap-4 animate-modal"
-          style="background-color: var(--color-surface);">
+         style="background-color: var(--color-surface);">
 
       <!-- Header -->
       <div class="flex items-center gap-3">
         <span class="material-symbols-outlined text-2xl"
               style="color: var(--color-text-muted);">flag</span>
         <div>
-          <p class="font-bold text-sm" style="color: var(--color-text);">Remove Flag</p>
+          <p class="font-bold text-sm" style="color: var(--color-text);">Clear Action</p>
           <p class="text-xs font-mono mt-0.5" style="color: var(--color-text-muted);">
             {{ unflagModal.specimenNo }}
           </p>
@@ -512,12 +549,12 @@
 
       <!-- Warning text -->
       <p class="text-xs" style="color: var(--color-text-muted);">
-        Are you sure you want to remove the flag on this specimen? The receiver will no longer be warned when they scan it.
+        Are you sure you want to clear the action required on this specimen? The receiver will no longer be warned when they scan it.
       </p>
 
       <p v-if="unflagModal.error"
-          class="text-[10px]"
-          style="color: var(--color-warning);">
+         class="text-[10px]"
+         style="color: var(--color-warning);">
         {{ unflagModal.error }}
       </p>
 
@@ -535,7 +572,127 @@
                 @click="confirmUnflag">
           <span v-if="unflagModal.saving"
                 class="material-symbols-outlined text-sm animate-spin">progress_activity</span>
-          <span v-else>Remove Flag</span>
+          <span v-else>Clear</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── Specimen Alert Modal ────────────────────────────────────────────── -->
+  <div v-if="alertModal.visible"
+       class="fixed inset-0 z-[90] flex items-center justify-center p-4">
+    <!-- Backdrop -->
+    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm"
+         @click="alertModal.visible = false"></div>
+    <!-- Modal -->
+    <div class="relative w-full max-w-md rounded-2xl shadow-2xl p-6 flex flex-col gap-4 animate-modal"
+         style="background-color: var(--color-surface);">
+
+      <!-- Header -->
+      <div class="flex items-center gap-3">
+        <span class="material-symbols-outlined text-2xl"
+              style="color: #2563eb; font-variation-settings: 'FILL' 1;">info</span>
+        <div>
+          <p class="font-bold text-sm" style="color: var(--color-text);">Specimen Alert</p>
+          <p class="text-xs font-mono mt-0.5" style="color: var(--color-text-muted);">
+            {{ alertModal.specimenNo }}
+          </p>
+        </div>
+      </div>
+
+      <!-- Warning text -->
+      <p class="text-xs" style="color: var(--color-text-muted);">
+        This alert will be shown to the lab section when they scan this specimen.
+      </p>
+
+      <!-- Alert message field -->
+      <div class="flex flex-col gap-1.5">
+        <label class="text-[10px] font-bold uppercase tracking-widest"
+               style="color: var(--color-text-muted);">
+          Alert Message <span style="color: #2563eb;">*</span>
+        </label>
+        <textarea v-model="alertModal.message"
+                  rows="3"
+                  placeholder="Enter alert message for the lab section..."
+                  class="w-full px-3 py-2 rounded-xl text-sm outline-none resize-none transition-all"
+                  style="background-color: var(--color-surface-low); border: 1.5px solid var(--color-border); color: var(--color-text);" />
+        <p v-if="alertModal.error"
+           class="text-[10px]"
+           style="color: #2563eb;">
+          {{ alertModal.error }}
+        </p>
+      </div>
+
+      <!-- Actions -->
+      <div class="flex gap-3 justify-end">
+        <button class="px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all"
+                style="background-color: var(--color-surface-low); color: var(--color-text-muted);"
+                :disabled="alertModal.saving"
+                @click="alertModal.visible = false">
+          Dismiss
+        </button>
+        <button class="px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all active:scale-95 disabled:opacity-40 flex items-center gap-1.5"
+                style="background-color: #2563eb; color: #ffffff;"
+                :disabled="!alertModal.message.trim() || alertModal.saving"
+                @click="confirmSetAlert">
+          <span v-if="alertModal.saving"
+                class="material-symbols-outlined text-sm animate-spin">progress_activity</span>
+          <span v-else>Set Alert</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── Clear Specimen Alert Confirm Modal ─────────────────────────────── -->
+  <div v-if="clearAlertModal.visible"
+       class="fixed inset-0 z-[90] flex items-center justify-center p-4">
+    <!-- Backdrop -->
+    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm"
+         @click="clearAlertModal.visible = false"></div>
+    <!-- Modal -->
+    <div class="relative w-full max-w-md rounded-2xl shadow-2xl p-6 flex flex-col gap-4 animate-modal"
+         style="background-color: var(--color-surface);">
+
+      <!-- Header -->
+      <div class="flex items-center gap-3">
+        <span class="material-symbols-outlined text-2xl"
+              style="color: var(--color-text-muted);">info</span>
+        <div>
+          <p class="font-bold text-sm" style="color: var(--color-text);">Clear Specimen Alert</p>
+          <p class="text-xs font-mono mt-0.5" style="color: var(--color-text-muted);">
+            {{ clearAlertModal.specimenNo }}
+          </p>
+        </div>
+      </div>
+
+      <!-- Warning text -->
+      <p class="text-xs" style="color: var(--color-text-muted);">
+        Are you sure you want to clear the specimen alert? The lab section will no longer be notified when they scan it.
+      </p>
+
+      <p v-if="clearAlertModal.error"
+         class="text-[10px]"
+         style="color: var(--color-warning);">
+        {{ clearAlertModal.error }}
+      </p>
+
+      <!-- Actions -->
+      <div class="flex gap-3 justify-end">
+        <button class="px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all"
+                style="background-color: var(--color-surface-low); color: var(--color-text-muted);"
+                :disabled="clearAlertModal.saving"
+                @click="clearAlertModal.visible = false">
+          Dismiss
+        </button>
+        <button class="px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all active:scale-95 disabled:opacity-40 flex items-center gap-1.5"
+                style="background-color: var(--color-surface-low); color: var(--color-text-muted); border: 1px solid var(--color-border);"
+                :disabled="clearAlertModal.saving"
+                @click="confirmClearAlert">
+          <span v-if="clearAlertModal.saving"
+                class="material-symbols-outlined text-sm animate-spin">progress_activity</span>
+          <span v-else>Clear Alert</span>
         </button>
       </div>
 
@@ -544,13 +701,13 @@
 
   <!-- ── Cancel Specimen Modal ──────────────────────────────────────────── -->
   <div v-if="cancelModal.visible"
-        class="fixed inset-0 z-[90] flex items-center justify-center p-4">
+       class="fixed inset-0 z-[90] flex items-center justify-center p-4">
     <!-- Backdrop -->
     <div class="absolute inset-0 bg-black/40 backdrop-blur-sm"
-          @click="cancelModal.visible = false"></div>
+         @click="cancelModal.visible = false"></div>
     <!-- Modal -->
     <div class="relative w-full max-w-md rounded-2xl shadow-2xl p-6 flex flex-col gap-4 animate-modal"
-          style="background-color: var(--color-surface);">
+         style="background-color: var(--color-surface);">
 
       <!-- Header -->
       <div class="flex items-center gap-3">
@@ -572,7 +729,7 @@
       <!-- Reason field -->
       <div class="flex flex-col gap-1.5">
         <label class="text-[10px] font-bold uppercase tracking-widest"
-                style="color: var(--color-text-muted);">
+               style="color: var(--color-text-muted);">
           Reason <span style="color: var(--color-error, #dc2626);">*</span>
         </label>
         <textarea v-model="cancelModal.reason"
@@ -581,8 +738,8 @@
                   class="w-full px-3 py-2 rounded-xl text-sm outline-none resize-none transition-all"
                   style="background-color: var(--color-surface-low); border: 1.5px solid var(--color-border); color: var(--color-text);" />
         <p v-if="cancelModal.error"
-            class="text-[10px]"
-            style="color: var(--color-error, #dc2626);">
+           class="text-[10px]"
+           style="color: var(--color-error, #dc2626);">
           {{ cancelModal.error }}
         </p>
       </div>
@@ -615,6 +772,7 @@
   import { useAuthStore } from '@/stores/authStore'
   import { receivingApi } from '@/api/receivingApi'
   import { flagApi } from '@/api/flagApi'
+  import { specimenAlertApi } from '@/api/specimenAlertApi'
 
   const props = defineProps({
     isOpen: { type: Boolean, default: false },
@@ -623,9 +781,17 @@
     pendingOnly: { type: Boolean, default: false },
     allowCancel: { type: Boolean, default: false },
     allowFlag: { type: Boolean, default: false },
+    allowProcNote: { type: Boolean, default: false },
   })
 
-  const emit = defineEmits(['close', 'specimen-cancelled', 'specimen-flagged', 'specimen-unflagged'])
+  const emit = defineEmits([
+    'close',
+    'specimen-cancelled',
+    'specimen-flagged',
+    'specimen-unflagged',
+    'specimen-alert-set',
+    'specimen-alert-cleared',
+  ])
 
   const authStore = useAuthStore()
 
@@ -653,6 +819,7 @@
   function getSpecimenCardStyle(sp) {
     if (sp.status === 'X') return 'background-color: var(--color-surface-low); opacity: 0.6;'
     if (sp.isFlagged) return 'background-color: var(--color-surface-low); border-left: 3px solid rgba(255,69,0,0.6);'
+    if (sp.specimenAlert) return 'background-color: var(--color-surface-low); border-left: 3px solid rgba(37,99,235,0.5);'
     return 'background-color: var(--color-surface-low);'
   }
 
@@ -752,6 +919,105 @@
       unflagModal.value.error = err.response?.data?.message || 'An error occurred.'
     } finally {
       unflagModal.value.saving = false
+    }
+  }
+
+  // ── Specimen Alert ─────────────────────────────────────────────────────────
+
+  const alertModal = ref({
+    visible: false,
+    specimenNo: null,
+    batchNo: null,
+    message: '',
+    saving: false,
+    error: ''
+  })
+
+  function openAlertModal(sp) {
+    alertModal.value = {
+      visible: true,
+      specimenNo: sp.specimenNo,
+      batchNo: sp.batchNo,
+      message: '',
+      saving: false,
+      error: ''
+    }
+  }
+
+  async function confirmSetAlert() {
+    if (!alertModal.value.message.trim()) {
+      alertModal.value.error = 'Please provide an alert message.'
+      return
+    }
+
+    alertModal.value.saving = true
+    alertModal.value.error = ''
+
+    try {
+      await specimenAlertApi.setAlert({
+        specimenNo: alertModal.value.specimenNo,
+        batchNo: alertModal.value.batchNo,
+        alert: alertModal.value.message.trim(),
+        userID: authStore.userID
+      })
+
+      emit('specimen-alert-set', {
+        specimenNo: alertModal.value.specimenNo,
+        batchNo: alertModal.value.batchNo,
+        specimenAlert: alertModal.value.message.trim(),
+        specimenAlertSetBy: authStore.userID,
+        specimenAlertSetAt: new Date().toISOString()
+      })
+
+      alertModal.value.visible = false
+    } catch (err) {
+      alertModal.value.error = err.response?.data?.message || 'An error occurred.'
+    } finally {
+      alertModal.value.saving = false
+    }
+  }
+
+  // ── Clear Specimen Alert ───────────────────────────────────────────────────
+
+  const clearAlertModal = ref({
+    visible: false,
+    specimenNo: null,
+    batchNo: null,
+    saving: false,
+    error: ''
+  })
+
+  function openClearAlertConfirm(sp) {
+    clearAlertModal.value = {
+      visible: true,
+      specimenNo: sp.specimenNo,
+      batchNo: sp.batchNo,
+      saving: false,
+      error: ''
+    }
+  }
+
+  async function confirmClearAlert() {
+    clearAlertModal.value.saving = true
+    clearAlertModal.value.error = ''
+
+    try {
+      await specimenAlertApi.clearAlert({
+        specimenNo: clearAlertModal.value.specimenNo,
+        batchNo: clearAlertModal.value.batchNo,
+        userID: authStore.userID
+      })
+
+      emit('specimen-alert-cleared', {
+        specimenNo: clearAlertModal.value.specimenNo,
+        batchNo: clearAlertModal.value.batchNo
+      })
+
+      clearAlertModal.value.visible = false
+    } catch (err) {
+      clearAlertModal.value.error = err.response?.data?.message || 'An error occurred.'
+    } finally {
+      clearAlertModal.value.saving = false
     }
   }
 

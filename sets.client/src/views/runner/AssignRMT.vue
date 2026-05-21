@@ -152,7 +152,16 @@
                 </td>
 
                 <td class="px-4 py-3">
-                  <p class="font-bold font-mono text-xs" style="color: var(--color-text);">{{ group.specimenNo }}</p>
+                  <div class="flex items-center gap-2">
+                    <p class="font-bold font-mono text-xs" style="color: var(--color-text);">{{ group.specimenNo }}</p>
+                    <!-- Specimen Alert badge -->
+                    <span v-if="group.specimenAlert"
+                          class="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase"
+                          style="background-color: rgba(37,99,235,0.1); color: #2563eb;">
+                      <span class="material-symbols-outlined" style="font-size: 11px;">info</span>
+                      Specimen Alert
+                    </span>
+                  </div>
                   <p v-if="group.firstScan"
                      class="text-[10px] font-bold mt-0.5"
                      style="color: var(--color-success, #16a34a);">
@@ -212,6 +221,7 @@
                   </button>
                 </td>
               </tr>
+
               <!-- Expanded child test rows -->
               <Transition name="expand">
                 <tr v-if="expandedSpecimen === group.specimenNo" :key="`exp-${group.specimenNo}`">
@@ -259,7 +269,6 @@
 
                             <!-- Assigned RMT — auto-filled to current user, editable -->
                             <td class="px-4 py-3">
-
                               <template v-if="test.status === 'R' || test.status === 'X'">
                                 <span class="text-xs font-semibold" style="color: var(--color-text);">
                                   {{ test.assignedRMT ?? '—' }}
@@ -276,11 +285,9 @@
                               </template>
                             </td>
 
-                            <!-- Schedule tag pills: Today / END / CRD / SRD -->
+                            <!-- Schedule tag pills -->
                             <td class="px-4 py-3">
                               <div class="flex items-center gap-1.5 flex-wrap">
-
-
                                 <label v-for="tag in scheduleTags" :key="tag.value"
                                        class="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-lg transition-all select-none"
                                        :class="tag.value === 'SRD' && !test.hasRunningDay ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'"
@@ -344,6 +351,7 @@
         </div>
       </div>
     </div>
+
     <!-- Remarks Modal -->
     <RemarkModal :isVisible="remarksModal.visible"
                  title="Specimen Remarks"
@@ -351,6 +359,7 @@
                  @save="saveRemarks"
                  @cancel="remarksModal.visible = false"
                  @close="remarksModal.visible = false" />
+
     <!-- Alert Modal -->
     <AlertModal :isVisible="alert.isVisible"
                 :type="alert.type"
@@ -358,6 +367,57 @@
                 :message="alert.message"
                 @close="alert.isVisible = false"
                 @confirm="alert.isVisible = false" />
+
+    <!-- ── Specimen Alert Notification Modal ──────────────────────────────── -->
+    <div v-if="specimenAlertModal.visible"
+         class="fixed inset-0 z-[90] flex items-center justify-center p-4">
+      <!-- Backdrop -->
+      <div class="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
+      <!-- Modal -->
+      <div class="relative w-full max-w-md rounded-2xl shadow-2xl p-6 flex flex-col gap-4 animate-modal"
+           style="background-color: var(--color-surface);">
+
+        <!-- Header -->
+        <div class="flex items-center gap-3">
+          <span class="material-symbols-outlined text-2xl"
+                style="color: #2563eb; font-variation-settings: 'FILL' 1;">info</span>
+          <div>
+            <p class="font-bold text-sm" style="color: var(--color-text);">Specimen Alert</p>
+            <p class="text-xs font-mono mt-0.5" style="color: var(--color-text-muted);">
+              {{ specimenAlertModal.specimenNo }}
+            </p>
+          </div>
+        </div>
+
+        <!-- Alert details -->
+        <div class="rounded-xl p-4 flex flex-col gap-2"
+             style="background-color: rgba(37,99,235,0.06); border: 1px solid rgba(37,99,235,0.2);">
+          <p class="text-[10px] font-bold uppercase tracking-widest"
+             style="color: #2563eb;">Alert from Processing</p>
+          <p class="text-sm italic"
+             style="color: var(--color-text);">"{{ specimenAlertModal.specimenAlert }}"</p>
+          <p class="text-[10px]"
+             style="color: var(--color-text-muted);">
+            {{ specimenAlertModal.specimenAlertSetBy }} · {{ formatDt(specimenAlertModal.specimenAlertSetAt) }}
+          </p>
+        </div>
+
+        <p class="text-xs" style="color: var(--color-text-muted);">
+          Please take note of this alert before running the specimen.
+        </p>
+
+        <!-- Actions -->
+        <div class="flex gap-3 justify-end">
+          <button class="px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all active:scale-95"
+                  style="background-color: #2563eb; color: #ffffff;"
+                  @click="acknowledgeSpecimenAlert">
+            Acknowledged
+          </button>
+        </div>
+
+      </div>
+    </div>
+
   </AppLayout>
 </template>
 
@@ -384,12 +444,10 @@
   const specimenGroups = ref([])
   const availableRMTs = ref([])
   const onSiteEnabled = ref(false)
-  const sectionCutOff = ref(null) 
+  const sectionCutOff = ref(null)
   const scanMode = ref('standard') // 'standard' | 'onsite'
 
   // Schedule tag options
-  // TODAY = no tag in DB, test runs today → status R
-  // END/CRD/SRD = saved with schedule → status S
   const scheduleTags = [
     { value: 'NOW', label: 'Now' },
     { value: 'END', label: 'END' },
@@ -401,6 +459,26 @@
 
   function toggleSpecimen(specimenNo) {
     expandedSpecimen.value = expandedSpecimen.value === specimenNo ? null : specimenNo
+  }
+
+  // ── Specimen Alert Modal ───────────────────────────────────────────────────
+
+  const specimenAlertModal = ref({
+    visible: false,
+    specimenNo: null,
+    specimenAlert: null,
+    specimenAlertSetBy: null,
+    specimenAlertSetAt: null,
+    pendingEntry: null,   // the group entry waiting to be added
+  })
+
+  function acknowledgeSpecimenAlert() {
+    // Add the pending entry to the list now that the user has acknowledged
+    if (specimenAlertModal.value.pendingEntry) {
+      specimenGroups.value.unshift(specimenAlertModal.value.pendingEntry)
+      expandedSpecimen.value = specimenAlertModal.value.pendingEntry.specimenNo
+    }
+    specimenAlertModal.value.visible = false
   }
 
   // ── Scan ───────────────────────────────────────────────────────────────────
@@ -432,7 +510,8 @@
       const {
         firstScan, tests, specimenNo,
         testGroupCode, sampleTypeCode, sampleTypeName,
-        received, receivedBy, patientName, pid, cutOffTime
+        received, receivedBy, patientName, pid, cutOffTime,
+        specimenAlert, specimenAlertSetBy, specimenAlertSetAt
       } = result.data
 
       if (cutOffTime) sectionCutOff.value = cutOffTime
@@ -451,7 +530,7 @@
         return nowMinutes >= cutOffMinutes
       })()
 
-      specimenGroups.value.unshift({
+      const entry = {
         specimenNo,
         headerId: result.data.headerId,
         testGroupCode,
@@ -464,6 +543,9 @@
         isOnSite: scanMode.value === 'onsite',
         patientName: patientName ?? null,
         pid: pid ?? null,
+        specimenAlert: specimenAlert ?? null,
+        specimenAlertSetBy: specimenAlertSetBy ?? null,
+        specimenAlertSetAt: specimenAlertSetAt ?? null,
         tests: tests.map(t => {
           const today = new Date().toISOString().split('T')[0]
           const runningDateStr = t.runningDate ?? null
@@ -476,7 +558,6 @@
           } else if (!t.scheduleTag && t.hasRunningDay) {
             initialTag = t.isTodayRunningDay ? 'NOW' : 'SRD'
           }
-          // On-Site: always default to NOW, no SRD
 
           // ── Cut-off enforcement ────────────────────────────────────────
           // Only flip tests that resolved to NOW — leave SRD/CRD/END untouched
@@ -491,9 +572,24 @@
             runningDate: initialTag === t.scheduleTag ? runningDateStr : null,
           }
         })
-      })
+      }
 
-      expandedSpecimen.value = specimenNo
+      // ── Specimen Alert intercept ───────────────────────────────────────────
+      // If alert exists, show modal first — entry added after acknowledgement
+      if (specimenAlert) {
+        specimenAlertModal.value = {
+          visible: true,
+          specimenNo,
+          specimenAlert,
+          specimenAlertSetBy,
+          specimenAlertSetAt,
+          pendingEntry: entry,
+        }
+      } else {
+        // No alert — add to list immediately as normal
+        specimenGroups.value.unshift(entry)
+        expandedSpecimen.value = specimenNo
+      }
 
     } catch (e) {
       showAlert('error', 'Scan Failed', e?.response?.data?.message ?? 'Could not scan specimen.')
@@ -587,6 +683,8 @@
     }
   }
 
+  // ── Remarks ────────────────────────────────────────────────────────────────
+
   const remarksModal = ref({ visible: false, specimenNo: '', text: '' })
 
   function openRemarks(group) {
@@ -662,6 +760,7 @@
     scanInput.value?.focus()
   })
 </script>
+
 <style scoped>
   .expand-enter-active,
   .expand-leave-active {
@@ -679,5 +778,21 @@
   .expand-leave-from {
     opacity: 1;
     transform: translateY(0);
+  }
+
+  .animate-modal {
+    animation: modalIn 0.2s ease;
+  }
+
+  @keyframes modalIn {
+    from {
+      opacity: 0;
+      transform: scale(0.9) translateY(10px);
+    }
+
+    to {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
   }
 </style>

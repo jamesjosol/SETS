@@ -429,7 +429,7 @@ namespace Service.Services
                 var receivingRecords = context.Batch_Specimen_Receiving
                     .Where(r => r.BatchNo == batchNo)
                     .ToList()
-                    .ToDictionary(r => r.SpecimenNo, r => r.ReceivingRemarks);
+                    .ToDictionary(r => r.SpecimenNo, r => r);
 
                 var nonBarcoded = context.Batch_NonBarcoded
                     .Where(n => n.BatchNo == batchNo)
@@ -465,7 +465,10 @@ namespace Service.Services
                         EndorsedBy = s.EndorsedBy,
                         Status = s.Status,
                         Remarks = s.Remarks,
-                        ReceivingRemarks = receivingRecords.TryGetValue(s.SpecimenNo, out var rr) ? rr : null,
+                        ReceivingRemarks = receivingRecords.TryGetValue(s.SpecimenNo, out var rr) ? rr.ReceivingRemarks : null,
+                        SpecimenAlert = rr?.SpecimenAlert,
+                        SpecimenAlertSetBy = rr?.SpecimenAlertSetBy,
+                        SpecimenAlertSetAt = rr?.SpecimenAlertSetAt,
                         CancelReason = s.CancelReason,
                         CancelledBy = s.CancelledBy,
                         CancelledAt = s.CancelledAt,

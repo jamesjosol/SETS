@@ -26,5 +26,7 @@ namespace Model.SETSDB
         public const string SpecimenUnflagged = "SPECIMEN_UNFLAGGED";
         public const string FlaggedSpecimenReceived = "FLAGGED_SPECIMEN_RECEIVED";
         public const string FlaggedSpecimenDeclined = "FLAGGED_SPECIMEN_DECLINED";
+        public const string SpecimenAlertSet = "SPECIMEN_ALERT_SET";
+        public const string SpecimenAlertCleared = "SPECIMEN_ALERT_CLEARED";
     }
 }

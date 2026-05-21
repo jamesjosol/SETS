@@ -509,7 +509,7 @@
           <h3 class="text-sm font-bold"
               style="color: var(--color-text);">
             Endorsement Remarks
-          </h3>
+          </h3>,bat
         </div>
         <p class="text-sm rounded-xl p-4 whitespace-pre-wrap"
            style="background-color: var(--color-surface-low); color: var(--color-text);">
@@ -535,7 +535,7 @@
           <span class="material-symbols-outlined text-2xl"
                 style="color: darkred; font-variation-settings: 'FILL' 1;">flag</span>
           <div>
-            <p class="font-bold text-sm" style="color: var(--color-text);">Flagged Specimen</p>
+            <p class="font-bold text-sm" style="color: var(--color-text);">Action Required</p>
             <p class="text-xs font-mono mt-0.5" style="color: var(--color-text-muted);">
               {{ flagWarning.specimenNo }}
             </p>
@@ -546,7 +546,7 @@
         <div class="rounded-xl p-4 flex flex-col gap-2"
              style="background-color: rgba(186,117,23,0.08); border: 1px solid rgba(186,117,23,0.2);">
           <p class="text-[10px] font-bold uppercase tracking-widest"
-             style="color: #BA7517;">Flag Reason</p>
+             style="color: #BA7517;">Reason</p>
           <p class="text-sm italic"
              style="color: var(--color-text);">"{{ flagWarning.flagReason }}"</p>
           <p class="text-[10px]"
@@ -556,7 +556,7 @@
         </div>
 
         <p class="text-xs" style="color: var(--color-text-muted);">
-          This specimen has been flagged by the endorser. Do you still want to receive it?
+          This specimen has been put on hold by the endorser. Do you still want to receive it?
         </p>
 
         <!-- Actions -->

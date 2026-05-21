@@ -68,8 +68,13 @@ namespace SETSMiddleware.Tasks
                         var header = headersToRelease.FirstOrDefault(h => h!.Id == test.HeaderId);
                         if (header == null) continue;
 
+                        // Resolve patient info from Batch_Specimen
+                        var bs = master.Batch.CheckSpecimen(header.SpecimenNo);
+
                         master.Audit.Log(Audit_Log.ScheduleDue(
                             header.SpecimenNo,
+                            bs?.PatientName ?? string.Empty,
+                            bs?.PID ?? string.Empty,
                             header.SectionCode,
                             test.TestCode,
                             test.TestName,
@@ -109,6 +114,7 @@ namespace SETSMiddleware.Tasks
                     master.OnSite.ReleaseScheduledHeaders(actualOnSiteHeaderIds);
 
                 // ── Audit ──────────────────────────────────────────────────────
+                // OnSite_Section_Header carries PatientName/PID directly — no Batch_Specimen lookup needed.
                 try
                 {
                     var releasedOnSiteHeaderIdSet = actualOnSiteHeaderIds.ToHashSet();
@@ -119,6 +125,8 @@ namespace SETSMiddleware.Tasks
 
                         master.Audit.Log(Audit_Log.ScheduleDue(
                             onSiteHeader.SpecimenNo,
+                            onSiteHeader.PatientName ?? string.Empty,
+                            onSiteHeader.PID ?? string.Empty,
                             onSiteHeader.SectionCode,
                             test.TestCode,
                             test.TestName,

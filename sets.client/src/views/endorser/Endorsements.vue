@@ -132,7 +132,7 @@
                       style="font-size: 14px; color: orangered; font-variation-settings: 'FILL' 1;">flag</span>
                 <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2.5 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest whitespace-nowrap shadow-lg pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity z-50"
                      style="background-color: orangered; color: #ffffff; ">
-                  Has flagged specimen(s)
+                  Has required action specimen(s)
                 </div>
               </div>
             </div>

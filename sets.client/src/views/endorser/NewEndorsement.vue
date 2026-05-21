@@ -210,7 +210,7 @@
           </div>
 
           <!-- Barcoded Table — unchanged -->
-          <div class="rounded-xl overflow-hidden" style="border: 1px solid var(--color-border);">
+          <div class="rounded-xl overflow-hidden" style="border: 1px solid var(--color-border); max-height: 320px; overflow-y: auto;">
             <table class="w-full text-left">
               <thead>
                 <tr style="background-color: var(--color-surface-low);">
@@ -358,7 +358,7 @@
           </div>
 
           <!-- Non-barcoded table — unchanged -->
-          <div class="rounded-xl overflow-hidden" style="border: 1px solid var(--color-border);">
+          <div class="rounded-xl overflow-hidden" style="border: 1px solid var(--color-border); max-height: 320px; overflow-y: auto;">
             <table class="w-full text-left">
               <thead>
                 <tr style="background-color: var(--color-surface-low);">

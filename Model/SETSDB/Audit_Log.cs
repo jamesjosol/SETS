@@ -48,7 +48,7 @@ namespace Model.SETSDB
                 UserID = userID,
                 IsOutsideTat = isOutsideTat
             };
-        
+
         public static Audit_Log ProcReceived(Batch_Specimen specimen, string fromLocation, string toLocation, string userID, bool isOutsideProcTat = false)
             => new()
             {
@@ -82,26 +82,31 @@ namespace Model.SETSDB
             {
                 EventCode = AuditEvents.SectionReceived,
                 SpecimenNo = specimenNo,
+                PatientName = patientName,
+                PID = pid,
                 FromLocation = fromLocation,
                 ToLocation = toLocation,
                 UserID = userID
             };
 
-        public static Audit_Log SpecimenStored(string specimenNo, string toLocation, string userID)
+        public static Audit_Log SpecimenStored(string specimenNo, string patientName, string pid, string toLocation, string userID)
             => new()
             {
                 EventCode = AuditEvents.SpecimenStored,
                 SpecimenNo = specimenNo,
+                PatientName = patientName,
+                PID = pid,
                 ToLocation = toLocation,
                 UserID = userID
             };
 
-
-        public static Audit_Log TestRescheduled(string specimenNo, string toLocation, string testName, string previousTag, string newTag, DateTime runningDate, string userID)
+        public static Audit_Log TestRescheduled(string specimenNo, string patientName, string pid, string toLocation, string testName, string previousTag, string newTag, DateTime runningDate, string userID)
             => new()
             {
                 EventCode = AuditEvents.TestRescheduled,
                 SpecimenNo = specimenNo,
+                PatientName = patientName,
+                PID = pid,
                 ToLocation = toLocation,
                 Tests = testName,
                 Status = $"{previousTag} → {newTag}",
@@ -109,11 +114,13 @@ namespace Model.SETSDB
                 UserID = userID
             };
 
-        public static Audit_Log TestScheduled(string specimenNo, string toLocation, string testName, string scheduleTag, DateTime runningDate, string userID)
+        public static Audit_Log TestScheduled(string specimenNo, string patientName, string pid, string toLocation, string testName, string scheduleTag, DateTime runningDate, string userID)
             => new()
             {
                 EventCode = AuditEvents.TestScheduled,
                 SpecimenNo = specimenNo,
+                PatientName = patientName,
+                PID = pid,
                 ToLocation = toLocation,
                 Tests = testName,
                 Status = scheduleTag,
@@ -121,21 +128,25 @@ namespace Model.SETSDB
                 UserID = userID
             };
 
-        public static Audit_Log ResultReleased(string specimenNo, string toLocation, string testCode, string testName)
+        public static Audit_Log ResultReleased(string specimenNo, string patientName, string pid, string toLocation, string testCode, string testName)
             => new()
             {
                 EventCode = AuditEvents.ResultReleased,
                 SpecimenNo = specimenNo,
+                PatientName = patientName,
+                PID = pid,
                 ToLocation = toLocation,
                 Tests = $"{testCode}:{testName}",
                 UserID = "MIDDLEWARE"
             };
 
-        public static Audit_Log ScheduleDue(string specimenNo, string toLocation, string testCode, string testName, string scheduleTag, DateTime runningDate)
+        public static Audit_Log ScheduleDue(string specimenNo, string patientName, string pid, string toLocation, string testCode, string testName, string scheduleTag, DateTime runningDate)
             => new()
             {
                 EventCode = AuditEvents.ScheduleDue,
                 SpecimenNo = specimenNo,
+                PatientName = patientName,
+                PID = pid,
                 ToLocation = toLocation,
                 Tests = $"{testCode}:{testName}",
                 Status = scheduleTag,
@@ -143,11 +154,13 @@ namespace Model.SETSDB
                 UserID = "MIDDLEWARE"
             };
 
-        public static Audit_Log TestRun(string specimenNo, string toLocation, string testNames, string rmtUserID, string userID, DateTime runAt)
+        public static Audit_Log TestRun(string specimenNo, string patientName, string pid, string toLocation, string testNames, string rmtUserID, string userID, DateTime runAt)
             => new()
             {
                 EventCode = AuditEvents.TestRun,
                 SpecimenNo = specimenNo,
+                PatientName = patientName,
+                PID = pid,
                 ToLocation = toLocation,
                 Tests = testNames,
                 RunAt = runAt,
@@ -167,16 +180,18 @@ namespace Model.SETSDB
                 UserID = userID
             };
 
-        public static Audit_Log TestAborted(string specimenNo, string sectionCode, string testCode, string testName, string reason, string userID)
-           => new()
-           {
-               EventCode = AuditEvents.TestAborted,
-               SpecimenNo = specimenNo,
-               ToLocation = sectionCode,
-               Tests = $"{testCode}:{testName}",
-               Remarks = reason,
-               UserID = userID
-           };
+        public static Audit_Log TestAborted(string specimenNo, string patientName, string pid, string sectionCode, string testCode, string testName, string reason, string userID)
+            => new()
+            {
+                EventCode = AuditEvents.TestAborted,
+                SpecimenNo = specimenNo,
+                PatientName = patientName,
+                PID = pid,
+                ToLocation = sectionCode,
+                Tests = $"{testCode}:{testName}",
+                Remarks = reason,
+                UserID = userID
+            };
 
         public static Audit_Log SpecimenFlagged(string specimenNo, string batchNo, string patientName, string pid, string fromLocation, string flagReason, string userID)
             => new()
@@ -228,6 +243,31 @@ namespace Model.SETSDB
                 FromLocation = fromLocation,
                 ToLocation = toLocation,
                 Remarks = flagReason,
+                UserID = userID
+            };
+
+        public static Audit_Log SpecimenAlertSet(string specimenNo, string batchNo, string patientName, string pid, string fromLocation, string alert, string userID)
+            => new()
+            {
+                EventCode = AuditEvents.SpecimenAlertSet,
+                SpecimenNo = specimenNo,
+                BatchNo = batchNo,
+                PatientName = patientName,
+                PID = pid,
+                FromLocation = fromLocation,
+                Remarks = alert,
+                UserID = userID
+            };
+
+        public static Audit_Log SpecimenAlertCleared(string specimenNo, string batchNo, string patientName, string pid, string fromLocation, string userID)
+            => new()
+            {
+                EventCode = AuditEvents.SpecimenAlertCleared,
+                SpecimenNo = specimenNo,
+                BatchNo = batchNo,
+                PatientName = patientName,
+                PID = pid,
+                FromLocation = fromLocation,
                 UserID = userID
             };
     }

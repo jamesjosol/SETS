@@ -61,6 +61,7 @@
       <!-- ── Main panel ───────────────────────────────────────────────────── -->
       <main ref="mainRef" class="flex-1 flex flex-col overflow-hidden" style="background-color: var(--color-bg);">
 
+
         <BatchSummaryTab v-if="activeReport === 'batch-summary'"
                          :endorsing-sections="endorsingSections"
                          :lab-sections="labSections" />
@@ -81,6 +82,9 @@
                                 :endorsing-sections="endorsingSections"
                                 :lab-sections="labSections" />
 
+        <TestManagementTab v-else-if="activeReport === 'test-management'"
+                           :lab-sections="labSections" />
+
         <ComingSoonTab v-else
                        :label="activeItem?.label"
                        :sublabel="activeItem?.sublabel" />
@@ -99,11 +103,13 @@
 
   // ── Tab components ────────────────────────────────────────────────────────────
   import BatchSummaryTab from './reports/BatchSummaryTab.vue'
+  import TestManagementTab from './reports/TestManagementTab.vue'
   import SpecimenReceiptSectionTab from './reports/SpecimenReceiptSectionTab.vue'
   import DuplicateEndorsementTab from './reports/DuplicateEndorsementTab.vue'
   import Beyond14DaysTab from './reports/Beyond14DaysTab.vue'
   import SpecimenNotReceivedTab from './reports/SpecimenNotReceivedTab.vue'
   import ComingSoonTab from './reports/ComingSoonTab.vue'
+
 
   const authStore = useAuthStore()
 
@@ -139,10 +145,10 @@
     {
       key: 'test-management',
       label: 'Test Management',
-      sublabel: 'Running days, TAT, status',
+      sublabel: 'Running days per test',
       icon: 'biotech',
       roles: ['Lab', 'TL', 'Admin'],
-      hasAccess: isTLorAdmin.value,
+      hasAccess: authStore.isAdmin || (authStore.sectionCategory === '3' && authStore.roleID === 2),
     },
     {
       key: 'batch-summary',

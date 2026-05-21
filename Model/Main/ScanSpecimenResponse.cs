@@ -22,6 +22,9 @@ namespace Model.Main
         public string? PatientName { get; set; } 
         public string? PID { get; set; }
         public string? CutOffTime { get; set; }
+        public string? SpecimenAlert { get; set; }
+        public string? SpecimenAlertSetBy { get; set; }
+        public DateTime? SpecimenAlertSetAt { get; set; }
         public List<ScanSpecimenTestItem> Tests { get; set; }
     }
 

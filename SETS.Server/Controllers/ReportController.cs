@@ -23,6 +23,55 @@ namespace SETS.Server.Controllers
             return null;
         }
 
+        // ══════════════════════════════════════════════════════════════════════════
+        // R4 — Test Management
+        // POST api/report/test-management
+        // ══════════════════════════════════════════════════════════════════════════
+
+        [HttpPost("test-management")]
+        public IActionResult GetTestManagement([FromBody] TestManagementRequest request)
+        {
+            try
+            {
+                var guard = SessionGuard(); if (guard != null) return guard;
+                if (!IsTLorAdmin) return Forbid();
+
+                // Non-admin TL is locked to their own section
+                if (!IsAdmin)
+                    request.SectionCode = HttpContext.Session.GetString("SectionCode");
+
+                var branch = Branch!;
+                using var master = new MasterService(branch);
+                var result = master.Report.GetTestManagement(request);
+                return Ok(result);
+            }
+            catch (Exception ex) { return StatusCode(500, new { message = ex.Message }); }
+        }
+
+        // POST api/report/test-management/export
+        [HttpPost("test-management/export")]
+        public IActionResult ExportTestManagement([FromBody] TestManagementRequest request)
+        {
+            try
+            {
+                var guard = SessionGuard(); if (guard != null) return guard;
+                if (!IsTLorAdmin) return Forbid();
+
+                if (!IsAdmin)
+                    request.SectionCode = HttpContext.Session.GetString("SectionCode");
+
+                var branch = Branch!;
+                using var master = new MasterService(branch);
+                var bytes = master.Report.ExportTestManagementExcel(request);
+
+                var fileName = $"TestManagementReport_{DateTime.Now:yyyyMMdd}.xlsx";
+                return File(bytes,
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    fileName);
+            }
+            catch (Exception ex) { return StatusCode(500, new { message = ex.Message }); }
+        }
+
         // ══════════════════════════════════════════════════════════════════════
         // R5 — Batch Summary data preview
         // POST api/report/batch-summary
@@ -153,27 +202,6 @@ namespace SETS.Server.Controllers
                     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                     fileName);
             }
-            catch (Exception ex) { return StatusCode(500, new { message = ex.Message }); }
-        }
-
-        // ══════════════════════════════════════════════════════════════════════
-        // R4 — Test Management
-        // POST api/report/test-management
-        // ══════════════════════════════════════════════════════════════════════
-
-        [HttpPost("test-management")]
-        public IActionResult GetTestManagement([FromBody] TestManagementRequest request)
-        {
-            try
-            {
-                var guard = SessionGuard(); if (guard != null) return guard;
-                if (!IsTLorAdmin) return Forbid();
-                var branch = Branch!;
-                using var master = new MasterService(branch);
-                var result = master.Report.GetTestManagement(request);
-                return Ok(result);
-            }
-            catch (NotImplementedException ex) { return StatusCode(501, new { message = ex.Message }); }
             catch (Exception ex) { return StatusCode(500, new { message = ex.Message }); }
         }
 

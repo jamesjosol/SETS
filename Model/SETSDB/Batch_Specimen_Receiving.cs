@@ -14,5 +14,8 @@ namespace Model.SETSDB
         public DateTime ProcReceived { get; set; }
         public string ProcReceivedBy { get; set; }
         public string? ReceivingRemarks { get; set; }
+        public string? SpecimenAlert { get; set; }
+        public string? SpecimenAlertSetBy { get; set; }
+        public DateTime? SpecimenAlertSetAt { get; set; }
     }
 }

@@ -37,6 +37,9 @@ export const reportApi = {
   getTestManagement: (payload) =>
     api.post(`${BASE_URL}/test-management`, payload).then(r => r.data),
 
+  exportTestManagementExcel: (payload) =>
+    downloadExcel(`${BASE_URL}/test-management/export`, payload, 'TestManagementReport'),
+
   // R5 — Batch Summary
   getBatchSummary: (payload) =>
     api.post(`${BASE_URL}/batch-summary`, payload).then(r => r.data),

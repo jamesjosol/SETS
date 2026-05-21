@@ -71,18 +71,18 @@ namespace Model.Main
     // R4 — Test Management Report
     // ══════════════════════════════════════════════════════════════════════════
 
-    public class TestManagementRequest : ReportDateRangeRequest
+    public class TestManagementRequest
     {
-        public string? LocationCode { get; set; }       // null = ALL
+        public string? SectionCode { get; set; }   // null = ALL (admin only)
     }
 
     public class TestManagementRow
     {
         public string TestCode { get; set; } = string.Empty;
         public string TestName { get; set; } = string.Empty;
-        public string? RunningDays { get; set; }
-        public string? Tat { get; set; }
-        public string Status { get; set; } = string.Empty;  // Active / Inactive
+        public string? RunningDays { get; set; }        // formatted: "Mon, Wed, Fri"
+        public string SectionCode { get; set; } = string.Empty;
+        public string SectionName { get; set; } = string.Empty;
     }
 
     // ══════════════════════════════════════════════════════════════════════════

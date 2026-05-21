@@ -43,6 +43,7 @@ namespace Service.Services
                         .FirstOrDefault()
                         ?? throw new Exception($"Specimen '{request.SpecimenNo}' was not endorsed.");
 
+
                     // 2. Batch restriction — if a current batch is active, block different batch
                     if (!string.IsNullOrEmpty(request.CurrentBatchNo) &&
                         specimen.BatchNo != request.CurrentBatchNo)
@@ -80,6 +81,15 @@ namespace Service.Services
                     var header = context.Batch_Header
                         .FirstOrDefault(b => b.BatchNo == specimen.BatchNo)
                         ?? throw new Exception($"Batch '{specimen.BatchNo}' not found.");
+
+                    if (header.IsOutbound &&
+                        !string.Equals(header.DestBranchCode, _branch_raw, StringComparison.OrdinalIgnoreCase))
+                    {
+                        throw new Exception(
+                            $"Specimen '{request.SpecimenNo}' belongs to an outbound batch " +
+                            $"destined for branch '{header.DestBranchCode}'. " +
+                            $"It cannot be received at this branch.");
+                    }
 
                     if (header.ProcReceived == null)
                     {
@@ -964,6 +974,124 @@ namespace Service.Services
                 {
                     tx.Rollback();
                     throw;
+                }
+            }
+            catch { throw; }
+        }
+
+        public void SetSpecimenAlert(SetSpecimenAlertRequest request)
+        {
+            try
+            {
+                using var context = _factory.CreateContext(_branch);
+                using var unit = new UnitOfWork(context);
+
+                var record = unit.BatchSpecimenReceivings
+                    .FindBy(r => r.SpecimenNo == request.SpecimenNo
+                              && r.BatchNo == request.BatchNo)
+                    .FirstOrDefault()
+                    ?? throw new Exception($"No receiving record found for specimen '{request.SpecimenNo}'.");
+
+                // Guard — lock if lab section has already scanned
+                var sectionHeader = context.Specimen_Section_Header
+                    .FirstOrDefault(h => h.SpecimenNo == request.SpecimenNo);
+
+                if (sectionHeader != null && sectionHeader.ReceivedBy != null)
+                    throw new Exception("Specimen has already been scanned by the lab section. Alert cannot be modified.");
+
+                var specimen = unit.BatchSpecimens
+                    .FindBy(s => s.SpecimenNo == request.SpecimenNo
+                              && s.BatchNo == request.BatchNo)
+                    .FirstOrDefault()
+                    ?? throw new Exception($"Specimen '{request.SpecimenNo}' not found.");
+
+                var header = unit.BatchHeaders
+                    .FindBy(h => h.BatchNo == request.BatchNo)
+                    .FirstOrDefault()
+                    ?? throw new Exception($"Batch '{request.BatchNo}' not found.");
+
+                record.SpecimenAlert = request.Alert.Trim();
+                record.SpecimenAlertSetBy = request.UserID;
+                record.SpecimenAlertSetAt = DateTime.Now;
+
+                unit.BatchSpecimenReceivings.Update(record);
+
+                // ── Audit ──────────────────────────────────────────────────────────
+                try
+                {
+                    using var auditMaster = new MasterService(_branch_raw);
+                    auditMaster.Audit.Log(Audit_Log.SpecimenAlertSet(
+                        specimen.SpecimenNo,
+                        specimen.BatchNo,
+                        specimen.PatientName,
+                        specimen.PID,
+                        header.ProcDestination,
+                        request.Alert.Trim(),
+                        request.UserID));
+                }
+                catch (Exception auditEx)
+                {
+                    Console.WriteLine($"[AUDIT] SpecimenAlertSet failed for {request.SpecimenNo}: {auditEx.Message}");
+                }
+            }
+            catch { throw; }
+        }
+
+        public void ClearSpecimenAlert(ClearSpecimenAlertRequest request)
+        {
+            try
+            {
+                using var context = _factory.CreateContext(_branch);
+                using var unit = new UnitOfWork(context);
+
+                var record = unit.BatchSpecimenReceivings
+                    .FindBy(r => r.SpecimenNo == request.SpecimenNo
+                              && r.BatchNo == request.BatchNo)
+                    .FirstOrDefault()
+                    ?? throw new Exception($"No receiving record found for specimen '{request.SpecimenNo}'.");
+
+                // Guard — lock if lab section has already scanned
+                var sectionHeader = context.Specimen_Section_Header
+                    .FirstOrDefault(h => h.SpecimenNo == request.SpecimenNo);
+
+                if (sectionHeader != null && sectionHeader.ReceivedBy != null)
+                    throw new Exception("Specimen has already been scanned by the lab section. Alert cannot be modified.");
+
+                if (string.IsNullOrEmpty(record.SpecimenAlert))
+                    throw new Exception("No specimen alert to clear.");
+
+                var specimen = unit.BatchSpecimens
+                    .FindBy(s => s.SpecimenNo == request.SpecimenNo
+                              && s.BatchNo == request.BatchNo)
+                    .FirstOrDefault()
+                    ?? throw new Exception($"Specimen '{request.SpecimenNo}' not found.");
+
+                var header = unit.BatchHeaders
+                    .FindBy(h => h.BatchNo == request.BatchNo)
+                    .FirstOrDefault()
+                    ?? throw new Exception($"Batch '{request.BatchNo}' not found.");
+
+                record.SpecimenAlert = null;
+                record.SpecimenAlertSetBy = null;
+                record.SpecimenAlertSetAt = null;
+
+                unit.BatchSpecimenReceivings.Update(record);
+
+                // ── Audit ──────────────────────────────────────────────────────────
+                try
+                {
+                    using var auditMaster = new MasterService(_branch_raw);
+                    auditMaster.Audit.Log(Audit_Log.SpecimenAlertCleared(
+                        specimen.SpecimenNo,
+                        specimen.BatchNo,
+                        specimen.PatientName,
+                        specimen.PID,
+                        header.ProcDestination,
+                        request.UserID));
+                }
+                catch (Exception auditEx)
+                {
+                    Console.WriteLine($"[AUDIT] SpecimenAlertCleared failed for {request.SpecimenNo}: {auditEx.Message}");
                 }
             }
             catch { throw; }

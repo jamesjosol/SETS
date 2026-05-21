@@ -25,6 +25,8 @@ namespace Service.Interfaces
         List<ReceivedBatchItem> GetReceivedBatches(string? sectionCode, DateTime dateFrom, DateTime dateTo);
         CancelSpecimenResult CancelSpecimen(CancelSpecimenRequest request);
         CheckSpecimenResponse CheckSpecimen(string specimenNo, string? currentBatchNo);
+        void SetSpecimenAlert(SetSpecimenAlertRequest request);
+        void ClearSpecimenAlert(ClearSpecimenAlertRequest request);
 
     }
 }

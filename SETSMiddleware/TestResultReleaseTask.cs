@@ -75,10 +75,15 @@ namespace SETSMiddleware.Tasks
                         }
 
                         // ── Audit ──────────────────────────────────────────
+                        // Resolve patient info from Batch_Specimen for standard specimens
                         try
                         {
+                            var bs = master.Batch.CheckSpecimen(specimenNo);
+
                             master.Audit.Log(Audit_Log.ResultReleased(
                                 specimenNo,
+                                bs?.PatientName ?? string.Empty,
+                                bs?.PID ?? string.Empty,
                                 header!.SectionCode,
                                 test.TestCode,
                                 test.TestName));
@@ -140,10 +145,13 @@ namespace SETSMiddleware.Tasks
                         }
 
                         // ── Audit ──────────────────────────────────────────
+                        // OnSite_Section_Header carries PatientName/PID directly — no Batch_Specimen lookup needed.
                         try
                         {
                             master.Audit.Log(Audit_Log.ResultReleased(
                                specimenNo,
+                               header!.PatientName ?? string.Empty,
+                               header!.PID ?? string.Empty,
                                header!.SectionCode,
                                test.TestCode,
                                test.TestName));
