@@ -17,6 +17,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Service", "Service\Service.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SETSMiddleware", "SETSMiddleware\SETSMiddleware.csproj", "{1E05344D-E1EC-4DBC-B24B-6E177E94DC79}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SETSDeployer", "SETSDeployer\SETSDeployer.csproj", "{84B732FB-CE64-FD4F-ACA3-C01B8E5ADBDD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -53,6 +55,10 @@ Global
 		{1E05344D-E1EC-4DBC-B24B-6E177E94DC79}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1E05344D-E1EC-4DBC-B24B-6E177E94DC79}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1E05344D-E1EC-4DBC-B24B-6E177E94DC79}.Release|Any CPU.Build.0 = Release|Any CPU
+		{84B732FB-CE64-FD4F-ACA3-C01B8E5ADBDD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{84B732FB-CE64-FD4F-ACA3-C01B8E5ADBDD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{84B732FB-CE64-FD4F-ACA3-C01B8E5ADBDD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{84B732FB-CE64-FD4F-ACA3-C01B8E5ADBDD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

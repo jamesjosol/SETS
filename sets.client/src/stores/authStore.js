@@ -9,7 +9,8 @@ export const useAuthStore = defineStore('auth', {
     isAuthenticated: false,
     theme: 0,       // 0 = light, 1 = dark, 2 = dim
     accentColor: 0,  // 0 = purple, 1 = blue, 2 = teal, 3 = rose
-    isContingencyMode: false
+    isContingencyMode: false,
+    profilePicture: null,
   }),
   actions: {
     setUser(user, branch, section, isContingency = false) {
@@ -20,6 +21,7 @@ export const useAuthStore = defineStore('auth', {
       this.theme = user?.theme ?? 0
       this.accentColor = user?.accentColor ?? 0
       this.isContingencyMode = isContingency
+      this.profilePicture = null
 
       const announcementStore = useAnnouncementStore()
       announcementStore.reset()
@@ -29,6 +31,9 @@ export const useAuthStore = defineStore('auth', {
     },
     setAccentColor(accentColor) {
       this.accentColor = accentColor
+    },
+    setProfilePicture(base64) {
+      this.profilePicture = base64
     },
     logout() {
       this.user = null

@@ -18,5 +18,6 @@ namespace Model.SETSDB
         public string CreatedBy { get; set; }
         public DateTime? Updated { get; set; }
         public string? UpdatedBy { get; set; }
+        public string? ProfilePicture { get; set; }
     }
 }

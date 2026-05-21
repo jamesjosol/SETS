@@ -460,6 +460,10 @@
         { code: data.data.sectionCode, name: data.data.sectionName, roleID: data.data.roleID, branchCode: data.data.branchCode, category: data.data.sectionCategory }
       )
 
+      if (data.data.profilePicture) {
+        authStore.setProfilePicture(data.data.profilePicture)
+      }
+
       applyTheme(data.data.theme)
       applyAccent(data.data.accentColor)
       await playLoginSplash()
@@ -505,6 +509,9 @@
         true
       )
 
+      if (data.data.profilePicture) {
+        authStore.setProfilePicture(data.data.profilePicture)
+      }
       applyTheme(data.data.theme)
       applyAccent(data.data.accentColor)
       await playLoginSplash()

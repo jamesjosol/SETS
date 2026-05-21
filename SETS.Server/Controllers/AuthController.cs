@@ -94,7 +94,8 @@ namespace SETS.Server.Controllers
                         RoleID = userSection.RoleID,
                         Theme = user.Theme,
                         AccentColor = user.AccentColor,
-                        SectionCategory = section?.Category ?? "1"
+                        SectionCategory = section?.Category ?? "1",
+                        ProfilePicture = user.ProfilePicture
                     }
                 });
             }

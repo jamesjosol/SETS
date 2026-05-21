@@ -40,4 +40,13 @@ export const userApi = {
 
   tlRemoveFromSection: (userID) =>
     api.delete(`/api/user/tl/${userID}/section`),
+
+  // ── Profile ───────────────────────────────────────────────────────────────
+
+  getProfile: () =>
+    api.get('/api/user/profile').then(r => r.data),
+
+  updateProfilePicture: (base64Image) =>
+    api.put('/api/user/profile/picture', { profilePicture: base64Image }).then(r => r.data),
+
 }

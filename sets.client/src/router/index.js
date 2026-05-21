@@ -180,7 +180,13 @@ const routes = [
     component: () => import('../views/contingency/ContingencyReceive.vue'),
     meta: { requiresAuth: true, category: '2' }
   },
-
+  // ── Shared ────────────────────────────────────────────────────────────
+  {
+    path: '/profile',
+    name: 'MyProfile',
+    component: () => import('../views/shared/MyProfile.vue'),
+    meta: { requiresAuth: true }
+  },
   // ── Catch-all ─────────────────────────────────────────────────────────
   {
     path: '/:pathMatch(.*)*',

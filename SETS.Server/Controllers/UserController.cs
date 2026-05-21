@@ -131,6 +131,7 @@ namespace SETS.Server.Controllers
                         active = u.Active,
                         theme = u.Theme,
                         created = u.Created,
+                        profilePicture = u.ProfilePicture,
                         sections
                     };
                 })
@@ -618,6 +619,48 @@ namespace SETS.Server.Controllers
 
                 master.UserSection.Update(assignment);
                 return Ok(new { success = true, message = "User removed from section." });
+            }
+            catch (Exception ex) { return StatusCode(500, new { message = ex.Message }); }
+        }
+
+        // ── GET api/user/profile ──────────────────────────────────────────────────
+        [HttpGet("profile")]
+        public IActionResult GetProfile()
+        {
+            try
+            {
+                var branch = Branch;
+                if (string.IsNullOrEmpty(branch))
+                    return Unauthorized(new { message = "Session expired." });
+
+                var userID = CurrentUserID;
+                if (string.IsNullOrEmpty(userID))
+                    return Unauthorized(new { message = "Session expired." });
+
+                using var master = new MasterService(branch);
+                var result = master.User.GetProfile(userID);
+                return Ok(result);
+            }
+            catch (Exception ex) { return StatusCode(500, new { message = ex.Message }); }
+        }
+
+        // ── PUT api/user/profile/picture ─────────────────────────────────────────
+        [HttpPut("profile/picture")]
+        public IActionResult UpdateProfilePicture([FromBody] UpdateProfilePictureRequest request)
+        {
+            try
+            {
+                var branch = Branch;
+                if (string.IsNullOrEmpty(branch))
+                    return Unauthorized(new { message = "Session expired." });
+
+                var userID = CurrentUserID;
+                if (string.IsNullOrEmpty(userID))
+                    return Unauthorized(new { message = "Session expired." });
+
+                using var master = new MasterService(branch);
+                master.User.UpdateProfilePicture(userID, request.ProfilePicture);
+                return Ok(new { success = true });
             }
             catch (Exception ex) { return StatusCode(500, new { message = ex.Message }); }
         }

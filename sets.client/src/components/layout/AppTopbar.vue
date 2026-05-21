@@ -309,10 +309,13 @@
         </div>
 
         <!-- Avatar Button -->
-        <button class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all active:scale-95"
+        <button class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all active:scale-95 overflow-hidden"
                 style="background: var(--color-primary-gradient); color: #ffffff;"
                 @click.stop="toggleDropdown">
-          {{ userInitials }}
+          <img v-if="authStore.profilePicture"
+               :src="authStore.profilePicture"
+               class="w-full h-full object-cover" />
+          <span v-else>{{ userInitials }}</span>
         </button>
 
         <!-- Dropdown — v-show so GSAP can animate in/out -->
@@ -335,6 +338,7 @@
 
             <button class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all text-left"
                     style="color: var(--color-text-muted);"
+                    @click="goToProfile"
                     @mouseenter="(e) => (e.currentTarget.style.backgroundColor = 'var(--color-surface-low)')"
                     @mouseleave="(e) => (e.currentTarget.style.backgroundColor = 'transparent')">
               <span class="material-symbols-outlined text-lg">manage_accounts</span>
@@ -419,6 +423,11 @@
 
   const specimenResults = computed(() => results.value.filter(r => r.type === 'specimen'))
   const batchResults = computed(() => results.value.filter(r => r.type === 'batch'))
+
+  function goToProfile() {
+    closeDropdown()
+    router.push({ name: 'MyProfile' })
+  }
 
   function globalIndex(localIdx, group) {
     return group === 'specimen' ? localIdx : specimenResults.value.length + localIdx

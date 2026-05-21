@@ -562,7 +562,7 @@
           // ── Cut-off enforcement ────────────────────────────────────────
           // Only flip tests that resolved to NOW — leave SRD/CRD/END untouched
           if (isCutOffPassed && initialTag === 'NOW' && scanMode.value !== 'onsite') {
-            initialTag = 'END'
+            initialTag = t.hasRunningDay ? 'SRD' : 'END'
           }
 
           return {

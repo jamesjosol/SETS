@@ -100,9 +100,15 @@
           <div class="px-6 py-4 flex items-center justify-between flex-shrink-0"
                style="border-bottom: 1px solid var(--color-border)">
             <div class="flex items-center gap-3">
-              <div class="w-8 h-8 rounded-lg flex items-center justify-center"
+              <div class="w-8 h-8 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0"
                    style="background-color: var(--color-primary-soft)">
-                <span class="material-symbols-outlined text-sm" style="color: var(--color-primary)">
+                <!-- Edit mode: show avatar if photo exists, otherwise keep icon -->
+                <img v-if="userModal.mode === 'edit' && userModal.profilePicture"
+                     :src="userModal.profilePicture"
+                     class="w-full h-full object-cover" />
+                <span v-else
+                      class="material-symbols-outlined text-sm"
+                      style="color: var(--color-primary)">
                   {{ userModal.mode === "add" ? "person_add" : "manage_accounts" }}
                 </span>
               </div>
@@ -361,6 +367,7 @@
     visible: false,
     mode: "add",
     userID: null,
+    profilePicture: null,
     form: { userID: "", userName: "", isAdmin: false, sections: [] },
     hclabSearch: "",
     hclabResults: [],
@@ -421,7 +428,7 @@
   // ── Modal actions ──────────────────────────────────────────────────────────
   function openAddUser() {
     userModal.value = {
-      visible: true, mode: "add", userID: null,
+      visible: true, mode: "add", userID: null, profilePicture: null,
       form: { userID: "", userName: "", isAdmin: false, sections: [] },
       hclabSearch: "", hclabResults: [], hclabLoading: false,
       hclabDropdownOpen: false, hclabNoResults: false, hclabActiveIdx: -1,
@@ -432,6 +439,7 @@
   function openEditUser(user) {
     userModal.value = {
       visible: true, mode: "edit", userID: user.userID,
+      profilePicture: user.profilePicture ?? null,
       form: {
         userID: user.userID, userName: user.userName, isAdmin: user.isAdmin,
         sections: user.sections.map((s) => ({ sectionCode: s.sectionCode, roleID: s.roleID })),
@@ -441,6 +449,7 @@
   }
 
   function closeUserModal() {
+    userModal.value.profilePicture = null
     userModal.value.visible = false;
   }
 

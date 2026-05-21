@@ -27,5 +27,6 @@ namespace Model.Main
         public byte Theme { get; set; }
         public byte AccentColor { get; set; }
         public string SectionCategory { get; set; }
+        public string? ProfilePicture { get; set; }
     }
 }
