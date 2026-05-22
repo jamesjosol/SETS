@@ -102,10 +102,11 @@
             <div class="flex items-center gap-3">
               <div class="w-8 h-8 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0"
                    style="background-color: var(--color-primary-soft)">
-                <!-- Edit mode: show avatar if photo exists, otherwise keep icon -->
                 <img v-if="userModal.mode === 'edit' && userModal.profilePicture"
                      :src="userModal.profilePicture"
-                     class="w-full h-full object-cover" />
+                     class="w-full h-full object-cover cursor-zoom-in"
+                     @mouseenter="showAvatarPreview"
+                     @mouseleave="hideAvatarPreview" />
                 <span v-else
                       class="material-symbols-outlined text-sm"
                       style="color: var(--color-primary)">
@@ -308,6 +309,22 @@
     </Transition>
   </Teleport>
 
+  <Teleport to="body">
+    <div v-if="avatarPreview.visible"
+         ref="avatarPreviewRef"
+         class="fixed z-[9999] flex flex-col items-center gap-2 pointer-events-none"
+         :style="`top: ${avatarPreview.y}px; left: ${avatarPreview.x}px; transform: translate(-50%, -50%);`">
+      <div class="rounded-2xl overflow-hidden shadow-2xl"
+           style="width: 160px; height: 160px; border: 2.5px solid var(--color-border);">
+        <img :src="userModal.profilePicture" class="w-full h-full object-cover" />
+      </div>
+      <span class="text-xs font-bold px-3 py-1 rounded-full"
+            style="background-color: var(--color-surface); color: var(--color-text); border: 1px solid var(--color-border); box-shadow: 0 2px 8px rgba(0,0,0,0.12);">
+        {{ userModal.form.userName }}
+      </span>
+    </div>
+  </Teleport>
+
   <!-- Delete User Confirm Modal -->
   <ConfirmModal :isVisible="deleteConfirm.visible"
                 type="error"
@@ -320,6 +337,7 @@
 
 <script setup>
   import { ref, computed, onMounted, nextTick } from "vue";
+  import { gsap } from 'gsap'
   import { userApi } from "@/api/userApi";
   import { settingsApi } from "@/api/settingsApi";
   import AppTable from "@/components/common/AppTable.vue";
@@ -499,6 +517,52 @@
     } catch (err) {
       emit("toast", err.response?.data?.message || "Failed to update status.");
     }
+  }
+
+  const avatarPreviewRef = ref(null)
+  const avatarPreview = ref({ visible: false, x: 0, y: 0 })
+
+  function showAvatarPreview(e) {
+    const rect = e.currentTarget.getBoundingClientRect()
+    const previewH = 200 // approx height of preview + label
+    const spaceAbove = rect.top
+    const spaceBelow = window.innerHeight - rect.bottom
+
+    let y
+    if (spaceAbove >= previewH + 12) {
+      // enough space above
+      y = rect.top - 12
+    } else if (spaceBelow >= previewH + 12) {
+      // flip to below
+      y = rect.bottom + 12 + previewH / 2
+    } else {
+      // not enough space either way — center on viewport
+      y = window.innerHeight / 2
+    }
+
+    avatarPreview.value = {
+      visible: true,
+      x: rect.left + rect.width / 2,
+      y,
+    }
+
+    nextTick(() => {
+      if (!avatarPreviewRef.value) return
+      gsap.set(avatarPreviewRef.value, { scale: 0.6, opacity: 0 })
+      gsap.to(avatarPreviewRef.value, {
+        scale: 1, opacity: 1,
+        duration: 0.25, ease: 'back.out(1.4)',
+      })
+    })
+  }
+
+  function hideAvatarPreview() {
+    if (!avatarPreviewRef.value) return
+    gsap.to(avatarPreviewRef.value, {
+      scale: 0.6, opacity: 0,
+      duration: 0.15, ease: 'power2.in',
+      onComplete: () => { avatarPreview.value.visible = false }
+    })
   }
 
   // ── Delete ─────────────────────────────────────────────────────────────────

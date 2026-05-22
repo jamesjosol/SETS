@@ -208,7 +208,7 @@
                 style="border-top: 1px solid rgba(203, 195, 213, 0.1)">
           <p class="text-[11px] uppercase tracking-widest leading-relaxed" style="color: rgba(73, 68, 83, 0.6)">
             Authorized Personnel Only<br />
-            SETS • v1.0.0
+            SETS • {{ appVersion }}
           </p>
         </footer>
       </div>
@@ -394,6 +394,8 @@
     selectedSection.value = section
   }
 
+  const appVersion = ref('...')
+
   // ── Mount: PC info then HCLAB pre-check ───────────────────────────────────
   onMounted(async () => {
     try {
@@ -416,6 +418,13 @@
       pcInfo.value = { isRegistered: false, ipAddress: 'Unknown', sections: [] }
     } finally {
       pcLoading.value = false
+    }
+
+    try {
+      const res = await authApi.getVersion()
+      appVersion.value = res.data.version
+    } catch {
+      appVersion.value = '1.0.0'
     }
   })
 

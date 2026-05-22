@@ -3,6 +3,14 @@
     "Name": "New Profile",
     "Projects": [
       {
+        "Path": "sets.client\\sets.client.esproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "SETS.Server\\SETS.Server.csproj",
+        "Action": "Start"
+      },
+      {
         "Path": "SETSDeployer\\SETSDeployer.csproj",
         "Action": "Start"
       }

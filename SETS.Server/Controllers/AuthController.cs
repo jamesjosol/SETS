@@ -251,5 +251,14 @@ namespace SETS.Server.Controllers
                 return StatusCode(500, new { success = false, message = ex.Message });
             }
         }
+
+        [HttpGet("version")]
+        public IActionResult GetVersion()
+        {
+            return Ok(new
+            {
+                version = _config["AppVersion"] ?? "1.0.0"
+            });
+        }
     }
 }

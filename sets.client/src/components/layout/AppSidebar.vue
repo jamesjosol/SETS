@@ -44,8 +44,7 @@
       </div>
 
       <!-- Admin -->
-      <div v-else
-           class="rounded-xl p-3 flex items-center gap-3"
+      <div v-else class="rounded-xl p-3 flex items-center gap-3"
            style="background-color: var(--color-primary-soft);">
         <span class="material-symbols-outlined text-base" style="color: var(--color-primary);">
           admin_panel_settings
@@ -55,7 +54,7 @@
             Admin Mode
           </p>
           <p class="text-[10px] mt-0.5" style="color: var(--color-text-muted);">
-            Full system access
+            {{ authStore.branchCode }} · Full system access
           </p>
         </div>
       </div>

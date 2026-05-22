@@ -8,4 +8,5 @@ export const authApi = {
   getPCInfo: () => api.get(`${BASE_URL}/pc-info`),
   logout: () => api.post(`${BASE_URL}/logout`),
   contingencyLogin: (data) => api.post(`${BASE_URL}/contingency-login`, data),
+  getVersion: () => api.get(`${BASE_URL}/version`),
 }

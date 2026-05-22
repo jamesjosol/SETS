@@ -45,7 +45,10 @@ namespace SETSMiddleware
             BuildTaskList();
 
             // Start the health endpoint so the web app can detect this instance
-            _httpServer = new MiddlewareHttpServer(_branch, _tasks);
+           
+            string deployerKey = _config["DeployerKey"] ?? "sets-deployer-2024";
+            string siteName = _config["SiteName"] ?? "SETS";
+            _httpServer = new MiddlewareHttpServer(_branch, _tasks, deployerKey, siteName);
             _httpServer.Start();
 
             if (_tasks.Count > 0)
