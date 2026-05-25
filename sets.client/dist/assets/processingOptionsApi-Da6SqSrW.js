@@ -1,1 +1,0 @@
-import{s as e}from"./useTheme-C-OBT9k6.js";var t={get:()=>e.get(`/api/processingoptions`).then(e=>e.data),upsert:t=>e.put(`/api/processingoptions`,t)};export{t};

@@ -629,10 +629,24 @@ namespace Service.Services
             {
                 using var context = _factory.CreateContext(_branch);
                 using var unit = new UnitOfWork(context);
+
+                var today = DateOnly.FromDateTime(DateTime.Today);
+
                 foreach (var id in headerIds)
                 {
                     var header = unit.OnSiteSectionHeaders.Get(id);
                     if (header == null || header.Status == "P") continue;
+
+                    // Only flip to P if ALL scheduled tests are due today or past.
+                    var allTests = context.OnSite_Section_Test
+                        .Where(t => t.HeaderId == id && t.Status == "S")
+                        .ToList();
+
+                    var hasFutureTests = allTests
+                        .Any(t => t.RunningDate.HasValue && t.RunningDate.Value > today);
+
+                    if (hasFutureTests) continue;
+
                     header.Status = "P";
                     header.Updated = DateTime.Now;
                     unit.OnSiteSectionHeaders.Update(header);

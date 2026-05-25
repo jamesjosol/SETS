@@ -204,12 +204,25 @@ namespace Service.Services
             {
                 using var context = _factory.CreateContext(_branch);
                 using var unit = new UnitOfWork(context);
-                foreach (var h in headerIds)
+
+                var today = DateOnly.FromDateTime(DateTime.Today);
+
+                foreach (var id in headerIds)
                 {
-                    var _s = unit.SpecimenSectionHeaders.Get(h);
-                    if (_s == null || _s.Status == "P") continue;
-                    _s.Status = "P";
-                    unit.SpecimenSectionHeaders.Update(_s);
+                    var header = unit.SpecimenSectionHeaders.Get(id);
+                    if (header == null || header.Status == "P") continue;
+
+                    var allTests = context.Specimen_Section_Test
+                        .Where(t => t.HeaderId == id && t.Status == "S")
+                        .ToList();
+
+                    var hasFutureTests = allTests
+                        .Any(t => t.RunningDate.HasValue && t.RunningDate.Value > today);
+
+                    if (hasFutureTests) continue;
+
+                    header.Status = "P";
+                    unit.SpecimenSectionHeaders.Update(header);
                 }
             }
             catch { throw; }

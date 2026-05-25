@@ -1,0 +1,58 @@
+[
+  {
+    "Name": "WES",
+    "UncPath": "\\\\10.10.11.130\\d$\\IIS Programs\\SETS",
+    "SiteName": "SETS",
+    "AppPoolName": "SETS",
+    "MiddlewareUrl": "http://10.10.11.130:5100",
+    "IsEnabled": true
+  },
+  {
+    "Name": "DIAMOND",
+    "UncPath": "\\\\192.171.10.74\\d$\\IIS PROGRAMS\\SETS",
+    "SiteName": "SETS",
+    "AppPoolName": "SETS",
+    "MiddlewareUrl": "http://192.171.10.74:5100",
+    "IsEnabled": true
+  },
+  {
+    "Name": "TABUNOK",
+    "UncPath": "\\\\192.171.12.79\\d$\\IIS PROGRAMS\\SETS",
+    "SiteName": "SETS",
+    "AppPoolName": "SETS",
+    "MiddlewareUrl": "http://192.171.12.79:5100",
+    "IsEnabled": true
+  },
+  {
+    "Name": "MACTAN",
+    "UncPath": "NONE",
+    "SiteName": "SETS",
+    "AppPoolName": "SETS",
+    "MiddlewareUrl": "http://MACTAN-SERVER-IP:5100",
+    "IsEnabled": true
+  },
+  {
+    "Name": "NAGA",
+    "UncPath": "NONE",
+    "SiteName": "SETS",
+    "AppPoolName": "SETS",
+    "MiddlewareUrl": "http://NAGA-SERVER-IP:5100",
+    "IsEnabled": true
+  },
+  {
+    "Name": "LILOAN",
+    "UncPath": "NONE",
+    "SiteName": "SETS",
+    "AppPoolName": "SETS",
+    "MiddlewareUrl": "http://LILOAN-SERVER-IP:5100",
+    "IsEnabled": true
+  },
+  {
+    "Name": "CONSOLACION",
+    "UncPath": "NONE",
+    "SiteName": "SETS",
+    "AppPoolName": "SETS",
+    "MiddlewareUrl": "http://CONSOLACION-SERVER-IP:5100",
+    "IsEnabled": true
+  }
+]

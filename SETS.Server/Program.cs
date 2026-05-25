@@ -3,6 +3,7 @@ using SETS.Server.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
+
 SetsConnection.Initialize(builder.Configuration);
 
 builder.Services.AddControllers();

@@ -189,7 +189,6 @@ namespace Service.Services
         // - ScheduleTag set               → Status = S (Saved)
         // - Neither                       → Status = P (Pending)
         // Then re-derives header status from all its child tests.
-
         public SaveAssignmentsResult SaveAssignments(SaveAssignmentsRequest request)
         {
             try
@@ -217,6 +216,26 @@ namespace Service.Services
 
                     // ── Instantiate running day service once for the whole batch ───
                     using var master = new MasterService(_branch_raw);
+
+                    // ── Determine SRD "from" date (cutoff-aware) ───────────────────
+                    // If the section's cutoff has already passed today, SRD must skip
+                    // today and find the next running day from tomorrow onward.
+                    var firstTest = tests.FirstOrDefault();
+                    var firstHeader = firstTest != null
+                        ? context.Specimen_Section_Header.FirstOrDefault(h => h.Id == firstTest.HeaderId)
+                        : null;
+                    var srdSection = firstHeader != null
+                        ? context.Section_Master.FirstOrDefault(s => s.Code == firstHeader.SectionCode)
+                        : null;
+
+                    var srdFrom = today;
+                    if (srdSection?.CutOffTime.HasValue == true)
+                    {
+                        var cutOffMinutes = (int)srdSection.CutOffTime.Value.TotalMinutes;
+                        var nowMinutes = now.Hour * 60 + now.Minute;
+                        if (nowMinutes >= cutOffMinutes)
+                            srdFrom = today.AddDays(1);
+                    }
 
                     foreach (var assignment in request.Assignments)
                     {
@@ -262,7 +281,7 @@ namespace Service.Services
 
                                 case "SRD":
                                     var nearestDate = master.TestRunningDay
-                                        .GetNearestRunningDate(test.TestCode, today);
+                                        .GetNearestRunningDate(test.TestCode, srdFrom); // ← was: today
 
                                     if (nearestDate == null)
                                         throw new Exception(
@@ -291,7 +310,6 @@ namespace Service.Services
                                 test.Assigned = now;
                                 test.RunAt = now;
 
-                                // ← Track this test as just run
                                 justRunTests.Add((test, assignment.AssignedRMT));
                             }
                             else
@@ -362,7 +380,7 @@ namespace Service.Services
                             context.Specimen_Section_Header.Update(header);
                         }
 
-                        if (newStatus == "C" && header.Status != "C") // was not already C
+                        if (newStatus == "C" && header.Status != "C")
                         {
                             justCompletedHeaders.Add(new CompletedHeaderInfo
                             {
@@ -375,13 +393,11 @@ namespace Service.Services
                     context.SaveChanges();
                     tx.Commit();
 
-                    // ── Audit Logging ──────────────────────────────────────────────────────
+                    // ── Audit Logging ──────────────────────────────────────────────
                     try
                     {
                         using var auditMaster = new MasterService(_branch_raw);
 
-                        // ── Pre-load Batch_Specimen for all affected headers in one query ──
-                        // Avoids a per-header DB hit inside the loops below.
                         var auditSpecimenNos = headers.Select(h => h.SpecimenNo).ToHashSet();
                         var batchSpecimenMap = context.Batch_Specimen
                             .ToList()
@@ -389,7 +405,7 @@ namespace Service.Services
                             .GroupBy(b => b.SpecimenNo)
                             .ToDictionary(g => g.Key, g => g.OrderBy(b => b.Status == "X" ? 1 : 0).First());
 
-                        // ── TEST_RUN — one entry per specimen for tests flipped to R ──────
+                        // ── TEST_RUN ───────────────────────────────────────────────
                         var runGroups = justRunTests
                             .GroupBy(x => x.Test.HeaderId)
                             .ToList();
@@ -414,7 +430,7 @@ namespace Service.Services
                                 now));
                         }
 
-                        // ── SPECIMEN_STORED / TEST_SCHEDULED / TEST_RESCHEDULED ───────────
+                        // ── SPECIMEN_STORED / TEST_SCHEDULED / TEST_RESCHEDULED ────
                         var scheduledByHeader = justScheduledTests
                             .GroupBy(x => x.Test.HeaderId)
                             .ToList();
@@ -428,7 +444,6 @@ namespace Service.Services
                             var patientName = bs?.PatientName ?? string.Empty;
                             var pid = bs?.PID ?? string.Empty;
 
-                            // Fire SPECIMEN_STORED once per specimen
                             auditMaster.Audit.Log(Audit_Log.SpecimenStored(
                                 header.SpecimenNo,
                                 patientName,
@@ -436,7 +451,6 @@ namespace Service.Services
                                 header.SectionCode,
                                 request.UserID));
 
-                            // Fire TEST_SCHEDULED or TEST_RESCHEDULED per test
                             foreach (var item in group)
                             {
                                 var runningDate = item.Test.RunningDate.HasValue
@@ -491,7 +505,309 @@ namespace Service.Services
             catch { throw; }
         }
 
-        // ── Get pending specimens ──────────────────────────────────────────
+        #region backup code / old one (cutoff srd issue)
+        //public SaveAssignmentsResult SaveAssignments(SaveAssignmentsRequest request)
+        //{
+        //    try
+        //    {
+        //        using var context = _factory.CreateContext(_branch);
+        //        using var tx = context.Database.BeginTransaction();
+        //        try
+        //        {
+        //            var now = DateTime.Now;
+        //            var today = DateOnly.FromDateTime(now);
+        //            var testIds = new HashSet<int>(request.Assignments.Select(a => a.TestId));
+
+        //            // Load all tests in memory first — avoids EF Core CTE syntax error with Contains()
+        //            var tests = context.Specimen_Section_Test
+        //                .ToList()
+        //                .Where(t => testIds.Contains(t.Id))
+        //                .ToList();
+
+        //            if (!tests.Any())
+        //                throw new Exception("No matching tests found.");
+
+        //            // ── Track tests actually flipped to Running this save ──────────
+        //            var justRunTests = new List<(Specimen_Section_Test Test, string AssignedRMT)>();
+        //            var justScheduledTests = new List<(Specimen_Section_Test Test, string? PreviousTag)>();
+
+        //            // ── Instantiate running day service once for the whole batch ───
+        //            using var master = new MasterService(_branch_raw);
+
+        //            foreach (var assignment in request.Assignments)
+        //            {
+        //                var test = tests.FirstOrDefault(t => t.Id == assignment.TestId);
+        //                if (test == null) continue;
+
+        //                // Skip tests that are already Running or Released
+        //                if (test.Status == "R" || test.Status == "X") continue;
+        //                var previousTag = test.ScheduleTag;
+
+        //                test.UpdatedBy = request.UserID;
+        //                test.Updated = now;
+
+        //                if (!string.IsNullOrEmpty(assignment.ScheduleTag))
+        //                {
+        //                    switch (assignment.ScheduleTag)
+        //                    {
+        //                        case "END":
+        //                            test.ScheduleTag = "END";
+        //                            test.RunningDate = DateOnly.FromDateTime(now.AddDays(1));
+        //                            test.Status = "S";
+        //                            test.AssignedRMT = assignment.AssignedRMT;
+        //                            test.Assigned = null;
+        //                            justScheduledTests.Add((test, previousTag));
+        //                            break;
+
+        //                        case "CRD":
+        //                            if (assignment.RunningDate == null)
+        //                                throw new Exception(
+        //                                    $"Test '{test.TestCode}': A running date is required for CRD.");
+
+        //                            if (assignment.RunningDate <= DateOnly.FromDateTime(now))
+        //                                throw new Exception(
+        //                                    $"Test '{test.TestCode}': CRD running date must be a future date.");
+
+        //                            test.ScheduleTag = "CRD";
+        //                            test.RunningDate = assignment.RunningDate;
+        //                            test.Status = "S";
+        //                            test.AssignedRMT = assignment.AssignedRMT;
+        //                            test.Assigned = null;
+        //                            justScheduledTests.Add((test, previousTag));
+        //                            break;
+
+        //                        case "SRD":
+        //                            var nearestDate = master.TestRunningDay
+        //                                .GetNearestRunningDate(test.TestCode, today);
+
+        //                            if (nearestDate == null)
+        //                                throw new Exception(
+        //                                    $"Test '{test.TestCode}' has no running day configured. " +
+        //                                    $"Please set it up in Admin Settings → Running Days before using SRD.");
+
+        //                            test.ScheduleTag = "SRD";
+        //                            test.RunningDate = nearestDate;
+        //                            test.Status = "S";
+        //                            test.AssignedRMT = assignment.AssignedRMT;
+        //                            test.Assigned = null;
+        //                            justScheduledTests.Add((test, previousTag));
+        //                            break;
+        //                    }
+        //                }
+        //                else
+        //                {
+        //                    // Today — no tag, no date
+        //                    test.ScheduleTag = null;
+        //                    test.RunningDate = null;
+
+        //                    if (!string.IsNullOrEmpty(assignment.AssignedRMT))
+        //                    {
+        //                        test.Status = "R";
+        //                        test.AssignedRMT = assignment.AssignedRMT;
+        //                        test.Assigned = now;
+        //                        test.RunAt = now;
+
+        //                        // ← Track this test as just run
+        //                        justRunTests.Add((test, assignment.AssignedRMT));
+        //                    }
+        //                    else
+        //                    {
+        //                        test.Status = "P";
+        //                        test.AssignedRMT = null;
+        //                        test.Assigned = null;
+        //                    }
+        //                }
+
+        //                context.Specimen_Section_Test.Update(test);
+        //            }
+
+        //            // Update specimen remarks
+        //            if (request.SpecimenRemarks?.Any() == true)
+        //            {
+        //                var headerIds = request.SpecimenRemarks.Select(r => r.HeaderId).ToHashSet();
+        //                var _headers = context.Specimen_Section_Header
+        //                    .ToList()
+        //                    .Where(h => headerIds.Contains(h.Id))
+        //                    .ToList();
+
+        //                foreach (var remarkItem in request.SpecimenRemarks)
+        //                {
+        //                    var header = _headers.FirstOrDefault(h => h.Id == remarkItem.HeaderId);
+        //                    if (header == null) continue;
+        //                    header.Remarks = remarkItem.Remarks;
+        //                    header.UpdatedBy = request.UserID;
+        //                    header.Updated = now;
+        //                    context.Specimen_Section_Header.Update(header);
+        //                }
+        //            }
+
+        //            var affectedHeaderIds = tests
+        //                .Where(t => request.Assignments.Any(a => a.TestId == t.Id))
+        //                .Select(t => t.HeaderId)
+        //                .Distinct()
+        //                .ToList();
+
+        //            var allTestsForHeaders = context.Specimen_Section_Test
+        //                .ToList()
+        //                .Where(t => affectedHeaderIds.Contains(t.HeaderId))
+        //                .ToList();
+
+        //            var headers = context.Specimen_Section_Header
+        //                .ToList()
+        //                .Where(h => affectedHeaderIds.Contains(h.Id))
+        //                .ToList();
+
+        //            var justCompletedHeaders = new List<CompletedHeaderInfo>();
+        //            foreach (var header in headers)
+        //            {
+        //                var headerTests = allTestsForHeaders.Where(t => t.HeaderId == header.Id).ToList();
+
+        //                string newStatus;
+        //                if (headerTests.All(t => t.Status == "X"))
+        //                    newStatus = "C";
+        //                else if (headerTests.Any(t => t.Status == "R" || t.Status == "S" || t.Status == "X"))
+        //                    newStatus = "S";
+        //                else
+        //                    newStatus = "P";
+
+        //                if (header.Status != newStatus)
+        //                {
+        //                    header.Status = newStatus;
+        //                    header.UpdatedBy = request.UserID;
+        //                    header.Updated = now;
+        //                    context.Specimen_Section_Header.Update(header);
+        //                }
+
+        //                if (newStatus == "C" && header.Status != "C") // was not already C
+        //                {
+        //                    justCompletedHeaders.Add(new CompletedHeaderInfo
+        //                    {
+        //                        SpecimenNo = header.SpecimenNo,
+        //                        SectionCode = header.SectionCode
+        //                    });
+        //                }
+        //            }
+
+        //            context.SaveChanges();
+        //            tx.Commit();
+
+        //            // ── Audit Logging ──────────────────────────────────────────────────────
+        //            try
+        //            {
+        //                using var auditMaster = new MasterService(_branch_raw);
+
+        //                // ── Pre-load Batch_Specimen for all affected headers in one query ──
+        //                // Avoids a per-header DB hit inside the loops below.
+        //                var auditSpecimenNos = headers.Select(h => h.SpecimenNo).ToHashSet();
+        //                var batchSpecimenMap = context.Batch_Specimen
+        //                    .ToList()
+        //                    .Where(b => auditSpecimenNos.Contains(b.SpecimenNo))
+        //                    .GroupBy(b => b.SpecimenNo)
+        //                    .ToDictionary(g => g.Key, g => g.OrderBy(b => b.Status == "X" ? 1 : 0).First());
+
+        //                // ── TEST_RUN — one entry per specimen for tests flipped to R ──────
+        //                var runGroups = justRunTests
+        //                    .GroupBy(x => x.Test.HeaderId)
+        //                    .ToList();
+
+        //                foreach (var group in runGroups)
+        //                {
+        //                    var header = headers.FirstOrDefault(h => h.Id == group.Key);
+        //                    if (header == null) continue;
+
+        //                    batchSpecimenMap.TryGetValue(header.SpecimenNo, out var bs);
+        //                    var testNames = string.Join(",", group.Select(x => $"{x.Test.TestCode}:{x.Test.TestName}"));
+        //                    var rmtUserID = group.First().AssignedRMT;
+
+        //                    auditMaster.Audit.Log(Audit_Log.TestRun(
+        //                        header.SpecimenNo,
+        //                        bs?.PatientName ?? string.Empty,
+        //                        bs?.PID ?? string.Empty,
+        //                        header.SectionCode,
+        //                        testNames,
+        //                        rmtUserID,
+        //                        request.UserID,
+        //                        now));
+        //                }
+
+        //                // ── SPECIMEN_STORED / TEST_SCHEDULED / TEST_RESCHEDULED ───────────
+        //                var scheduledByHeader = justScheduledTests
+        //                    .GroupBy(x => x.Test.HeaderId)
+        //                    .ToList();
+
+        //                foreach (var group in scheduledByHeader)
+        //                {
+        //                    var header = headers.FirstOrDefault(h => h.Id == group.Key);
+        //                    if (header == null) continue;
+
+        //                    batchSpecimenMap.TryGetValue(header.SpecimenNo, out var bs);
+        //                    var patientName = bs?.PatientName ?? string.Empty;
+        //                    var pid = bs?.PID ?? string.Empty;
+
+        //                    // Fire SPECIMEN_STORED once per specimen
+        //                    auditMaster.Audit.Log(Audit_Log.SpecimenStored(
+        //                        header.SpecimenNo,
+        //                        patientName,
+        //                        pid,
+        //                        header.SectionCode,
+        //                        request.UserID));
+
+        //                    // Fire TEST_SCHEDULED or TEST_RESCHEDULED per test
+        //                    foreach (var item in group)
+        //                    {
+        //                        var runningDate = item.Test.RunningDate.HasValue
+        //                            ? item.Test.RunningDate.Value.ToDateTime(TimeOnly.MinValue)
+        //                            : DateTime.Today;
+        //                        var testEntry = $"{item.Test.TestCode}:{item.Test.TestName}";
+
+        //                        if (item.PreviousTag == null)
+        //                        {
+        //                            auditMaster.Audit.Log(Audit_Log.TestScheduled(
+        //                                header.SpecimenNo,
+        //                                patientName,
+        //                                pid,
+        //                                header.SectionCode,
+        //                                testEntry,
+        //                                item.Test.ScheduleTag!,
+        //                                runningDate,
+        //                                request.UserID));
+        //                        }
+        //                        else if (item.PreviousTag != item.Test.ScheduleTag)
+        //                        {
+        //                            auditMaster.Audit.Log(Audit_Log.TestRescheduled(
+        //                                header.SpecimenNo,
+        //                                patientName,
+        //                                pid,
+        //                                header.SectionCode,
+        //                                testEntry,
+        //                                item.PreviousTag,
+        //                                item.Test.ScheduleTag!,
+        //                                runningDate,
+        //                                request.UserID));
+        //                        }
+        //                    }
+        //                }
+        //            }
+        //            catch (Exception auditEx)
+        //            {
+        //                Console.WriteLine($"[AUDIT] Logging failed in SaveAssignments: {auditEx.Message}");
+        //            }
+
+        //            return new SaveAssignmentsResult
+        //            {
+        //                CompletedHeaders = justCompletedHeaders
+        //            };
+        //        }
+        //        catch
+        //        {
+        //            tx.Rollback();
+        //            throw;
+        //        }
+        //    }
+        //    catch { throw; }
+        //}
+
+        #endregion
 
         public List<PendingSpecimenItem> GetPendingSpecimens(string sectionCode)
         {
@@ -500,23 +816,57 @@ namespace Service.Services
                 using var context = _factory.CreateContext(_branch);
                 using var unit = new UnitOfWork(context);
 
-                // ── Standard specimens ─────────────────────────────────────────
-                var headers = context.Specimen_Section_Header
+                var today = DateOnly.FromDateTime(DateTime.Today);
+
+                // ── Standard: fully pending headers (Status = P) ───────────────────
+                var pendingHeaders = context.Specimen_Section_Header
                     .Where(h => h.SectionCode == sectionCode
                              && h.Status == "P"
                              && h.IsHclabRouted)
+                    .ToList();
+
+                // ── Standard: mixed headers (Status = S) with at least one due test ─
+                // These are headers that still have future SRD tests (so not flipped
+                // to P by middleware) but also have tests whose RunningDate is today or past.
+                var scheduledHeaders = context.Specimen_Section_Header
+                    .Where(h => h.SectionCode == sectionCode
+                             && h.Status == "S"
+                             && h.IsHclabRouted)
+                    .ToList();
+
+                var scheduledHeaderIds = scheduledHeaders.Select(h => h.Id).ToList();
+
+                var dueTestHeaderIds = context.Specimen_Section_Test
+                    .ToList()
+                    .Where(t => scheduledHeaderIds.Contains(t.HeaderId)
+                             && t.Status == "S"
+                             && t.RunningDate.HasValue
+                             && t.RunningDate.Value <= today)
+                    .Select(t => t.HeaderId)
+                    .Distinct()
+                    .ToHashSet();
+
+                var mixedHeaders = scheduledHeaders
+                    .Where(h => dueTestHeaderIds.Contains(h.Id))
+                    .ToList();
+
+                // ── Merge, deduplicate, sort ───────────────────────────────────────
+                var headers = pendingHeaders
+                    .Concat(mixedHeaders)
+                    .GroupBy(h => h.Id)
+                    .Select(g => g.First())
                     .OrderByDescending(h => h.Routed)
                     .ToList();
 
                 var specimenNos = headers.Select(h => h.SpecimenNo).ToList();
                 var batchSpecimens = context.Batch_Specimen
-                                  .ToList()
-                                  .Where(b => specimenNos.Contains(b.SpecimenNo))
-                                  .GroupBy(b => b.SpecimenNo)
-                                  .ToDictionary(
-                                      g => g.Key,
-                                      g => g.OrderBy(b => b.Status == "X" ? 1 : 0).First()
-                                  );
+                    .ToList()
+                    .Where(b => specimenNos.Contains(b.SpecimenNo))
+                    .GroupBy(b => b.SpecimenNo)
+                    .ToDictionary(
+                        g => g.Key,
+                        g => g.OrderBy(b => b.Status == "X" ? 1 : 0).First()
+                    );
 
                 var standard = headers.Select(h =>
                 {
@@ -540,7 +890,7 @@ namespace Service.Services
                     };
                 }).ToList();
 
-                // ── On-Site specimens ──────────────────────────────────────────
+                // ── On-Site: fully pending ─────────────────────────────────────────
                 var onSiteHeaders = context.OnSite_Section_Header
                     .Where(h => h.SectionCode == sectionCode && h.Status == "P")
                     .ToList();
@@ -562,7 +912,6 @@ namespace Service.Services
                     IsOnSite = true
                 }).ToList();
 
-                // ── Merge and sort by received descending ──────────────────────
                 return standard
                     .Concat(onSite)
                     .OrderByDescending(s => s.Received)
@@ -571,7 +920,6 @@ namespace Service.Services
             catch { throw; }
         }
 
-        // ── Get scheduled specimens ────────────────────────────────────────────
         public List<ScheduledSpecimenItem> GetScheduledSpecimens(string sectionCode)
         {
             try
@@ -579,36 +927,44 @@ namespace Service.Services
                 using var context = _factory.CreateContext(_branch);
                 using var unit = new UnitOfWork(context);
 
-                // ── Standard specimens ─────────────────────────────────────────
+                var today = DateOnly.FromDateTime(DateTime.Today);
+
+                // ── Standard specimens ─────────────────────────────────────────────
                 var headers = context.Specimen_Section_Header
                     .Where(h => h.SectionCode == sectionCode)
                     .ToList();
 
                 var headerIds = headers.Select(h => h.Id).ToList();
 
-                var allTests = context.Specimen_Section_Test
+                var allSavedTests = context.Specimen_Section_Test
                     .ToList()
                     .Where(t => headerIds.Contains(t.HeaderId) && t.Status == "S")
                     .ToList();
 
-                var relevantHeaderIds = allTests.Select(t => t.HeaderId).Distinct().ToHashSet();
+                // ── Only show tests that are still future-dated ────────────────────
+                // Due tests (RunningDate <= today) belong in Pending, not Scheduled.
+                var futureTests = allSavedTests
+                    .Where(t => t.RunningDate.HasValue && t.RunningDate.Value > today)
+                    .ToList();
+
+                var relevantHeaderIds = futureTests.Select(t => t.HeaderId).Distinct().ToHashSet();
                 var relevantHeaders = headers.Where(h => relevantHeaderIds.Contains(h.Id)).ToList();
 
                 var specimenNos = relevantHeaders.Select(h => h.SpecimenNo).ToList();
-
                 var batchSpecimens = context.Batch_Specimen
-                       .ToList()
-                       .Where(b => specimenNos.Contains(b.SpecimenNo))
-                       .GroupBy(b => b.SpecimenNo)
-                       .ToDictionary(
-                           g => g.Key,
-                           g => g.OrderBy(b => b.Status == "X" ? 1 : 0).First()
-                       );
+                    .ToList()
+                    .Where(b => specimenNos.Contains(b.SpecimenNo))
+                    .GroupBy(b => b.SpecimenNo)
+                    .ToDictionary(
+                        g => g.Key,
+                        g => g.OrderBy(b => b.Status == "X" ? 1 : 0).First()
+                    );
 
                 var standard = relevantHeaders.Select(h =>
                 {
                     batchSpecimens.TryGetValue(h.SpecimenNo, out var bs);
-                    var tests = allTests.Where(t => t.HeaderId == h.Id)
+                    var tests = futureTests
+                        .Where(t => t.HeaderId == h.Id)
                         .OrderBy(t => t.RunningDate)
                         .ThenBy(t => t.TestCode)
                         .ToList();
@@ -638,25 +994,30 @@ namespace Service.Services
                     };
                 }).ToList();
 
-                // ── On-Site specimens ──────────────────────────────────────────
+                // ── On-Site specimens ──────────────────────────────────────────────
                 var onSiteHeaders = context.OnSite_Section_Header
-                    .Where(h => h.SectionCode == sectionCode)
+                    .Where(h => h.SectionCode == sectionCode && h.Status == "S")
                     .ToList();
 
                 var onSiteHeaderIds = onSiteHeaders.Select(h => h.Id).ToList();
 
-                var onSiteTests = context.OnSite_Section_Test
+                var allOnSiteSavedTests = context.OnSite_Section_Test
                     .ToList()
                     .Where(t => onSiteHeaderIds.Contains(t.HeaderId) && t.Status == "S")
                     .ToList();
 
-                var relevantOnSiteHeaderIds = onSiteTests.Select(t => t.HeaderId).Distinct().ToHashSet();
+                var futureOnSiteTests = allOnSiteSavedTests
+                    .Where(t => t.RunningDate.HasValue && t.RunningDate.Value > today)
+                    .ToList();
+
+                var relevantOnSiteHeaderIds = futureOnSiteTests.Select(t => t.HeaderId).Distinct().ToHashSet();
 
                 var onSite = onSiteHeaders
                     .Where(h => relevantOnSiteHeaderIds.Contains(h.Id))
                     .Select(h =>
                     {
-                        var tests = onSiteTests.Where(t => t.HeaderId == h.Id)
+                        var tests = futureOnSiteTests
+                            .Where(t => t.HeaderId == h.Id)
                             .OrderBy(t => t.RunningDate)
                             .ThenBy(t => t.TestCode)
                             .ToList();
@@ -667,7 +1028,7 @@ namespace Service.Services
                             SpecimenNo = h.SpecimenNo,
                             SectionCode = h.SectionCode,
                             SampleTypeCode = h.SampleTypeCode,
-                            SampleTypeName = unit.SampleTypes.GetByCode(h.SampleTypeCode)?.Name ?? h.SampleTypeCode,
+                            SampleTypeName = null,
                             PatientName = h.PatientName,
                             PatientID = h.PID,
                             Remarks = h.Remarks,
@@ -687,7 +1048,6 @@ namespace Service.Services
                         };
                     }).ToList();
 
-                // ── Merge and sort by nearest running date ─────────────────────
                 return standard
                     .Concat(onSite)
                     .OrderBy(s => s.Tests.Min(t => t.RunningDate ?? DateOnly.MaxValue))
@@ -695,6 +1055,215 @@ namespace Service.Services
             }
             catch { throw; }
         }
+
+        #region back up getpending specimens & scheduled specimens
+
+        // ── Get pending specimens ──────────────────────────────────────────
+
+        //public List<PendingSpecimenItem> GetPendingSpecimens(string sectionCode)
+        //{
+        //    try
+        //    {
+        //        using var context = _factory.CreateContext(_branch);
+        //        using var unit = new UnitOfWork(context);
+
+        //        // ── Standard specimens ─────────────────────────────────────────
+        //        var headers = context.Specimen_Section_Header
+        //            .Where(h => h.SectionCode == sectionCode
+        //                     && h.Status == "P"
+        //                     && h.IsHclabRouted)
+        //            .OrderByDescending(h => h.Routed)
+        //            .ToList();
+
+        //        var specimenNos = headers.Select(h => h.SpecimenNo).ToList();
+        //        var batchSpecimens = context.Batch_Specimen
+        //                          .ToList()
+        //                          .Where(b => specimenNos.Contains(b.SpecimenNo))
+        //                          .GroupBy(b => b.SpecimenNo)
+        //                          .ToDictionary(
+        //                              g => g.Key,
+        //                              g => g.OrderBy(b => b.Status == "X" ? 1 : 0).First()
+        //                          );
+
+        //        var standard = headers.Select(h =>
+        //        {
+        //            batchSpecimens.TryGetValue(h.SpecimenNo, out var bs);
+        //            return new PendingSpecimenItem
+        //            {
+        //                Id = h.Id,
+        //                SpecimenNo = h.SpecimenNo,
+        //                SectionCode = h.SectionCode,
+        //                TestGroupCode = h.TestGroupCode,
+        //                SampleTypeCode = h.SampleTypeCode,
+        //                SampleTypeName = bs?.SampleTypeName ?? h.SampleTypeCode,
+        //                Status = h.Status,
+        //                RoutedBy = h.RoutedBy,
+        //                Routed = h.Routed,
+        //                ReceivedBy = h.ReceivedBy,
+        //                Received = h.Received,
+        //                Remarks = h.Remarks,
+        //                PatientName = bs?.PatientName,
+        //                PatientID = bs?.PID,
+        //            };
+        //        }).ToList();
+
+        //        // ── On-Site specimens ──────────────────────────────────────────
+        //        var onSiteHeaders = context.OnSite_Section_Header
+        //            .Where(h => h.SectionCode == sectionCode && h.Status == "P")
+        //            .ToList();
+
+        //        var onSite = onSiteHeaders.Select(h => new PendingSpecimenItem
+        //        {
+        //            Id = h.Id,
+        //            SpecimenNo = h.SpecimenNo,
+        //            SectionCode = h.SectionCode,
+        //            TestGroupCode = h.TestGroupCode,
+        //            SampleTypeCode = h.SampleTypeCode,
+        //            SampleTypeName = unit.SampleTypes.GetByCode(h.SampleTypeCode)?.Name ?? h.SampleTypeCode,
+        //            Status = h.Status,
+        //            ReceivedBy = h.ReceivedBy,
+        //            Received = h.Received,
+        //            Remarks = h.Remarks,
+        //            PatientName = h.PatientName,
+        //            PatientID = h.PID,
+        //            IsOnSite = true
+        //        }).ToList();
+
+        //        // ── Merge and sort by received descending ──────────────────────
+        //        return standard
+        //            .Concat(onSite)
+        //            .OrderByDescending(s => s.Received)
+        //            .ToList();
+        //    }
+        //    catch { throw; }
+        //}
+
+        //// ── Get scheduled specimens ────────────────────────────────────────────
+        //public List<ScheduledSpecimenItem> GetScheduledSpecimens(string sectionCode)
+        //{
+        //    try
+        //    {
+        //        using var context = _factory.CreateContext(_branch);
+        //        using var unit = new UnitOfWork(context);
+
+        //        // ── Standard specimens ─────────────────────────────────────────
+        //        var headers = context.Specimen_Section_Header
+        //            .Where(h => h.SectionCode == sectionCode)
+        //            .ToList();
+
+        //        var headerIds = headers.Select(h => h.Id).ToList();
+
+        //        var allTests = context.Specimen_Section_Test
+        //            .ToList()
+        //            .Where(t => headerIds.Contains(t.HeaderId) && t.Status == "S")
+        //            .ToList();
+
+        //        var relevantHeaderIds = allTests.Select(t => t.HeaderId).Distinct().ToHashSet();
+        //        var relevantHeaders = headers.Where(h => relevantHeaderIds.Contains(h.Id)).ToList();
+
+        //        var specimenNos = relevantHeaders.Select(h => h.SpecimenNo).ToList();
+
+        //        var batchSpecimens = context.Batch_Specimen
+        //               .ToList()
+        //               .Where(b => specimenNos.Contains(b.SpecimenNo))
+        //               .GroupBy(b => b.SpecimenNo)
+        //               .ToDictionary(
+        //                   g => g.Key,
+        //                   g => g.OrderBy(b => b.Status == "X" ? 1 : 0).First()
+        //               );
+
+        //        var standard = relevantHeaders.Select(h =>
+        //        {
+        //            batchSpecimens.TryGetValue(h.SpecimenNo, out var bs);
+        //            var tests = allTests.Where(t => t.HeaderId == h.Id)
+        //                .OrderBy(t => t.RunningDate)
+        //                .ThenBy(t => t.TestCode)
+        //                .ToList();
+
+        //            return new ScheduledSpecimenItem
+        //            {
+        //                HeaderId = h.Id,
+        //                SpecimenNo = h.SpecimenNo,
+        //                SectionCode = h.SectionCode,
+        //                SampleTypeCode = h.SampleTypeCode,
+        //                SampleTypeName = bs?.SampleTypeName ?? h.SampleTypeCode,
+        //                PatientName = bs?.PatientName,
+        //                PatientID = bs?.PID,
+        //                Remarks = h.Remarks,
+        //                ReceivedBy = h.ReceivedBy,
+        //                Received = h.Received,
+        //                Tests = tests.Select(t => new ScheduledTestItem
+        //                {
+        //                    Id = t.Id,
+        //                    TestCode = t.TestCode,
+        //                    TestName = t.TestName,
+        //                    Status = t.Status,
+        //                    ScheduleTag = t.ScheduleTag,
+        //                    RunningDate = t.RunningDate,
+        //                    AssignedRMT = t.AssignedRMT,
+        //                }).ToList()
+        //            };
+        //        }).ToList();
+
+        //        // ── On-Site specimens ──────────────────────────────────────────
+        //        var onSiteHeaders = context.OnSite_Section_Header
+        //            .Where(h => h.SectionCode == sectionCode)
+        //            .ToList();
+
+        //        var onSiteHeaderIds = onSiteHeaders.Select(h => h.Id).ToList();
+
+        //        var onSiteTests = context.OnSite_Section_Test
+        //            .ToList()
+        //            .Where(t => onSiteHeaderIds.Contains(t.HeaderId) && t.Status == "S")
+        //            .ToList();
+
+        //        var relevantOnSiteHeaderIds = onSiteTests.Select(t => t.HeaderId).Distinct().ToHashSet();
+
+        //        var onSite = onSiteHeaders
+        //            .Where(h => relevantOnSiteHeaderIds.Contains(h.Id))
+        //            .Select(h =>
+        //            {
+        //                var tests = onSiteTests.Where(t => t.HeaderId == h.Id)
+        //                    .OrderBy(t => t.RunningDate)
+        //                    .ThenBy(t => t.TestCode)
+        //                    .ToList();
+
+        //                return new ScheduledSpecimenItem
+        //                {
+        //                    HeaderId = h.Id,
+        //                    SpecimenNo = h.SpecimenNo,
+        //                    SectionCode = h.SectionCode,
+        //                    SampleTypeCode = h.SampleTypeCode,
+        //                    SampleTypeName = unit.SampleTypes.GetByCode(h.SampleTypeCode)?.Name ?? h.SampleTypeCode,
+        //                    PatientName = h.PatientName,
+        //                    PatientID = h.PID,
+        //                    Remarks = h.Remarks,
+        //                    ReceivedBy = h.ReceivedBy,
+        //                    Received = h.Received,
+        //                    IsOnSite = true,
+        //                    Tests = tests.Select(t => new ScheduledTestItem
+        //                    {
+        //                        Id = t.Id,
+        //                        TestCode = t.TestCode,
+        //                        TestName = t.TestName,
+        //                        Status = t.Status,
+        //                        ScheduleTag = t.ScheduleTag,
+        //                        RunningDate = t.RunningDate,
+        //                        AssignedRMT = t.AssignedRMT,
+        //                    }).ToList()
+        //                };
+        //            }).ToList();
+
+        //        // ── Merge and sort by nearest running date ─────────────────────
+        //        return standard
+        //            .Concat(onSite)
+        //            .OrderBy(s => s.Tests.Min(t => t.RunningDate ?? DateOnly.MaxValue))
+        //            .ToList();
+        //    }
+        //    catch { throw; }
+        //}
+
+        #endregion
 
         public List<RunningSpecimenItem> GetRunningSpecimens(string sectionCode, string? userID)
         {
