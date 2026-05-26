@@ -49,7 +49,7 @@ namespace SETSMiddleware
             _listener = new HttpListener();
             // Bind on all interfaces so SETSDeployer can reach it over the LAN.
             // localhost calls from the SETS web app (/health) still work fine.
-            _listener.Prefixes.Add("http://*:5100/");
+            _listener.Prefixes.Add("http://localhost:5100/"); // _listener.Prefixes.Add("http://*:5100/");
             _listener.Start();
 
             _cts = new CancellationTokenSource();

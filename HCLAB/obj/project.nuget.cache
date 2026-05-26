@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "ru/M/0cspVI=",
+  "dgSpecHash": "qtfMHsO31x8=",
   "success": true,
   "projectFilePath": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\HCLAB\\HCLAB.csproj",
   "expectedPackageFiles": [
@@ -32,8 +32,7 @@
       "filePath": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\HCLAB\\HCLAB.csproj",
       "libraryId": "Oracle.ManagedDataAccess.Core",
       "targetGraphs": [
-        "net8.0",
-        "net8.0/win-x64"
+        "net8.0"
       ]
     }
   ]

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Service;
 using System.Diagnostics;
 
@@ -69,5 +70,9 @@ namespace SETS.Server.Controllers
             var result = master.Health.CheckHcLab();
             return Ok(result);
         }
+
+        [HttpGet("status")]
+        [AllowAnonymous]
+        public IActionResult Status() => Ok(new { online = true });
     }
 }

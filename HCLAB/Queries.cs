@@ -63,12 +63,21 @@ namespace HCLAB
 					WHERE os_sno = :p0";
 
             public static string Check_Test_Released = @"
-				SELECT od_item_type, od_release_on
-				FROM ord_dtl
-				WHERE od_tno = :p0
-				  AND od_order_ti = :p1
-				  AND od_item_type = 'U'
+					SELECT od_item_type, od_action_flag
+					FROM ord_dtl
+					WHERE od_tno = :p0
+						AND od_order_ti = :p1
+						AND od_item_type = 'U'
 				";
+
+
+            //        public static string Check_Test_Released = @"
+            //SELECT od_item_type, od_release_on
+            //FROM ord_dtl
+            //WHERE od_tno = :p0
+            //  AND od_order_ti = :p1
+            //  AND od_item_type = 'U'
+            //";
 
             public static string Get_OnSite_Specimen = @"
 				 SELECT 
