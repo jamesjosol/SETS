@@ -118,7 +118,7 @@
             </div>
             <div>
               <p class="text-[10px] font-bold uppercase tracking-widest"
-                 style="color: var(--color-text-muted);">Partner Branch</p>
+                 style="color: var(--color-text-muted);">Destination Branch</p>
               <DropdownSelect v-model="outboundBranchCode"
                               placeholder="Select branch..."
                               :options="outboundBranchOptions"

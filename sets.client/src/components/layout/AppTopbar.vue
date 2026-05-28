@@ -324,6 +324,7 @@
              class="absolute right-0 top-12 w-64 rounded-2xl shadow-xl border z-50"
              style="background-color: var(--color-surface); border-color: var(--color-border); transform-origin: top right;">
 
+          <!-- User header -->
           <div class="px-5 py-4" style="border-bottom: 1px solid var(--color-border);">
             <p class="font-bold text-sm" style="color: var(--color-text);">{{ authStore.userName }}</p>
             <p class="text-[10px] uppercase tracking-widest font-bold mt-0.5" style="color: var(--color-text-muted);">
@@ -336,6 +337,7 @@
 
           <div class="p-2">
 
+            <!-- My Profile -->
             <button class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all text-left"
                     style="color: var(--color-text-muted);"
                     @click="goToProfile"
@@ -343,6 +345,16 @@
                     @mouseleave="(e) => (e.currentTarget.style.backgroundColor = 'transparent')">
               <span class="material-symbols-outlined text-lg">manage_accounts</span>
               My Profile
+            </button>
+
+            <!-- About SETS -->
+            <button class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all text-left"
+                    style="color: var(--color-text-muted);"
+                    @click="openAbout"
+                    @mouseenter="(e) => (e.currentTarget.style.backgroundColor = 'var(--color-surface-low)')"
+                    @mouseleave="(e) => (e.currentTarget.style.backgroundColor = 'transparent')">
+              <span class="material-symbols-outlined text-lg">info</span>
+              About SETS
             </button>
 
             <!-- Theme Switcher -->
@@ -377,6 +389,7 @@
               </div>
             </div>
 
+            <!-- Log Out -->
             <button class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all text-left"
                     style="color: var(--color-error);"
                     @mouseenter="(e) => (e.currentTarget.style.backgroundColor = 'var(--color-error-soft)')"
@@ -392,6 +405,155 @@
     </div>
 
   </nav>
+
+  <!-- ── About SETS Modal ────────────────────────────────────────────────── -->
+  <Teleport to="body">
+    <div v-if="aboutVisible"
+         ref="aboutBackdropRef"
+         class="fixed inset-0 z-[200] flex items-center justify-center p-4"
+         style="background-color: rgba(0,0,0,0.45); backdrop-filter: blur(4px);"
+         @click="onAboutBackdropClick">
+
+      <div ref="aboutModalRef"
+           class="relative w-full max-w-md rounded-2xl overflow-hidden"
+           style="background-color: var(--color-surface); border: 1px solid var(--color-border); box-shadow: 0 24px 64px rgba(0,0,0,0.3);"
+           @click.stop>
+
+        <!-- ── Header band ──────────────────────────────────────────── -->
+        <div class="px-6 pt-6 pb-5 flex flex-col items-center text-center relative"
+             style="background: linear-gradient(160deg, var(--color-primary-soft, rgba(99,102,241,0.08)) 0%, transparent 70%);">
+
+          <!-- Close button -->
+          <button class="absolute top-4 right-4 w-8 h-8 rounded-xl flex items-center justify-center transition-all"
+                  style="color: var(--color-text-muted);"
+                  @mouseenter="(e) => (e.currentTarget.style.backgroundColor = 'var(--color-surface-low)')"
+                  @mouseleave="(e) => (e.currentTarget.style.backgroundColor = 'transparent')"
+                  @click="closeAbout">
+            <span class="material-symbols-outlined text-base">close</span>
+          </button>
+
+          <!-- Icon -->
+          <div class="w-14 h-14 rounded-2xl flex items-center justify-center mb-4"
+               style="background: var(--color-primary-gradient);">
+            <svg width="32" height="30" viewBox="0 0 60 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M4 8 L4 36 Q4 46 10 46 Q16 46 16 36 L16 8" stroke="rgba(255,255,255,0.9)" stroke-width="2" fill="none" />
+              <line x1="2" y1="8" x2="18" y2="8" stroke="rgba(255,255,255,0.9)" stroke-width="2.5" stroke-linecap="round" />
+              <path d="M4 28 L4 36 Q4 46 10 46 Q16 46 16 36 L16 28 Z" fill="rgba(255,255,255,0.5)" />
+
+              <path d="M22 4 L22 36 Q22 46 28 46 Q34 46 34 36 L34 4" stroke="rgba(255,255,255,0.9)" stroke-width="2" fill="none" />
+              <line x1="20" y1="4" x2="36" y2="4" stroke="rgba(255,255,255,0.9)" stroke-width="2.5" stroke-linecap="round" />
+              <path d="M22 20 L22 36 Q22 46 28 46 Q34 46 34 36 L34 20 Z" fill="rgba(255,255,255,0.5)" />
+              <circle cx="26" cy="30" r="1.5" fill="rgba(255,255,255,0.8)" />
+              <circle cx="30" cy="35" r="1" fill="rgba(255,255,255,0.6)" />
+
+              <path d="M40 10 L40 36 Q40 46 46 46 Q52 46 52 36 L52 10" stroke="rgba(255,255,255,0.9)" stroke-width="2" fill="none" />
+              <line x1="38" y1="10" x2="54" y2="10" stroke="rgba(255,255,255,0.9)" stroke-width="2.5" stroke-linecap="round" />
+              <path d="M40 22 L40 36 Q40 46 46 46 Q52 46 52 36 L52 22 Z" fill="rgba(255,255,255,0.5)" />
+            </svg>
+          </div>
+
+          <!-- App name -->
+          <h2 class="text-xl font-extrabold tracking-tight" style="color: var(--color-text);">SETS</h2>
+          <p class="text-[11px] font-bold uppercase tracking-widest mt-1" style="color: var(--color-text-muted);">
+            Specimen Endorsement &amp; Tracking System
+          </p>
+
+          <!-- Description -->
+          <p class="text-[11px] leading-relaxed mt-3 px-2" style="color: var(--color-text-muted);">
+            SETS is an internal specimen tracking platform that manages the full lifecycle of laboratory specimens across all Hi-Precision Diagnostics Cebu branches. It covers the entire workflow — from phlebotomy endorsement and inter-branch transit, to receiving, processing, and laboratory section completion — replacing manual tracking with a centralized, real-time system that keeps every role informed and every specimen accounted for.
+          </p>
+
+          <!-- Version + Branch badges -->
+          <div class="flex items-center gap-2 mt-3">
+            <span class="px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-widest"
+                  style="background-color: var(--color-primary-soft); color: var(--color-primary);">
+              v{{ authStore.version }}
+            </span>
+            <span class="px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-widest"
+                  style="background-color: var(--color-surface-high); color: var(--color-text-muted);">
+              {{ authStore.branchCode }}
+            </span>
+          </div>
+
+          <!-- Org name -->
+          <div class="flex items-center gap-2 mt-3">
+            <img src="/hp.jpg"
+                 alt="HI-Precision"
+                 class="w-4 h-4 rounded-full object-cover flex-shrink-0" />
+            <p class="text-[11px] font-medium" style="color: var(--color-text-muted);">
+              HI-Precision Diagnostics Cebu
+            </p>
+          </div>
+
+        </div>
+
+        <!-- ── Divider ──────────────────────────────────────────────── -->
+        <div style="height: 1px; background-color: var(--color-border);"></div>
+
+        <!-- ── Contact section ─────────────────────────────────────── -->
+        <div class="px-6 py-5">
+
+          <p class="text-[10px] font-bold uppercase tracking-widest mb-3" style="color: var(--color-text-muted);">
+            Need Help?
+          </p>
+
+          <!-- Process / Workflow card -->
+          <div class="rounded-xl p-4 mb-3 flex items-start gap-3"
+               style="background-color: var(--color-surface-low); border: 1px solid var(--color-border);">
+            <div class="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
+                 style="background-color: var(--color-primary-soft);">
+              <span class="material-symbols-outlined"
+                    style="font-size: 16px; color: var(--color-primary);">help</span>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-xs font-bold" style="color: var(--color-text);">Process &amp; Workflow Issues</p>
+              <p class="text-[11px] mt-0.5 leading-relaxed" style="color: var(--color-text-muted);">
+                Confused about a step or process? Reach out for guidance.
+              </p>
+              <div class="flex flex-col gap-1 mt-2">
+                <div class="flex items-center gap-1.5">
+                  <span class="material-symbols-outlined" style="font-size: 13px; color: var(--color-primary);">phone_in_talk</span>
+                  <span class="text-[11px]" style="color: var(--color-text-muted);">M' Quing</span>
+                  <span class="text-[11px] font-bold" style="color: var(--color-primary);">· Linkus 0202</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                  <span class="material-symbols-outlined" style="font-size: 13px; color: var(--color-primary);">phone_in_talk</span>
+                  <span class="text-[11px]" style="color: var(--color-text-muted);">Developer (JP)</span>
+                  <span class="text-[11px] font-bold" style="color: var(--color-primary);">· Linkus 0410</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Technical / Bug card -->
+          <div class="rounded-xl p-4 flex items-start gap-3"
+               style="background-color: var(--color-surface-low); border: 1px solid var(--color-border);">
+            <div class="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
+                 style="background-color: rgba(239,68,68,0.08);">
+              <span class="material-symbols-outlined"
+                    style="font-size: 16px; color: var(--color-error);">bug_report</span>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-xs font-bold" style="color: var(--color-text);">Technical &amp; Bug Reports</p>
+              <p class="text-[11px] mt-0.5 leading-relaxed" style="color: var(--color-text-muted);">
+                Encountered an error or unexpected behavior? Let us know.
+              </p>
+              <div class="flex items-center gap-1.5 mt-2">
+                <span class="material-symbols-outlined" style="font-size: 13px; color: var(--color-error);">phone_in_talk</span>
+                <span class="text-[11px]" style="color: var(--color-text-muted);">Developer (JP)</span>
+                <span class="text-[11px] font-bold" style="color: var(--color-error);">· Linkus 0410</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+
+
+      </div>
+    </div>
+  </Teleport>
+
 </template>
 
 <script setup>
@@ -628,7 +790,6 @@
   })
 
   // ── GSAP dropdown open / close ─────────────────────────────────────────────
-
   async function animateDropdownOpen() {
     await nextTick()
     if (!dropdownRef.value) return
@@ -677,7 +838,6 @@
   }
 
   // ── Theme / Accent / Logout ────────────────────────────────────────────────
-
   async function handleThemeChange(themeValue) {
     authStore.setTheme(themeValue)
     applyTheme(themeValue)
@@ -703,9 +863,55 @@
     }
   }
 
+  // ── About modal ────────────────────────────────────────────────────────────
+  const aboutVisible = ref(false)
+  const aboutModalRef = ref(null)
+  const aboutBackdropRef = ref(null)
 
-  // --------------- NOTIFICATION
+  async function openAbout() {
+    closeDropdown()
+    aboutVisible.value = true
+    await nextTick()
+    if (!aboutModalRef.value) return
+    gsap.killTweensOf(aboutModalRef.value)
+    gsap.set(aboutModalRef.value, { opacity: 0, scale: 0.88, y: 16 })
+    gsap.to(aboutModalRef.value, {
+      opacity: 1,
+      scale: 1,
+      y: 0,
+      duration: 0.28,
+      ease: 'back.out(1.7)',
+    })
+    // Fade in backdrop separately for a softer feel
+    if (aboutBackdropRef.value) {
+      gsap.fromTo(aboutBackdropRef.value,
+        { opacity: 0 },
+        { opacity: 1, duration: 0.2, ease: 'power2.out' }
+      )
+    }
+  }
 
+  function closeAbout() {
+    if (!aboutModalRef.value) { aboutVisible.value = false; return }
+    gsap.killTweensOf(aboutModalRef.value)
+    gsap.to(aboutModalRef.value, {
+      opacity: 0,
+      scale: 0.92,
+      y: 10,
+      duration: 0.18,
+      ease: 'power2.in',
+      onComplete: () => { aboutVisible.value = false },
+    })
+    if (aboutBackdropRef.value) {
+      gsap.to(aboutBackdropRef.value, { opacity: 0, duration: 0.18, ease: 'power2.in' })
+    }
+  }
+
+  function onAboutBackdropClick() {
+    closeAbout()
+  }
+
+  // ── Notifications ──────────────────────────────────────────────────────────
   const notifStore = useNotificationStore()
   const notifOpen = ref(false)
   const notifRef = ref(null)

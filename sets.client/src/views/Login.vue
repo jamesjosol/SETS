@@ -423,8 +423,10 @@
     try {
       const res = await authApi.getVersion()
       appVersion.value = res.data.version
+      authStore.setAppVersion(res.data.version)
     } catch {
       appVersion.value = '1.0.0'
+      authStore.setAppVersion('1.0.0')
     }
   })
 

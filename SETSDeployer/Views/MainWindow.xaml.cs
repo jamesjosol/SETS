@@ -49,16 +49,21 @@ namespace SETSDeployer.Views
             var msgBrush = level switch
             {
                 LogLevel.Success => _brushSuccess,
-                LogLevel.Error   => _brushDanger,
+                LogLevel.Error => _brushDanger,
                 LogLevel.Warning => _brushWarning,
-                LogLevel.Info    => _brushInfo,
-                _                => _brushDim
+                LogLevel.Info => _brushInfo,
+                _ => _brushDim
             };
 
             para.Inlines.Add(new Run($"[{DateTime.Now:HH:mm:ss}] ") { Foreground = tsBrush });
             para.Inlines.Add(new Run(message) { Foreground = msgBrush });
             doc.Blocks.Add(para);
-            LogBox.ScrollToEnd();
+
+            // Defer scroll until after layout pass so it reliably hits the bottom
+            Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background, () =>
+            {
+                LogBox.ScrollToEnd();
+            });
         }
 
         // ── Deploy tab events ─────────────────────────────────────────────
@@ -97,7 +102,7 @@ namespace SETSDeployer.Views
             if ((sender as FrameworkElement)?.Tag is BranchViewModel b)
                 await _vm.IisActionAsync(b, "Stop");
         }
-
+            
         private async void IisStart_Click(object sender, RoutedEventArgs e)
         {
             if ((sender as FrameworkElement)?.Tag is BranchViewModel b)

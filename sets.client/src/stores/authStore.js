@@ -11,6 +11,7 @@ export const useAuthStore = defineStore('auth', {
     accentColor: 0,  // 0 = purple, 1 = blue, 2 = teal, 3 = rose
     isContingencyMode: false,
     profilePicture: null,
+    appVersion: '...',
   }),
   actions: {
     setUser(user, branch, section, isContingency = false) {
@@ -35,6 +36,9 @@ export const useAuthStore = defineStore('auth', {
     setProfilePicture(base64) {
       this.profilePicture = base64
     },
+    setAppVersion(version) {
+      this.appVersion = version
+    },
     logout() {
       this.user = null
       this.branch = null
@@ -43,7 +47,7 @@ export const useAuthStore = defineStore('auth', {
       this.theme = 0
       this.accentColor = 0
       this.isContingencyMode = false
-
+      this.appVersion = '...'
       const announcementStore = useAnnouncementStore()
       announcementStore.reset()
     }
@@ -62,6 +66,7 @@ export const useAuthStore = defineStore('auth', {
     isReceiver: (state) => !state.user?.isAdmin && state.section?.category === '2',
     isRunner: (state) => !state.user?.isAdmin && state.section?.category === '3',
     isContingency: (state) => state.isContingencyMode,
+    version: (state) => state.appVersion,
   },
   persist: true
 })
