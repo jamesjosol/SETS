@@ -319,7 +319,7 @@ namespace Service.Services
                         TotalEndorsed = sectionBatches.Count,
                         Pending = sectionBatches.Count(b => b.Status == "P" || b.Status == "PA"),
                         Received = sectionBatches.Count(b => b.Status == "C"),
-                        OutsideTAT = 0
+                        OutsideTAT = sectionBatches.Count(b => b.IsOutsideTat)
                     };
                 })
                 .OrderBy(s => s.SectionCategory)

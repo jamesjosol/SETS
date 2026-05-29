@@ -293,16 +293,22 @@
                                        :class="tag.value === 'SRD' && !test.hasRunningDay ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'"
                                        :style="(tag.value === 'SRD' && !test.hasRunningDay)
                                        ? 'color: var(--color-text-muted); background-color: var(--color-surface-low); pointer-events: none;'
-                                       : test.scheduleTag === tag.value
-                                         ? scheduleTagActiveStyle(tag.value)
-                                         : 'color: var(--color-text-muted); background-color: var(--color-surface-low);'"
+                                        : test.scheduleTag === tag.value
+                                          ? scheduleTagActiveStyle(tag.value)
+                                          : 'color: var(--color-text-muted); background-color: var(--color-surface-low);'"
                                        @click.prevent="tag.value === 'SRD' && !test.hasRunningDay ? null : test.scheduleTag = tag.value">
                                   <input type="radio"
                                          :name="`tag-${test.id}`"
                                          :value="tag.value"
                                          v-model="test.scheduleTag"
                                          class="hidden" />
-                                  {{ tag.label }}
+                                  <!-- SRD pill: show next running date hint if available -->
+                                  <template v-if="tag.value === 'SRD' && test.hasRunningDay && test.nextRunningDate">
+                                    {{ tag.label }} · {{ formatNextRunningDate(test.nextRunningDate) }}
+                                  </template>
+                                  <template v-else>
+                                    {{ tag.label }}
+                                  </template>
                                 </label>
                               </div>
                             </td>
@@ -570,6 +576,7 @@
             selectedRMT: authStore.userID,
             scheduleTag: initialTag,
             runningDate: initialTag === t.scheduleTag ? runningDateStr : null,
+            nextRunningDate: t.nextRunningDate ?? null,
           }
         })
       }
@@ -738,6 +745,12 @@
     const now = new Date()
     const pad = n => String(n).padStart(2, '0')
     return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`
+  }
+
+  function formatNextRunningDate(dateStr) {
+    if (!dateStr) return null
+    const d = new Date(dateStr + 'T00:00:00')
+    return d.toLocaleDateString('en-PH', { weekday: 'short', month: 'short', day: 'numeric' })
   }
 
   // ── Mount ──────────────────────────────────────────────────────────────────

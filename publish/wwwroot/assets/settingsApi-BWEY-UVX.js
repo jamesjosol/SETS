@@ -1,0 +1,1 @@
+import{r as e}from"./_plugin-vue_export-helper-D3wfroYe.js";var t={getSections:()=>e.get(`/api/settings/sections`),getBranches:()=>e.get(`/api/settings/branches`)};export{t};

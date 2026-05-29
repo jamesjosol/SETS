@@ -5,22 +5,22 @@
 
       <!-- TAT Badge -->
       <div v-if="tatCycle.hasOpenCycle"
-           class="flex items-center gap-2.5 px-4 py-2 rounded-xl transition-all"
+           class="flex items-center gap-3 px-5 py-3 rounded-xl transition-all"
            :style="`background-color: var(--color-surface);
            border: 1.5px solid ${tatExceeded ? 'var(--color-error)' : tatProgressPct <= 25 ? 'var(--color-warning)' : 'var(--color-success)'};
-                box-shadow: 0 1px 3px var(--color-shadow);`">
-        <span class="material-symbols-outlined text-sm"
+          box-shadow: 0 1px 3px var(--color-shadow);`">
+        <span class="material-symbols-outlined text-xl"
               :class="tatExceeded ? 'animate-pulse' : ''"
               :style="tatColorStyle">
           {{ tatExceeded ? 'timer_off' : 'timer' }}
         </span>
         <div>
-          <p class="text-[9px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Next Due In</p>
-          <p class="text-xs font-extrabold font-mono leading-none mt-0.5" :style="tatColorStyle">
+          <p class="text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Next Due In</p>
+          <p class="text-base font-extrabold font-mono leading-none mt-0.5" :style="tatColorStyle">
             {{ tatCountdown }}
           </p>
         </div>
-        <div class="w-16 h-1 rounded-full overflow-hidden ml-1" style="background-color: var(--color-surface-low);">
+        <div class="w-20 h-1.5 rounded-full overflow-hidden ml-1" style="background-color: var(--color-surface-low);">
           <div class="h-full rounded-full transition-all duration-1000"
                :style="`width: ${tatProgressPct}%;
                         background-color: ${tatExceeded ? 'var(--color-error)' : tatProgressPct <= 25 ? 'var(--color-warning)' : 'var(--color-success)'};`">
@@ -243,7 +243,7 @@
                   <td class="px-4 py-4 text-sm" style="color: var(--color-text-muted);">{{ item.transactionDate }}</td>
                   <td class="px-4 py-4 text-sm" style="color: var(--color-text-muted);">{{ item.patientID }}</td>
                   <td class="px-4 py-4 text-sm font-medium" style="color: var(--color-text);">{{ item.patientName }}</td>
-                  <td class="px-4 py-4 text-sm" style="color: var(--color-text-muted);">{{ item.sampleType }}</td>
+                  <td class="px-4 py-4 text-sm" style="color: var(--color-text);">{{ item.sampleType }}</td>
                   <td class="px-4 py-4 text-center">
                     <button class="w-8 h-8 rounded-full flex items-center justify-center mx-auto transition-all hover:scale-110"
                             :style="item.remarks
@@ -431,7 +431,9 @@
         </div>
         <div class="flex items-center gap-3">
           <button class="px-6 py-3 rounded-xl text-xs font-bold uppercase tracking-widest transition-all active:scale-95"
-                  style="background-color: var(--color-surface-low); color: var(--color-text-muted);"
+                  :style="isEndorsed
+          ? 'background-color: var(--color-primary-soft); color: var(--color-primary);'
+          : 'background-color: var(--color-surface-low); color: var(--color-text-muted);'"
                   @click="clearAll">
             {{ isEndorsed ? 'New Endorsement' : 'Clear All' }}
           </button>
@@ -800,7 +802,15 @@ async function onOutboundBranchSelect(branchCode) {
     }
   }
 
-  function removeBarcodedItem(index) { barcodedItems.value.splice(index, 1) }
+  async function removeBarcodedItem(index) {
+    const item = barcodedItems.value[index]
+    const confirmed = await showConfirmPrompt(
+      'Remove Specimen',
+      `Remove specimen ${item.specimenNo} from this batch?`
+    )
+    if (!confirmed) return
+    barcodedItems.value.splice(index, 1)
+  }
   function clearBarcodedInput() { specimenNoInput.value = '' }
 
   // ── Miscellaneous (unchanged) ─────────────────────────────────────────────
@@ -864,7 +874,16 @@ async function onOutboundBranchSelect(branchCode) {
     clearNonBarcodedInput(true)
   }
 
-  function removeNonBarcodedItem(index) { nonBarcodedItems.value.splice(index, 1) }
+  async function removeNonBarcodedItem(index) {
+    const item = nonBarcodedItems.value[index]
+    const label = item.type === 'joborder' ? `job order ${item.labNo}` : `"${item.description}"`
+    const confirmed = await showConfirmPrompt(
+      'Remove Item',
+      `Remove ${label} from this batch?`
+    )
+    if (!confirmed) return
+    nonBarcodedItems.value.splice(index, 1)
+  }
 
   function clearNonBarcodedInput(keepType = true) {
     const currentType = keepType ? nonBarcodedInput.value.type : nonBarcodedInput.value.type

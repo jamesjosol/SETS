@@ -187,7 +187,12 @@ const routes = [
     component: () => import('../views/shared/MyProfile.vue'),
     meta: { requiresAuth: true }
   },
-  // ── Catch-all ─────────────────────────────────────────────────────────
+  {
+    path: '/monitoring',
+    name: 'MonitoringKiosk',
+    component: () => import('../views/kiosk/MonitoringKiosk.vue'),
+  },
+ // ── Catch-all ─────────────────────────────────────────────────────────
   {
     path: '/:pathMatch(.*)*',
     redirect: '/'

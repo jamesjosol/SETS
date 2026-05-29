@@ -4,7 +4,8 @@ import axios from 'axios'
 const PING_URL = '/api/health/status'
 const PING_INTERVAL = 10_000
 const RETRY_COUNTDOWN = 10
-const RELOAD_INTERVAL = 10_000  // hard reload every 20s while offline
+const RELOAD_INTERVAL = 30_000
+const FAILURE_THRESHOLD = 5  // must fail this many times in a row before showing overlay
 
 export function useOfflineDetector() {
   const isOffline = ref(false)
@@ -14,17 +15,28 @@ export function useOfflineDetector() {
 
   let pingTimer = null
   let countdownTimer = null
-  let reloadTimer = null  // fires while offline to catch system coming back
+  let reloadTimer = null
+  let failureCount = 0  // consecutive failure counter
 
   async function ping() {
     try {
       await axios.get(PING_URL, { timeout: 5000 })
+
+      // Reset failure streak on any success
+      failureCount = 0
+
       if (isOffline.value) {
         isOffline.value = false
         isUpdating.value = false
         window.location.reload()
       }
     } catch (err) {
+      failureCount++
+
+      // Only show overlay after FAILURE_THRESHOLD consecutive failures
+      // This prevents brief fluctuations from interrupting the user
+      if (failureCount < FAILURE_THRESHOLD) return
+
       const status = err?.response?.status
       const isHtmlResponse = err?.response?.headers?.['content-type']?.includes('text/html')
 
@@ -32,7 +44,7 @@ export function useOfflineDetector() {
       isOffline.value = true
 
       startCountdown()
-      startReloadTimer()  // begin hard reload cycle
+      startReloadTimer()
     }
   }
 
@@ -52,7 +64,6 @@ export function useOfflineDetector() {
   }
 
   function startReloadTimer() {
-    // Only start once — don't stack multiple reload timers
     if (reloadTimer) return
     reloadTimer = setInterval(() => {
       if (isOffline.value) {

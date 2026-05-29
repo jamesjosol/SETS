@@ -40,6 +40,7 @@ namespace Model.Main
         public DateTime? Assigned { get; set; }
         public DateTime? RunAt { get; set; }
         public bool HasRunningDay { get; set; }
-        public bool IsTodayRunningDay { get; set; } 
+        public bool IsTodayRunningDay { get; set; }
+        public DateOnly? NextRunningDate { get; set; }
     }
 }

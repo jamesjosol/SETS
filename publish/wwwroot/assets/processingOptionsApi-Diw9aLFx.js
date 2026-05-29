@@ -1,0 +1,1 @@
+import{s as e}from"./useTheme-1HDzC9s2.js";var t={get:()=>e.get(`/api/processingoptions`).then(e=>e.data),upsert:t=>e.put(`/api/processingoptions`,t)};export{t};

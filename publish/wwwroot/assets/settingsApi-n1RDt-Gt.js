@@ -1,1 +1,0 @@
-import{g as e}from"./useTheme-DmQqE47D.js";var t={getSections:()=>e.get(`/api/settings/sections`),getBranches:()=>e.get(`/api/settings/branches`)};export{t};

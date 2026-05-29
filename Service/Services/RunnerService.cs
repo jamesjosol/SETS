@@ -139,6 +139,16 @@ namespace Service.Services
                         temp : context.Batch_Specimen
                         .FirstOrDefault(b => b.SpecimenNo == header.SpecimenNo);
 
+                    using var runningDayMaster = new MasterService(_branch_raw);
+                    var nextRunningDates = tests
+                        .Where(t => testCodesWithRunningDay.Contains(t.TestCode))
+                        .ToDictionary(
+                            t => t.TestCode,
+                            t => runningDayMaster.TestRunningDay
+                                    .GetNearestRunningDate(t.TestCode, DateOnly.FromDateTime(now).AddDays(1))
+                        );
+
+
                     return new ScanSpecimenResponse
                     {
                         HeaderId = header.Id,
@@ -170,7 +180,8 @@ namespace Service.Services
                             Assigned = t.Assigned,
                             RunAt = t.RunAt,
                             HasRunningDay = testCodesWithRunningDay.Contains(t.TestCode),
-                            IsTodayRunningDay = testCodesRunningToday.Contains(t.TestCode)
+                            IsTodayRunningDay = testCodesRunningToday.Contains(t.TestCode),
+                            NextRunningDate = nextRunningDates.TryGetValue(t.TestCode, out var nrd) ? nrd : null
                         }).ToList()
                     };
                 }
@@ -217,25 +228,7 @@ namespace Service.Services
                     // ── Instantiate running day service once for the whole batch ───
                     using var master = new MasterService(_branch_raw);
 
-                    // ── Determine SRD "from" date (cutoff-aware) ───────────────────
-                    // If the section's cutoff has already passed today, SRD must skip
-                    // today and find the next running day from tomorrow onward.
-                    var firstTest = tests.FirstOrDefault();
-                    var firstHeader = firstTest != null
-                        ? context.Specimen_Section_Header.FirstOrDefault(h => h.Id == firstTest.HeaderId)
-                        : null;
-                    var srdSection = firstHeader != null
-                        ? context.Section_Master.FirstOrDefault(s => s.Code == firstHeader.SectionCode)
-                        : null;
-
-                    var srdFrom = today;
-                    if (srdSection?.CutOffTime.HasValue == true)
-                    {
-                        var cutOffMinutes = (int)srdSection.CutOffTime.Value.TotalMinutes;
-                        var nowMinutes = now.Hour * 60 + now.Minute;
-                        if (nowMinutes >= cutOffMinutes)
-                            srdFrom = today.AddDays(1);
-                    }
+                    var srdFrom = today.AddDays(1);
 
                     foreach (var assignment in request.Assignments)
                     {
