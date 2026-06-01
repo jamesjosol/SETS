@@ -90,6 +90,11 @@
                             title="On-Site / Mission">
                         location_on
                       </span>
+                      <span v-if="item.isAutoRun"
+                            class="px-1.5 py-0.5 rounded text-[9px] font-extrabold uppercase tracking-widest"
+                            style="background-color: rgba(46,125,79,0.12); color: #2e7d4f;">
+                        AUTO
+                      </span>
                     </div>
                   </td>
                   <td class="px-4 py-3">

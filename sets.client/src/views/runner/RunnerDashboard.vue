@@ -144,7 +144,14 @@
                       <span class="material-symbols-outlined text-sm" style="color: var(--color-warning);">labs</span>
                     </div>
                     <div>
-                      <p class="text-xs font-bold font-mono" style="color: var(--color-text);">{{ specimen.specimenNo }}</p>
+                      <div class="flex items-center gap-1.5">
+                        <p class="text-xs font-bold font-mono" style="color: var(--color-text);">{{ specimen.specimenNo }}</p>
+                        <span v-if="specimen.isAutoRun"
+                              class="px-1.5 py-0.5 rounded text-[9px] font-extrabold uppercase tracking-widest"
+                              style="background-color: rgba(46,125,79,0.12); color: #2e7d4f;">
+                          AUTO
+                        </span>
+                      </div>
                       <p class="text-[10px]" style="color: var(--color-text-muted);">{{ specimen.patientName ?? '—' }}</p>
                     </div>
                   </div>
@@ -160,7 +167,7 @@
                     <span class="text-[10px] font-bold font-mono" style="color: var(--color-warning);">{{ test.testCode }}</span>
                     <span class="text-[10px]" style="color: var(--color-text-muted);">{{ test.testName }}</span>
                     <span v-if="test.runAt" class="text-[10px] font-bold" style="color: var(--color-text-muted);">· {{ formatDt(test.runAt) }}</span>
-                    <span v-if="runningView === 'all' && test.assignedRMT"
+                    <span v-if="runningView === 'all' && test.assignedRMT && test.assignedRMT !== 'SYSTEM'"
                           class="text-[10px] font-bold px-1.5 py-0.5 rounded"
                           style="background-color: rgba(70,21,153,0.08); color: var(--color-primary);">
                       {{ test.assignedRMT }}
@@ -379,7 +386,14 @@
                         <span class="material-symbols-outlined text-sm" style="color: var(--color-warning);">labs</span>
                       </div>
                       <div>
-                        <p class="text-xs font-bold font-mono" style="color: var(--color-text);">{{ specimen.specimenNo }}</p>
+                        <div class="flex items-center gap-1.5">
+                          <p class="text-xs font-bold font-mono" style="color: var(--color-text);">{{ specimen.specimenNo }}</p>
+                          <span v-if="specimen.isAutoRun"
+                                class="px-1.5 py-0.5 rounded text-[9px] font-extrabold uppercase tracking-widest"
+                                style="background-color: rgba(46,125,79,0.12); color: #2e7d4f;">
+                            AUTO
+                          </span>
+                        </div>
                         <p class="text-[10px]" style="color: var(--color-text-muted);">{{ specimen.patientName ?? '—' }}</p>
                       </div>
                     </div>
@@ -394,7 +408,7 @@
                          style="background-color: rgba(217,119,6,0.08);">
                       <span class="text-[10px] font-bold font-mono" style="color: var(--color-warning);">{{ test.testCode }}</span>
                       <span class="text-[10px]" style="color: var(--color-text-muted);">{{ test.testName }}</span>
-                      <span v-if="test.assignedRMT" class="text-[10px] font-bold" style="color: var(--color-text-muted);">· {{ test.assignedRMT }}</span>
+                      <span v-if="test.assignedRMT && test.assignedRMT !== 'SYSTEM'" class="text-[10px] font-bold" style="color: var(--color-text-muted);">· {{ test.assignedRMT }}</span>
                       <span v-if="test.runAt" class="text-[10px]" style="color: var(--color-text-muted);">· {{ formatDt(test.runAt) }}</span>
                     </div>
                   </div>

@@ -1275,8 +1275,8 @@ namespace Service.Services
                 var runningTests = context.Specimen_Section_Test
                     .ToList()
                     .Where(t => headerIds.Contains(t.HeaderId)
-                             && t.Status == "R"
-                             && (userID == null || t.AssignedRMT == userID))
+                                && t.Status == "R"
+                                && (userID == null || t.AssignedRMT == userID || t.AssignedRMT == "SYSTEM"))
                     .ToList();
 
                 var relevantHeaderIds = runningTests.Select(t => t.HeaderId).Distinct().ToHashSet();
@@ -1313,6 +1313,7 @@ namespace Service.Services
                         PatientID = bs?.PID,
                         Remarks = h.Remarks,
                         Received = h.Received,
+                        IsAutoRun = h.IsAutoRun,
                         Tests = tests.Select(t => new RunningTestItem
                         {
                             Id = t.Id,
@@ -1413,8 +1414,8 @@ namespace Service.Services
 
                 return new RunnerDashboardSummary
                 {
-                    Pending = headers.Count(h => h.Status == "P" || h.Status == "S" || h.Status == "R")
-                            + onSiteHeaders.Count(h => h.Status == "P" || h.Status == "S" || h.Status == "R"),
+                    Pending = headers.Count(h => (h.Status == "P" || h.Status == "S" || h.Status == "R") && h.ReceivedBy == null)
+        + onSiteHeaders.Count(h => (h.Status == "P" || h.Status == "S" || h.Status == "R") && h.ReceivedBy == null),
 
                     Scheduled = allTests.Count(t => t.Status == "S")
                               + onSiteTests.Count(t => t.Status == "S"),
@@ -2084,6 +2085,175 @@ namespace Service.Services
                 }
             }
             catch { throw; }
+        }
+
+        // ── Auto Receive & Run ─────────────────────────────────────────────────
+        // Shared helper called from two trigger points:
+        //   1. ReceivingService.ReceiveSpecimen() — when IsHclabRouted is already true at receive time
+        //   2. HclabRoutingTask — when HCLAB confirms routing after the fact
+        //
+        // Stamps section receipt on the header (ReceivedBy = "SYSTEM"),
+        // flips all pending child tests to Running (AssignedRMT = "SYSTEM"),
+        // re-derives header status, and logs audit entries.
+        // Silently no-ops if header is already received or not eligible.
+        public void AutoReceiveAndRun(string specimenNo, string sectionCode, DateTime now)
+        {
+            try
+            {
+                using var context = _factory.CreateContext(_branch);
+                using var tx = context.Database.BeginTransaction();
+
+                try
+                {
+                    // 1. Find the header — must exist, be routed, and not yet received
+                    var header = context.Specimen_Section_Header
+                        .FirstOrDefault(h => h.SpecimenNo == specimenNo
+                                          && h.SectionCode == sectionCode);
+
+                    if (header == null)
+                    {
+                        Log($"[AutoRun] Header not found for {specimenNo} / {sectionCode} — skipping.");
+                        return;
+                    }
+
+                    if (!header.IsHclabRouted)
+                    {
+                        Log($"[AutoRun] {specimenNo} not yet HCLAB-routed — skipping.");
+                        return;
+                    }
+
+                    // Guard — already auto-run or manually received
+                    if (header.ReceivedBy != null)
+                    {
+                        Log($"[AutoRun] {specimenNo} already received — skipping.");
+                        return;
+                    }
+
+                    if (header.Status == "C" || header.Status == "X")
+                    {
+                        Log($"[AutoRun] {specimenNo} status is {header.Status} — skipping.");
+                        return;
+                    }
+
+                    // 2. Stamp section receipt
+                    header.ReceivedBy = "SYSTEM";
+                    header.Received = now;
+                    header.IsAutoRun = true;
+                    header.UpdatedBy = "SYSTEM";
+                    header.Updated = now;
+                    context.Specimen_Section_Header.Update(header);
+
+                    // 3. Flip all pending/saved child tests to Running
+                    var tests = context.Specimen_Section_Test
+                        .Where(t => t.HeaderId == header.Id)
+                        .ToList();
+
+                    var justRunTests = new List<Specimen_Section_Test>();
+
+                    foreach (var test in tests)
+                    {
+                        // Skip already-running, completed, or cancelled
+                        if (test.Status == "R" || test.Status == "X") continue;
+
+                        test.Status = "R";
+                        test.AssignedRMT = "SYSTEM";
+                        test.Assigned = now;
+                        test.RunAt = now;
+                        test.ScheduleTag = null;
+                        test.RunningDate = null;
+                        test.UpdatedBy = "SYSTEM";
+                        test.Updated = now;
+                        context.Specimen_Section_Test.Update(test);
+                        justRunTests.Add(test);
+                    }
+
+                    // 4. Re-derive header status from all tests
+                    var allTests = context.Specimen_Section_Test
+                        .Where(t => t.HeaderId == header.Id)
+                        .ToList();
+
+                    // Apply in-memory updates before deriving
+                    foreach (var t in allTests)
+                    {
+                        var updated = justRunTests.FirstOrDefault(u => u.Id == t.Id);
+                        if (updated != null) t.Status = updated.Status;
+                    }
+
+                    string newStatus;
+                    if (allTests.All(t => t.Status == "X"))
+                        newStatus = "C";
+                    else if (allTests.Any(t => t.Status == "R"))
+                        newStatus = "S";
+                    else
+                        newStatus = "P";
+
+                    header.Status = newStatus;
+                    context.Specimen_Section_Header.Update(header);
+
+                    context.SaveChanges();
+                    tx.Commit();
+
+                    Log($"[AutoRun] {specimenNo} → section {sectionCode} auto-received and {justRunTests.Count} test(s) set to Running.");
+
+                    // 5. Audit — fire-and-forget
+                    try
+                    {
+                        using var auditMaster = new MasterService(_branch_raw);
+
+                        var bs = context.Batch_Specimen
+                            .FirstOrDefault(b => b.SpecimenNo == specimenNo);
+
+                        // Section Received
+                        var batchHeader = bs != null
+                            ? context.Batch_Header.FirstOrDefault(b => b.BatchNo == bs.BatchNo)
+                            : null;
+
+                        auditMaster.Audit.Log(Audit_Log.SectionReceived(
+                            specimenNo,
+                            bs?.PatientName ?? string.Empty,
+                            bs?.PID ?? string.Empty,
+                            batchHeader?.ProcDestination ?? sectionCode,
+                            sectionCode,
+                            "SYSTEM"));
+
+                        // Test Run
+                        if (justRunTests.Any())
+                        {
+                            var testNames = string.Join(",",
+                                justRunTests.Select(t => $"{t.TestCode}:{t.TestName}"));
+
+                            auditMaster.Audit.Log(Audit_Log.TestRun(
+                                specimenNo,
+                                bs?.PatientName ?? string.Empty,
+                                bs?.PID ?? string.Empty,
+                                sectionCode,
+                                testNames,
+                                "SYSTEM",
+                                "SYSTEM",
+                                now));
+                        }
+                    }
+                    catch (Exception auditEx)
+                    {
+                        Console.WriteLine($"[AutoRun][AUDIT] Failed for {specimenNo}: {auditEx.Message}");
+                    }
+                }
+                catch
+                {
+                    tx.Rollback();
+                    throw;
+                }
+            }
+            catch (Exception ex)
+            {
+                // Never crash the caller — log and swallow
+                Console.WriteLine($"[AutoRun] Failed for {specimenNo} / {sectionCode}: {ex.Message}");
+            }
+        }
+
+        private void Log(string message)
+        {
+            Console.WriteLine($"[RunnerService] {message}");
         }
     }
 }

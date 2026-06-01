@@ -19,6 +19,7 @@ namespace Model.Main
         public DateTime? Received { get; set; }
         public List<RunningTestItem> Tests { get; set; } = new();
         public bool IsOnSite { get; set; }
+        public bool IsAutoRun { get; set; }
     }
 
     public class RunningTestItem

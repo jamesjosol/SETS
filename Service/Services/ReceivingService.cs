@@ -163,6 +163,41 @@ namespace Service.Services
 
                     tx.Commit();
 
+                    // ── Auto Receive & Run — Trigger 1 (immediate path) ───────────────────
+                    // If the routed section has AutoRun = true AND IsHclabRouted was already
+                    // true at route time, fire auto-receive + auto-run immediately.
+                    // If IsHclabRouted was false, HclabRoutingTask (Trigger 2) will pick it up.
+                    if (!string.IsNullOrEmpty(routedSectionCode))
+                    {
+                        try
+                        {
+                            using var autoRunMaster = new MasterService(_branch_raw);
+
+                            var routedSection = autoRunMaster.Section.GetByCode(routedSectionCode);
+
+                            if (routedSection?.AutoRun == true)
+                            {
+                                var sectionHeader = autoRunMaster.SpecimenSection
+                                    .GetBySpecimenAndSection(specimen.SpecimenNo, routedSectionCode);
+
+                                if (sectionHeader?.IsHclabRouted == true)
+                                {
+                                    autoRunMaster.Runner.AutoReceiveAndRun(
+                                        specimen.SpecimenNo, routedSectionCode, now);
+                                }
+                                else
+                                {
+                                    Console.WriteLine($"[AutoRun] {specimen.SpecimenNo} routed to {routedSectionCode} " +
+                                                      $"but IsHclabRouted = false — HclabRoutingTask will handle it.");
+                                }
+                            }
+                        }
+                        catch (Exception autoRunEx)
+                        {
+                            // Never crash the receive — auto-run failure is non-fatal
+                            Console.WriteLine($"[AutoRun] Trigger 1 failed for {specimen.SpecimenNo}: {autoRunEx.Message}");
+                        }
+                    }
                     // ── Audit Logging ─────────────────────────────────────────────────────
                     try
                     {

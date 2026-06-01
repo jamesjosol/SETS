@@ -69,5 +69,8 @@ namespace Reposi.Repositories
             // (see SpecimenSectionService.TryCompleteHeader)
         }
 
+        public Specimen_Section_Header? GetBySpecimenAndSection(string specimenNo, string sectionCode)
+            => dbSet.FirstOrDefault(h => h.SpecimenNo == specimenNo && h.SectionCode == sectionCode);
+
     }
 }

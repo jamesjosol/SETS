@@ -17,6 +17,7 @@ namespace Model.SETSDB
         public string RoutedBy { get; set; }
         public DateTime Routed { get; set; }
         public bool IsHclabRouted { get; set; }
+        public bool IsAutoRun { get; set; }
         public string? ReceivedBy { get; set; }
         public DateTime? Received { get; set; }
         public string? Remarks { get; set; }

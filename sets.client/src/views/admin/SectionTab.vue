@@ -354,6 +354,41 @@
               </div>
             </div>
 
+            <!-- ── Auto Receive & Run (lab sections, edit mode only) ────────────── -->
+            <div v-if="sectionModal.form.category === '3' && sectionModal.mode === 'edit'">
+              <div class="flex items-center justify-between px-4 py-3 rounded-xl cursor-pointer transition-all"
+                   :style="sectionModal.form.autoRun
+                     ? 'background-color: rgba(46,125,79,0.08); border: 1px solid rgba(46,125,79,0.2);'
+                     : 'background-color: var(--color-surface-low); border: 1px solid var(--color-border);'"
+                   @click="sectionModal.form.autoRun = !sectionModal.form.autoRun">
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                       :style="sectionModal.form.autoRun
+                         ? 'background-color: rgba(46,125,79,0.15);'
+                         : 'background-color: var(--color-surface);'">
+                    <span class="material-symbols-outlined text-sm"
+                          :style="sectionModal.form.autoRun ? 'color: #2e7d4f;' : 'color: var(--color-text-muted);'">
+                      bolt
+                    </span>
+                  </div>
+                  <div>
+                    <p class="text-xs font-bold" style="color: var(--color-text)">Auto Receive & Run</p>
+                    <p class="text-[11px] mt-0.5" style="color: var(--color-text-muted)">
+                      Specimens routed to this section will be automatically received and set to running.
+                    </p>
+                  </div>
+                </div>
+                <!-- Toggle pill -->
+                <div class="relative flex-shrink-0 w-10 h-6 rounded-full transition-all ml-3"
+                     :style="sectionModal.form.autoRun
+                       ? 'background-color: #2e7d4f;'
+                       : 'background-color: var(--color-border);'">
+                  <div class="absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-all"
+                       :style="sectionModal.form.autoRun ? 'left: 20px;' : 'left: 2px;'"></div>
+                </div>
+              </div>
+            </div>
+
             <p v-if="sectionModal.error" class="text-xs font-bold" style="color: #ba1a1a">{{ sectionModal.error }}</p>
           </div>
 
@@ -428,7 +463,7 @@
 
   const sectionModal = ref({
     visible: false, mode: "add", originalCode: null,
-    form: { code: "", name: "", branchCode: "", category: "1", autoNo: 0, testGroupCodes: [], cutOffTime: "" },
+    form: { code: "", name: "", branchCode: availableBranches.value[0]?.code ?? "", category: "1", autoNo: 0, testGroupCodes: [], cutOffTime: "", autoRun: false },
     codeStatus: "idle", codeChecking: false, testGroupError: false, saving: false, error: "",
   });
 
@@ -497,6 +532,7 @@
         autoNo: sec.autoNo ?? 0,
         testGroupCodes: sec.testGroups?.filter((tg) => tg.active).map((tg) => tg.testGroupCode) ?? [],
         cutOffTime: sec.cutOffTime ?? "",    // "HH:mm" from API or empty string
+        autoRun: sec.autoRun ?? false,
       },
       codeStatus: "idle", codeChecking: false, testGroupError: false, saving: false, error: "",
     };
@@ -547,6 +583,7 @@
           name: f.name.trim(),
           testGroupCodes: f.category === "3" ? f.testGroupCodes : [],
           cutOffTime: f.category === "3" ? (f.cutOffTime || null) : null,
+          autoRun: f.category === "3" ? f.autoRun : false,
         });
         emit("toast", "Section updated successfully.");
       }

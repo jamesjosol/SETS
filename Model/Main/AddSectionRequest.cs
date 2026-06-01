@@ -22,5 +22,6 @@ namespace Model.Main
         public int AutoNo { get; set; }
         public List<string>? TestGroupCodes { get; set; }
         public string? CutOffTime { get; set; }
+        public bool AutoRun { get; set; }
     }
 }

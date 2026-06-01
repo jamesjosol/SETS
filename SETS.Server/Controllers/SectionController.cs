@@ -56,6 +56,7 @@ namespace SETS.Server.Controllers
                             cutOffTime = s.CutOffTime.HasValue
                                 ? $"{(int)s.CutOffTime.Value.TotalHours:D2}:{s.CutOffTime.Value.Minutes:D2}"
                                 : null,
+                            autoRun = s.AutoRun,
                             testGroups
                         };
                     })
@@ -263,6 +264,8 @@ namespace SETS.Server.Controllers
                         section.CutOffTime = ts;
                     else
                         section.CutOffTime = null;
+
+                    section.AutoRun = request.AutoRun;
                 }
                 section.UpdatedBy = updatedBy;
                 section.Updated = now;

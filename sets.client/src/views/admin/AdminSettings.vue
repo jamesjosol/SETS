@@ -52,6 +52,7 @@
         <AnnouncementTab v-if="activeTab === 'announcement'" @toast="showToast" />
         <EndorsementTab v-if="activeTab === 'endorsement'" @toast="showToast" />
         <ArchiveTab v-if="activeTab === 'archive'" @toast="showToast" />
+        <OnlineUsersTab v-if="activeTab === 'onlineUsers'" @toast="showToast" />
       </div>
     </div>
 
@@ -86,6 +87,7 @@ import ContingencyTab from "./ContingencyTab.vue";
 import AnnouncementTab from '@/views/admin/AnnouncementTab.vue';
 import EndorsementTab from "./EndorsementTab.vue";
 import ArchiveTab from "./ArchiveTab.vue";
+import OnlineUsersTab from './OnlineUsersTab.vue'
 
 const activeTab = ref("pc");
 
@@ -102,6 +104,7 @@ const settingsTabs = [
   { key: 'announcement', label: 'Announcements', icon: 'campaign' },
   { key: "endorsement", label: "Endorsement", icon: "swap_horiz" },
   { key: "archive", label: "Archive", icon: "archive" },
+  { key: 'onlineUsers', label: 'Online Users', icon: 'groups' },
 ];
 
 const toast = ref({ visible: false, message: "" });

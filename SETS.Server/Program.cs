@@ -1,5 +1,6 @@
 using Reposi;
 using SETS.Server.Hubs;
+using SETS.Server.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +11,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddSignalR();
+builder.Services.AddSingleton<IUserPresenceService, UserPresenceService>();
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
 {
@@ -47,6 +49,7 @@ app.MapControllers();
 app.MapHub<ContingencyHub>("/hubs/contingency");
 app.MapHub<AnnouncementHub>("/hubs/announcement");
 app.MapHub<NotificationHub>("/hubs/notification");
+app.MapHub<PresenceHub>("/hubs/presence");
 app.MapFallbackToFile("/index.html");
 
 app.Run();

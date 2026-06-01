@@ -22,10 +22,12 @@
   import AnnouncementBanner from '@/components/common/AnnouncementBanner.vue'
   import { useAnnouncementStore } from '@/stores/announcementStore'
   import { useNotificationStore } from '@/stores/notificationStore'
+  import { usePresenceStore } from '@/stores/presenceStore'
   import { useAuthStore } from '@/stores/authStore'
 
   const announcementStore = useAnnouncementStore()
   const notificationStore = useNotificationStore()
+  const presenceStore = usePresenceStore()
   const authStore = useAuthStore()
 
   let poller = null
@@ -38,12 +40,16 @@
 
     // ── Notifications ─────────────────────────────────────────────────────────
     await notificationStore.connectSignalR()
+
+    // ── Presence ──────────────────────────────────────────────────────────────
+    await presenceStore.connectSignalR()
   })
 
   onUnmounted(async () => {
     clearInterval(poller)
     await announcementStore.disconnectSignalR(authStore.branchCode)
     await notificationStore.disconnectSignalR()
+    await presenceStore.disconnectSignalR()
   })
 </script>
 

@@ -15,6 +15,7 @@ namespace SETSMiddleware.Tasks
     /// then checks Oracle's ord_spl.OS_SPL_RCVD_FLAG for each.
     /// Once HCLAB confirms routing (flag = 'Y'), flips IsHclabRouted = true
     /// so the specimen becomes visible in the lab section's pending list.
+    /// Also fires AutoReceiveAndRun for sections with AutoRun = true (Trigger 2).
     /// </summary>
     public class HclabRoutingTask : TaskBase
     {
@@ -46,6 +47,7 @@ namespace SETSMiddleware.Tasks
 
             var oracleConn = HclabConnection.ConnectionString(_branch);
             int routedCount = 0;
+            int autoRunCount = 0;
 
             foreach (var specimenNo in pending)
             {
@@ -61,6 +63,32 @@ namespace SETSMiddleware.Tasks
                         master.SpecimenSection.FlipHclabRouted(specimenNo);
                         Log($"Routed: {specimenNo}", LogLevel.Success);
                         routedCount++;
+
+                        // Step 4 — Auto Receive & Run (Trigger 2 — delayed path)
+                        // After flipping IsHclabRouted, check if the owning section
+                        // has AutoRun = true. If so, fire AutoReceiveAndRun now.
+                        try
+                        {
+                            var headers = master.SpecimenSection.GetBySpecimenNo(specimenNo);
+
+                            foreach (var header in headers)
+                            {
+                                var section = master.Section.GetByCode(header.SectionCode);
+
+                                if (section?.AutoRun == true)
+                                {
+                                    master.Runner.AutoReceiveAndRun(
+                                        specimenNo, header.SectionCode, DateTime.Now);
+
+                                    Log($"[AutoRun] Triggered for {specimenNo} → {header.SectionCode}", LogLevel.Success);
+                                    autoRunCount++;
+                                }
+                            }
+                        }
+                        catch (Exception autoRunEx)
+                        {
+                            Log($"[AutoRun] Failed for {specimenNo}: {autoRunEx.Message}", LogLevel.Error);
+                        }
                     }
                 }
                 catch (Exception ex)
@@ -70,7 +98,7 @@ namespace SETSMiddleware.Tasks
             }
 
             string summary = routedCount > 0
-                ? $"Checked {pending.Count} — Routed {routedCount}"
+                ? $"Checked {pending.Count} — Routed {routedCount} — AutoRun {autoRunCount}"
                 : $"Checked {pending.Count} — None confirmed yet";
 
             LastStatus = $"Last run: {DateTime.Now:HH:mm:ss} — {summary}";

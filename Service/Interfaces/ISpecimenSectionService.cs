@@ -18,6 +18,7 @@ namespace Service.Interfaces
         void AddHeader(Specimen_Section_Header header);
         void UpdateHeader(Specimen_Section_Header header);
         Specimen_Section_Header? GetHeaderById(int id);
+        Specimen_Section_Header? GetBySpecimenAndSection(string specimenNo, string sectionCode);
 
         // Tests
         List<Specimen_Section_Test> GetTestsByHeaderId(int headerId);
@@ -35,6 +36,7 @@ namespace Service.Interfaces
         List<Specimen_Section_Test> GetAllRunningTests();
         void MarkTestReleased(int testId);
         bool TryCompleteHeader(int headerId);
+
 
     }
 }

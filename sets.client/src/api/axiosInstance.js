@@ -1,6 +1,7 @@
 // src/api/axiosInstance.js
 import axios from 'axios'
 import { useAuthStore } from '@/stores/authStore'
+import { usePresenceStore } from '@/stores/presenceStore'
 import { useGlobalAlert } from '@/composables/useGlobalAlert'
 import router from '@/router'
 
@@ -20,7 +21,10 @@ instance.interceptors.response.use(
       showAlert('error', 'Session Expired', 'Your session has expired. Please log in again.')
 
       // Small delay so the alert is visible before the page transitions
-      setTimeout(() => {
+      setTimeout(async () => {
+        const presenceStore = usePresenceStore()
+        await presenceStore.disconnectSignalR().catch(() => { })
+
         authStore.logout()
         router.push('/')
       }, 2000)

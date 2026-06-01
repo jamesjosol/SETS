@@ -288,5 +288,16 @@ namespace Service.Services
             }
             catch { throw; }
         }
+
+        public Specimen_Section_Header? GetBySpecimenAndSection(string specimenNo, string sectionCode)
+        {
+            try
+            {
+                using var context = _factory.CreateContext(_branch);
+                using var unit = new UnitOfWork(context);
+                return unit.SpecimenSectionHeaders.GetBySpecimenAndSection(specimenNo, sectionCode);
+            }
+            catch { throw; }
+        }
     }
 }

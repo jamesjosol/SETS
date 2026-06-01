@@ -563,6 +563,7 @@
   import { useRouter } from 'vue-router'
   import { useAuthStore } from '@/stores/authStore'
   import { useNotificationStore } from '@/stores/notificationStore'
+  import { usePresenceStore } from '@/stores/presenceStore'
   import { useTheme } from '@/composables/useTheme'
   import { batchApi } from '@/api/batchApi'
   import { themeApi } from '@/api/themeApi'
@@ -571,6 +572,7 @@
 
   const { applyTheme, applyAccent } = useTheme()
   const authStore = useAuthStore()
+  const presenceStore = usePresenceStore()
   const router = useRouter()
 
   // ── Search state ───────────────────────────────────────────────────────────
@@ -854,6 +856,8 @@
     closeDropdown()
     NProgress.start()
     try {
+      await presenceStore.disconnectSignalR()
+
       await authApi.logout()
     } catch {
     } finally {
