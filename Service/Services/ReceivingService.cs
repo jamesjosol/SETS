@@ -841,7 +841,8 @@ namespace Service.Services
                     ReceivedBy = receiversByBatch.TryGetValue(b.BatchNo, out var receivers)
                                        ? receivers
                                        : null,
-                    Status = b.Status
+                    Status = b.Status,
+                    IsOutsideProcTat = b.IsOutsideProcTat
                 }).ToList();
             }
             catch { throw; }
@@ -1004,6 +1005,80 @@ namespace Service.Services
                     {
                         EndorsedBy = batchHeader.EndorsedBy 
                     };
+                }
+                catch
+                {
+                    tx.Rollback();
+                    throw;
+                }
+            }
+            catch { throw; }
+        }
+
+        public void CancelNonBarcodedItem(CancelNonBarcodedRequest request)
+        {
+            try
+            {
+                using var context = _factory.CreateContext(_branch);
+                using var tx = context.Database.BeginTransaction();
+
+                try
+                {
+                    var now = DateTime.Now;
+
+                    // 1. Find the item — must exist in this batch and be pending
+                    var item = context.Batch_NonBarcoded
+                        .FirstOrDefault(n => n.ItemID == request.ItemID
+                                          && n.BatchNo == request.BatchNo)
+                        ?? throw new Exception($"Non-barcoded item '{request.ItemID}' not found in batch '{request.BatchNo}'.");
+
+                    if (item.Status == "X")
+                        throw new Exception("This item has already been cancelled.");
+
+                    if (item.Status != "P")
+                        throw new Exception("Only pending non-barcoded items can be cancelled.");
+
+                    // 2. Cancel the item
+                    item.Status = "X";
+                    item.CancelReason = request.CancelReason;
+                    item.CancelledBy = request.UserID;
+                    item.CancelledAt = now;
+                    context.Batch_NonBarcoded.Update(item);
+                    context.SaveChanges();
+
+                    // 3. Re-evaluate batch header status
+                    var batchHeader = context.Batch_Header
+                        .FirstOrDefault(b => b.BatchNo == request.BatchNo)
+                        ?? throw new Exception($"Batch '{request.BatchNo}' not found.");
+
+                    string newBatchStatus = ResolveBatchStatus(context, request.BatchNo);
+                    batchHeader.Status = newBatchStatus;
+
+                    if (newBatchStatus != "C")
+                        batchHeader.Completed = null;
+
+                    context.Batch_Header.Update(batchHeader);
+                    context.SaveChanges();
+
+                    tx.Commit();
+
+                    // 4. Audit — fire-and-forget
+                    try
+                    {
+                        using var auditMaster = new MasterService(_branch_raw);
+                        auditMaster.Audit.Log(Audit_Log.NonBarcodedItemCancelled(
+                            request.ItemID,
+                            request.BatchNo,
+                            item.Description,
+                            batchHeader.Location,
+                            batchHeader.ProcDestination,
+                            request.CancelReason,
+                            request.UserID));
+                    }
+                    catch (Exception auditEx)
+                    {
+                        Console.WriteLine($"[AUDIT] NonBarcodedItemCancelled failed for item {request.ItemID}: {auditEx.Message}");
+                    }
                 }
                 catch
                 {

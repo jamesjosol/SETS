@@ -301,8 +301,10 @@
                        :data="drawerData"
                        :allowCancel="true"
                        :allowProcNote="true"
+                       :showProcTat="true"
                        @close="closeDrawer"
                        @specimen-cancelled="onSpecimenCancelled"
+                       @nonbarcoded-cancelled="onNonBarcodedCancelled"
                        @specimen-alert-set="onSpecimenAlertSet"
                        @specimen-alert-cleared="onSpecimenAlertCleared" />
 
@@ -510,6 +512,12 @@ async function onSpecimenCancelled({ batchNo }) {
     try {
         drawerData.value = await batchApi.getBatchDetail(batchNo)
     } catch { /* silent */ }
+}
+async function onNonBarcodedCancelled({ batchNo }) {
+  // Refresh drawer data silently
+  try {
+    drawerData.value = await batchApi.getBatchDetail(batchNo)
+  } catch { /* silent */ }
 }
 function onSpecimenAlertSet({ specimenNo, specimenAlert, specimenAlertSetBy, specimenAlertSetAt }) {
     if (!drawerData.value?.specimens) return

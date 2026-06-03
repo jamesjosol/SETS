@@ -23,7 +23,8 @@ namespace Model.Main
         public string? TempRemarks { get; set; }
         public string? BagNo { get; set; }
         public bool IsOutbound { get; set; }
+        public bool IsOutsideProcTat { get; set; }
         public List<BatchSpecimenDetail> Specimens { get; set; } = new();  // ← updated type
-        public List<Batch_NonBarcoded> NonBarcoded { get; set; } = new();
+        public List<BatchNonBarcodedDetail> NonBarcoded { get; set; } = new();
     }
 }

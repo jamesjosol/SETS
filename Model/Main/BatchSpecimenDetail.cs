@@ -30,8 +30,10 @@ namespace Model.Main
         public string? FlagReason { get; set; }
         public string? FlaggedBy { get; set; }
         public DateTime? FlaggedAt { get; set; }
+        public bool IsOutsideProcTat { get; set; }
         public string? SpecimenAlert { get; set; }
         public string? SpecimenAlertSetBy { get; set; }
         public DateTime? SpecimenAlertSetAt { get; set; }
+
     }
 }

@@ -142,7 +142,7 @@
         <!-- Tabs -->
         <div class="flex px-6 pt-4 gap-1"
              style="border-bottom: 1px solid var(--color-border);">
-          <button v-for="tab in ['Specimens', 'Non-Barcoded']"
+          <button v-for="tab in ['Specimens', 'Miscellaneous']"
                   :key="tab"
                   class="px-4 py-2 text-xs font-bold uppercase tracking-widest rounded-t-lg transition-all"
                   :style="activeTab === tab
@@ -189,6 +189,12 @@
                           style="font-size: 13px; color: var(--color-warning);"
                           title="Transaction not yet posted to destination HCLAB">
                       cloud_off
+                    </span>
+                    <span v-if="showProcTat && sp.isOutsideProcTat && sp.status !== 'X'"
+                          class="material-symbols-outlined flex-shrink-0"
+                          style="font-size: 13px; color: var(--color-error);"
+                          title="Outside Processing TAT">
+                      timer_off
                     </span>
                   </p>
 
@@ -247,7 +253,7 @@
                     </button>
 
                     <!-- Cancel button — receiver side, TL or admin only -->
-                    <button v-if="allowCancel && (sp.status === 'R' || sp.status === 'P') && (authStore.roleID === 2 || authStore.isAdmin)"
+                    <button v-if="allowCancel && (sp.status === 'R' || sp.status === 'P') && (authStore.isReceiver || authStore.isAdmin)"
                             class="group w-5 h-5 rounded-full flex items-center justify-center transition-all opacity-20 hover:opacity-60"
                             style="color: var(--color-text-muted);"
                             title="Cancel Receiving"
@@ -383,18 +389,46 @@
               <div v-for="nb in visibleNonBarcoded"
                    :key="nb.itemID"
                    class="rounded-xl p-4"
-                   style="background-color: var(--color-surface-low);">
+                   :style="nb.status === 'X'
+                     ? 'background-color: var(--color-surface-low); opacity: 0.6;'
+                     : 'background-color: var(--color-surface-low);'">
 
-                <!-- Top row: description + status -->
+                <!-- Top row: description + status + cancel button -->
                 <div class="flex justify-between items-start mb-1">
                   <p class="text-sm font-bold"
-                     style="color: var(--color-text);">{{ nb.description }}</p>
-                  <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase"
-                        :style="nb.status === 'R'
-            ? 'background-color: var(--color-success-soft); color: var(--color-success);'
-            : 'background-color: var(--color-warning-soft); color: var(--color-warning);'">
-                    {{ nb.status === 'R' ? 'Received' : 'Pending' }}
-                  </span>
+                     :style="nb.status === 'X'
+                       ? 'color: var(--color-text-muted); text-decoration: line-through;'
+                       : 'color: var(--color-text);'">
+                    {{ nb.description }}
+                    <span v-if="showProcTat && nb.isOutsideProcTat && nb.status !== 'X'"
+                          class="material-symbols-outlined flex-shrink-0 ml-1"
+                          style="font-size: 13px; color: var(--color-error);"
+                          title="Outside Processing TAT">
+                      timer_off
+                    </span>
+                  </p>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase"
+                          :style="nb.status === 'R'
+                            ? 'background-color: var(--color-success-soft); color: var(--color-success);'
+                            : nb.status === 'X'
+                            ? 'background-color: var(--color-surface); color: var(--color-text-muted); border: 1px solid var(--color-border);'
+                            : 'background-color: var(--color-warning-soft); color: var(--color-warning);'">
+                      {{ nb.status === 'R' ? 'Received' : nb.status === 'X' ? 'Cancelled' : 'Pending' }}
+                    </span>
+
+                    <!-- Cancel button — receiver side, pending only, TL or admin only -->
+                    <button v-if="allowCancel && nb.status === 'P' && (authStore.isReceiver || authStore.isAdmin)"
+                            class="group w-5 h-5 rounded-full flex items-center justify-center transition-all opacity-20 hover:opacity-60"
+                            style="color: var(--color-text-muted);"
+                            title="Cancel Item"
+                            @click.stop="openCancelNbModal(nb)">
+                      <span class="material-symbols-outlined transition-colors group-hover:text-red-500"
+                            style="font-size: 13px;">
+                        cancel
+                      </span>
+                    </button>
+                  </div>
                 </div>
 
                 <!-- Qty + remark icons on same row -->
@@ -446,6 +480,22 @@
                     </div>
 
                   </div>
+                </div>
+
+                <!-- Cancelled info strip -->
+                <div v-if="nb.status === 'X'"
+                     class="mt-2 pt-2"
+                     style="border-top: 1px solid var(--color-border);">
+                  <p class="text-[10px] font-bold uppercase tracking-widest mb-0.5"
+                     style="color: var(--color-text-muted);">Cancelled</p>
+                  <p class="text-[10px]" style="color: var(--color-text-muted);">
+                    {{ nb.cancelledBy }} · {{ formatDateTime(nb.cancelledAt) }}
+                  </p>
+                  <p v-if="nb.cancelReason"
+                     class="text-[10px] italic mt-0.5"
+                     style="color: var(--color-text-muted);">
+                    "{{ nb.cancelReason }}"
+                  </p>
                 </div>
 
               </div>
@@ -765,6 +815,72 @@
     </div>
   </div>
 
+  <!-- ── Cancel Non-Barcoded Modal ──────────────────────────────────────── -->
+  <div v-if="cancelNbModal.visible"
+       class="fixed inset-0 z-[90] flex items-center justify-center p-4">
+    <!-- Backdrop -->
+    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm"
+         @click="cancelNbModal.visible = false"></div>
+    <!-- Modal -->
+    <div class="relative w-full max-w-md rounded-2xl shadow-2xl p-6 flex flex-col gap-4 animate-modal"
+         style="background-color: var(--color-surface);">
+
+      <!-- Header -->
+      <div class="flex items-center gap-3">
+        <span class="material-symbols-outlined text-2xl"
+              style="color: var(--color-error, #dc2626);">cancel</span>
+        <div>
+          <p class="font-bold text-sm" style="color: var(--color-text);">Cancel Item</p>
+          <p class="text-xs mt-0.5" style="color: var(--color-text-muted);">
+            {{ cancelNbModal.description }}
+          </p>
+        </div>
+      </div>
+
+      <!-- Warning text -->
+      <p class="text-xs" style="color: var(--color-text-muted);">
+        This will cancel the miscellaneous item from this batch. This action cannot be undone.
+      </p>
+
+      <!-- Reason field -->
+      <div class="flex flex-col gap-1.5">
+        <label class="text-[10px] font-bold uppercase tracking-widest"
+               style="color: var(--color-text-muted);">
+          Reason <span style="color: var(--color-error, #dc2626);">*</span>
+        </label>
+        <textarea v-model="cancelNbModal.reason"
+                  rows="3"
+                  placeholder="Enter cancellation reason..."
+                  class="w-full px-3 py-2 rounded-xl text-sm outline-none resize-none transition-all"
+                  style="background-color: var(--color-surface-low); border: 1.5px solid var(--color-border); color: var(--color-text);" />
+        <p v-if="cancelNbModal.error"
+           class="text-[10px]"
+           style="color: var(--color-error, #dc2626);">
+          {{ cancelNbModal.error }}
+        </p>
+      </div>
+
+      <!-- Actions -->
+      <div class="flex gap-3 justify-end">
+        <button class="px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all"
+                style="background-color: var(--color-surface-low); color: var(--color-text-muted);"
+                :disabled="cancelNbModal.saving"
+                @click="cancelNbModal.visible = false">
+          Dismiss
+        </button>
+        <button class="px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all active:scale-95 disabled:opacity-40 flex items-center gap-1.5"
+                style="background-color: var(--color-error, #dc2626); color: #ffffff;"
+                :disabled="!cancelNbModal.reason.trim() || cancelNbModal.saving"
+                @click="confirmCancelNb">
+          <span v-if="cancelNbModal.saving"
+                class="material-symbols-outlined text-sm animate-spin">progress_activity</span>
+          <span v-else>Confirm Cancel</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
 </template>
 
 <script setup>
@@ -782,11 +898,13 @@
     allowCancel: { type: Boolean, default: false },
     allowFlag: { type: Boolean, default: false },
     allowProcNote: { type: Boolean, default: false },
+    showProcTat: { type: Boolean, default: false },
   })
 
   const emit = defineEmits([
     'close',
     'specimen-cancelled',
+    'nonbarcoded-cancelled',
     'specimen-flagged',
     'specimen-unflagged',
     'specimen-alert-set',
@@ -805,7 +923,7 @@
 
   const visibleNonBarcoded = computed(() => {
     if (!props.data?.nonBarcoded) return []
-    if (props.pendingOnly) return props.data.nonBarcoded.filter(n => n.status !== 'R')
+    if (props.pendingOnly) return props.data.nonBarcoded.filter(n => n.status !== 'R' && n.status !== 'X')
     return props.data.nonBarcoded
   })
 
@@ -1021,7 +1139,7 @@
     }
   }
 
-  // ── Cancel ─────────────────────────────────────────────────────────────────
+  // ── Cancel Specimen ────────────────────────────────────────────────────────
 
   const cancelModal = ref({
     visible: false,
@@ -1070,6 +1188,60 @@
       cancelModal.value.error = err.response?.data?.message || 'An error occurred.'
     } finally {
       cancelModal.value.saving = false
+    }
+  }
+
+  // ── Cancel Non-Barcoded ────────────────────────────────────────────────────
+
+  const cancelNbModal = ref({
+    visible: false,
+    itemID: null,
+    batchNo: null,
+    description: '',
+    reason: '',
+    saving: false,
+    error: ''
+  })
+
+  function openCancelNbModal(nb) {
+    cancelNbModal.value = {
+      visible: true,
+      itemID: nb.itemID,
+      batchNo: nb.batchNo,
+      description: nb.description,
+      reason: '',
+      saving: false,
+      error: ''
+    }
+  }
+
+  async function confirmCancelNb() {
+    if (!cancelNbModal.value.reason.trim()) {
+      cancelNbModal.value.error = 'Please provide a reason.'
+      return
+    }
+
+    cancelNbModal.value.saving = true
+    cancelNbModal.value.error = ''
+
+    try {
+      await receivingApi.cancelNonBarcodedItem({
+        itemID: cancelNbModal.value.itemID,
+        batchNo: cancelNbModal.value.batchNo,
+        cancelReason: cancelNbModal.value.reason.trim(),
+        userID: authStore.userID
+      })
+
+      emit('nonbarcoded-cancelled', {
+        itemID: cancelNbModal.value.itemID,
+        batchNo: cancelNbModal.value.batchNo
+      })
+
+      cancelNbModal.value.visible = false
+    } catch (err) {
+      cancelNbModal.value.error = err.response?.data?.message || 'An error occurred.'
+    } finally {
+      cancelNbModal.value.saving = false
     }
   }
 

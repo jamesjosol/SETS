@@ -75,6 +75,13 @@ namespace SETSDeployer.ViewModels
             set { _isMaintChecked = value; OnPropertyChanged(); }
         }
 
+        private bool _isSqlChecked = false;
+        public bool IsSqlChecked
+        {
+            get => _isSqlChecked;
+            set { _isSqlChecked = value; OnPropertyChanged(); }
+        }
+
         // ── INotifyPropertyChanged ────────────────────────────────────────
 
         public event PropertyChangedEventHandler? PropertyChanged;

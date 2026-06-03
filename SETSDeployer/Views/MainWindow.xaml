@@ -482,6 +482,150 @@
                 </ScrollViewer>
             </TabItem>
 
+            <!-- ══════════════════ SQL RUNNER TAB ══════════════════ -->
+            <TabItem Header="SQL Runner">
+                <ScrollViewer VerticalScrollBarVisibility="Auto"
+                              Background="{StaticResource Brush_BG0}">
+                    <StackPanel Margin="16">
+
+                        <!-- Warning banner -->
+                        <Border Background="#1a0f00" BorderBrush="#7c3a00"
+                                BorderThickness="1" CornerRadius="8"
+                                Padding="14,10" Margin="0,0,0,12">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="⚠" FontSize="14" Foreground="#f59e0b"
+                                           VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                <TextBlock FontSize="12" Foreground="#d97706" TextWrapping="Wrap">
+                                    <Run FontWeight="SemiBold">DDL only.</Run>
+                                    <Run>Only ALTER, CREATE, DROP, TRUNCATE, RENAME and EXEC statements are permitted. Executes simultaneously across all selected branches.</Run>
+                                </TextBlock>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Query input -->
+                        <Border Style="{StaticResource Card}" Margin="0,0,0,12">
+                            <StackPanel>
+                                <DockPanel Margin="0,0,0,10">
+                                    <TextBlock Text="SQL QUERY" Style="{StaticResource SectionLabel}"
+                                               VerticalAlignment="Center" Margin="0"/>
+                                    <Button Content="Clear" Style="{StaticResource LinkButton}"
+                                            HorizontalAlignment="Right" Click="ClearSql_Click"/>
+                                </DockPanel>
+                                <TextBox x:Name="SqlQueryBox"
+                                         Text="{Binding SqlQuery, UpdateSourceTrigger=PropertyChanged}"
+                                         MinHeight="140" MaxHeight="300"
+                                         FontFamily="Consolas" FontSize="12"
+                                         AcceptsReturn="True" AcceptsTab="True"
+                                         VerticalScrollBarVisibility="Auto"
+                                         TextWrapping="Wrap"
+                                         VerticalContentAlignment="Top"
+                                         Padding="10,8"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Branch selection -->
+                        <Border Style="{StaticResource Card}" Margin="0,0,0,12">
+                            <DockPanel>
+                                <DockPanel DockPanel.Dock="Top" Margin="0,0,0,10">
+                                    <TextBlock Text="TARGET BRANCHES" Style="{StaticResource SectionLabel}"
+                                               VerticalAlignment="Center" Margin="0"/>
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                        <Button Content="Select All" Style="{StaticResource LinkButton}"
+                                                Margin="0,0,12,0" Click="SqlSelectAll_Click"/>
+                                        <Button Content="Clear All" Style="{StaticResource LinkButton}"
+                                                Click="SqlClearAll_Click"/>
+                                    </StackPanel>
+                                </DockPanel>
+                                <ItemsControl ItemsSource="{Binding Branches}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Margin="0,0,0,4" CornerRadius="5" Padding="12,8"
+                                                    Background="{Binding IsSqlChecked, Converter={StaticResource CheckedToBg}}"
+                                                    BorderBrush="{StaticResource Brush_Border}"
+                                                    BorderThickness="1" Cursor="Hand"
+                                                    MouseLeftButtonUp="SqlBranchRow_Click">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="110"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <CheckBox Grid.Column="0" IsChecked="{Binding IsSqlChecked}"
+                                                              VerticalAlignment="Center" Margin="0,0,12,0"/>
+                                                    <TextBlock Grid.Column="1" Text="{Binding Name}"
+                                                               FontWeight="SemiBold" FontSize="13"
+                                                               VerticalAlignment="Center"/>
+                                                    <TextBlock Grid.Column="2" Text="{Binding UncPath}"
+                                                               FontFamily="Consolas" FontSize="11"
+                                                               Foreground="{StaticResource Brush_Text2}"
+                                                               VerticalAlignment="Center"
+                                                               TextTrimming="CharacterEllipsis"/>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </DockPanel>
+                        </Border>
+
+                        <!-- Run / Cancel -->
+                        <Button Content="▶   Execute on Selected Branches"
+                                Style="{StaticResource PrimaryButton}"
+                                Background="#2ecc71" Height="46" Margin="0,0,0,4"
+                                IsEnabled="{Binding IsSqlNotRunning}"
+                                Visibility="{Binding IsSqlNotRunning, Converter={StaticResource BoolToVis}}"
+                                Click="RunSql_Click"/>
+                        <Button Content="✕   Cancel"
+                                Style="{StaticResource DangerButton}"
+                                Height="46" Margin="0,0,0,4"
+                                Visibility="{Binding IsSqlRunning, Converter={StaticResource BoolToVis}}"
+                                Click="CancelSql_Click"/>
+
+                        <!-- Results -->
+                        <Border Style="{StaticResource Card}" Margin="0,10,0,0">
+                            <StackPanel>
+                                <TextBlock Text="RESULTS" Style="{StaticResource SectionLabel}"/>
+                                <ItemsControl ItemsSource="{Binding SqlResults}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Margin="0,0,0,4" CornerRadius="5" Padding="12,8"
+                                                    Background="{StaticResource Brush_BG2}"
+                                                    BorderBrush="{StaticResource Brush_Border}"
+                                                    BorderThickness="1">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="16"/>
+                                                        <ColumnDefinition Width="110"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <!-- Status dot -->
+                                                    <Ellipse Grid.Column="0" Width="8" Height="8"
+                                                             VerticalAlignment="Center"
+                                                             Fill="{Binding Success, Converter={StaticResource StatusToBrush}}"/>
+                                                    <TextBlock Grid.Column="1" Text="{Binding BranchName}"
+                                                               FontWeight="SemiBold" FontSize="12"
+                                                               VerticalAlignment="Center" Margin="8,0,0,0"/>
+                                                    <TextBlock Grid.Column="2" Text="{Binding Message}"
+                                                               FontFamily="Consolas" FontSize="11"
+                                                               Foreground="{StaticResource Brush_Text2}"
+                                                               VerticalAlignment="Center"
+                                                               TextWrapping="Wrap"/>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                                <TextBlock Text="No results yet." FontSize="12"
+                                           Foreground="{StaticResource Brush_Text3}"
+                                           Margin="0,4,0,0"
+                                           Visibility="{Binding SqlResults.Count, Converter={StaticResource InvBoolToVis}}"/>
+                            </StackPanel>
+                        </Border>
+
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
         </TabControl>
     </DockPanel>
 </Window>

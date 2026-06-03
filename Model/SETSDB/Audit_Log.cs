@@ -77,6 +77,17 @@ namespace Model.SETSDB
                 UserID = userID
             };
 
+        public static Audit_Log NonBarcodedItemCancelled(int itemID, string batchNo, string description, string fromLocation, string toLocation, string cancelReason, string userID)
+            => new()
+            {
+                EventCode = AuditEvents.NonBarcodedItemCancelled,
+                BatchNo = batchNo,
+                Remarks = $"[Item {itemID}] {description} — {cancelReason}",
+                FromLocation = fromLocation,
+                ToLocation = toLocation,
+                UserID = userID
+            };
+
         public static Audit_Log SectionReceived(string specimenNo, string patientName, string pid, string fromLocation, string toLocation, string userID)
             => new()
             {
@@ -270,5 +281,6 @@ namespace Model.SETSDB
                 FromLocation = fromLocation,
                 UserID = userID
             };
+
     }
 }

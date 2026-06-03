@@ -24,6 +24,7 @@ namespace Service.Interfaces
         List<IncomingSpecimenItem> GetIncomingSpecimens(string procSectionCode);
         List<ReceivedBatchItem> GetReceivedBatches(string? sectionCode, DateTime dateFrom, DateTime dateTo);
         CancelSpecimenResult CancelSpecimen(CancelSpecimenRequest request);
+        void CancelNonBarcodedItem(CancelNonBarcodedRequest request);
         CheckSpecimenResponse CheckSpecimen(string specimenNo, string? currentBatchNo);
         void SetSpecimenAlert(SetSpecimenAlertRequest request);
         void ClearSpecimenAlert(ClearSpecimenAlertRequest request);

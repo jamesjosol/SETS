@@ -5,6 +5,7 @@ using System.Windows;
 using SETSDeployer.Config;
 using SETSDeployer.Models;
 using SETSDeployer.Services;
+using SETSDeployer.Models;
 
 namespace SETSDeployer.ViewModels
 {
@@ -269,6 +270,73 @@ namespace SETSDeployer.ViewModels
             foreach (var b in targets)
                 await svc.DisableAsync(b.Config);
         }
+
+        // ── SQL Runner ────────────────────────────────────────────────────────
+
+        private string _sqlQuery = string.Empty;
+        public string SqlQuery
+        {
+            get => _sqlQuery;
+            set { _sqlQuery = value; OnPropertyChanged(); }
+        }
+
+        private bool _isSqlRunning = false;
+        public bool IsSqlRunning
+        {
+            get => _isSqlRunning;
+            set { _isSqlRunning = value; OnPropertyChanged(); OnPropertyChanged(nameof(IsSqlNotRunning)); }
+        }
+        public bool IsSqlNotRunning => !_isSqlRunning;
+
+        private CancellationTokenSource? _sqlCts;
+
+        public ObservableCollection<SqlRunnerResult> SqlResults { get; } = new();
+
+        public async Task RunSqlAsync(IEnumerable<BranchViewModel> targets)
+        {
+            var svc = new SqlRunnerService(_settings, Log);
+
+            // Validate
+            var (valid, reason) = svc.ValidateQuery(SqlQuery);
+            if (!valid) { Log($"Validation failed: {reason}", LogLevel.Error); return; }
+
+            // Load connection strings
+            Dictionary<string, string> connStrings;
+            try
+            {
+                connStrings = svc.LoadConnectionStrings();
+            }
+            catch (Exception ex)
+            {
+                Log($"Could not load connection strings: {ex.Message}", LogLevel.Error);
+                return;
+            }
+
+            var selectedBranches = targets.Select(b => b.Config).ToList();
+            if (!selectedBranches.Any()) { Log("No branches selected.", LogLevel.Warning); return; }
+
+            IsSqlRunning = true;
+            _sqlCts = new CancellationTokenSource();
+            SqlResults.Clear();
+
+            Log($"━━━ Executing on {selectedBranches.Count} branch(es) ━━━", LogLevel.Info);
+            Log(SqlQuery.Trim(), LogLevel.Dim);
+
+            try
+            {
+                var results = await svc.ExecuteAsync(SqlQuery, selectedBranches, connStrings, _sqlCts.Token);
+                foreach (var r in results)
+                    System.Windows.Application.Current.Dispatcher.Invoke(() => SqlResults.Add(r));
+            }
+            finally
+            {
+                IsSqlRunning = false;
+                _sqlCts?.Dispose();
+                _sqlCts = null;
+            }
+        }
+
+        public void CancelSql() => _sqlCts?.Cancel();
 
         public void SaveBranches()
         {

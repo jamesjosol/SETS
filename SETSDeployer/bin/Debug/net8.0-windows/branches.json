@@ -25,10 +25,10 @@
   },
   {
     "Name": "MACTAN",
-    "UncPath": "NONE",
+    "UncPath": "\\\\192.171.21.113\\d$\\IIS PROGRAMS\\SETS",
     "SiteName": "SETS",
     "AppPoolName": "SETS",
-    "MiddlewareUrl": "http://MACTAN-SERVER-IP:5100",
+    "MiddlewareUrl": "http://192.171.21.113:5100",
     "IsEnabled": true
   },
   {

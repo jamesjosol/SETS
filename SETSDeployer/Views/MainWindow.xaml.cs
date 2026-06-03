@@ -49,21 +49,16 @@ namespace SETSDeployer.Views
             var msgBrush = level switch
             {
                 LogLevel.Success => _brushSuccess,
-                LogLevel.Error => _brushDanger,
+                LogLevel.Error   => _brushDanger,
                 LogLevel.Warning => _brushWarning,
-                LogLevel.Info => _brushInfo,
-                _ => _brushDim
+                LogLevel.Info    => _brushInfo,
+                _                => _brushDim
             };
 
             para.Inlines.Add(new Run($"[{DateTime.Now:HH:mm:ss}] ") { Foreground = tsBrush });
             para.Inlines.Add(new Run(message) { Foreground = msgBrush });
             doc.Blocks.Add(para);
-
-            // Defer scroll until after layout pass so it reliably hits the bottom
-            Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background, () =>
-            {
-                LogBox.ScrollToEnd();
-            });
+            LogBox.ScrollToEnd();
         }
 
         // ── Deploy tab events ─────────────────────────────────────────────
@@ -102,7 +97,7 @@ namespace SETSDeployer.Views
             if ((sender as FrameworkElement)?.Tag is BranchViewModel b)
                 await _vm.IisActionAsync(b, "Stop");
         }
-            
+
         private async void IisStart_Click(object sender, RoutedEventArgs e)
         {
             if ((sender as FrameworkElement)?.Tag is BranchViewModel b)
@@ -167,6 +162,43 @@ namespace SETSDeployer.Views
 
 
         // ── Settings tab events ───────────────────────────────────────────
+
+        // ── SQL Runner ────────────────────────────────────────────────────────
+
+        private void ClearSql_Click(object sender, RoutedEventArgs e)
+            => _vm.SqlQuery = string.Empty;
+
+        private void SqlSelectAll_Click(object sender, RoutedEventArgs e)
+            => _vm.Branches.ToList().ForEach(b => b.IsSqlChecked = true);
+
+        private void SqlClearAll_Click(object sender, RoutedEventArgs e)
+            => _vm.Branches.ToList().ForEach(b => b.IsSqlChecked = false);
+
+        private void SqlBranchRow_Click(object sender, RoutedEventArgs e)
+        {
+            if ((sender as FrameworkElement)?.DataContext is BranchViewModel b)
+                b.IsSqlChecked = !b.IsSqlChecked;
+        }
+
+        private async void RunSql_Click(object sender, RoutedEventArgs e)
+        {
+            var targets = _vm.Branches.Where(b => b.IsSqlChecked).ToList();
+            if (!targets.Any()) { AppendLog("No branches selected.", LogLevel.Warning); return; }
+
+            var names = string.Join(", ", targets.Select(b => b.Name));
+            var confirm = System.Windows.MessageBox.Show(
+                $"Execute DDL on: {names}? This cannot be undone.",
+                "Confirm SQL Execution",
+                System.Windows.MessageBoxButton.YesNo,
+                System.Windows.MessageBoxImage.Warning);
+
+            if (confirm != System.Windows.MessageBoxResult.Yes) return;
+
+            await _vm.RunSqlAsync(targets);
+        }
+
+        private void CancelSql_Click(object sender, RoutedEventArgs e)
+            => _vm.CancelSql();
 
         private void BrowseSolution_Click(object sender, RoutedEventArgs e)
         {

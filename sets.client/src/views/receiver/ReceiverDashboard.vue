@@ -335,6 +335,7 @@
                        :loading="drawerLoading"
                        :data="drawerData"
                        :pendingOnly="true"
+                        :showProcTat="true"
                        @close="closeDrawer" />
 
     <!-- Alert Modal -->

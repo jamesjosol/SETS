@@ -21,5 +21,8 @@ namespace Model.SETSDB
         public string Status { get; set; }
         public string? Remarks { get; set; }
         public string? ReceivingRemarks { get; set; }
+        public string? CancelReason { get; set; }
+        public string? CancelledBy { get; set; }
+        public DateTime? CancelledAt { get; set; }
     }
 }

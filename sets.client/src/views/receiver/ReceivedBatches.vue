@@ -118,7 +118,21 @@
 
           <td class="px-8 py-4 font-mono text-xs font-bold"
               style="color: var(--color-primary);">
-            {{ batch.batchNo }}
+            <div class="flex items-center gap-2">
+              <span>{{ batch.batchNo }}</span>
+
+              <!-- Outside Processing TAT indicator -->
+              <div v-if="batch.isOutsideProcTat"
+                   class="relative group flex-shrink-0">
+                <span class="material-symbols-outlined peer cursor-default"
+                      style="font-size: 16px; color: var(--color-error);">timer_off</span>
+                <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2.5 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest whitespace-nowrap shadow-lg pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity z-50"
+                     style="background-color: var(--color-error); color: #ffffff;">
+                  Outside Processing TAT
+                </div>
+              </div>
+
+            </div>
           </td>
 
           <td class="px-4 py-4 text-sm"
@@ -165,6 +179,7 @@
                        :data="drawerData"
                        :allowCancel="true"
                        :allowProcNote="true"
+                        :showProcTat="true"
                        @close="closeDrawer"
                        @specimen-cancelled="onSpecimenCancelled"
                        @specimen-alert-set="onSpecimenAlertSet"

@@ -11,7 +11,7 @@ namespace SETSDeployer.Services
         private readonly Action<string, LogLevel> _log;
 
         private const string APP_OFFLINE = "app_offline.htm";
-        private const string APP_OFFLINE_CONTENT = """
+    private const string APP_OFFLINE_CONTENT = """
                 <!DOCTYPE html>
                 <html>
                 <head>
@@ -71,6 +71,7 @@ namespace SETSDeployer.Services
                 </body>
                 </html>
     """;
+
 
         public DeployService(DeployerSettings settings, Action<string, LogLevel> log)
         {

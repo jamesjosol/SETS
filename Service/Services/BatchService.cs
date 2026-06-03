@@ -435,6 +435,12 @@ namespace Service.Services
                     .Where(n => n.BatchNo == batchNo)
                     .ToList();
 
+                // ── Processing TAT threshold ──────────────────────────────────────
+                var procTat = context.Tat_Processing.FirstOrDefault();
+                int? thresholdMins = procTat != null
+                    ? procTat.Hours * 60 + procTat.Minutes
+                    : (int?)null;
+
                 return new BatchDetailResponse
                 {
                     BatchNo = header.BatchNo,
@@ -447,39 +453,78 @@ namespace Service.Services
                     Status = header.Status,
                     ProcReceived = header.ProcReceived,
                     Completed = header.Completed,
-                    Temp = header.Temp,        
-                    TempRemarks = header.TempRemarks,  
+                    Temp = header.Temp,
+                    TempRemarks = header.TempRemarks,
                     BagNo = header.BagNo,
-                    Specimens = specimens.Select(s => new BatchSpecimenDetail
-                    {
-                        Id = s.Id,
-                        SpecimenNo = s.SpecimenNo,
-                        BatchNo = s.BatchNo,
-                        LabNo = s.LabNo,
-                        TrxDate = s.TrxDate,
-                        PID = s.PID,
-                        PatientName = s.PatientName,
-                        SampleTypeCode = s.SampleTypeCode,
-                        SampleTypeName = s.SampleTypeName,
-                        Endorsed = s.Endorsed,
-                        EndorsedBy = s.EndorsedBy,
-                        Status = s.Status,
-                        Remarks = s.Remarks,
-                        ReceivingRemarks = receivingRecords.TryGetValue(s.SpecimenNo, out var rr) ? rr.ReceivingRemarks : null,
-                        SpecimenAlert = rr?.SpecimenAlert,
-                        SpecimenAlertSetBy = rr?.SpecimenAlertSetBy,
-                        SpecimenAlertSetAt = rr?.SpecimenAlertSetAt,
-                        CancelReason = s.CancelReason,
-                        CancelledBy = s.CancelledBy,
-                        CancelledAt = s.CancelledAt,
-                        IsPostedToDest = s.IsPostedToDest,
-                        IsFlagged = s.IsFlagged,
-                        FlagReason = s.FlagReason,
-                        FlaggedBy = s.FlaggedBy,
-                        FlaggedAt = s.FlaggedAt
-                    }).ToList(),
-                    NonBarcoded = nonBarcoded,
                     IsOutbound = header.IsOutbound,
+                    IsOutsideProcTat = header.IsOutsideProcTat,
+                    Specimens = specimens.Select(s =>
+                    {
+                        receivingRecords.TryGetValue(s.SpecimenNo, out var rr);
+
+                        bool isOutsideProcTat = thresholdMins.HasValue
+                            && rr != null
+                            && header.ProcReceived.HasValue
+                            && (rr.ProcReceived - header.ProcReceived.Value).TotalMinutes > thresholdMins.Value;
+
+                        return new BatchSpecimenDetail
+                        {
+                            Id = s.Id,
+                            SpecimenNo = s.SpecimenNo,
+                            BatchNo = s.BatchNo,
+                            LabNo = s.LabNo,
+                            TrxDate = s.TrxDate,
+                            PID = s.PID,
+                            PatientName = s.PatientName,
+                            SampleTypeCode = s.SampleTypeCode,
+                            SampleTypeName = s.SampleTypeName,
+                            Endorsed = s.Endorsed,
+                            EndorsedBy = s.EndorsedBy,
+                            Status = s.Status,
+                            Remarks = s.Remarks,
+                            ReceivingRemarks = rr?.ReceivingRemarks,
+                            SpecimenAlert = rr?.SpecimenAlert,
+                            SpecimenAlertSetBy = rr?.SpecimenAlertSetBy,
+                            SpecimenAlertSetAt = rr?.SpecimenAlertSetAt,
+                            CancelReason = s.CancelReason,
+                            CancelledBy = s.CancelledBy,
+                            CancelledAt = s.CancelledAt,
+                            IsPostedToDest = s.IsPostedToDest,
+                            IsFlagged = s.IsFlagged,
+                            FlagReason = s.FlagReason,
+                            FlaggedBy = s.FlaggedBy,
+                            FlaggedAt = s.FlaggedAt,
+                            IsOutsideProcTat = isOutsideProcTat,
+                        };
+                    }).ToList(),
+                    NonBarcoded = nonBarcoded.Select(nb =>
+                    {
+                        bool isOutsideProcTat = thresholdMins.HasValue
+                            && nb.ProcReceived.HasValue
+                            && header.ProcReceived.HasValue
+                            && (nb.ProcReceived.Value - header.ProcReceived.Value).TotalMinutes > thresholdMins.Value;
+
+                        return new BatchNonBarcodedDetail
+                        {
+                            ItemID = nb.ItemID,
+                            BatchNo = nb.BatchNo,
+                            Type = nb.Type,
+                            LabNo = nb.LabNo,
+                            Description = nb.Description,
+                            Quantity = nb.Quantity,
+                            Endorsed = nb.Endorsed,
+                            EndorsedBy = nb.EndorsedBy,
+                            ProcReceived = nb.ProcReceived,
+                            ProcReceivedBy = nb.ProcReceivedBy,
+                            Status = nb.Status,
+                            Remarks = nb.Remarks,
+                            ReceivingRemarks = nb.ReceivingRemarks,
+                            IsOutsideProcTat = isOutsideProcTat,
+                            CancelledAt = nb.CancelledAt,
+                            CancelledBy = nb.CancelledBy,
+                            CancelReason = nb.CancelReason
+                        };
+                    }).ToList(),
                 };
             }
             catch { throw; }

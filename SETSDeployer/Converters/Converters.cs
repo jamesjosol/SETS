@@ -16,7 +16,12 @@ namespace SETSDeployer.Converters
     public class InverseBoolToVisibilityConverter : IValueConverter
     {
         public object Convert(object value, Type t, object p, CultureInfo c)
-            => value is true ? Visibility.Collapsed : Visibility.Visible;
+        {
+            // Handle both bool and int (e.g. collection Count)
+            if (value is bool b) return b ? Visibility.Collapsed : Visibility.Visible;
+            if (value is int i)  return i == 0 ? Visibility.Visible : Visibility.Collapsed;
+            return Visibility.Visible;
+        }
         public object ConvertBack(object value, Type t, object p, CultureInfo c)
             => value is Visibility.Collapsed;
     }
@@ -25,6 +30,12 @@ namespace SETSDeployer.Converters
     {
         public object Convert(object value, Type t, object p, CultureInfo c)
         {
+            // Handle bool (SqlRunnerResult.Success)
+            if (value is bool b)
+                return b
+                    ? new SolidColorBrush(System.Windows.Media.Color.FromRgb(46, 204, 113))
+                    : new SolidColorBrush(System.Windows.Media.Color.FromRgb(239, 68, 68));
+
             return (value?.ToString()) switch
             {
                 "Success"   => new SolidColorBrush(System.Windows.Media.Color.FromRgb(46, 204, 113)),

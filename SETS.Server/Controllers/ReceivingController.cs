@@ -247,6 +247,39 @@ namespace SETS.Server.Controllers
             }
         }
 
+        // POST api/receiving/cancel-nonbarcoded
+        [HttpPost("cancel-nonbarcoded")]
+        public IActionResult CancelNonBarcodedItem([FromBody] CancelNonBarcodedRequest request)
+        {
+            try
+            {
+                var branch = HttpContext.Session.GetString("BranchCode");
+                if (string.IsNullOrEmpty(branch))
+                    return Unauthorized(new { message = "Session expired." });
+
+                if (request.ItemID <= 0)
+                    return BadRequest(new { message = "Item ID is required." });
+
+                if (string.IsNullOrEmpty(request.BatchNo))
+                    return BadRequest(new { message = "Batch number is required." });
+
+                if (string.IsNullOrEmpty(request.CancelReason))
+                    return BadRequest(new { message = "Cancel reason is required." });
+
+                if (string.IsNullOrEmpty(request.UserID))
+                    return BadRequest(new { message = "User ID is required." });
+
+                using var master = new MasterService(branch);
+                master.Receiving.CancelNonBarcodedItem(request);
+
+                return Ok(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(400, new { message = ex.Message });
+            }
+        }
+
         // POST api/receiving/nonbarcoded
         [HttpPost("nonbarcoded")]
         public IActionResult ReceiveNonBarcoded([FromBody] ReceiveNonBarcodedRequest request)

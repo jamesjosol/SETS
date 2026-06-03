@@ -121,6 +121,7 @@ namespace Service.Services
             AuditEvents.TestRescheduled => "Test Rescheduled",
             AuditEvents.SpecimenCancelledSection => "Specimen Cancelled (Section)",
             AuditEvents.TestAborted => "Test Aborted",
+            AuditEvents.NonBarcodedItemCancelled => "Miscellaneous Item Cancelled",
             _ => eventCode
         };
     }

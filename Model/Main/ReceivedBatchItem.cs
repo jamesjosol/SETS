@@ -15,5 +15,6 @@ namespace Model.Main
         public DateTime? ProcReceived { get; set; }
         public string? ReceivedBy { get; set; } 
         public string Status { get; set; }
+        public bool IsOutsideProcTat { get; set; }
     }
 }

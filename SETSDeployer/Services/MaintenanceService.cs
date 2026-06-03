@@ -75,6 +75,7 @@ namespace SETSDeployer.Services
             }
             return true;
         }
+
         private static string BuildMaintenancePage() => """
             <!DOCTYPE html>
             <html>
