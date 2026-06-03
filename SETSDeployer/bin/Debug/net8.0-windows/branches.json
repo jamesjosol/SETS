@@ -33,10 +33,10 @@
   },
   {
     "Name": "NAGA",
-    "UncPath": "NONE",
+    "UncPath": "\\\\10.20.5.203\\d$\\IIS PROGRAMS\\SETS",
     "SiteName": "SETS",
     "AppPoolName": "SETS",
-    "MiddlewareUrl": "http://NAGA-SERVER-IP:5100",
+    "MiddlewareUrl": "http://10.20.5.203:5100",
     "IsEnabled": true
   },
   {

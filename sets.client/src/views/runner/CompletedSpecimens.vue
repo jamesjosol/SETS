@@ -33,7 +33,7 @@
     </div>
 
     <!-- ══════════════════════════════════════════════════════════════════════
-         REGULAR / TEAM LEAD VIEW
+         REGULAR / TEAM LEAD VIEW  (unchanged)
     ══════════════════════════════════════════════════════════════════════ -->
     <template v-if="!authStore.isAdmin">
 
@@ -156,9 +156,7 @@
                               </td>
                               <td class="px-4 py-2.5" style="color: var(--color-text);">{{ test.testName }}</td>
                               <td class="px-4 py-2.5" style="color: var(--color-text-muted);">{{ test.assignedRMT || '—' }}</td>
-                              <td class="px-4 py-2.5" style="color: var(--color-text-muted);">
-                                {{ formatDt(test.runAt) }}
-                              </td>
+                              <td class="px-4 py-2.5" style="color: var(--color-text-muted);">{{ formatDt(test.runAt) }}</td>
                             </tr>
                           </tbody>
                         </table>
@@ -171,14 +169,13 @@
             </tbody>
           </table>
 
-          <!-- Pagination -->
+          <!-- Pagination — v-model binding (fixes missing modelValue warning) -->
           <div v-if="filteredSpecimens.length > pageSize"
                class="px-6 py-4"
                style="border-top: 1px solid var(--color-border);">
-            <AppPagination :total="filteredSpecimens.length"
-                           :page-size="pageSize"
-                           :current-page="currentPage"
-                           @page-change="p => { currentPage = p; expandedId = null; animateTableRows() }" />
+            <AppPagination v-model="currentPage"
+                           :total="filteredSpecimens.length"
+                           :page-size="pageSize" />
           </div>
         </div>
       </div>
@@ -265,7 +262,7 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <template v-for="item in group.filteredSpecimens" :key="item.headerId">
+                  <template v-for="item in adminPagedSpecimens(group)" :key="item.headerId">
 
                     <!-- Main row -->
                     <tr class="transition-colors cursor-pointer"
@@ -337,9 +334,7 @@
                                   </td>
                                   <td class="px-4 py-2.5" style="color: var(--color-text);">{{ test.testName }}</td>
                                   <td class="px-4 py-2.5" style="color: var(--color-text-muted);">{{ test.assignedRMT || '—' }}</td>
-                                  <td class="px-4 py-2.5" style="color: var(--color-text-muted);">
-                                    {{ formatDt(test.runAt) }}
-                                  </td>
+                                  <td class="px-4 py-2.5" style="color: var(--color-text-muted);">{{ formatDt(test.runAt) }}</td>
                                 </tr>
                               </tbody>
                             </table>
@@ -351,6 +346,58 @@
                   </template>
                 </tbody>
               </table>
+
+              <!-- ── Pagination footer ───────────────────────────────────── -->
+              <div v-if="adminGroupPageCount(group) > 1"
+                   class="px-4 py-3 flex items-center justify-between gap-3 flex-wrap"
+                   style="border-top: 1.5px solid var(--color-border);">
+                <p class="text-[11px]" style="color: var(--color-text-muted);">
+                  Showing
+                  <span class="font-bold" style="color: var(--color-text);">
+                    {{ adminPageStart(group) }}–{{ adminPageEnd(group) }}
+                  </span>
+                  of
+                  <span class="font-bold" style="color: var(--color-text);">
+                    {{ group.filteredSpecimens.length }}
+                  </span>
+                </p>
+                <div class="flex items-center gap-1">
+                  <!-- Prev -->
+                  <button class="px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                          style="color: var(--color-text-muted);"
+                          :disabled="adminCurrentPage(group.sectionCode) === 1"
+                          @mouseenter="e => { if (adminCurrentPage(group.sectionCode) > 1) e.currentTarget.style.backgroundColor = 'var(--color-surface-low)' }"
+                          @mouseleave="e => e.currentTarget.style.backgroundColor = 'transparent'"
+                          @click="adminSetPage(group.sectionCode, adminCurrentPage(group.sectionCode) - 1)">
+                    <span class="material-symbols-outlined text-sm">chevron_left</span>
+                  </button>
+
+                  <template v-for="pg in adminVisiblePages(group)" :key="pg">
+                    <button v-if="pg !== '...'"
+                            class="min-w-[28px] px-2 py-1.5 rounded-lg text-xs font-bold transition-all"
+                            :style="pg === adminCurrentPage(group.sectionCode)
+                              ? 'background: var(--color-primary-gradient); color: #fff;'
+                              : 'color: var(--color-text-muted);'"
+                            @mouseenter="e => { if (pg !== adminCurrentPage(group.sectionCode)) e.currentTarget.style.backgroundColor = 'var(--color-surface-low)' }"
+                            @mouseleave="e => { if (pg !== adminCurrentPage(group.sectionCode)) e.currentTarget.style.backgroundColor = 'transparent' }"
+                            @click="adminSetPage(group.sectionCode, pg)">
+                      {{ pg }}
+                    </button>
+                    <span v-else class="px-1 text-xs" style="color: var(--color-text-muted);">…</span>
+                  </template>
+
+                  <!-- Next -->
+                  <button class="px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                          style="color: var(--color-text-muted);"
+                          :disabled="adminCurrentPage(group.sectionCode) === adminGroupPageCount(group)"
+                          @mouseenter="e => { if (adminCurrentPage(group.sectionCode) < adminGroupPageCount(group)) e.currentTarget.style.backgroundColor = 'var(--color-surface-low)' }"
+                          @mouseleave="e => e.currentTarget.style.backgroundColor = 'transparent'"
+                          @click="adminSetPage(group.sectionCode, adminCurrentPage(group.sectionCode) + 1)">
+                    <span class="material-symbols-outlined text-sm">chevron_right</span>
+                  </button>
+                </div>
+              </div>
+
             </div>
           </Transition>
 
@@ -427,9 +474,16 @@
     return filteredSpecimens.value.slice(start, start + pageSize)
   })
 
+  // Reset page + expanded row when search changes
   watch(searchQuery, () => {
     currentPage.value = 1
     expandedId.value = null
+  })
+
+  // Reset expanded row and re-animate rows when page changes via AppPagination
+  watch(currentPage, async () => {
+    expandedId.value = null
+    await animateTableRows()
   })
 
   function toggleExpand(item) {
@@ -437,7 +491,7 @@
   }
 
   // ══════════════════════════════════════════════════════════════════════════
-  // ADMIN
+  // ADMIN — data
   // ══════════════════════════════════════════════════════════════════════════
 
   const adminLoading = ref(true)
@@ -446,7 +500,64 @@
   const adminExpandedKey = ref(null)
   const collapsedSections = ref(new Set())
 
+  // ── Pagination ────────────────────────────────────────────────────────────
+  const ADMIN_PAGE_SIZE = 50
+
+  const adminPageMap = ref(new Map())
+
+  function adminCurrentPage(sectionCode) {
+    return adminPageMap.value.get(sectionCode) ?? 1
+  }
+
+  function adminSetPage(sectionCode, page) {
+    const next = new Map(adminPageMap.value)
+    next.set(sectionCode, page)
+    adminPageMap.value = next
+    // Close expanded row if it's no longer on the new page
+    if (adminExpandedKey.value?.startsWith(`${sectionCode}-`)) {
+      adminExpandedKey.value = null
+    }
+  }
+
+  function adminGroupPageCount(group) {
+    return Math.ceil(group.filteredSpecimens.length / ADMIN_PAGE_SIZE)
+  }
+
+  function adminPageStart(group) {
+    return (adminCurrentPage(group.sectionCode) - 1) * ADMIN_PAGE_SIZE + 1
+  }
+
+  function adminPageEnd(group) {
+    return Math.min(adminCurrentPage(group.sectionCode) * ADMIN_PAGE_SIZE, group.filteredSpecimens.length)
+  }
+
+  function adminPagedSpecimens(group) {
+    const page = adminCurrentPage(group.sectionCode)
+    const start = (page - 1) * ADMIN_PAGE_SIZE
+    return group.filteredSpecimens.slice(start, start + ADMIN_PAGE_SIZE)
+  }
+
+  function adminVisiblePages(group) {
+    const total = adminGroupPageCount(group)
+    const current = adminCurrentPage(group.sectionCode)
+    if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1)
+
+    const pages = new Set([1, total, current])
+    if (current > 1) pages.add(current - 1)
+    if (current < total) pages.add(current + 1)
+
+    const sorted = Array.from(pages).sort((a, b) => a - b)
+    const result = []
+    for (let i = 0; i < sorted.length; i++) {
+      if (i > 0 && sorted[i] - sorted[i - 1] > 1) result.push('...')
+      result.push(sorted[i])
+    }
+    return result
+  }
+
+  // Search: reset pages + uncollapse matching sections
   watch(adminSearchQuery, (q) => {
+    adminPageMap.value = new Map()
     if (!q) return
     const next = new Set(collapsedSections.value)
     adminGroups.value.forEach(group => {
@@ -522,7 +633,6 @@
     }
   }
 
-  // Re-animate rows on pagination change (no card slide, just rows)
   async function animateTableRows() {
     await nextTick()
     if (!tableBodyRef.value) return
@@ -539,24 +649,21 @@
     await nextTick()
     if (!emptyRefArg.value) return
     gsap.set(emptyRefArg.value, { scale: 0.92, opacity: 0 })
-    gsap.to(emptyRefArg.value, { scale: 1, opacity: 1, duration: 0.32, ease: 'back.out(1.5)', clearProps: 'scale,opacity' })
+    gsap.to(emptyRefArg.value, {
+      scale: 1, opacity: 1, duration: 0.32,
+      ease: 'back.out(1.5)', clearProps: 'scale,opacity',
+    })
   }
 
+  // Admin: animate group cards only — no per-row stagger
   async function animateAdminGroups() {
     await nextTick()
     if (!adminGroupsRef.value) return
     const cards = adminGroupsRef.value.querySelectorAll('.admin-group-card')
     if (!cards.length) return
     gsap.set(cards, { opacity: 0, y: 20 })
-    gsap.to(cards, { opacity: 1, y: 0, duration: 0.3, stagger: 0.07, ease: 'power2.out' })
-    cards.forEach((card, i) => {
-      const rows = card.querySelectorAll('tbody tr')
-      if (!rows.length) return
-      gsap.set(rows, { opacity: 0, x: -6 })
-      gsap.to(rows, {
-        opacity: 1, x: 0, duration: 0.15, stagger: 0.02,
-        ease: 'power1.out', delay: 0.18 + i * 0.05, clearProps: 'opacity,x',
-      })
+    gsap.to(cards, {
+      opacity: 1, y: 0, duration: 0.3, stagger: 0.07, ease: 'power2.out',
     })
   }
 
@@ -564,7 +671,7 @@
     const specimenNo = route.query.highlight
     if (!specimenNo) return
 
-    // For paginated regular view: find which page holds this specimen and jump to it
+    // Regular view: jump to the correct page first
     if (!authStore.isAdmin) {
       const idx = filteredSpecimens.value.findIndex(s => s.specimenNo === specimenNo)
       if (idx !== -1) {
@@ -576,28 +683,30 @@
       }
     }
 
-    await nextTick()
+    // Admin view: jump to the correct page within the right section
+    if (authStore.isAdmin) {
+      for (const group of adminFilteredGroups.value) {
+        const idx = group.filteredSpecimens.findIndex(s => s.specimenNo === specimenNo)
+        if (idx === -1) continue
+        if (collapsedSections.value.has(group.sectionCode)) {
+          const next = new Set(collapsedSections.value)
+          next.delete(group.sectionCode)
+          collapsedSections.value = next
+        }
+        const targetPage = Math.floor(idx / ADMIN_PAGE_SIZE) + 1
+        if (adminCurrentPage(group.sectionCode) !== targetPage) {
+          adminSetPage(group.sectionCode, targetPage)
+        }
+        break
+      }
+      await nextTick()
+    }
+
     const row = document.querySelector(`tr[data-specimenno="${specimenNo}"]`)
     if (!row) return
 
-    // For admin: un-collapse the section containing this row if needed
-    const groupCard = row.closest('.admin-group-card')
-    if (groupCard) {
-      const headerEl = groupCard.querySelector('[data-sectioncode]')
-      if (headerEl) {
-        const sc = headerEl.dataset.sectioncode
-        if (collapsedSections.value.has(sc)) {
-          const next = new Set(collapsedSections.value)
-          next.delete(sc)
-          collapsedSections.value = next
-          await nextTick()
-        }
-      }
-    }
-
     row.scrollIntoView({ behavior: 'smooth', block: 'center' })
 
-    // Double pulse
     await new Promise(r => setTimeout(r, 350))
     gsap.set(row, { backgroundColor: 'transparent' })
     gsap.to(row, {
@@ -661,6 +770,7 @@
     } else {
       adminLoading.value = true
       adminExpandedKey.value = null
+      adminPageMap.value = new Map()
       try {
         const data = await runnerApi.getAdminCompleted(dateFrom.value, dateTo.value)
         adminGroups.value = Array.isArray(data) ? data : []
@@ -686,7 +796,6 @@
     if (!dt) return '—'
     return new Date(dt).toLocaleString('en-PH', { month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit' })
   }
-
 </script>
 
 <style scoped>

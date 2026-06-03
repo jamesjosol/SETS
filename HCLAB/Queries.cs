@@ -44,18 +44,94 @@ namespace HCLAB
 					where os_tno = :p0 and os_spl_type = :p1
 				";
 
+			//public static string Get_Ord_Test = @"
+			//		 select 		
+			//			od.od_tno AS labno,
+			//			od.od_testcode as testcode,
+			//			ti.ti_name as testname,
+			//			od.od_spl_type as sampletypecode,
+			//			od.od_test_grp as testgroup
+			//		from ord_dtl od
+			//		left join test_item ti ON ti.ti_code = od.od_order_ti
+			//		where od.od_tno = :p0 and od.od_spl_type = :p1
+			//		and od_testcode = od_order_ti
+			//	";
+
 			public static string Get_Ord_Test = @"
-					 select 		
-						od.od_tno AS labno,
-						od.od_testcode as testcode,
-						ti.ti_name as testname,
-						od.od_spl_type as sampletypecode,
-						od.od_test_grp as testgroup
-					from ord_dtl od
-					left join test_item ti ON ti.ti_code = od.od_order_ti
-					where od.od_tno = :p0 and od.od_spl_type = :p1
-					and od_testcode = od_order_ti
-				";
+					SELECT
+						od.od_tno       AS labno,
+						od.od_testcode  AS testcode,
+						ti.ti_name      AS testname,
+						CASE 
+							WHEN od.od_item_type = 'P' THEN :p1 
+							ELSE od.od_spl_type 
+						END             AS sampletypecode,
+						od.od_test_grp  AS testgroup,
+						od.od_item_type AS item_type
+					FROM ord_dtl od
+					LEFT JOIN test_item ti ON ti.ti_code = od.od_testcode
+					WHERE od.od_tno = :p0
+						AND od.od_item_type != 'N'
+						AND (
+							(
+								od.od_item_type = 'U'
+								AND od.od_spl_type = :p1
+								AND od.od_testcode = od.od_order_ti
+							)
+							OR
+							(
+								od.od_item_type = 'P'
+								AND EXISTS (
+									SELECT 1 FROM ord_dtl child
+									WHERE child.od_tno = :p0
+										AND child.od_order_ti = od.od_testcode
+										AND child.od_item_type = 'U'
+										AND child.od_spl_type = :p1
+								)
+								AND NOT EXISTS (
+									SELECT 1 FROM ord_dtl child
+									WHERE child.od_tno = :p0
+										AND child.od_order_ti = od.od_testcode
+										AND child.od_item_type = 'U'
+										AND child.od_spl_type != :p1
+								)
+							)
+									OR
+							(
+								od.od_item_type = 'U'
+								AND od.od_spl_type = :p1
+								AND od.od_testcode != od.od_order_ti
+								AND EXISTS (
+									SELECT 1 FROM ord_dtl sibling
+									WHERE sibling.od_tno = :p0
+									AND sibling.od_order_ti = od.od_order_ti
+									AND sibling.od_item_type = 'U'
+									AND sibling.od_spl_type != :p1
+								)
+							)
+								OR
+								-- Case 4: Profile parent has real spl_type = :p1, 
+								-- but ALL children have spl_type = 0 (inherit from parent)
+							(
+								od.od_item_type = 'P'
+								AND od.od_spl_type = :p1
+								AND EXISTS (
+									SELECT 1 FROM ord_dtl child
+									WHERE child.od_tno = :p0
+										AND child.od_order_ti = od.od_testcode
+										AND child.od_item_type = 'U'
+										AND child.od_spl_type = '0'
+								)
+								AND NOT EXISTS (
+									SELECT 1 FROM ord_dtl child
+									WHERE child.od_tno = :p0
+										AND child.od_order_ti = od.od_testcode
+										AND child.od_item_type = 'U'
+										AND child.od_spl_type != '0'
+								)
+							)
+						)
+					";
 
 			public static string Check_Spl_Routed = @"
 					SELECT os_spl_rcvd_flag 

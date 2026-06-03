@@ -1692,29 +1692,139 @@ namespace Service.Services
         }
 
         // for admin
+
+        // In RunnerService.cs — replace GetAllSectionsPending()
+
         public List<SectionPendingGroup> GetAllSectionsPending()
         {
             try
             {
                 using var context = _factory.CreateContext(_branch);
 
+                var today = DateOnly.FromDateTime(DateTime.Today);
+
+                // ── 1. All active Cat-3 sections ──────────────────────────────────
                 var sections = context.Section_Master
                     .Where(s => s.Category == "3" && s.Active)
                     .OrderBy(s => s.Name)
                     .ToList();
 
+                var sectionCodes = sections.Select(s => s.Code).ToHashSet();
+
+                // ── 2. All relevant standard headers (P or S) across all sections ─
+                var allHeaders = context.Specimen_Section_Header
+                    .Where(h => sectionCodes.Contains(h.SectionCode)
+                             && (h.Status == "P" || h.Status == "S")
+                             && h.IsHclabRouted)
+                    .ToList();
+
+                // ── 3. For "S" headers: find which ones have a due test today ──────
+                //    Only load tests for S-status headers — not the whole table
+                var savedHeaderIds = allHeaders
+                    .Where(h => h.Status == "S")
+                    .Select(h => h.Id)
+                    .ToHashSet();
+
+                HashSet<int> dueHeaderIds = new();
+                if (savedHeaderIds.Count > 0)
+                {
+                    dueHeaderIds = context.Specimen_Section_Test
+                        .Where(t => savedHeaderIds.Contains(t.HeaderId)
+                                 && t.Status == "S"
+                                 && t.RunningDate.HasValue
+                                 && t.RunningDate.Value <= today)
+                        .Select(t => t.HeaderId)
+                        .Distinct()
+                        .ToHashSet();
+                }
+
+                // Filter: keep P headers always, keep S headers only if they have a due test
+                var relevantHeaders = allHeaders
+                    .Where(h => h.Status == "P" || dueHeaderIds.Contains(h.Id))
+                    .ToList();
+
+                // ── 4. Batch_Specimen lookup — only for relevant specimen numbers ──
+                var specimenNos = relevantHeaders.Select(h => h.SpecimenNo).ToHashSet();
+
+                var batchSpecimenMap = context.Batch_Specimen
+                    .Where(b => specimenNos.Contains(b.SpecimenNo))
+                    .ToList()
+                    .GroupBy(b => b.SpecimenNo)
+                    .ToDictionary(
+                        g => g.Key,
+                        g => g.OrderBy(b => b.Status == "X" ? 1 : 0).First()
+                    );
+
+                // ── 5. OnSite headers — all pending across all sections ────────────
+                var allOnSiteHeaders = context.OnSite_Section_Header
+                    .Where(h => sectionCodes.Contains(h.SectionCode) && h.Status == "P")
+                    .ToList();
+
+                // ── 6. Group into result — same logic as single-section method ─────
                 var result = new List<SectionPendingGroup>();
 
                 foreach (var section in sections)
                 {
-                    var specimens = GetPendingSpecimens(section.Code);
-                    if (!specimens.Any()) continue;
+                    var stdHeaders = relevantHeaders
+                        .Where(h => h.SectionCode == section.Code)
+                        .OrderByDescending(h => h.Routed)
+                        .ToList();
+
+                    var standard = stdHeaders.Select(h =>
+                    {
+                        batchSpecimenMap.TryGetValue(h.SpecimenNo, out var bs);
+                        return new PendingSpecimenItem
+                        {
+                            Id = h.Id,
+                            SpecimenNo = h.SpecimenNo,
+                            SectionCode = h.SectionCode,
+                            TestGroupCode = h.TestGroupCode,
+                            SampleTypeCode = h.SampleTypeCode,
+                            SampleTypeName = bs?.SampleTypeName ?? h.SampleTypeCode,
+                            Status = h.Status,
+                            RoutedBy = h.RoutedBy,
+                            Routed = h.Routed,
+                            ReceivedBy = h.ReceivedBy,
+                            Received = h.Received,
+                            Remarks = h.Remarks,
+                            PatientName = bs?.PatientName,
+                            PatientID = bs?.PID,
+                            IsOnSite = false,
+                        };
+                    }).ToList();
+
+                    var onSite = allOnSiteHeaders
+                        .Where(h => h.SectionCode == section.Code)
+                        .Select(h => new PendingSpecimenItem
+                        {
+                            Id = h.Id,
+                            SpecimenNo = h.SpecimenNo,
+                            SectionCode = h.SectionCode,
+                            TestGroupCode = h.TestGroupCode,
+                            SampleTypeCode = h.SampleTypeCode,
+                            SampleTypeName = h.SampleTypeCode, // OnSite has no Batch_Specimen
+                            Status = h.Status,
+                            ReceivedBy = h.ReceivedBy,
+                            Received = h.Received,
+                            Remarks = h.Remarks,
+                            PatientName = h.PatientName,
+                            PatientID = h.PID,
+                            IsOnSite = true,
+                        })
+                        .ToList();
+
+                    var combined = standard
+                        .Concat(onSite)
+                        .OrderByDescending(s => s.Routed)
+                        .ToList();
+
+                    if (!combined.Any()) continue;
 
                     result.Add(new SectionPendingGroup
                     {
                         SectionCode = section.Code,
                         SectionName = section.Name,
-                        Specimens = specimens,
+                        Specimens = combined,
                     });
                 }
 
@@ -1722,6 +1832,38 @@ namespace Service.Services
             }
             catch { throw; }
         }
+
+        // old
+        //public List<SectionPendingGroup> GetAllSectionsPending()
+        //{
+        //    try
+        //    {
+        //        using var context = _factory.CreateContext(_branch);
+
+        //        var sections = context.Section_Master
+        //            .Where(s => s.Category == "3" && s.Active)
+        //            .OrderBy(s => s.Name)
+        //            .ToList();
+
+        //        var result = new List<SectionPendingGroup>();
+
+        //        foreach (var section in sections)
+        //        {
+        //            var specimens = GetPendingSpecimens(section.Code);
+        //            if (!specimens.Any()) continue;
+
+        //            result.Add(new SectionPendingGroup
+        //            {
+        //                SectionCode = section.Code,
+        //                SectionName = section.Name,
+        //                Specimens = specimens,
+        //            });
+        //        }
+
+        //        return result;
+        //    }
+        //    catch { throw; }
+        //}
 
         public List<SectionScheduledGroup> GetAllSectionsScheduled()
         {

@@ -1,8 +1,5 @@
 C:\Users\jamespaul.josol\source\repos\SETS\SETSDeployer\bin\Debug\net8.0-windows\SETSDeployer.exe
 C:\Users\jamespaul.josol\source\repos\SETS\SETSDeployer\bin\Debug\net8.0-windows\SETSDeployer.dll
-C:\Users\jamespaul.josol\source\repos\SETS\SETSDeployer\bin\Debug\net8.0-windows\SETSDeployer.deps.json
-C:\Users\jamespaul.josol\source\repos\SETS\SETSDeployer\bin\Debug\net8.0-windows\SETSDeployer.runtimeconfig.json
-C:\Users\jamespaul.josol\source\repos\SETS\SETSDeployer\bin\Debug\net8.0-windows\SETSDeployer.pdb
 C:\Users\jamespaul.josol\source\repos\SETS\SETSDeployer\obj\Debug\net8.0-windows\App.baml
 C:\Users\jamespaul.josol\source\repos\SETS\SETSDeployer\obj\Debug\net8.0-windows\Views\MainWindow.g.cs
 C:\Users\jamespaul.josol\source\repos\SETS\SETSDeployer\obj\Debug\net8.0-windows\App.g.cs
@@ -19,5 +16,8 @@ C:\Users\jamespaul.josol\source\repos\SETS\SETSDeployer\obj\Debug\net8.0-windows
 C:\Users\jamespaul.josol\source\repos\SETS\SETSDeployer\obj\Debug\net8.0-windows\SETSDeployer.dll
 C:\Users\jamespaul.josol\source\repos\SETS\SETSDeployer\obj\Debug\net8.0-windows\refint\SETSDeployer.dll
 C:\Users\jamespaul.josol\source\repos\SETS\SETSDeployer\obj\Debug\net8.0-windows\SETSDeployer.pdb
+C:\Users\jamespaul.josol\source\repos\SETS\SETSDeployer\bin\Debug\net8.0-windows\SETSDeployer.deps.json
+C:\Users\jamespaul.josol\source\repos\SETS\SETSDeployer\bin\Debug\net8.0-windows\SETSDeployer.runtimeconfig.json
+C:\Users\jamespaul.josol\source\repos\SETS\SETSDeployer\bin\Debug\net8.0-windows\SETSDeployer.pdb
 C:\Users\jamespaul.josol\source\repos\SETS\SETSDeployer\obj\Debug\net8.0-windows\SETSDeployer.genruntimeconfig.cache
 C:\Users\jamespaul.josol\source\repos\SETS\SETSDeployer\obj\Debug\net8.0-windows\ref\SETSDeployer.dll

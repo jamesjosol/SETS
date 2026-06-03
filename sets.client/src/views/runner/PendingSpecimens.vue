@@ -17,8 +17,8 @@
     </div>
 
     <!-- ═════════════════════════════════════════════════════════════════════
-       REGULAR / TEAM LEAD VIEW
-  ══════════════════════════════════════════════════════════════════════ -->
+         REGULAR / TEAM LEAD VIEW  (unchanged)
+    ══════════════════════════════════════════════════════════════════════ -->
     <template v-if="!authStore.isAdmin">
 
       <!-- Search -->
@@ -202,8 +202,8 @@
     </template>
 
     <!-- ══════════════════════════════════════════════════════════════════════
-       ADMIN VIEW — all sections grouped
-  ══════════════════════════════════════════════════════════════════════ -->
+         ADMIN VIEW — all sections grouped
+    ══════════════════════════════════════════════════════════════════════ -->
     <template v-else>
 
       <!-- Search + count -->
@@ -284,7 +284,7 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <template v-for="item in group.filteredSpecimens" :key="item.id">
+                  <template v-for="item in adminPagedSpecimens(group)" :key="item.id">
 
                     <!-- Main row -->
                     <tr class="transition-colors cursor-pointer"
@@ -411,6 +411,61 @@
                   </template>
                 </tbody>
               </table>
+
+              <!-- ── Pagination footer ───────────────────────────────────── -->
+              <div v-if="adminGroupPageCount(group) > 1"
+                   class="px-4 py-3 flex items-center justify-between gap-3 flex-wrap"
+                   style="border-top: 1.5px solid var(--color-border);">
+                <!-- Showing X–Y of Z -->
+                <p class="text-[11px]" style="color: var(--color-text-muted);">
+                  Showing
+                  <span class="font-bold" style="color: var(--color-text);">
+                    {{ adminPageStart(group) }}–{{ adminPageEnd(group) }}
+                  </span>
+                  of
+                  <span class="font-bold" style="color: var(--color-text);">
+                    {{ group.filteredSpecimens.length }}
+                  </span>
+                </p>
+                <!-- Prev / page numbers / Next -->
+                <div class="flex items-center gap-1">
+                  <!-- Prev -->
+                  <button class="px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                          style="color: var(--color-text-muted);"
+                          :disabled="adminCurrentPage(group.sectionCode) === 1"
+                          @mouseenter="e => { if (adminCurrentPage(group.sectionCode) > 1) e.currentTarget.style.backgroundColor = 'var(--color-surface-low)' }"
+                          @mouseleave="e => e.currentTarget.style.backgroundColor = 'transparent'"
+                          @click="adminSetPage(group.sectionCode, adminCurrentPage(group.sectionCode) - 1)">
+                    <span class="material-symbols-outlined text-sm">chevron_left</span>
+                  </button>
+
+                  <!-- Page number buttons — show at most 5 around current page -->
+                  <template v-for="pg in adminVisiblePages(group)" :key="pg">
+                    <button v-if="pg !== '...'"
+                            class="min-w-[28px] px-2 py-1.5 rounded-lg text-xs font-bold transition-all"
+                            :style="pg === adminCurrentPage(group.sectionCode)
+                              ? 'background: var(--color-primary-gradient); color: #fff;'
+                              : 'color: var(--color-text-muted);'"
+                            @mouseenter="e => { if (pg !== adminCurrentPage(group.sectionCode)) e.currentTarget.style.backgroundColor = 'var(--color-surface-low)' }"
+                            @mouseleave="e => { if (pg !== adminCurrentPage(group.sectionCode)) e.currentTarget.style.backgroundColor = 'transparent' }"
+                            @click="adminSetPage(group.sectionCode, pg)">
+                      {{ pg }}
+                    </button>
+                    <span v-else class="px-1 text-xs" style="color: var(--color-text-muted);">…</span>
+                  </template>
+
+                  <!-- Next -->
+                  <button class="px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                          style="color: var(--color-text-muted);"
+                          :disabled="adminCurrentPage(group.sectionCode) === adminGroupPageCount(group)"
+                          @mouseenter="e => { if (adminCurrentPage(group.sectionCode) < adminGroupPageCount(group)) e.currentTarget.style.backgroundColor = 'var(--color-surface-low)' }"
+                          @mouseleave="e => e.currentTarget.style.backgroundColor = 'transparent'"
+                          @click="adminSetPage(group.sectionCode, adminCurrentPage(group.sectionCode) + 1)">
+                    <span class="material-symbols-outlined text-sm">chevron_right</span>
+                  </button>
+                </div>
+              </div>
+
             </div>
           </Transition>
 
@@ -492,26 +547,26 @@
     }
   }
 
-async function submitCancel(reason) {
-  cancelModal.value.loading = true
-  try {
-    await runnerApi.cancelSpecimen({
-      headerId:   cancelModal.value.headerId,
-      specimenNo: cancelModal.value.specimenNo,
-      sectionCode: cancelModal.value.sectionCode,
-      reason,                          // ← comes from the emit now
-      userID:     authStore.userID,
-      isOnSite:   cancelModal.value.isOnSite,
-    })
-    cancelModal.value.visible = false
-    showAlert('success', 'Specimen Cancelled', `Specimen ${cancelModal.value.specimenNo} has been cancelled.`)
-    await silentRefresh()
-  } catch (e) {
-    showAlert('error', 'Cancel Failed', e?.response?.data?.message ?? 'Could not cancel specimen.')
-  } finally {
-    cancelModal.value.loading = false
+  async function submitCancel(reason) {
+    cancelModal.value.loading = true
+    try {
+      await runnerApi.cancelSpecimen({
+        headerId: cancelModal.value.headerId,
+        specimenNo: cancelModal.value.specimenNo,
+        sectionCode: cancelModal.value.sectionCode,
+        reason,
+        userID: authStore.userID,
+        isOnSite: cancelModal.value.isOnSite,
+      })
+      cancelModal.value.visible = false
+      showAlert('success', 'Specimen Cancelled', `Specimen ${cancelModal.value.specimenNo} has been cancelled.`)
+      await silentRefresh()
+    } catch (e) {
+      showAlert('error', 'Cancel Failed', e?.response?.data?.message ?? 'Could not cancel specimen.')
+    } finally {
+      cancelModal.value.loading = false
+    }
   }
-}
 
   // ══════════════════════════════════════════════════════════════════════════
   // REGULAR / TEAM LEAD
@@ -522,7 +577,6 @@ async function submitCancel(reason) {
   const specimens = ref([])
   const searchQuery = ref('')
   const expandedId = ref(null)
-
   const expandedTests = ref([])
 
   const filteredSpecimens = computed(() => {
@@ -554,18 +608,81 @@ async function submitCancel(reason) {
   }
 
   // ══════════════════════════════════════════════════════════════════════════
-  // ADMIN
+  // ADMIN — data
   // ══════════════════════════════════════════════════════════════════════════
 
   const adminLoading = ref(true)
   const adminTestsLoading = ref(false)
   const adminGroups = ref([])
   const adminSearchQuery = ref('')
-  const adminExpandedKey = ref(null)   // format: `${sectionCode}-${itemId}`
+  const adminExpandedKey = ref(null)   // `${sectionCode}-${itemId}`
   const adminExpandedTests = ref([])
   const collapsedSections = ref(new Set())
 
+  // ── Pagination ────────────────────────────────────────────────────────────
+  const ADMIN_PAGE_SIZE = 50
+
+  // pageMap: sectionCode → current page (1-based)
+  const adminPageMap = ref(new Map())
+
+  function adminCurrentPage(sectionCode) {
+    return adminPageMap.value.get(sectionCode) ?? 1
+  }
+
+  function adminSetPage(sectionCode, page) {
+    const next = new Map(adminPageMap.value)
+    next.set(sectionCode, page)
+    adminPageMap.value = next
+    // Close the expanded row if it is no longer visible on the new page
+    if (adminExpandedKey.value?.startsWith(`${sectionCode}-`)) {
+      adminExpandedKey.value = null
+      adminExpandedTests.value = []
+    }
+  }
+
+  function adminGroupPageCount(group) {
+    return Math.ceil(group.filteredSpecimens.length / ADMIN_PAGE_SIZE)
+  }
+
+  function adminPageStart(group) {
+    return (adminCurrentPage(group.sectionCode) - 1) * ADMIN_PAGE_SIZE + 1
+  }
+
+  function adminPageEnd(group) {
+    return Math.min(adminCurrentPage(group.sectionCode) * ADMIN_PAGE_SIZE, group.filteredSpecimens.length)
+  }
+
+  function adminPagedSpecimens(group) {
+    const page = adminCurrentPage(group.sectionCode)
+    const start = (page - 1) * ADMIN_PAGE_SIZE
+    return group.filteredSpecimens.slice(start, start + ADMIN_PAGE_SIZE)
+  }
+
+  // Returns an array of page numbers (and '...' ellipsis) to display.
+  // Always shows first, last, current, and up to 2 neighbours of current.
+  function adminVisiblePages(group) {
+    const total = adminGroupPageCount(group)
+    const current = adminCurrentPage(group.sectionCode)
+    if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1)
+
+    const pages = new Set([1, total, current])
+    if (current > 1) pages.add(current - 1)
+    if (current < total) pages.add(current + 1)
+
+    const sorted = Array.from(pages).sort((a, b) => a - b)
+    const result = []
+    for (let i = 0; i < sorted.length; i++) {
+      if (i > 0 && sorted[i] - sorted[i - 1] > 1) result.push('...')
+      result.push(sorted[i])
+    }
+    return result
+  }
+
+  // ── Search: reset pages + uncollapse matching sections ───────────────────
   watch(adminSearchQuery, (q) => {
+    // Reset all pages to 1 whenever search changes
+    adminPageMap.value = new Map()
+
     if (!q) return
     const next = new Set(collapsedSections.value)
     adminGroups.value.forEach(group => {
@@ -578,7 +695,6 @@ async function submitCancel(reason) {
     })
     collapsedSections.value = next
   })
-
 
   const adminFilteredGroups = computed(() => {
     const q = adminSearchQuery.value.toLowerCase()
@@ -626,16 +742,22 @@ async function submitCancel(reason) {
     collapsedSections.value = next
   }
 
+  // ── Fingerprint helper for silentRefresh diff ─────────────────────────────
+  // Cheap check: total count per section + first/last id of each section.
+  // If nothing changed, skip the reactive assignment entirely.
+  function adminFingerprint(groups) {
+    return groups.map(g =>
+      `${g.sectionCode}:${g.specimens.length}:${g.specimens[0]?.id ?? 0}:${g.specimens[g.specimens.length - 1]?.id ?? 0}`
+    ).join('|')
+  }
+
   // ══════════════════════════════════════════════════════════════════════════
   // GSAP — REFS
   // ══════════════════════════════════════════════════════════════════════════
 
-  // Regular view
   const tableCardRef = ref(null)
   const tableBodyRef = ref(null)
   const emptyRef = ref(null)
-
-  // Admin view
   const adminGroupsRef = ref(null)
   const adminEmptyRef = ref(null)
 
@@ -646,10 +768,8 @@ async function submitCancel(reason) {
   async function animateTableEntrance() {
     await nextTick()
     if (!tableCardRef.value) return
-    // Slide the whole card in
     gsap.set(tableCardRef.value, { opacity: 0, y: 16 })
     gsap.to(tableCardRef.value, { opacity: 1, y: 0, duration: 0.28, ease: 'power2.out' })
-    // Stagger rows
     if (tableBodyRef.value) {
       const rows = tableBodyRef.value.querySelectorAll('tr')
       if (rows.length) {
@@ -680,6 +800,7 @@ async function submitCancel(reason) {
     })
   }
 
+  // Admin: animate group cards only — no per-row stagger (too many rows)
   async function animateAdminGroups() {
     await nextTick()
     if (!adminGroupsRef.value) return
@@ -693,75 +814,59 @@ async function submitCancel(reason) {
       stagger: 0.07,
       ease: 'power2.out',
     })
-    // Stagger table rows within each card
-    cards.forEach((card, i) => {
-      const rows = card.querySelectorAll('tbody tr')
-      if (!rows.length) return
-      gsap.set(rows, { opacity: 0, x: -6 })
-      gsap.to(rows, {
-        opacity: 1,
-        x: 0,
-        duration: 0.15,
-        stagger: 0.02,
-        ease: 'power1.out',
-        delay: 0.18 + i * 0.05,
-        clearProps: 'opacity,x',
-      })
-    })
   }
 
-  // ── Highlight — fired after data loads when ?highlight=<specimenNo> is present
+  // ── Highlight ─────────────────────────────────────────────────────────────
   async function runHighlight() {
     const specimenNo = route.query.highlight
     if (!specimenNo) return
 
     await nextTick()
 
-    // Find the row across both regular and admin tables
+    // For admin: make sure the target specimen is on the visible page.
+    // Find which group contains it and navigate to the correct page first.
+    if (authStore.isAdmin) {
+      for (const group of adminFilteredGroups.value) {
+        const idx = group.filteredSpecimens.findIndex(s => s.specimenNo === specimenNo)
+        if (idx === -1) continue
+        // Uncollapse section if needed
+        if (collapsedSections.value.has(group.sectionCode)) {
+          const next = new Set(collapsedSections.value)
+          next.delete(group.sectionCode)
+          collapsedSections.value = next
+        }
+        // Navigate to the correct page
+        const targetPage = Math.floor(idx / ADMIN_PAGE_SIZE) + 1
+        if (adminCurrentPage(group.sectionCode) !== targetPage) {
+          adminSetPage(group.sectionCode, targetPage)
+        }
+        break
+      }
+      await nextTick()
+    }
+
     const row = document.querySelector(`tr[data-specimenno="${specimenNo}"]`)
     if (!row) return
 
-    // For admin view: make sure the parent section card isn't collapsed
-    const groupCard = row.closest('.admin-group-card')
-    if (groupCard) {
-      // Find which sectionCode this card belongs to by reading its header text
-      // We resolve it by checking collapsedSections against the card's header
-      const headerEl = groupCard.querySelector('[data-sectioncode]')
-      if (headerEl) {
-        const sc = headerEl.dataset.sectioncode
-        if (collapsedSections.value.has(sc)) {
-          const next = new Set(collapsedSections.value)
-          next.delete(sc)
-          collapsedSections.value = next
-          await nextTick()
-        }
-      }
-    }
-
-    // Scroll into view with a little offset
     row.scrollIntoView({ behavior: 'smooth', block: 'center' })
 
-    // Double pulse: flash the background twice smoothly
-    await new Promise(r => setTimeout(r, 350)) // let scroll settle
+    await new Promise(r => setTimeout(r, 350))
     gsap.set(row, { backgroundColor: 'transparent' })
     gsap.to(row, {
       backgroundColor: 'var(--color-primary-soft)',
       duration: 0.5,
       ease: 'sine.inOut',
       yoyo: true,
-      repeat: 3,         // 4 steps total = 2 full in→out pulses
+      repeat: 3,
       repeatDelay: 0.12,
       onComplete: () => gsap.set(row, { clearProps: 'backgroundColor' }),
     })
 
-    // Clean the query param so a hard refresh doesn't re-fire
     router.replace({ query: {} })
   }
 
   // ══════════════════════════════════════════════════════════════════════════
   // GSAP — WATCHERS
-  // Watches both loading flags so animations fire on initial load AND
-  // every manual Refresh button press.
   // ══════════════════════════════════════════════════════════════════════════
 
   watch(loading, async (isLoading) => {
@@ -805,6 +910,7 @@ async function submitCancel(reason) {
       adminLoading.value = true
       adminExpandedKey.value = null
       adminExpandedTests.value = []
+      adminPageMap.value = new Map()   // reset all pages on manual refresh
       try {
         const data = await runnerApi.getAdminPending()
         adminGroups.value = Array.isArray(data) ? data : []
@@ -823,7 +929,12 @@ async function submitCancel(reason) {
         specimens.value = Array.isArray(data) ? data : []
       } else {
         const data = await runnerApi.getAdminPending()
-        adminGroups.value = Array.isArray(data) ? data : []
+        if (!Array.isArray(data)) return
+        // Only update reactivity if data actually changed — avoids unnecessary
+        // re-renders on every 10s tick when nothing has moved.
+        if (adminFingerprint(data) !== adminFingerprint(adminGroups.value)) {
+          adminGroups.value = data
+        }
       }
     } catch {
       // fail silently

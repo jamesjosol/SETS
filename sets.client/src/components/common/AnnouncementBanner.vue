@@ -5,7 +5,7 @@
          :style="`background-color: ${config.bg}; border-bottom: 1px solid ${config.border};`">
 
       <!-- Icon -->
-      <span class="material-symbols-outlined flex-shrink-0 mt-0.5"
+      <span class="material-symbols-outlined flex-shrink-0 mt-1"
             :style="`font-size: 17px; color: ${config.color};`">
         {{ config.icon }}
       </span>

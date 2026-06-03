@@ -243,6 +243,7 @@ namespace HCLAB
                     using (var con = new OracleConnection(conn))
                     using (var cmd = new OracleCommand(Queries.Transaction.Get_Ord_Test, con))
                     {
+                        cmd.BindByName = true; 
                         cmd.Parameters.Add("p0", labNo);
                         cmd.Parameters.Add("p1", code);
                         await con.OpenAsync();
@@ -257,18 +258,16 @@ namespace HCLAB
                                     TESTCODE = reader["testcode"].ToString(),
                                     TESTNAME = reader["testname"].ToString(),
                                     SAMPLETYPECODE = reader["sampletypecode"].ToString(),
-                                    TESTGROUP = reader["testgroup"].ToString()
+                                    TESTGROUP = reader["testgroup"].ToString(),
+                                    ITEM_TYPE = reader["item_type"].ToString()
                                 });
-
                             }
                         }
-
                         return dtl;
                     }
                 }
                 catch (Exception)
                 {
-
                     throw;
                 }
             }
