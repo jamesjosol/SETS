@@ -100,9 +100,21 @@
           <span class="material-symbols-outlined text-base" style="color: var(--color-primary);">assignment_ind</span>
           <h2 class="text-sm font-bold uppercase tracking-widest" style="color: var(--color-text);">Scanned Specimens</h2>
         </div>
-        <span class="text-xs font-bold" style="color: var(--color-text-muted);">
-          {{ specimenGroups.length }} specimen{{ specimenGroups.length !== 1 ? 's' : '' }}
-        </span>
+        <div class="flex items-center gap-3">
+          <button v-if="specimenGroups.length"
+                  :disabled="!hasFlippableTests"
+                  class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-bold uppercase tracking-widest transition-all active:scale-95"
+                  :style="hasFlippableTests
+              ? 'background-color: rgba(22,163,74,0.1); color: var(--color-success, #16a34a); cursor: pointer;'
+              : 'background-color: var(--color-surface-low); color: var(--color-text-muted); cursor: not-allowed; opacity: 0.5;'"
+                  @click="runAllNow">
+            <span class="material-symbols-outlined text-sm">play_circle</span>
+            Run All Now
+          </button>
+          <span class="text-xs font-bold" style="color: var(--color-text-muted);">
+            {{ specimenGroups.length }} specimen{{ specimenGroups.length !== 1 ? 's' : '' }}
+          </span>
+        </div>
       </div>
 
       <!-- Empty state -->
@@ -626,6 +638,27 @@
     specimenGroups.value = []
     expandedSpecimen.value = null
   }
+
+  // ── Run All Now ────────────────────────────────────────────────────────────
+
+  function runAllNow() {
+    for (const group of specimenGroups.value) {
+      for (const test of group.tests) {
+        if (test.status === 'R' || test.status === 'X') continue
+        test.scheduleTag = 'NOW'
+        test.runningDate = null
+      }
+    }
+  }
+
+  const hasFlippableTests = computed(() =>
+    specimenGroups.value.some(g =>
+      g.tests.some(t =>
+        t.status !== 'R' && t.status !== 'X' &&
+        (t.scheduleTag === 'END' || t.scheduleTag === 'CRD' || t.scheduleTag === 'SRD')
+      )
+    )
+  )
 
   // ── Save ───────────────────────────────────────────────────────────────────
 

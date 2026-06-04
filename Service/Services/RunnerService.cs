@@ -1414,8 +1414,8 @@ namespace Service.Services
 
                 return new RunnerDashboardSummary
                 {
-                    Pending = headers.Count(h => (h.Status == "P" || h.Status == "S" || h.Status == "R") && h.ReceivedBy == null)
-        + onSiteHeaders.Count(h => (h.Status == "P" || h.Status == "S" || h.Status == "R") && h.ReceivedBy == null),
+                    Pending = headers.Count(h => (h.Status == "P") && h.ReceivedBy == null)
+                        + onSiteHeaders.Count(h => (h.Status == "P") && h.ReceivedBy == null),
 
                     Scheduled = allTests.Count(t => t.Status == "S")
                               + onSiteTests.Count(t => t.Status == "S"),
@@ -1467,7 +1467,7 @@ namespace Service.Services
                         SectionCode = s.Code,
                         SectionName = s.Name,
                         Pending = headers.Count(h =>
-                                             h.Status == "P" || h.Status == "S" || h.Status == "R"),
+                                             h.Status == "P" && h.ReceivedBy == null),
                         Scheduled = allTests.Count(t => t.Status == "S"),
                         Running = allTests.Count(t => t.Status == "R"),
                         CompletedToday = headers.Count(h =>

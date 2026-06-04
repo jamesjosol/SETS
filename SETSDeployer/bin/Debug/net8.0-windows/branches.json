@@ -41,18 +41,18 @@
   },
   {
     "Name": "LILOAN",
-    "UncPath": "NONE",
+    "UncPath": "\\\\192.171.51.148\\d$\\IIS PROGRAMS\\SETS",
     "SiteName": "SETS",
     "AppPoolName": "SETS",
-    "MiddlewareUrl": "http://LILOAN-SERVER-IP:5100",
+    "MiddlewareUrl": "http://192.171.51.148:5100",
     "IsEnabled": true
   },
   {
     "Name": "CONSOLACION",
-    "UncPath": "NONE",
+    "UncPath": "\\\\10.62.2.98\\d$\\IIS PROGRAMS\\SETS",
     "SiteName": "SETS",
     "AppPoolName": "SETS",
-    "MiddlewareUrl": "http://CONSOLACION-SERVER-IP:5100",
+    "MiddlewareUrl": "http://10.62.2.98:5100",
     "IsEnabled": true
   }
 ]
