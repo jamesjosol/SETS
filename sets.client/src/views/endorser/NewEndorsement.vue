@@ -3,30 +3,115 @@
     <!-- Page Header -->
     <div class="flex items-center gap-3 mb-1">
 
-      <!-- TAT Badge -->
-      <div v-if="tatCycle.hasOpenCycle"
+      <!-- TAT Badge — Local (shown when Local tab active) -->
+      <div v-if="!isOutbound && tatCycle.hasOpenCycle"
            class="flex items-center gap-3 px-5 py-3 rounded-xl transition-all"
            :style="`background-color: var(--color-surface);
            border: 1.5px solid ${tatExceeded ? 'var(--color-error)' : tatProgressPct <= 25 ? 'var(--color-warning)' : 'var(--color-success)'};
-          box-shadow: 0 1px 3px var(--color-shadow);`">
+         box-shadow: 0 1px 3px var(--color-shadow);`">
+      <span class="material-symbols-outlined text-xl"
+            :class="tatExceeded ? 'animate-pulse' : ''"
+            :style="tatColorStyle">
+        {{ tatExceeded ? 'timer_off' : 'timer' }}
+      </span>
+      <div>
+        <p class="text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Local TAT</p>
+        <p class="text-base font-extrabold font-mono leading-none mt-0.5" :style="tatColorStyle">
+          {{ tatCountdown }}
+        </p>
+      </div>
+      <div class="w-20 h-1.5 rounded-full overflow-hidden ml-1" style="background-color: var(--color-surface-low);">
+        <div class="h-full rounded-full transition-all duration-1000"
+             :style="`width: ${tatProgressPct}%;
+                      background-color: ${tatExceeded ? 'var(--color-error)' : tatProgressPct <= 25 ? 'var(--color-warning)' : 'var(--color-success)'};`">
+        </div>
+      </div>
+    </div>
+
+      <!-- TAT Badge — Outbound (shown when Outbound tab active) -->
+      <template v-if="isOutbound && outboundTat.enabled">
+
+        <!-- Currently inside a window -->
+        <div v-if="outboundTat.currentWindow"
+             class="flex items-center gap-3 px-5 py-3 rounded-xl transition-all"
+             :style="`background-color: var(--color-surface);
+             border: 1.5px solid ${outboundWindowSecondsRemaining <= 0 ? 'var(--color-error)' : outboundWindowProgressPct <= 25 ? 'var(--color-warning)' : 'var(--color-success)'};
+           box-shadow: 0 1px 3px var(--color-shadow);`">
         <span class="material-symbols-outlined text-xl"
-              :class="tatExceeded ? 'animate-pulse' : ''"
-              :style="tatColorStyle">
-          {{ tatExceeded ? 'timer_off' : 'timer' }}
-        </span>
+              :style="outboundWindowColorStyle">alt_route</span>
         <div>
-          <p class="text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Next Due In</p>
-          <p class="text-base font-extrabold font-mono leading-none mt-0.5" :style="tatColorStyle">
-            {{ tatCountdown }}
+          <p class="text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">
+            Window {{ outboundTat.currentWindow.windowStart }}–{{ outboundTat.currentWindow.windowEnd }}
+          </p>
+          <p class="text-base font-extrabold font-mono leading-none mt-0.5" :style="outboundWindowColorStyle">
+            {{ outboundWindowCountdown }}
           </p>
         </div>
         <div class="w-20 h-1.5 rounded-full overflow-hidden ml-1" style="background-color: var(--color-surface-low);">
           <div class="h-full rounded-full transition-all duration-1000"
-               :style="`width: ${tatProgressPct}%;
-                        background-color: ${tatExceeded ? 'var(--color-error)' : tatProgressPct <= 25 ? 'var(--color-warning)' : 'var(--color-success)'};`">
+               :style="`width: ${outboundWindowProgressPct}%; ${outboundWindowColorStyle.replace('color:', 'background-color:')}`">
           </div>
         </div>
       </div>
+
+        <!-- Between windows — show countdown to next window -->
+        <div v-else-if="outboundTat.nextWindow"
+             class="flex items-center gap-3 px-5 py-3 rounded-xl transition-all"
+             style="background-color: var(--color-surface);
+                  border: 1.5px solid var(--color-border);
+                  box-shadow: 0 1px 3px var(--color-shadow);">
+          <span class="material-symbols-outlined text-xl" style="color: var(--color-text-muted);">
+            schedule
+          </span>
+          <div>
+            <p class="text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">
+              Next Window {{ outboundTat.nextWindow.windowStart }}
+            </p>
+            <p class="text-base font-extrabold font-mono leading-none mt-0.5" style="color: var(--color-text-muted);">
+              {{ outboundNextWindowCountdown }}
+            </p>
+          </div>
+        </div>
+
+        <!-- No more windows today -->
+        <div v-else-if="outboundTat.hasWindowsToday"
+             class="flex items-center gap-3 px-5 py-3 rounded-xl"
+             style="background-color: var(--color-surface);
+                  border: 1.5px solid var(--color-border);
+                  box-shadow: 0 1px 3px var(--color-shadow);">
+          <span class="material-symbols-outlined text-xl" style="color: var(--color-text-muted);">
+            timer_off
+          </span>
+          <div>
+            <p class="text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">
+              Outbound TAT
+            </p>
+            <p class="text-sm font-bold" style="color: var(--color-text-muted);">
+              No more windows today
+            </p>
+          </div>
+        </div>
+
+        <!-- No windows configured at all -->
+        <div v-else
+             class="flex items-center gap-3 px-5 py-3 rounded-xl"
+             style="background-color: var(--color-surface);
+                  border: 1.5px solid var(--color-border);
+                  box-shadow: 0 1px 3px var(--color-shadow);">
+          <span class="material-symbols-outlined text-xl" style="color: var(--color-text-muted);">
+            alt_route
+          </span>
+          <div>
+            <p class="text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">
+              Outbound TAT
+            </p>
+            <p class="text-sm font-bold" style="color: var(--color-text-muted);">
+              No windows configured
+            </p>
+          </div>
+        </div>
+
+      </template>
 
       <!-- Back Button -->
       <router-link to="/dashboard"
@@ -505,6 +590,7 @@
   import { usePartnerCheck } from '@/composables/usePartnerCheck'
   import { transactionApi } from '@/api/transactionApi'
   import { tatApi } from '@/api/tatApi'
+  import { tatOutboundApi } from '@/api/tatOutboundApi'
   import endorsementSetupApi from '@/api/endorsementSetupApi'
   import NProgress from 'nprogress'
 
@@ -524,9 +610,6 @@ function selectOutbound() {
   if (!outboundEnabled.value || outboundBranches.value.length === 0) return
   outboundMode.value = true
 }
-
-
-
 
   // ── Partner check composable ──────────────────────────────────────────────
   const {
@@ -635,14 +718,18 @@ async function onOutboundBranchSelect(branchCode) {
   onMounted(async () => {
     await loadTatCycle()
     await loadOutboundBranches()
+    await loadOutboundTatWindow()
     tatTick = setInterval(() => { nowTick.value = Date.now() }, 1000)
     tatRefreshInterval = setInterval(loadTatCycle, 5000)
+    outboundTatRefreshInterval = setInterval(loadOutboundTatWindow, 10000)
   })
 
   onUnmounted(() => {
     clearInterval(tatTick)
     clearInterval(tatRefreshInterval)
+    clearInterval(outboundTatRefreshInterval)
   })
+
 
   // ── Remark modal (unchanged) ──────────────────────────────────────────────
   function openRequiredRemarkModal(template) {
@@ -1043,6 +1130,97 @@ async function onOutboundBranchSelect(branchCode) {
     if (tatProgressPct.value <= 25) return 'color: var(--color-warning);'
     return 'color: var(--color-success);'
   })
+
+  // ── Outbound TAT ──────────────────────────────────────────────────────────
+
+  const outboundTat = ref({
+    enabled: false,
+    appealEnabled: false,
+    currentWindow: null,    // { id, windowStart, windowEnd, windowEndFull }
+    nextWindow: null,       // { id, windowStart, windowEnd, windowStartFull }
+    hasWindowsToday: false,
+    serverTime: null,
+  })
+  let outboundTatTick = null
+  let outboundTatRefreshInterval = null
+
+  async function loadOutboundTatWindow() {
+    try {
+      outboundTat.value = await tatOutboundApi.getCurrentWindow()
+    } catch {
+      outboundTat.value = {
+        enabled: false,
+        appealEnabled: false,
+        currentWindow: null,
+        nextWindow: null,
+        hasWindowsToday: false,
+        serverTime: null,
+      }
+    }
+  }
+
+  // Countdown to end of current window (seconds remaining)
+  const outboundWindowSecondsRemaining = computed(() => {
+    if (!outboundTat.value.currentWindow) return null
+    const end = new Date(outboundTat.value.currentWindow.windowEndFull).getTime()
+    return Math.floor((end - nowTick.value) / 1000)
+  })
+
+  // Countdown to start of next window (seconds until it opens)
+  const outboundNextWindowSecondsUntil = computed(() => {
+    if (!outboundTat.value.nextWindow) return null
+    const start = new Date(outboundTat.value.nextWindow.windowStartFull).getTime()
+    return Math.floor((start - nowTick.value) / 1000)
+  })
+
+  function formatOutboundCountdown(secs) {
+    if (secs === null) return null
+    if (secs <= 0) return '00:00'
+    const h = Math.floor(secs / 3600)
+    const m = Math.floor((secs % 3600) / 60)
+    const s = secs % 60
+    if (h > 0) return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+    return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+  }
+
+  const outboundWindowCountdown = computed(() =>
+    formatOutboundCountdown(outboundWindowSecondsRemaining.value)
+  )
+
+  const outboundNextWindowCountdown = computed(() =>
+    formatOutboundCountdown(outboundNextWindowSecondsUntil.value)
+  )
+
+  // Progress pct for current window progress bar
+  const outboundWindowProgressPct = computed(() => {
+    if (!outboundTat.value.currentWindow) return 0
+    const start = new Date(outboundTat.value.currentWindow.windowEndFull).getTime() -
+      (parseWindowDuration(
+        outboundTat.value.currentWindow.windowStart,
+        outboundTat.value.currentWindow.windowEnd
+      ) * 60 * 1000)
+    const end = new Date(outboundTat.value.currentWindow.windowEndFull).getTime()
+    const total = end - start
+    const remaining = Math.max(outboundWindowSecondsRemaining.value ?? 0, 0) * 1000
+    return Math.round((remaining / total) * 100)
+  })
+
+  function parseWindowDuration(startStr, endStr) {
+    // startStr/endStr are "HH:mm"
+    const [sh, sm] = startStr.split(':').map(Number)
+    const [eh, em] = endStr.split(':').map(Number)
+    return (eh * 60 + em) - (sh * 60 + sm)
+  }
+
+  const outboundWindowColorStyle = computed(() => {
+    const secs = outboundWindowSecondsRemaining.value
+    if (secs === null) return 'color: var(--color-text-muted);'
+    if (secs <= 0) return 'color: var(--color-error);'
+    const pct = outboundWindowProgressPct.value
+    if (pct <= 25) return 'color: var(--color-warning);'
+    return 'color: var(--color-success);'
+  })
+
 </script>
 
 <style scoped>

@@ -13,6 +13,10 @@
       {
         "Path": "SETSDeployer\\SETSDeployer.csproj",
         "Action": "Start"
+      },
+      {
+        "Path": "SETSMiddleware\\SETSMiddleware.csproj",
+        "Action": "Start"
       }
     ]
   }

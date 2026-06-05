@@ -134,7 +134,7 @@ namespace Service.Services
                 var openCycle = unit.TatCycleLogs.GetOpenCycle(sectionCode);
                 if (openCycle != null)
                 {
-                    var resetTime = DateTime.Today.AddHours(19); // 7:00 PM today
+                    var resetTime = DateTime.Today.AddHours(20); // 8:00 PM today
                     openCycle.CycleEnd = resetTime;
                     openCycle.ElapsedMinutes = (decimal)(resetTime - openCycle.CycleStart).TotalMinutes;
                     openCycle.Result = "EndOfDay";

@@ -826,6 +826,309 @@
       </div>
     </template>
 
+    <!-- ── OUTBOUND TAT LOG ────────────────────────────────────────────── -->
+    <template v-if="activeTab === 'outbound-tat'">
+
+      <!-- Filter Bar -->
+      <div class="rounded-2xl p-5 mb-5 flex items-end gap-4 flex-wrap"
+           style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
+
+        <div class="flex flex-col gap-1.5">
+          <label class="text-[10px] font-bold uppercase tracking-widest"
+                 style="color: var(--color-text-muted);">Date From</label>
+          <DatePicker v-model="outboundTatFilter.dateFrom"
+                      placeholder="Date From"
+                      :max-date="outboundTatFilter.dateTo" />
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+          <label class="text-[10px] font-bold uppercase tracking-widest"
+                 style="color: var(--color-text-muted);">Date To</label>
+          <DatePicker v-model="outboundTatFilter.dateTo"
+                      placeholder="Date To"
+                      :min-date="outboundTatFilter.dateFrom" />
+        </div>
+
+        <div class="flex items-center gap-2 pb-0.5">
+          <button class="flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest transition-all active:scale-[0.98]"
+                  style="background: var(--color-primary-gradient); color: #ffffff;"
+                  @click="loadOutboundTatLogs">
+            <span class="material-symbols-outlined text-sm"
+                  :class="{ 'animate-spin': outboundTatLoading }">
+              {{ outboundTatLoading ? 'progress_activity' : 'search' }}
+            </span>
+            List
+          </button>
+          <button class="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest transition-all"
+                  style="color: var(--color-text-muted); background-color: var(--color-surface-low);"
+                  @click="clearOutboundTatLogs">
+            <span class="material-symbols-outlined text-sm">filter_list_off</span>Clear
+          </button>
+        </div>
+      </div>
+
+      <!-- Summary Cards -->
+      <div v-if="outboundTatSearched && !outboundTatLoading && !outboundTatError && outboundTatLogs.length > 0"
+           ref="outboundSummaryCardsRef"
+           class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-5">
+
+        <!-- Total -->
+        <div class="rounded-2xl p-5 flex items-center gap-4"
+             style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
+          <div class="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
+               style="background-color: var(--color-primary-soft);">
+            <span class="material-symbols-outlined text-lg" style="color: var(--color-primary);">alt_route</span>
+          </div>
+          <div>
+            <p class="text-2xl font-extrabold tracking-tight" style="color: var(--color-text);">{{ displayOutboundTotal }}</p>
+            <p class="text-[10px] font-bold uppercase tracking-widest mt-0.5" style="color: var(--color-text-muted);">Total Windows</p>
+          </div>
+        </div>
+
+        <!-- Within -->
+        <div class="rounded-2xl p-5 flex items-center gap-4"
+             style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
+          <div class="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
+               style="background-color: var(--color-success-soft);">
+            <span class="material-symbols-outlined text-lg" style="color: var(--color-success);">check_circle</span>
+          </div>
+          <div>
+            <p class="text-2xl font-extrabold tracking-tight" style="color: var(--color-text);">{{ displayOutboundWithin }}</p>
+            <p class="text-[10px] font-bold uppercase tracking-widest mt-0.5" style="color: var(--color-text-muted);">Within TAT</p>
+          </div>
+        </div>
+
+        <!-- Missed -->
+        <div class="rounded-2xl p-5 flex items-center gap-4"
+             style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
+          <div class="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
+               style="background-color: rgba(239,68,68,0.10);">
+            <span class="material-symbols-outlined text-lg" style="color: var(--color-error);">timer_off</span>
+          </div>
+          <div>
+            <p class="text-2xl font-extrabold tracking-tight" style="color: var(--color-text);">{{ displayOutboundMissed }}</p>
+            <p class="text-[10px] font-bold uppercase tracking-widest mt-0.5" style="color: var(--color-text-muted);">Missed</p>
+          </div>
+        </div>
+
+        <!-- Appealed -->
+        <div class="rounded-2xl p-5 flex items-center gap-4"
+             style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
+          <div class="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
+               style="background-color: var(--color-warning-soft);">
+            <span class="material-symbols-outlined text-lg" style="color: var(--color-warning);">do_not_disturb_on</span>
+          </div>
+          <div>
+            <p class="text-2xl font-extrabold tracking-tight" style="color: var(--color-text);">{{ displayOutboundAppealed }}</p>
+            <p class="text-[10px] font-bold uppercase tracking-widest mt-0.5" style="color: var(--color-text-muted);">Appealed</p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Table Card -->
+      <div ref="outboundTatCardRef" class="rounded-2xl overflow-hidden"
+           style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
+
+        <div class="px-8 py-5 flex items-center justify-between"
+             style="border-bottom: 1px solid var(--color-surface-low);">
+          <div>
+            <h2 class="text-base font-bold" style="color: var(--color-text);">Outbound TAT Log</h2>
+            <p class="text-xs mt-0.5" style="color: var(--color-text-muted);">
+              Each entry represents one configured outbound time window per day.
+            </p>
+          </div>
+          <span v-if="!outboundTatLoading && !outboundTatError && outboundTatSearched"
+                class="text-xs font-bold" style="color: var(--color-text-muted);">
+            {{ outboundTatLogs.length }} window{{ outboundTatLogs.length !== 1 ? 's' : '' }}
+            <template v-if="outboundTatTotalPages > 1">
+              · Page {{ outboundTatPage }} of {{ outboundTatTotalPages }}
+            </template>
+          </span>
+        </div>
+
+        <!-- Loading -->
+        <div v-if="outboundTatLoading"
+             class="px-8 py-16 flex items-center justify-center gap-3">
+          <span class="material-symbols-outlined animate-spin"
+                style="color: var(--color-text-muted);">progress_activity</span>
+          <span class="text-sm font-bold uppercase tracking-widest"
+                style="color: var(--color-text-muted);">Loading...</span>
+        </div>
+
+        <!-- Error -->
+        <div v-else-if="outboundTatError"
+             class="px-8 py-16 flex flex-col items-center gap-3">
+          <span class="material-symbols-outlined text-4xl"
+                style="color: var(--color-error);">error_outline</span>
+          <p class="text-sm font-bold" style="color: var(--color-text-muted);">{{ outboundTatError }}</p>
+          <button class="mt-2 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest"
+                  style="background-color: var(--color-primary-soft); color: var(--color-primary);"
+                  @click="loadOutboundTatLogs">
+            Retry
+          </button>
+        </div>
+
+        <!-- Empty -->
+        <div v-else-if="!outboundTatSearched || outboundTatLogs.length === 0"
+             ref="outboundTatEmptyRef"
+             class="px-8 py-16 flex flex-col items-center gap-3">
+          <span class="material-symbols-outlined text-4xl"
+                style="color: var(--color-text-muted);">
+            {{ outboundTatSearched ? 'inbox' : 'alt_route' }}
+          </span>
+          <p class="text-sm font-bold uppercase tracking-widest"
+             style="color: var(--color-text-muted);">
+            {{
+ outboundTatSearched
+              ? 'No outbound TAT logs found for the selected range.'
+              : 'Select a date range and click List.'
+            }}
+          </p>
+        </div>
+
+        <!-- Table -->
+        <div v-else class="overflow-x-auto">
+          <table class="w-full text-left">
+            <thead>
+              <tr style="background-color: var(--color-bg);">
+                <th class="px-8 py-4 text-[10px] font-bold uppercase tracking-widest"
+                    style="color: var(--color-text-muted);">Result</th>
+                <th class="px-4 py-4 text-[10px] font-bold uppercase tracking-widest"
+                    style="color: var(--color-text-muted);">Date</th>
+                <th class="px-4 py-4 text-[10px] font-bold uppercase tracking-widest"
+                    style="color: var(--color-text-muted);">Window</th>
+                <th class="px-4 py-4 text-[10px] font-bold uppercase tracking-widest"
+                    style="color: var(--color-text-muted);">Schedule</th>
+                <th class="px-4 py-4 text-[10px] font-bold uppercase tracking-widest"
+                    style="color: var(--color-text-muted);">Batches Endorsed</th>
+                <th class="px-4 py-4 text-[10px] font-bold uppercase tracking-widest"
+                    style="color: var(--color-text-muted);">Appealed By</th>
+                <th class="px-8 py-4 text-[10px] font-bold uppercase tracking-widest"
+                    style="color: var(--color-text-muted);">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="log in outboundTatPaginated" :key="log.id"
+                  class="outbound-tat-row transition-colors"
+                  style="border-top: 1px solid var(--color-surface-low);"
+                  @mouseenter="e => e.currentTarget.style.backgroundColor = 'var(--color-surface-low)'"
+                  @mouseleave="e => e.currentTarget.style.backgroundColor = 'transparent'">
+
+                <!-- Result -->
+                <td class="px-8 py-4">
+                  <span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-tight flex items-center gap-1.5 w-fit"
+                        :style="getOutboundResultStyle(log.result)">
+                    <span class="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                          :style="`background-color: ${getOutboundResultDot(log.result)}`"></span>
+                    {{ getOutboundResultLabel(log.result) }}
+                  </span>
+                </td>
+
+                <!-- Date -->
+                <td class="px-4 py-4 text-sm font-medium"
+                    style="color: var(--color-text);">
+                  {{
+ new Date(log.windowDate).toLocaleDateString('en-US', {
+                    month: 'short', day: 'numeric', year: 'numeric'
+                  })
+                  }}
+                </td>
+
+                <!-- Window time range -->
+                <td class="px-4 py-4">
+                  <span class="font-mono text-sm font-bold"
+                        style="color: var(--color-text);">
+                    {{ formatTimeRange(log.windowStart, log.windowEnd) }}
+                  </span>
+                </td>
+
+                <!-- Schedule type -->
+                <td class="px-4 py-4">
+                  <span class="px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-widest"
+                        :style="log.scheduleType === 'Sunday'
+                          ? 'background-color: var(--color-warning-soft); color: var(--color-warning);'
+                          : 'background-color: var(--color-primary-soft); color: var(--color-primary);'">
+                    {{ log.scheduleType === 'Sunday' ? 'Sunday' : 'Mon–Sat' }}
+                  </span>
+                </td>
+
+                <!-- Batch nos -->
+                <td class="px-4 py-4">
+                  <template v-if="log.batchNos">
+                    <div class="flex flex-wrap gap-1">
+                      <span v-for="bno in log.batchNos.split(',')" :key="bno"
+                            class="font-mono text-xs font-bold px-2 py-0.5 rounded-lg"
+                            style="background-color: var(--color-surface-low); color: var(--color-primary);">
+                        {{ bno.trim() }}
+                      </span>
+                    </div>
+                  </template>
+                  <span v-else style="color: var(--color-text-muted);">—</span>
+                </td>
+
+                <!-- Appealed By -->
+                <td class="px-4 py-4">
+                  <div v-if="log.appealedBy">
+                    <span class="text-xs font-bold px-2.5 py-1 rounded-lg"
+                          style="background-color: var(--color-warning-soft); color: var(--color-warning);">
+                      {{ log.appealedBy }}
+                    </span>
+                    <p class="text-[10px] mt-1" style="color: var(--color-text-muted);">
+                      {{ formatDateTime(log.appealedAt) }}
+                    </p>
+                  </div>
+                  <span v-else style="color: var(--color-text-muted);">—</span>
+                </td>
+
+                <!-- Appeal action -->
+                <td class="px-8 py-4">
+                  <button v-if="log.result === 'Missed' && outboundTatAppealEnabled"
+                          class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all active:scale-95"
+                          style="background-color: var(--color-warning-soft); color: var(--color-warning);"
+                          @click="handleOutboundAppeal(log.id)">
+                    <span class="material-symbols-outlined text-sm">do_not_disturb_on</span>
+                    Appeal
+                  </button>
+                  <span v-else style="color: var(--color-text-muted);">—</span>
+                </td>
+
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        <div v-if="!outboundTatLoading && !outboundTatError && outboundTatTotalPages > 1"
+             class="px-8 py-4 flex items-center justify-between"
+             style="border-top: 1px solid var(--color-surface-low);">
+          <button :disabled="outboundTatPage === 1"
+                  class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all disabled:opacity-40"
+                  style="color: var(--color-text-muted); background-color: var(--color-surface-low);"
+                  @click="outboundTatPage--">
+            <span class="material-symbols-outlined text-sm">chevron_left</span>Previous
+          </button>
+          <div class="flex items-center gap-1.5">
+            <button v-for="p in outboundTatPageNumbers" :key="p"
+                    class="w-8 h-8 rounded-lg text-xs font-bold transition-all"
+                    :style="p === outboundTatPage
+                      ? 'background-color: var(--color-primary); color: #fff;'
+                      : 'color: var(--color-text-muted); background-color: var(--color-surface-low);'"
+                    @click="outboundTatPage = p">
+              {{ p }}
+            </button>
+          </div>
+          <button :disabled="outboundTatPage === outboundTatTotalPages"
+                  class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all disabled:opacity-40"
+                  style="color: var(--color-text-muted); background-color: var(--color-surface-low);"
+                  @click="outboundTatPage++">
+            Next<span class="material-symbols-outlined text-sm">chevron_right</span>
+          </button>
+        </div>
+
+      </div>
+    </template>
+
     <!-- ── DETAIL DRAWER ────────────────────────────────────────────────── -->
     <Transition name="fade">
       <div v-if="drawerLog"
@@ -904,6 +1207,7 @@
   import { useGlobalAlert } from '@/composables/useGlobalAlert'
   import { auditApi } from '@/api/auditApi'
   import { tatApi } from '@/api/tatApi'
+  import { tatOutboundApi } from '@/api/tatOutboundApi'
   import { sectionApi } from '@/api/sectionApi'
 
   const authStore = useAuthStore()
@@ -916,6 +1220,7 @@
     { key: 'by-specimen', label: 'By Lab No.', icon: 'barcode_scanner', restricted: false },
     { key: 'by-batch', label: 'Batch Details', icon: 'inventory_2', restricted: false },
     { key: 'tat-cycle', label: 'TAT Cycle Log', icon: 'timer', restricted: true },
+    { key: 'outbound-tat', label: 'Outbound TAT Log', icon: 'alt_route', restricted: true },
   ]
 
   // TAT Cycle tab is only visible to endorsers (category 1) and admins
@@ -1226,6 +1531,131 @@
     tatCycleLogs.value = []; tatCycleError.value = null; tatCycleSearched.value = false; tatCyclePage.value = 1
   }
 
+  // ── Outbound TAT Log ───────────────────────────────────────────────────────
+
+  const outboundTatFilter = ref({
+    dateFrom: todayDate(),
+    dateTo: todayDate(),
+  })
+
+  const outboundTatLogs = ref([])
+  const outboundTatLoading = ref(false)
+  const outboundTatError = ref(null)
+  const outboundTatSearched = ref(false)
+  const outboundTatPage = ref(1)
+  const outboundTatAppealEnabled = ref(false)
+
+  const outboundTatTotalPages = computed(() =>
+    Math.max(1, Math.ceil(outboundTatLogs.value.length / PAGE_SIZE))
+  )
+  const outboundTatPaginated = computed(() =>
+    outboundTatLogs.value.slice(
+      (outboundTatPage.value - 1) * PAGE_SIZE,
+      outboundTatPage.value * PAGE_SIZE
+    )
+  )
+  const outboundTatPageNumbers = computed(() =>
+    buildPageNumbers(outboundTatPage.value, outboundTatTotalPages.value)
+  )
+
+  const outboundTatSummary = computed(() => {
+    const logs = outboundTatLogs.value
+    return {
+      total: logs.length,
+      within: logs.filter(l => l.result === 'Within').length,
+      missed: logs.filter(l => l.result === 'Missed').length,
+      appealed: logs.filter(l => l.result === 'Appealed').length,
+    }
+  })
+
+  // Count-up display refs
+  const displayOutboundTotal = ref(0)
+  const displayOutboundWithin = ref(0)
+  const displayOutboundMissed = ref(0)
+  const displayOutboundAppealed = ref(0)
+
+  // GSAP refs for outbound tab
+  const outboundTatCardRef = ref(null)
+  const outboundTatEmptyRef = ref(null)
+  const outboundSummaryCardsRef = ref(null)
+
+  async function loadOutboundTatLogs() {
+    outboundTatLoading.value = true
+    outboundTatError.value = null
+    outboundTatSearched.value = true
+    outboundTatPage.value = 1
+    try {
+      const [logs, settings] = await Promise.all([
+        tatOutboundApi.getLogs({
+          dateFrom: outboundTatFilter.value.dateFrom,
+          dateTo: outboundTatFilter.value.dateTo,
+        }),
+        tatOutboundApi.getSettings(),
+      ])
+      outboundTatLogs.value = logs
+      outboundTatAppealEnabled.value = settings.outboundTatAppealEnabled
+    } catch (err) {
+      outboundTatError.value = err.response?.data?.message ?? 'Failed to load outbound TAT logs.'
+      showAlert('error', 'Load Error', outboundTatError.value)
+    } finally {
+      outboundTatLoading.value = false
+    }
+  }
+
+  function clearOutboundTatLogs() {
+    outboundTatFilter.value = { dateFrom: todayDate(), dateTo: todayDate() }
+    outboundTatLogs.value = []
+    outboundTatError.value = null
+    outboundTatSearched.value = false
+    outboundTatPage.value = 1
+  }
+
+  async function handleOutboundAppeal(logId) {
+    try {
+      await tatOutboundApi.appeal(logId)
+      // Refresh logs in place
+      await loadOutboundTatLogs()
+      showAlert('success', 'Appeal Recorded', 'The missed window has been appealed.')
+    } catch (err) {
+      showAlert('error', 'Appeal Failed', err.response?.data?.message ?? 'Unable to record appeal.')
+    }
+  }
+
+  function getOutboundResultStyle(result) {
+    const map = {
+      Within: 'background-color: var(--color-success-soft); color: var(--color-success);',
+      Missed: 'background-color: rgba(239,68,68,0.10); color: var(--color-error);',
+      Appealed: 'background-color: var(--color-warning-soft); color: var(--color-warning);',
+    }
+    return map[result] ?? 'background-color: var(--color-surface-low); color: var(--color-text-muted);'
+  }
+
+  function getOutboundResultDot(result) {
+    const map = {
+      Within: 'var(--color-success)',
+      Missed: 'var(--color-error)',
+      Appealed: 'var(--color-warning)',
+    }
+    return map[result] ?? 'var(--color-text-muted)'
+  }
+
+  function getOutboundResultLabel(result) {
+    const map = {
+      Within: 'Within TAT',
+      Missed: 'Missed',
+      Appealed: 'Appealed',
+    }
+    return map[result] ?? result ?? '—'
+  }
+
+  function formatTimeRange(start, end) {
+    if (!start || !end) return '—'
+    const fmt = (dt) => new Date(dt).toLocaleTimeString('en-US', {
+      hour: '2-digit', minute: '2-digit', hour12: true
+    })
+    return `${fmt(start)} – ${fmt(end)}`
+  }
+
   // ══════════════════════════════════════════════════════════════════════════
   // GSAP — REFS
   // ══════════════════════════════════════════════════════════════════════════
@@ -1370,6 +1800,27 @@
       await animateCard(tatCycleCardRef, '.tat-cycle-row', 0.05)
     } else if (tatCycleSearched.value) {
       await animateEmptyState(tatCycleEmptyRef)
+    }
+  })
+
+  watch(outboundTatLoading, async (isLoading) => {
+    if (isLoading) return
+    if (outboundTatLogs.value.length) {
+      await nextTick()
+      if (outboundSummaryCardsRef.value) {
+        const cards = outboundSummaryCardsRef.value.querySelectorAll(':scope > div')
+        if (cards.length) {
+          gsap.set(cards, { opacity: 0, y: 20 })
+          gsap.to(cards, { opacity: 1, y: 0, duration: 0.3, stagger: 0.07, ease: 'power2.out' })
+        }
+      }
+      countUp(displayOutboundTotal, outboundTatSummary.value.total)
+      countUp(displayOutboundWithin, outboundTatSummary.value.within)
+      countUp(displayOutboundMissed, outboundTatSummary.value.missed)
+      countUp(displayOutboundAppealed, outboundTatSummary.value.appealed)
+      await animateCard(outboundTatCardRef, '.outbound-tat-row', 0.05)
+    } else if (outboundTatSearched.value) {
+      await animateEmptyState(outboundTatEmptyRef)
     }
   })
 

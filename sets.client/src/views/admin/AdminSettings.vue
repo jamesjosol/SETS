@@ -45,6 +45,7 @@
         <SectionTab v-if="activeTab === 'sections'" @toast="showToast" />
         <RunningDaysTab v-if="activeTab === 'runningDays'" @toast="showToast" />
         <TatSetUpTab v-if="activeTab === 'tat'" @toast="showToast" />
+        <OutboundTatTab v-if="activeTab === 'outboundTat'" @toast="showToast" />
         <OnSiteTab v-if="activeTab === 'onsite'" @toast="showToast" />
         <ProcessingTab v-if="activeTab === 'processing'" @toast="showToast" />
         <BranchTab v-if="activeTab === 'branch'" @toast="showToast" />
@@ -88,6 +89,7 @@ import AnnouncementTab from '@/views/admin/AnnouncementTab.vue';
 import EndorsementTab from "./EndorsementTab.vue";
 import ArchiveTab from "./ArchiveTab.vue";
 import OnlineUsersTab from './OnlineUsersTab.vue'
+import OutboundTatTab from './OutboundTatTab.vue'
 
 const activeTab = ref("pc");
 
@@ -97,6 +99,7 @@ const settingsTabs = [
   { key: "sections", label: "Section", icon: "apartment" },
   { key: "runningDays", label: "Running Days", icon: "calendar_month" },
   { key: "tat", label: "TAT Set-Up", icon: "timer" },
+  { key: 'outboundTat', label: 'Outbound TAT', icon: 'alt_route' },
   { key: "onsite", label: "On-Site", icon: "location_on" },
   { key: "processing", label: "Processing", icon: "tune" },
   { key: "branch", label: "Branch", icon: "location_city" },

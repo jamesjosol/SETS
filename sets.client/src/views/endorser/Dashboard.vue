@@ -112,56 +112,166 @@
     </div>
 
     <!-- TAT Countdown Bar — Endorser only -->
-    <div v-if="!authStore.isAdmin && tatCycle.hasOpenCycle"
-         class="mb-6 flex items-center gap-4 px-5 py-3 rounded-xl"
-         style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
+    <div v-if="!authStore.isAdmin && (tatCycle.hasOpenCycle || outboundTat.enabled)"
+         class="mb-6 grid gap-4"
+         :class="outboundTat.enabled ? 'grid-cols-1 lg:grid-cols-2' : 'grid-cols-1'">
 
-      <!-- Icon + Label -->
-      <div class="flex items-center gap-2 flex-shrink-0">
-        <span class="material-symbols-outlined text-base"
-              :class="tatExceeded ? 'animate-pulse' : ''"
-              :style="tatColorStyle">
-          {{ tatExceeded ? 'timer_off' : 'timer' }}
-        </span>
-        <p class="text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">
-          Next Endorsement Due
+      <!-- ── Local TAT column ── -->
+      <div v-if="tatCycle.hasOpenCycle"
+           class="flex items-center gap-4 px-5 py-3 rounded-xl"
+           style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
+
+        <!-- Icon + Label -->
+        <div class="flex items-center gap-2 flex-shrink-0">
+          <span class="material-symbols-outlined text-base"
+                :class="tatExceeded ? 'animate-pulse' : ''"
+                :style="tatColorStyle">
+            {{ tatExceeded ? 'timer_off' : 'timer' }}
+          </span>
+          <p class="text-[10px] font-bold uppercase tracking-widest"
+             style="color: var(--color-text-muted);">
+            {{ outboundTat.enabled ? 'Local TAT' : 'Next Endorsement Due' }}
+          </p>
+        </div>
+
+        <!-- Progress bar -->
+        <div class="flex-1 h-1 rounded-full overflow-hidden"
+             style="background-color: var(--color-surface-low);">
+          <div class="h-full rounded-full transition-all duration-1000"
+               :style="`width: ${tatProgressPct}%; ${tatBarStyle}`"></div>
+        </div>
+
+        <!-- Countdown -->
+        <p class="text-xs font-extrabold font-mono flex-shrink-0 tabular-nums"
+           :style="tatColorStyle">
+          {{ tatExceeded ? 'EXCEEDED' : tatCountdown }}
         </p>
+
+        <!-- Divider -->
+        <div class="h-4 w-px flex-shrink-0" style="background-color: var(--color-border);"></div>
+
+        <!-- Appeal Button -->
+        <button v-if="tatCycle.canAppeal"
+                class="flex-shrink-0 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest transition-all active:scale-95 cursor-pointer"
+                :class="tatLoading ? 'opacity-60 pointer-events-none' : ''"
+                style="color: var(--color-text-muted);"
+                @mouseenter="e => e.currentTarget.style.color = 'var(--color-text)'"
+                @mouseleave="e => e.currentTarget.style.color = 'var(--color-text-muted)'"
+                @click="confirmAppeal">
+          <span class="material-symbols-outlined text-sm">do_not_disturb_on</span>
+          Nothing to Endorse
+        </button>
+
+        <!-- Appeal not available hint -->
+        <p v-else
+           class="flex-shrink-0 text-[10px] font-bold uppercase tracking-widest"
+           style="color: var(--color-text-muted);">
+          Appeal after TAT breach
+        </p>
+
       </div>
 
-      <!-- Progress bar -->
-      <div class="flex-1 h-1 rounded-full overflow-hidden" style="background-color: var(--color-surface-low);">
-        <div class="h-full rounded-full transition-all duration-1000"
-             :style="`width: ${tatProgressPct}%; ${tatBarStyle}`"></div>
+      <!-- Local TAT placeholder when no open cycle but outbound is shown -->
+      <div v-else-if="outboundTat.enabled"
+           class="flex items-center gap-3 px-5 py-3 rounded-xl"
+           style="background-color: var(--color-surface);
+                  box-shadow: 0 1px 3px var(--color-shadow);
+                  border: 1px solid var(--color-border);">
+        <span class="material-symbols-outlined text-base"
+              style="color: var(--color-text-muted);">timer</span>
+        <p class="text-[10px] font-bold uppercase tracking-widest"
+           style="color: var(--color-text-muted);">Local TAT</p>
+        <p class="text-xs font-bold ml-auto" style="color: var(--color-text-muted);">No active cycle</p>
       </div>
 
-      <!-- Countdown -->
-      <p class="text-xs font-extrabold font-mono flex-shrink-0 tabular-nums" :style="tatColorStyle">
-        {{ tatExceeded ? 'EXCEEDED' : tatCountdown }}
-      </p>
+      <!-- ── Outbound TAT column ── -->
+      <template v-if="outboundTat.enabled">
 
-      <!-- Divider -->
-      <div class="h-4 w-px flex-shrink-0" style="background-color: var(--color-border);"></div>
+        <!-- Inside a window -->
+        <div v-if="outboundTat.currentWindow"
+             class="flex items-center gap-4 px-5 py-3 rounded-xl"
+             style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
 
-      <!-- Appeal Button -->
-      <button v-if="tatCycle.canAppeal"
-              class="flex-shrink-0 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest transition-all active:scale-95 cursor-pointer"
-              :class="tatLoading ? 'opacity-60 pointer-events-none' : ''"
-              style="color: var(--color-text-muted);"
-              @mouseenter="e => e.currentTarget.style.color = 'var(--color-text)'"
-              @mouseleave="e => e.currentTarget.style.color = 'var(--color-text-muted)'"
-              @click="confirmAppeal">
-        <span class="material-symbols-outlined text-sm">do_not_disturb_on</span>
-        Nothing to Endorse
-      </button>
+          <div class="flex items-center gap-2 flex-shrink-0">
+            <span class="material-symbols-outlined text-base"
+                  :style="outboundWindowColorStyle">alt_route</span>
+            <p class="text-[10px] font-bold uppercase tracking-widest"
+               style="color: var(--color-text-muted);">
+              Outbound TAT · {{ outboundTat.currentWindow.windowStart }}–{{ outboundTat.currentWindow.windowEnd }}
+            </p>
+          </div>
 
-      <!-- Appeal not available hint -->
-      <p v-else
-         class="flex-shrink-0 text-[10px] font-bold uppercase tracking-widest"
-         style="color: var(--color-text-muted);">
-        Appeal after TAT breach
-      </p>
+          <div class="flex-1 h-1 rounded-full overflow-hidden"
+               style="background-color: var(--color-surface-low);">
+            <div class="h-full rounded-full transition-all duration-1000"
+                 :style="`width: ${outboundWindowProgressPct}%; ${outboundWindowBarStyle}`"></div>
+          </div>
+
+          <p class="text-xs font-extrabold font-mono flex-shrink-0 tabular-nums"
+             :style="outboundWindowColorStyle">
+            {{ outboundWindowCountdown }}
+          </p>
+
+        </div>
+
+        <!-- Between windows — countdown to next -->
+        <div v-else-if="outboundTat.nextWindow"
+             class="flex items-center gap-4 px-5 py-3 rounded-xl"
+             style="background-color: var(--color-surface);
+                    box-shadow: 0 1px 3px var(--color-shadow);
+                    border: 1px solid var(--color-border);">
+
+          <div class="flex items-center gap-2 flex-shrink-0">
+            <span class="material-symbols-outlined text-base"
+                  style="color: var(--color-text-muted);">schedule</span>
+            <p class="text-[10px] font-bold uppercase tracking-widest"
+               style="color: var(--color-text-muted);">
+              Next Outbound Window · {{ outboundTat.nextWindow.windowStart }}
+            </p>
+          </div>
+
+          <div class="flex-1 h-1 rounded-full overflow-hidden"
+               style="background-color: var(--color-surface-low);">
+            <div class="h-full w-full rounded-full"
+                 style="background-color: var(--color-surface-low);"></div>
+          </div>
+
+          <p class="text-xs font-extrabold font-mono flex-shrink-0 tabular-nums"
+             style="color: var(--color-text-muted);">
+            {{ outboundNextWindowCountdown }}
+          </p>
+
+        </div>
+
+        <!-- No more windows today -->
+        <div v-else
+             class="flex items-center gap-3 px-5 py-3 rounded-xl"
+             style="background-color: var(--color-surface);
+                    box-shadow: 0 1px 3px var(--color-shadow);
+                    border: 1px solid var(--color-border);">
+          <span class="material-symbols-outlined text-base"
+                style="color: var(--color-text-muted);">alt_route</span>
+          <p class="text-[10px] font-bold uppercase tracking-widest"
+             style="color: var(--color-text-muted);">Outbound TAT</p>
+          <p class="text-xs font-bold ml-auto" style="color: var(--color-text-muted);">
+            {{ outboundTat.hasWindowsToday ? 'No more windows today' : 'No windows configured' }}
+          </p>
+        </div>
+
+      </template>
 
     </div>
+
+    <!-- Appeal Confirm Modal -->
+    <ConfirmModal :isVisible="appealConfirm.visible"
+                  type="warning"
+                  icon="do_not_disturb_on"
+                  title="Nothing to Endorse?"
+                  message="This will log an appeal and reset the TAT timer. Only proceed if there are genuinely no specimens to endorse at this time."
+                  confirmText="Yes, Submit Appeal"
+                  cancelText="Cancel"
+                  @confirm="handleAppeal"
+                  @close="appealConfirm.visible = false" />
 
     <!-- Appeal Confirm Modal -->
     <ConfirmModal :isVisible="appealConfirm.visible"
@@ -373,6 +483,7 @@
   import { batchApi } from '@/api/batchApi'
   import { healthApi } from '@/api/healthApi'
   import { tatApi } from '@/api/tatApi'
+  import { tatOutboundApi } from '@/api/tatOutboundApi'
   import AlertModal from '@/components/common/AlertModal.vue'
   import SystemStatus from '@/components/common/SystemStatus.vue'
   import BatchDetailDrawer from '@/components/common/BatchDetailDrawer.vue'
@@ -574,6 +685,7 @@
   // ── Fetch ──────────────────────────────────────────────────────────────────
 
   let refreshInterval = null
+  let outboundTatRefreshInterval = null
 
   onMounted(async () => {
     await fetchKPIs()
@@ -583,14 +695,17 @@
     tableLoading.value = false
 
     await loadTatCycle()
+    await loadOutboundTatWindow()
 
     refreshInterval = setInterval(silentRefresh, 5000)
     tickInterval = setInterval(() => { nowTick.value = Date.now() }, 1000)
+    outboundTatRefreshInterval = setInterval(loadOutboundTatWindow, 10000)
   })
 
   onUnmounted(() => {
     clearInterval(refreshInterval)
     clearInterval(tickInterval)
+    clearInterval(outboundTatRefreshInterval)
   })
 
   // ── Watchers ───────────────────────────────────────────────────────────────
@@ -796,6 +911,90 @@
   })
 
   const tatExceeded = computed(() => tatSecondsRemaining.value !== null && tatSecondsRemaining.value <= 0)
+
+  // ── Outbound TAT ──────────────────────────────────────────────────────────
+
+  const outboundTat = ref({
+    enabled: false,
+    appealEnabled: false,
+    currentWindow: null,
+    nextWindow: null,
+    hasWindowsToday: false,
+    serverTime: null,
+  })
+
+  async function loadOutboundTatWindow() {
+    if (authStore.isAdmin) return
+    try {
+      outboundTat.value = await tatOutboundApi.getCurrentWindow()
+    } catch {
+      outboundTat.value = {
+        enabled: false,
+        appealEnabled: false,
+        currentWindow: null,
+        nextWindow: null,
+        hasWindowsToday: false,
+        serverTime: null,
+      }
+    }
+  }
+
+  const outboundWindowSecondsRemaining = computed(() => {
+    if (!outboundTat.value.currentWindow) return null
+    const end = new Date(outboundTat.value.currentWindow.windowEndFull).getTime()
+    return Math.floor((end - nowTick.value) / 1000)
+  })
+
+  const outboundNextWindowSecondsUntil = computed(() => {
+    if (!outboundTat.value.nextWindow) return null
+    const start = new Date(outboundTat.value.nextWindow.windowStartFull).getTime()
+    return Math.floor((start - nowTick.value) / 1000)
+  })
+
+  function formatOutboundCountdown(secs) {
+    if (secs === null) return null
+    if (secs <= 0) return '00:00'
+    const h = Math.floor(secs / 3600)
+    const m = Math.floor((secs % 3600) / 60)
+    const s = secs % 60
+    if (h > 0) return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+    return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+  }
+
+  const outboundWindowCountdown = computed(() =>
+    formatOutboundCountdown(outboundWindowSecondsRemaining.value)
+  )
+
+  const outboundNextWindowCountdown = computed(() =>
+    formatOutboundCountdown(outboundNextWindowSecondsUntil.value)
+  )
+
+  const outboundWindowProgressPct = computed(() => {
+    if (!outboundTat.value.currentWindow) return 0
+    const [sh, sm] = outboundTat.value.currentWindow.windowStart.split(':').map(Number)
+    const [eh, em] = outboundTat.value.currentWindow.windowEnd.split(':').map(Number)
+    const totalMins = (eh * 60 + em) - (sh * 60 + sm)
+    if (totalMins <= 0) return 0
+    const remaining = Math.max(outboundWindowSecondsRemaining.value ?? 0, 0)
+    return Math.round((remaining / (totalMins * 60)) * 100)
+  })
+
+  const outboundWindowColorStyle = computed(() => {
+    const secs = outboundWindowSecondsRemaining.value
+    if (secs === null) return 'color: var(--color-text-muted);'
+    if (secs <= 0) return 'color: var(--color-error);'
+    if (outboundWindowProgressPct.value <= 25) return 'color: var(--color-warning);'
+    return 'color: var(--color-success);'
+  })
+
+  const outboundWindowBarStyle = computed(() => {
+    const secs = outboundWindowSecondsRemaining.value
+    if (secs === null) return 'background-color: var(--color-text-muted);'
+    if (secs <= 0) return 'background-color: var(--color-error);'
+    if (outboundWindowProgressPct.value <= 25) return 'background-color: var(--color-warning);'
+    return 'background-color: var(--color-success);'
+  })
+
 </script>
 
 <style scoped>

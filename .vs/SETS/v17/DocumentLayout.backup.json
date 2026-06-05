@@ -3,16 +3,100 @@
   "WorkspaceRootPath": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\sets.client\\src\\views\\endorser\\newendorsement.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|solutionrelative:sets.client\\src\\views\\endorser\\newendorsement.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{BD9ED67C-9663-4A71-9490-22712D3ED118}|SETS.Server\\SETS.Server.csproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\sets.server\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
       "RelativeMoniker": "D:0:0:{BD9ED67C-9663-4A71-9490-22712D3ED118}|SETS.Server\\SETS.Server.csproj|solutionrelative:sets.server\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
     },
     {
+      "AbsoluteMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\sets.client\\src\\views\\endorser\\newendorsement.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|solutionrelative:sets.client\\src\\views\\endorser\\newendorsement.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\sets.client\\src\\views\\admin\\outboundtattab.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|solutionrelative:sets.client\\src\\views\\admin\\outboundtattab.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C841152B-74B7-43B7-8E9A-E2B82C80289A}|Service\\Service.csproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\service\\services\\tatoutboundservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C841152B-74B7-43B7-8E9A-E2B82C80289A}|Service\\Service.csproj|solutionrelative:service\\services\\tatoutboundservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\sets.client\\src\\views\\shared\\audittrail.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|solutionrelative:sets.client\\src\\views\\shared\\audittrail.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\sets.client\\src\\views\\endorser\\dashboard.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|solutionrelative:sets.client\\src\\views\\endorser\\dashboard.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\sets.client\\src\\views\\admin\\adminsettings.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|solutionrelative:sets.client\\src\\views\\admin\\adminsettings.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1E05344D-E1EC-4DBC-B24B-6E177E94DC79}|SETSMiddleware\\SETSMiddleware.csproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\setsmiddleware\\middlewareform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{1E05344D-E1EC-4DBC-B24B-6E177E94DC79}|SETSMiddleware\\SETSMiddleware.csproj|solutionrelative:setsmiddleware\\middlewareform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1E05344D-E1EC-4DBC-B24B-6E177E94DC79}|SETSMiddleware\\SETSMiddleware.csproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\setsmiddleware\\outboundtatwindowchecktask.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{1E05344D-E1EC-4DBC-B24B-6E177E94DC79}|SETSMiddleware\\SETSMiddleware.csproj|solutionrelative:setsmiddleware\\outboundtatwindowchecktask.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1E05344D-E1EC-4DBC-B24B-6E177E94DC79}|SETSMiddleware\\SETSMiddleware.csproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\setsmiddleware\\outboundstatussynctask.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{1E05344D-E1EC-4DBC-B24B-6E177E94DC79}|SETSMiddleware\\SETSMiddleware.csproj|solutionrelative:setsmiddleware\\outboundstatussynctask.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BD9ED67C-9663-4A71-9490-22712D3ED118}|SETS.Server\\SETS.Server.csproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\sets.server\\controllers\\tatcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{BD9ED67C-9663-4A71-9490-22712D3ED118}|SETS.Server\\SETS.Server.csproj|solutionrelative:sets.server\\controllers\\tatcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C841152B-74B7-43B7-8E9A-E2B82C80289A}|Service\\Service.csproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\service\\services\\tatservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C841152B-74B7-43B7-8E9A-E2B82C80289A}|Service\\Service.csproj|solutionrelative:service\\services\\tatservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{C841152B-74B7-43B7-8E9A-E2B82C80289A}|Service\\Service.csproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\service\\services\\batchservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{C841152B-74B7-43B7-8E9A-E2B82C80289A}|Service\\Service.csproj|solutionrelative:service\\services\\batchservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1E05344D-E1EC-4DBC-B24B-6E177E94DC79}|SETSMiddleware\\SETSMiddleware.csproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\setsmiddleware\\endorsementtatresettask.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{1E05344D-E1EC-4DBC-B24B-6E177E94DC79}|SETSMiddleware\\SETSMiddleware.csproj|solutionrelative:setsmiddleware\\endorsementtatresettask.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C841152B-74B7-43B7-8E9A-E2B82C80289A}|Service\\Service.csproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\service\\masterservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C841152B-74B7-43B7-8E9A-E2B82C80289A}|Service\\Service.csproj|solutionrelative:service\\masterservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C841152B-74B7-43B7-8E9A-E2B82C80289A}|Service\\Service.csproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\service\\interfaces\\itatoutboundservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C841152B-74B7-43B7-8E9A-E2B82C80289A}|Service\\Service.csproj|solutionrelative:service\\interfaces\\itatoutboundservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{3DB3CB0F-B33B-46A8-9666-EA421056EEEE}|Reposi\\Reposi.csproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\reposi\\context\\appdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{3DB3CB0F-B33B-46A8-9666-EA421056EEEE}|Reposi\\Reposi.csproj|solutionrelative:reposi\\context\\appdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C841152B-74B7-43B7-8E9A-E2B82C80289A}|Service\\Service.csproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\service\\services\\receivingservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C841152B-74B7-43B7-8E9A-E2B82C80289A}|Service\\Service.csproj|solutionrelative:service\\services\\receivingservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8846EF0D-E626-4817-8821-A132989DCA6B}|Model\\Model.csproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\model\\setsdb\\branch_settings.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8846EF0D-E626-4817-8821-A132989DCA6B}|Model\\Model.csproj|solutionrelative:model\\setsdb\\branch_settings.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8846EF0D-E626-4817-8821-A132989DCA6B}|Model\\Model.csproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\model\\setsdb\\batch_header.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8846EF0D-E626-4817-8821-A132989DCA6B}|Model\\Model.csproj|solutionrelative:model\\setsdb\\batch_header.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8846EF0D-E626-4817-8821-A132989DCA6B}|Model\\Model.csproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\model\\setsdb\\tat_outbound_log.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8846EF0D-E626-4817-8821-A132989DCA6B}|Model\\Model.csproj|solutionrelative:model\\setsdb\\tat_outbound_log.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1E05344D-E1EC-4DBC-B24B-6E177E94DC79}|SETSMiddleware\\SETSMiddleware.csproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\setsmiddleware\\middlewarehttpserver.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{1E05344D-E1EC-4DBC-B24B-6E177E94DC79}|SETSMiddleware\\SETSMiddleware.csproj|solutionrelative:setsmiddleware\\middlewarehttpserver.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\sets.client\\src\\views\\admin\\tatsetuptab.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|solutionrelative:sets.client\\src\\views\\admin\\tatsetuptab.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1E05344D-E1EC-4DBC-B24B-6E177E94DC79}|SETSMiddleware\\SETSMiddleware.csproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\setsmiddleware\\testresultreleasetask.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{1E05344D-E1EC-4DBC-B24B-6E177E94DC79}|SETSMiddleware\\SETSMiddleware.csproj|solutionrelative:setsmiddleware\\testresultreleasetask.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{BD9ED67C-9663-4A71-9490-22712D3ED118}|SETS.Server\\SETS.Server.csproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\sets.server\\controllers\\batchcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -51,14 +135,6 @@
       "RelativeMoniker": "D:0:0:{8846EF0D-E626-4817-8821-A132989DCA6B}|Model\\Model.csproj|solutionrelative:model\\main\\batchnonbarcodeddetail.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{C841152B-74B7-43B7-8E9A-E2B82C80289A}|Service\\Service.csproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\service\\services\\receivingservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{C841152B-74B7-43B7-8E9A-E2B82C80289A}|Service\\Service.csproj|solutionrelative:service\\services\\receivingservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\sets.client\\src\\views\\shared\\audittrail.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|solutionrelative:sets.client\\src\\views\\shared\\audittrail.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{C841152B-74B7-43B7-8E9A-E2B82C80289A}|Service\\Service.csproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\service\\services\\auditservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{C841152B-74B7-43B7-8E9A-E2B82C80289A}|Service\\Service.csproj|solutionrelative:service\\services\\auditservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
@@ -87,16 +163,8 @@
       "RelativeMoniker": "D:0:0:{84B732FB-CE64-FD4F-ACA3-C01B8E5ADBDD}|SETSDeployer\\SETSDeployer.csproj|solutionrelative:setsdeployer\\views\\mainwindow.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{1E05344D-E1EC-4DBC-B24B-6E177E94DC79}|SETSMiddleware\\SETSMiddleware.csproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\setsmiddleware\\middlewarehttpserver.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{1E05344D-E1EC-4DBC-B24B-6E177E94DC79}|SETSMiddleware\\SETSMiddleware.csproj|solutionrelative:setsmiddleware\\middlewarehttpserver.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{8846EF0D-E626-4817-8821-A132989DCA6B}|Model\\Model.csproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\model\\main\\batchdetailresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{8846EF0D-E626-4817-8821-A132989DCA6B}|Model\\Model.csproj|solutionrelative:model\\main\\batchdetailresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{C841152B-74B7-43B7-8E9A-E2B82C80289A}|Service\\Service.csproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\service\\services\\tatservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{C841152B-74B7-43B7-8E9A-E2B82C80289A}|Service\\Service.csproj|solutionrelative:service\\services\\tatservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\sets.client\\src\\views\\receiver\\receivedbatches.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}",
@@ -129,10 +197,6 @@
     {
       "AbsoluteMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\sets.client\\src\\views\\runner\\completedspecimens.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}",
       "RelativeMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|solutionrelative:sets.client\\src\\views\\runner\\completedspecimens.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{1E05344D-E1EC-4DBC-B24B-6E177E94DC79}|SETSMiddleware\\SETSMiddleware.csproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\setsmiddleware\\outboundstatussynctask.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{1E05344D-E1EC-4DBC-B24B-6E177E94DC79}|SETSMiddleware\\SETSMiddleware.csproj|solutionrelative:setsmiddleware\\outboundstatussynctask.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\sets.client\\src\\views\\runner\\runningspecimens.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}",
@@ -183,10 +247,6 @@
       "RelativeMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|solutionrelative:sets.client\\src\\components\\layout\\applayout.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\sets.client\\src\\views\\admin\\adminsettings.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|solutionrelative:sets.client\\src\\views\\admin\\adminsettings.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|c:\\users\\jamespaul.josol\\source\\repos\\sets\\sets.client\\src\\api\\presenceapi.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
       "RelativeMoniker": "D:0:0:{D3B564EF-D969-677B-D6AB-FF965BE8582B}|sets.client\\sets.client.esproj|solutionrelative:sets.client\\src\\api\\presenceapi.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
     },
@@ -234,7 +294,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 170,
-          "SelectedChildIndex": 8,
+          "SelectedChildIndex": 1,
           "Children": [
             {
               "$type": "Bookmark",
@@ -242,20 +302,33 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
-              "Title": "RunnerDashboardSummary.cs",
-              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Model\\Main\\RunnerDashboardSummary.cs",
-              "RelativeDocumentMoniker": "Model\\Main\\RunnerDashboardSummary.cs",
-              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Model\\Main\\RunnerDashboardSummary.cs",
-              "RelativeToolTip": "Model\\Main\\RunnerDashboardSummary.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAABAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-06-03T23:00:20.723Z",
+              "DocumentIndex": 0,
+              "Title": "appsettings.json",
+              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\SETS.Server\\appsettings.json",
+              "RelativeDocumentMoniker": "SETS.Server\\appsettings.json",
+              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\SETS.Server\\appsettings.json",
+              "RelativeToolTip": "SETS.Server\\appsettings.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAMAAAA7AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2026-06-05T08:31:29.812Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 22,
+              "Title": "TatSetUpTab.vue",
+              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\admin\\TatSetUpTab.vue",
+              "RelativeDocumentMoniker": "sets.client\\src\\views\\admin\\TatSetUpTab.vue",
+              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\admin\\TatSetUpTab.vue",
+              "RelativeToolTip": "sets.client\\src\\views\\admin\\TatSetUpTab.vue",
+              "ViewState": "AgIAACYAAAAAAAAAAAAUwKQAAABmAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
+              "WhenOpened": "2026-06-05T02:56:43.916Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 28,
               "Title": "HclabMaster.cs",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\HCLAB\\HclabMaster.cs",
               "RelativeDocumentMoniker": "HCLAB\\HclabMaster.cs",
@@ -267,7 +340,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 29,
+              "DocumentIndex": 46,
               "Title": "Queries.cs",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\HCLAB\\Queries.cs",
               "RelativeDocumentMoniker": "HCLAB\\Queries.cs",
@@ -279,26 +352,51 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 12,
+              "DocumentIndex": 1,
+              "Title": "NewEndorsement.vue",
+              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\endorser\\NewEndorsement.vue",
+              "RelativeDocumentMoniker": "sets.client\\src\\views\\endorser\\NewEndorsement.vue",
+              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\endorser\\NewEndorsement.vue",
+              "RelativeToolTip": "sets.client\\src\\views\\endorser\\NewEndorsement.vue",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAADcAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
+              "WhenOpened": "2026-05-29T04:55:28.265Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 27,
+              "Title": "RunnerDashboardSummary.cs",
+              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Model\\Main\\RunnerDashboardSummary.cs",
+              "RelativeDocumentMoniker": "Model\\Main\\RunnerDashboardSummary.cs",
+              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Model\\Main\\RunnerDashboardSummary.cs",
+              "RelativeToolTip": "Model\\Main\\RunnerDashboardSummary.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-03T23:00:20.723Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 17,
               "Title": "ReceivingService.cs",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Service\\Services\\ReceivingService.cs",
               "RelativeDocumentMoniker": "Service\\Services\\ReceivingService.cs",
               "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Service\\Services\\ReceivingService.cs",
               "RelativeToolTip": "Service\\Services\\ReceivingService.cs",
-              "ViewState": "AgIAACgEAAAAAAAAAAAAAGQEAAA5AAAAAAAAAA==",
+              "ViewState": "AgIAAGwAAAAAAAAAAAAIwH4AAAA4AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-06-02T02:34:47.805Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 12,
               "Title": "BatchService.cs",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Service\\Services\\BatchService.cs",
               "RelativeDocumentMoniker": "Service\\Services\\BatchService.cs",
               "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Service\\Services\\BatchService.cs",
               "RelativeToolTip": "Service\\Services\\BatchService.cs",
-              "ViewState": "AgIAAAIDAAAAAAAAAAAswCADAAAjAAAAAAAAAA==",
+              "ViewState": "AgIAAKMAAAAAAAAAAAAswA0BAAARAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-05-29T01:18:52.015Z",
               "EditorCaption": ""
@@ -311,13 +409,14 @@
               "RelativeDocumentMoniker": "SETSMiddleware\\MiddlewareHttpServer.cs",
               "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\SETSMiddleware\\MiddlewareHttpServer.cs",
               "RelativeToolTip": "SETSMiddleware\\MiddlewareHttpServer.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAADQAAAAMAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABoAAAAvAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-06-01T08:24:55.922Z"
+              "WhenOpened": "2026-06-01T08:24:55.922Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 52,
+              "DocumentIndex": 67,
               "Title": "Specimen_Section_Header.cs",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Model\\SETSDB\\Specimen_Section_Header.cs",
               "RelativeDocumentMoniker": "Model\\SETSDB\\Specimen_Section_Header.cs",
@@ -329,20 +428,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "NewEndorsement.vue",
-              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\endorser\\NewEndorsement.vue",
-              "RelativeDocumentMoniker": "sets.client\\src\\views\\endorser\\NewEndorsement.vue",
-              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\endorser\\NewEndorsement.vue",
-              "RelativeToolTip": "sets.client\\src\\views\\endorser\\NewEndorsement.vue",
-              "ViewState": "AgIAAHEBAAAAAAAAAAAvwJYBAAAXAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
-              "WhenOpened": "2026-05-29T04:55:28.265Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 53,
+              "DocumentIndex": 68,
               "Title": "MonitoringKiosk.vue",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\kiosk\\MonitoringKiosk.vue",
               "RelativeDocumentMoniker": "sets.client\\src\\views\\kiosk\\MonitoringKiosk.vue",
@@ -354,7 +440,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 54,
+              "DocumentIndex": 69,
               "Title": "index.js",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\router\\index.js",
               "RelativeDocumentMoniker": "sets.client\\src\\router\\index.js",
@@ -366,7 +452,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 55,
+              "DocumentIndex": 70,
               "Title": "kioskApi.js",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\api\\kioskApi.js",
               "RelativeDocumentMoniker": "sets.client\\src\\api\\kioskApi.js",
@@ -380,7 +466,7 @@
         },
         {
           "DockedWidth": 196,
-          "SelectedChildIndex": 8,
+          "SelectedChildIndex": 2,
           "Children": [
             {
               "$type": "Bookmark",
@@ -388,20 +474,241 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "BatchController.cs",
-              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\SETS.Server\\Controllers\\BatchController.cs",
-              "RelativeDocumentMoniker": "SETS.Server\\Controllers\\BatchController.cs",
-              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\SETS.Server\\Controllers\\BatchController.cs",
-              "RelativeToolTip": "SETS.Server\\Controllers\\BatchController.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAC0AAABCAAAAAAAAAA==",
+              "DocumentIndex": 5,
+              "Title": "Dashboard.vue",
+              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\endorser\\Dashboard.vue",
+              "RelativeDocumentMoniker": "sets.client\\src\\views\\endorser\\Dashboard.vue",
+              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\endorser\\Dashboard.vue",
+              "RelativeToolTip": "sets.client\\src\\views\\endorser\\Dashboard.vue",
+              "ViewState": "AgIAAIsAAAAAAAAAAAAUwN0AAAA8AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
+              "WhenOpened": "2026-06-05T08:11:42.824Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "OutboundTatTab.vue",
+              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\admin\\OutboundTatTab.vue",
+              "RelativeDocumentMoniker": "sets.client\\src\\views\\admin\\OutboundTatTab.vue",
+              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\admin\\OutboundTatTab.vue",
+              "RelativeToolTip": "sets.client\\src\\views\\admin\\OutboundTatTab.vue",
+              "ViewState": "AgIAAFYAAAAAAAAAAAAvwJcAAABuAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
+              "WhenOpened": "2026-06-05T07:53:30.279Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "MiddlewareForm.cs",
+              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\SETSMiddleware\\MiddlewareForm.cs",
+              "RelativeDocumentMoniker": "SETSMiddleware\\MiddlewareForm.cs",
+              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\SETSMiddleware\\MiddlewareForm.cs",
+              "RelativeToolTip": "SETSMiddleware\\MiddlewareForm.cs",
+              "ViewState": "AgIAABUAAAAAAAAAAAAAwEgAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-06-04T06:52:42.041Z",
+              "WhenOpened": "2026-06-05T07:48:04.607Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "OutboundTatWindowCheckTask.cs",
+              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\SETSMiddleware\\OutboundTatWindowCheckTask.cs",
+              "RelativeDocumentMoniker": "SETSMiddleware\\OutboundTatWindowCheckTask.cs",
+              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\SETSMiddleware\\OutboundTatWindowCheckTask.cs",
+              "RelativeToolTip": "SETSMiddleware\\OutboundTatWindowCheckTask.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAEcAAAAuAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-05T07:47:36.107Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "TatOutboundService.cs",
+              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Service\\Services\\TatOutboundService.cs",
+              "RelativeDocumentMoniker": "Service\\Services\\TatOutboundService.cs",
+              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Service\\Services\\TatOutboundService.cs",
+              "RelativeToolTip": "Service\\Services\\TatOutboundService.cs",
+              "ViewState": "AgIAABEAAAAAAAAAAAAQwDAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-05T07:19:12.682Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 15,
+              "Title": "ITatOutboundService.cs",
+              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Service\\Interfaces\\ITatOutboundService.cs",
+              "RelativeDocumentMoniker": "Service\\Interfaces\\ITatOutboundService.cs",
+              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Service\\Interfaces\\ITatOutboundService.cs",
+              "RelativeToolTip": "Service\\Interfaces\\ITatOutboundService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAACoAAAAjAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-05T07:18:42.313Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
+              "Title": "EndorsementTatResetTask.cs",
+              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\SETSMiddleware\\EndorsementTatResetTask.cs",
+              "RelativeDocumentMoniker": "SETSMiddleware\\EndorsementTatResetTask.cs",
+              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\SETSMiddleware\\EndorsementTatResetTask.cs",
+              "RelativeToolTip": "SETSMiddleware\\EndorsementTatResetTask.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAqwBoAAAAuAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-05T06:59:51.737Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 16,
+              "Title": "AppDbContext.cs",
+              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Reposi\\Context\\AppDbContext.cs",
+              "RelativeDocumentMoniker": "Reposi\\Context\\AppDbContext.cs",
+              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Reposi\\Context\\AppDbContext.cs",
+              "RelativeToolTip": "Reposi\\Context\\AppDbContext.cs",
+              "ViewState": "AgIAAJwAAAAAAAAAAAAIwM8AAAAPAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-05T06:58:29.888Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 18,
+              "Title": "Branch_Settings.cs",
+              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Model\\SETSDB\\Branch_Settings.cs",
+              "RelativeDocumentMoniker": "Model\\SETSDB\\Branch_Settings.cs",
+              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Model\\SETSDB\\Branch_Settings.cs",
+              "RelativeToolTip": "Model\\SETSDB\\Branch_Settings.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABEAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-05T06:58:15.513Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 4,
+              "Title": "AuditTrail.vue",
+              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\shared\\AuditTrail.vue",
+              "RelativeDocumentMoniker": "sets.client\\src\\views\\shared\\AuditTrail.vue",
+              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\shared\\AuditTrail.vue",
+              "RelativeToolTip": "sets.client\\src\\views\\shared\\AuditTrail.vue",
+              "ViewState": "AgIAAOMDAAAAAAAAAAAUwGkEAAAPAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
+              "WhenOpened": "2026-06-03T06:23:56.048Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 19,
+              "Title": "Batch_Header.cs",
+              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Model\\SETSDB\\Batch_Header.cs",
+              "RelativeDocumentMoniker": "Model\\SETSDB\\Batch_Header.cs",
+              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Model\\SETSDB\\Batch_Header.cs",
+              "RelativeToolTip": "Model\\SETSDB\\Batch_Header.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAB0AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-05T06:58:06.562Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "AdminSettings.vue",
+              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\admin\\AdminSettings.vue",
+              "RelativeDocumentMoniker": "sets.client\\src\\views\\admin\\AdminSettings.vue",
+              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\admin\\AdminSettings.vue",
+              "RelativeToolTip": "sets.client\\src\\views\\admin\\AdminSettings.vue",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAADYAAABIAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
+              "WhenOpened": "2026-06-01T07:41:01.027Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 20,
+              "Title": "Tat_Outbound_Log.cs",
+              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Model\\SETSDB\\Tat_Outbound_Log.cs",
+              "RelativeDocumentMoniker": "Model\\SETSDB\\Tat_Outbound_Log.cs",
+              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Model\\SETSDB\\Tat_Outbound_Log.cs",
+              "RelativeToolTip": "Model\\SETSDB\\Tat_Outbound_Log.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABUAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-05T07:12:54.57Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "TatService.cs",
+              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Service\\Services\\TatService.cs",
+              "RelativeDocumentMoniker": "Service\\Services\\TatService.cs",
+              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Service\\Services\\TatService.cs",
+              "RelativeToolTip": "Service\\Services\\TatService.cs",
+              "ViewState": "AgIAAD0AAAAAAAAAAIAwwJoAAAAcAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-03T01:46:10.5Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 14,
+              "Title": "MasterService.cs",
+              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Service\\MasterService.cs",
+              "RelativeDocumentMoniker": "Service\\MasterService.cs",
+              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Service\\MasterService.cs",
+              "RelativeToolTip": "Service\\MasterService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABsAAABPAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-05T06:59:02.075Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "TatController.cs",
+              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\SETS.Server\\Controllers\\TatController.cs",
+              "RelativeDocumentMoniker": "SETS.Server\\Controllers\\TatController.cs",
+              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\SETS.Server\\Controllers\\TatController.cs",
+              "RelativeToolTip": "SETS.Server\\Controllers\\TatController.cs",
+              "ViewState": "AgIAAPYAAAAAAAAAAAAnwEQBAABOAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-05T02:56:50.108Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "OutboundStatusSyncTask.cs",
+              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\SETSMiddleware\\OutboundStatusSyncTask.cs",
+              "RelativeDocumentMoniker": "SETSMiddleware\\OutboundStatusSyncTask.cs",
+              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\SETSMiddleware\\OutboundStatusSyncTask.cs",
+              "RelativeToolTip": "SETSMiddleware\\OutboundStatusSyncTask.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAHwAAABFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-02T02:34:16.373Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 23,
+              "Title": "TestResultReleaseTask.cs",
+              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\SETSMiddleware\\TestResultReleaseTask.cs",
+              "RelativeDocumentMoniker": "SETSMiddleware\\TestResultReleaseTask.cs",
+              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\SETSMiddleware\\TestResultReleaseTask.cs",
+              "RelativeToolTip": "SETSMiddleware\\TestResultReleaseTask.cs",
+              "ViewState": "AgIAAHwAAAAAAAAAAAAAAOIAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-05T01:23:02.496Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 25,
               "Title": "AssignRMT.vue",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\runner\\AssignRMT.vue",
               "RelativeDocumentMoniker": "sets.client\\src\\views\\runner\\AssignRMT.vue",
@@ -409,12 +716,11 @@
               "RelativeToolTip": "sets.client\\src\\views\\runner\\AssignRMT.vue",
               "ViewState": "AgIAAB4AAAAAAAAAAAAEwDMAAAANAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
-              "WhenOpened": "2026-06-04T05:01:00.361Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-06-04T05:01:00.361Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 19,
+              "DocumentIndex": 38,
               "Title": "SqlRunnerService.cs",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\SETSDeployer\\Services\\SqlRunnerService.cs",
               "RelativeDocumentMoniker": "SETSDeployer\\Services\\SqlRunnerService.cs",
@@ -426,7 +732,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 22,
+              "DocumentIndex": 40,
               "Title": "BatchDetailResponse.cs",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Model\\Main\\BatchDetailResponse.cs",
               "RelativeDocumentMoniker": "Model\\Main\\BatchDetailResponse.cs",
@@ -438,7 +744,19 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 11,
+              "DocumentIndex": 24,
+              "Title": "BatchController.cs",
+              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\SETS.Server\\Controllers\\BatchController.cs",
+              "RelativeDocumentMoniker": "SETS.Server\\Controllers\\BatchController.cs",
+              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\SETS.Server\\Controllers\\BatchController.cs",
+              "RelativeToolTip": "SETS.Server\\Controllers\\BatchController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAC0AAABCAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-04T06:52:42.041Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 32,
               "Title": "BatchNonBarcodedDetail.cs",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Model\\Main\\BatchNonBarcodedDetail.cs",
               "RelativeDocumentMoniker": "Model\\Main\\BatchNonBarcodedDetail.cs",
@@ -450,19 +768,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 23,
-              "Title": "TatService.cs",
-              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Service\\Services\\TatService.cs",
-              "RelativeDocumentMoniker": "Service\\Services\\TatService.cs",
-              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Service\\Services\\TatService.cs",
-              "RelativeToolTip": "Service\\Services\\TatService.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABkAAABQAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-06-03T01:46:10.5Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 8,
+              "DocumentIndex": 29,
               "Title": "ReceiverDashboard.vue",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\receiver\\ReceiverDashboard.vue",
               "RelativeDocumentMoniker": "sets.client\\src\\views\\receiver\\ReceiverDashboard.vue",
@@ -474,20 +780,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "appsettings.json",
-              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\SETS.Server\\appsettings.json",
-              "RelativeDocumentMoniker": "SETS.Server\\appsettings.json",
-              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\SETS.Server\\appsettings.json",
-              "RelativeToolTip": "SETS.Server\\appsettings.json",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAABYAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2026-06-02T07:37:46.387Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 10,
+              "DocumentIndex": 31,
               "Title": "BatchDetailDrawer.vue",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\components\\common\\BatchDetailDrawer.vue",
               "RelativeDocumentMoniker": "sets.client\\src\\components\\common\\BatchDetailDrawer.vue",
@@ -499,7 +792,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 15,
+              "DocumentIndex": 34,
               "Title": "ReceivingController.cs",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\SETS.Server\\Controllers\\ReceivingController.cs",
               "RelativeDocumentMoniker": "SETS.Server\\Controllers\\ReceivingController.cs",
@@ -511,7 +804,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 9,
+              "DocumentIndex": 30,
               "Title": "IncomingSpecimens.vue",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\receiver\\IncomingSpecimens.vue",
               "RelativeDocumentMoniker": "sets.client\\src\\views\\receiver\\IncomingSpecimens.vue",
@@ -523,7 +816,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 26,
               "Title": "RunnerService.cs",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Service\\Services\\RunnerService.cs",
               "RelativeDocumentMoniker": "Service\\Services\\RunnerService.cs",
@@ -531,12 +824,11 @@
               "RelativeToolTip": "Service\\Services\\RunnerService.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAGgAAAAZAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-06-02T01:33:13.056Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-06-02T01:33:13.056Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 18,
+              "DocumentIndex": 37,
               "Title": "AuditEvents.cs",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Model\\SETSDB\\AuditEvents.cs",
               "RelativeDocumentMoniker": "Model\\SETSDB\\AuditEvents.cs",
@@ -548,7 +840,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 17,
+              "DocumentIndex": 36,
               "Title": "Audit_Log.cs",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Model\\SETSDB\\Audit_Log.cs",
               "RelativeDocumentMoniker": "Model\\SETSDB\\Audit_Log.cs",
@@ -560,7 +852,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 14,
+              "DocumentIndex": 33,
               "Title": "AuditService.cs",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Service\\Services\\AuditService.cs",
               "RelativeDocumentMoniker": "Service\\Services\\AuditService.cs",
@@ -572,19 +864,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 13,
-              "Title": "AuditTrail.vue",
-              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\shared\\AuditTrail.vue",
-              "RelativeDocumentMoniker": "sets.client\\src\\views\\shared\\AuditTrail.vue",
-              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\shared\\AuditTrail.vue",
-              "RelativeToolTip": "sets.client\\src\\views\\shared\\AuditTrail.vue",
-              "ViewState": "AgIAAI4DAAAAAAAAAAAAAKUDAAAeAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
-              "WhenOpened": "2026-06-03T06:23:56.048Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 16,
+              "DocumentIndex": 35,
               "Title": "receivingApi.js",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\api\\receivingApi.js",
               "RelativeDocumentMoniker": "sets.client\\src\\api\\receivingApi.js",
@@ -592,12 +872,11 @@
               "RelativeToolTip": "sets.client\\src\\api\\receivingApi.js",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABkAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2026-06-03T06:10:18.803Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-06-03T06:10:18.803Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 20,
+              "DocumentIndex": 39,
               "Title": "MainWindow.xaml.cs",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\SETSDeployer\\Views\\MainWindow.xaml.cs",
               "RelativeDocumentMoniker": "SETSDeployer\\Views\\MainWindow.xaml.cs",
@@ -609,7 +888,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 24,
+              "DocumentIndex": 41,
               "Title": "ReceivedBatches.vue",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\receiver\\ReceivedBatches.vue",
               "RelativeDocumentMoniker": "sets.client\\src\\views\\receiver\\ReceivedBatches.vue",
@@ -617,11 +896,12 @@
               "RelativeToolTip": "sets.client\\src\\views\\receiver\\ReceivedBatches.vue",
               "ViewState": "AgIAAG0AAAAAAAAAAAAEwJwAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
-              "WhenOpened": "2026-06-03T01:42:59.791Z"
+              "WhenOpened": "2026-06-03T01:42:59.791Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 25,
+              "DocumentIndex": 42,
               "Title": "ReceivedBatchItem.cs",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Model\\Main\\ReceivedBatchItem.cs",
               "RelativeDocumentMoniker": "Model\\Main\\ReceivedBatchItem.cs",
@@ -633,7 +913,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 26,
+              "DocumentIndex": 43,
               "Title": "BatchSpecimenDetail.cs",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Model\\Main\\BatchSpecimenDetail.cs",
               "RelativeDocumentMoniker": "Model\\Main\\BatchSpecimenDetail.cs",
@@ -645,7 +925,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 27,
+              "DocumentIndex": 44,
               "Title": "Tat_Processing.cs",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Model\\SETSDB\\Tat_Processing.cs",
               "RelativeDocumentMoniker": "Model\\SETSDB\\Tat_Processing.cs",
@@ -657,7 +937,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 28,
+              "DocumentIndex": 45,
               "Title": "AnnouncementBanner.vue",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\components\\common\\AnnouncementBanner.vue",
               "RelativeDocumentMoniker": "sets.client\\src\\components\\common\\AnnouncementBanner.vue",
@@ -669,19 +949,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 32,
-              "Title": "OutboundStatusSyncTask.cs",
-              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\SETSMiddleware\\OutboundStatusSyncTask.cs",
-              "RelativeDocumentMoniker": "SETSMiddleware\\OutboundStatusSyncTask.cs",
-              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\SETSMiddleware\\OutboundStatusSyncTask.cs",
-              "RelativeToolTip": "SETSMiddleware\\OutboundStatusSyncTask.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAHwAAABFAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-06-02T02:34:16.373Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 31,
+              "DocumentIndex": 48,
               "Title": "CompletedSpecimens.vue",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\runner\\CompletedSpecimens.vue",
               "RelativeDocumentMoniker": "sets.client\\src\\views\\runner\\CompletedSpecimens.vue",
@@ -693,7 +961,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 37,
+              "DocumentIndex": 53,
               "Title": "RunnerController.cs",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\SETS.Server\\Controllers\\RunnerController.cs",
               "RelativeDocumentMoniker": "SETS.Server\\Controllers\\RunnerController.cs",
@@ -705,7 +973,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 38,
+              "DocumentIndex": 54,
               "Title": "runnerApi.js",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\api\\runnerApi.js",
               "RelativeDocumentMoniker": "sets.client\\src\\api\\runnerApi.js",
@@ -717,7 +985,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 36,
+              "DocumentIndex": 52,
               "Title": "PendingSpecimens.vue",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\runner\\PendingSpecimens.vue",
               "RelativeDocumentMoniker": "sets.client\\src\\views\\runner\\PendingSpecimens.vue",
@@ -729,7 +997,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 33,
+              "DocumentIndex": 49,
               "Title": "RunningSpecimens.vue",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\runner\\RunningSpecimens.vue",
               "RelativeDocumentMoniker": "sets.client\\src\\views\\runner\\RunningSpecimens.vue",
@@ -741,7 +1009,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 39,
+              "DocumentIndex": 55,
               "Title": "axiosInstance.js",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\api\\axiosInstance.js",
               "RelativeDocumentMoniker": "sets.client\\src\\api\\axiosInstance.js",
@@ -753,7 +1021,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 30,
+              "DocumentIndex": 47,
               "Title": "AppTopbar.vue",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\components\\layout\\AppTopbar.vue",
               "RelativeDocumentMoniker": "sets.client\\src\\components\\layout\\AppTopbar.vue",
@@ -765,7 +1033,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 34,
+              "DocumentIndex": 50,
               "Title": "ScheduledSpecimens.vue",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\runner\\ScheduledSpecimens.vue",
               "RelativeDocumentMoniker": "sets.client\\src\\views\\runner\\ScheduledSpecimens.vue",
@@ -777,7 +1045,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 35,
+              "DocumentIndex": 51,
               "Title": "AppTable.vue",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\components\\common\\AppTable.vue",
               "RelativeDocumentMoniker": "sets.client\\src\\components\\common\\AppTable.vue",
@@ -789,7 +1057,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 42,
+              "DocumentIndex": 58,
               "Title": "IUserPresenceService.cs",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\SETS.Server\\Services\\IUserPresenceService.cs",
               "RelativeDocumentMoniker": "SETS.Server\\Services\\IUserPresenceService.cs",
@@ -801,7 +1069,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 44,
+              "DocumentIndex": 60,
               "Title": "AppLayout.vue",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\components\\layout\\AppLayout.vue",
               "RelativeDocumentMoniker": "sets.client\\src\\components\\layout\\AppLayout.vue",
@@ -813,7 +1081,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 43,
+              "DocumentIndex": 59,
               "Title": "presenceStore.js",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\stores\\presenceStore.js",
               "RelativeDocumentMoniker": "sets.client\\src\\stores\\presenceStore.js",
@@ -825,7 +1093,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 41,
+              "DocumentIndex": 57,
               "Title": "PresenceHub.cs",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\SETS.Server\\Hubs\\PresenceHub.cs",
               "RelativeDocumentMoniker": "SETS.Server\\Hubs\\PresenceHub.cs",
@@ -837,19 +1105,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 45,
-              "Title": "AdminSettings.vue",
-              "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\admin\\AdminSettings.vue",
-              "RelativeDocumentMoniker": "sets.client\\src\\views\\admin\\AdminSettings.vue",
-              "ToolTip": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\admin\\AdminSettings.vue",
-              "RelativeToolTip": "sets.client\\src\\views\\admin\\AdminSettings.vue",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAeAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
-              "WhenOpened": "2026-06-01T07:41:01.027Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 40,
+              "DocumentIndex": 56,
               "Title": "OnlineUsersTab.vue",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\admin\\OnlineUsersTab.vue",
               "RelativeDocumentMoniker": "sets.client\\src\\views\\admin\\OnlineUsersTab.vue",
@@ -861,7 +1117,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 46,
+              "DocumentIndex": 61,
               "Title": "presenceApi.js",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\api\\presenceApi.js",
               "RelativeDocumentMoniker": "sets.client\\src\\api\\presenceApi.js",
@@ -873,7 +1129,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 47,
+              "DocumentIndex": 62,
               "Title": "RunnerDashboard.vue",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\runner\\RunnerDashboard.vue",
               "RelativeDocumentMoniker": "sets.client\\src\\views\\runner\\RunnerDashboard.vue",
@@ -885,7 +1141,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 48,
+              "DocumentIndex": 63,
               "Title": "SectionTab.vue",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\sets.client\\src\\views\\admin\\SectionTab.vue",
               "RelativeDocumentMoniker": "sets.client\\src\\views\\admin\\SectionTab.vue",
@@ -897,7 +1153,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 49,
+              "DocumentIndex": 64,
               "Title": "SectionController.cs",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\SETS.Server\\Controllers\\SectionController.cs",
               "RelativeDocumentMoniker": "SETS.Server\\Controllers\\SectionController.cs",
@@ -909,7 +1165,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 50,
+              "DocumentIndex": 65,
               "Title": "HclabRoutingTask.cs",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\SETSMiddleware\\HclabRoutingTask.cs",
               "RelativeDocumentMoniker": "SETSMiddleware\\HclabRoutingTask.cs",
@@ -921,7 +1177,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 51,
+              "DocumentIndex": 66,
               "Title": "SpecimenSectionHeaderRepo.cs",
               "DocumentMoniker": "C:\\Users\\jamespaul.josol\\source\\repos\\SETS\\Reposi\\Repositories\\SpecimenSectionHeaderRepo.cs",
               "RelativeDocumentMoniker": "Reposi\\Repositories\\SpecimenSectionHeaderRepo.cs",

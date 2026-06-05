@@ -24,5 +24,6 @@ namespace Model.SETSDB
         public bool IsOutbound { get; set; }
         public bool IsInbound { get; set; }
         public string? DestBranchCode { get; set; }
+        public bool IsOutsideOutboundTat { get; set; }
     }
 }

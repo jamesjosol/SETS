@@ -22,6 +22,7 @@ namespace Service
         public TestGroupService TestGroup { get; set; }
         public TestRunningDayService TestRunningDay { get; set; }
         public TatService Tat { get; private set; }
+        public TatOutboundService TatOutbound { get; private set; }
         public OnSiteService OnSite { get; private set; }
         public OnSiteSettingsService OnSiteSettings { get; private set; }
         public ProcessingOptionsService ProcessingOptions { get; private set; }
@@ -62,6 +63,7 @@ namespace Service
             TestGroup = new TestGroupService(_factory, _branch);
             TestRunningDay = new TestRunningDayService(_factory, _branch);
             Tat = new TatService(_factory, _branch);
+            TatOutbound = new TatOutboundService(_factory, _branch);
             OnSite = new OnSiteService(_factory, _branch);
             OnSiteSettings = new OnSiteSettingsService(_factory, _branch);
             ProcessingOptions = new ProcessingOptionsService(_factory, _branch);

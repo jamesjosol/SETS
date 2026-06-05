@@ -44,6 +44,8 @@ namespace Reposi.Context
         public DbSet<Announcement> Announcement { get; set; }
         public DbSet<Notification_Log> Notification_Log { get; set; }
         public DbSet<Branch_Settings> Branch_Settings { get; set; }
+        public DbSet<Tat_Outbound_Window> Tat_Outbound_Window { get; set; }
+        public DbSet<Tat_Outbound_Log> Tat_Outbound_Log { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -261,6 +263,20 @@ namespace Reposi.Context
             // Branch_Settings
             modelBuilder.Entity<Branch_Settings>().ToTable("Branch_Settings");
             modelBuilder.Entity<Branch_Settings>().HasKey(a => a.Id);
+
+            // Tat_Outbound_Window
+            modelBuilder.Entity<Tat_Outbound_Window>().ToTable("Tat_Outbound_Window");
+            modelBuilder.Entity<Tat_Outbound_Window>().HasKey(w => w.Id);
+
+            // Tat_Outbound_Log
+            modelBuilder.Entity<Tat_Outbound_Log>().ToTable("Tat_Outbound_Log");
+            modelBuilder.Entity<Tat_Outbound_Log>().HasKey(l => l.Id);
+            modelBuilder.Entity<Tat_Outbound_Log>()
+                .HasOne<Tat_Outbound_Window>()
+                .WithMany()
+                .HasForeignKey(l => l.WindowId);
+            modelBuilder.Entity<Tat_Outbound_Log>()
+                .HasIndex(l => new { l.WindowDate, l.WindowId });
 
         }
     }

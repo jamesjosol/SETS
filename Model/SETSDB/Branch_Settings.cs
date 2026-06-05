@@ -12,5 +12,7 @@ namespace Model.SETSDB
         public bool IsOutboundEnabled { get; set; }
         public DateTime? UpdatedAt { get; set; }
         public string? UpdatedBy { get; set; }
+        public bool OutboundTatEnabled { get; set; }        
+        public bool OutboundTatAppealEnabled { get; set; }  
     }
 }

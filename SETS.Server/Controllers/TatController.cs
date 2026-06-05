@@ -308,6 +308,309 @@ namespace SETS.Server.Controllers
                 return StatusCode(500, new { message = ex.Message });
             }
         }
+
+        // ════════════════════════════════════════════════════════════════════════════
+        // OUTBOUND TAT
+        // ════════════════════════════════════════════════════════════════════════════
+
+        // ── GET api/tat/outbound/settings ─────────────────────────────────────────
+        // Returns OutboundTatEnabled + OutboundTatAppealEnabled for this branch
+        [HttpGet("outbound/settings")]
+        public IActionResult GetOutboundTatSettings()
+        {
+            try
+            {
+                var branch = Branch;
+                if (string.IsNullOrEmpty(branch))
+                    return Unauthorized(new { message = "Session expired." });
+
+                using var master = new MasterService(branch);
+                return Ok(new
+                {
+                    outboundTatEnabled = master.TatOutbound.IsOutboundTatEnabled(),
+                    outboundTatAppealEnabled = master.TatOutbound.IsAppealEnabled()
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+
+        // ── PUT api/tat/outbound/settings ─────────────────────────────────────────
+        // Toggle OutboundTatEnabled and/or OutboundTatAppealEnabled (admin only)
+        [HttpPut("outbound/settings")]
+        public IActionResult UpdateOutboundTatSettings([FromBody] OutboundTatSettingsRequest request)
+        {
+            try
+            {
+                if (!IsAdmin) return RequireAdmin();
+
+                var branch = Branch;
+                if (string.IsNullOrEmpty(branch))
+                    return Unauthorized(new { message = "Session expired." });
+
+                var userID = CurrentUserID;
+                if (string.IsNullOrEmpty(userID))
+                    return Unauthorized(new { message = "Session expired." });
+
+                using var master = new MasterService(branch);
+                master.TatOutbound.SetOutboundTatEnabled(request.OutboundTatEnabled, userID);
+                master.TatOutbound.SetAppealEnabled(request.OutboundTatAppealEnabled, userID);
+
+                return Ok(new { message = "Outbound TAT settings saved." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+
+        // ── GET api/tat/outbound/windows ──────────────────────────────────────────
+        // All configured outbound TAT windows (admin only)
+        [HttpGet("outbound/windows")]
+        public IActionResult GetOutboundWindows()
+        {
+            try
+            {
+                if (!IsAdmin) return RequireAdmin();
+
+                var branch = Branch;
+                if (string.IsNullOrEmpty(branch))
+                    return Unauthorized(new { message = "Session expired." });
+
+                using var master = new MasterService(branch);
+                var windows = master.TatOutbound.GetWindows();
+
+                return Ok(windows.Select(w => new
+                {
+                    id = w.Id,
+                    windowStart = w.WindowStart.ToString(@"hh\:mm"),
+                    windowEnd = w.WindowEnd.ToString(@"hh\:mm"),
+                    scheduleType = w.ScheduleType,
+                    isActive = w.IsActive,
+                    createdBy = w.CreatedBy,
+                    created = w.Created,
+                    updatedBy = w.UpdatedBy,
+                    updated = w.Updated
+                }).ToList());
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+
+        // ── PUT api/tat/outbound/windows ──────────────────────────────────────────
+        // Upsert the full list of outbound windows (admin only)
+        // Send Id=0 for new windows, existing Id for updates
+        [HttpPut("outbound/windows")]
+        public IActionResult UpsertOutboundWindows([FromBody] List<OutboundWindowUpsertRequest> requests)
+        {
+            try
+            {
+                if (!IsAdmin) return RequireAdmin();
+
+                var branch = Branch;
+                if (string.IsNullOrEmpty(branch))
+                    return Unauthorized(new { message = "Session expired." });
+
+                var userID = CurrentUserID;
+                if (string.IsNullOrEmpty(userID))
+                    return Unauthorized(new { message = "Session expired." });
+
+                if (requests == null || requests.Count == 0)
+                    return BadRequest(new { message = "No windows provided." });
+
+                // Validate each window
+                foreach (var r in requests)
+                {
+                    if (!TimeSpan.TryParse(r.WindowStart, out var start) ||
+                        !TimeSpan.TryParse(r.WindowEnd, out var end))
+                        return BadRequest(new { message = $"Invalid time format for window {r.Id}." });
+
+                    if (end <= start)
+                        return BadRequest(new { message = $"Window end must be after window start for window {r.Id}." });
+
+                    if (r.ScheduleType != "Weekday" && r.ScheduleType != "Sunday")
+                        return BadRequest(new { message = $"ScheduleType must be 'Weekday' or 'Sunday' for window {r.Id}." });
+                }
+
+                using var master = new MasterService(branch);
+                master.TatOutbound.UpsertWindows(requests.Select(r => new Model.SETSDB.Tat_Outbound_Window
+                {
+                    Id = r.Id,
+                    WindowStart = TimeSpan.Parse(r.WindowStart),
+                    WindowEnd = TimeSpan.Parse(r.WindowEnd),
+                    ScheduleType = r.ScheduleType,
+                    IsActive = r.IsActive
+                }).ToList(), userID);
+
+                return Ok(new { message = "Outbound TAT windows saved." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+
+        // ── DELETE api/tat/outbound/windows/{id} ──────────────────────────────────
+        // Delete a single outbound window (admin only)
+        [HttpDelete("outbound/windows/{id}")]
+        public IActionResult DeleteOutboundWindow(int id)
+        {
+            try
+            {
+                if (!IsAdmin) return RequireAdmin();
+
+                var branch = Branch;
+                if (string.IsNullOrEmpty(branch))
+                    return Unauthorized(new { message = "Session expired." });
+
+                using var master = new MasterService(branch);
+                master.TatOutbound.DeleteWindow(id);
+
+                return Ok(new { message = "Window deleted." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+
+        // ── GET api/tat/outbound/current-window ───────────────────────────────────
+        // Returns the current window status for the endorser's live display
+        // Accessible by all authenticated users (not admin-only)
+        [HttpGet("outbound/current-window")]
+        public IActionResult GetCurrentWindowStatus()
+        {
+            try
+            {
+                var branch = Branch;
+                if (string.IsNullOrEmpty(branch))
+                    return Unauthorized(new { message = "Session expired." });
+
+                var now = DateTime.Now;
+
+                using var master = new MasterService(branch);
+
+                if (!master.TatOutbound.IsOutboundTatEnabled())
+                    return Ok(new { enabled = false });
+
+                var todayWindows = master.TatOutbound.GetTodayWindows(now);
+                var currentWindow = master.TatOutbound.GetCurrentWindow(now);
+                var nextWindow = master.TatOutbound.GetNextWindow(now);
+
+                return Ok(new
+                {
+                    enabled = true,
+                    appealEnabled = master.TatOutbound.IsAppealEnabled(),
+                    currentWindow = currentWindow == null ? null : new
+                    {
+                        id = currentWindow.Id,
+                        windowStart = currentWindow.WindowStart.ToString(@"hh\:mm"),
+                        windowEnd = currentWindow.WindowEnd.ToString(@"hh\:mm"),
+                        windowEndFull = now.Date.Add(currentWindow.WindowEnd)
+                    },
+                    nextWindow = nextWindow == null ? null : new
+                    {
+                        id = nextWindow.Id,
+                        windowStart = nextWindow.WindowStart.ToString(@"hh\:mm"),
+                        windowEnd = nextWindow.WindowEnd.ToString(@"hh\:mm"),
+                        windowStartFull = now.Date.Add(nextWindow.WindowStart)
+                    },
+                    hasWindowsToday = todayWindows.Count > 0,
+                    serverTime = now
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+
+        // ── GET api/tat/outbound/logs ─────────────────────────────────────────────
+        // Returns outbound TAT window logs for audit trail
+        // Admin: all logs. Endorser: same (outbound TAT is branch-level, not section-level)
+        [HttpGet("outbound/logs")]
+        public IActionResult GetOutboundLogs([FromQuery] string? dateFrom,
+                                              [FromQuery] string? dateTo)
+        {
+            try
+            {
+                var branch = Branch;
+                if (string.IsNullOrEmpty(branch))
+                    return Unauthorized(new { message = "Session expired." });
+
+                var from = DateTime.TryParse(dateFrom, out var df) ? df : DateTime.Today;
+                var to = DateTime.TryParse(dateTo, out var dt) ? dt : DateTime.Today;
+
+                using var master = new MasterService(branch);
+
+                var windows = master.TatOutbound.GetWindows()
+                    .ToDictionary(w => w.Id);
+
+                var logs = master.TatOutbound.GetLogs(from, to);
+
+                var result = logs.Select(l => new
+                {
+                    id = l.Id,
+                    windowId = l.WindowId,
+                    scheduleType = windows.TryGetValue(l.WindowId, out var w) ? w.ScheduleType : "—",
+                    windowDate = l.WindowDate,
+                    windowStart = l.WindowStart,
+                    windowEnd = l.WindowEnd,
+                    batchNos = l.BatchNos,
+                    result = l.Result,
+                    appealedBy = l.AppealedBy,
+                    appealedAt = l.AppealedAt,
+                    created = l.Created
+                }).ToList();
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+
+        // ── POST api/tat/outbound/logs/{logId}/appeal ─────────────────────────────
+        // Appeal a missed outbound TAT window
+        [HttpPost("outbound/logs/{logId}/appeal")]
+        public IActionResult AppealOutboundLog(int logId)
+        {
+            try
+            {
+                var branch = Branch;
+                if (string.IsNullOrEmpty(branch))
+                    return Unauthorized(new { message = "Session expired." });
+
+                var userID = CurrentUserID;
+                if (string.IsNullOrEmpty(userID))
+                    return Unauthorized(new { message = "Session expired." });
+
+                using var master = new MasterService(branch);
+
+                // Check appeal is enabled for this branch
+                if (!master.TatOutbound.IsAppealEnabled())
+                    return BadRequest(new { message = "Appeals are not enabled for this branch." });
+
+                var log = master.TatOutbound.GetLogById(logId);
+                if (log == null)
+                    return NotFound(new { message = "Log entry not found." });
+
+                if (log.Result != "Missed")
+                    return BadRequest(new { message = "Only missed windows can be appealed." });
+
+                master.TatOutbound.Appeal(logId, userID, DateTime.Now);
+                return Ok(new { message = "Appeal recorded." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
     }
 
 }

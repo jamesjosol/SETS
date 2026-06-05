@@ -49,7 +49,9 @@ namespace Reposi
         public ContingencySpecimenRepo ContingencySpecimens { get; private set; }
         public AnnouncementRepo Announcement { get; private set; }
         public NotificationRepo Notifications { get; private set; }
-        public BranchSettingsRepo BranchSettings { get; }
+        public BranchSettingsRepo BranchSettings { get; private set; }
+        public TatOutboundWindowRepo TatOutboundWindows { get; private set; }
+        public TatOutboundLogRepo TatOutboundLogs { get; private set; }
 
         public UnitOfWork(AppDbContext context)
         {
@@ -91,6 +93,8 @@ namespace Reposi
             Announcement = new AnnouncementRepo(context);
             Notifications = new NotificationRepo(context);
             BranchSettings = new BranchSettingsRepo(context);
+            TatOutboundWindows = new TatOutboundWindowRepo(_context);
+            TatOutboundLogs = new TatOutboundLogRepo(_context);
         }
 
         public void Dispose()

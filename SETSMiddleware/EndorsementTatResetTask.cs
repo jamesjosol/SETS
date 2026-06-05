@@ -22,7 +22,7 @@ namespace SETSMiddleware.Tasks
         {
             _branch = branch;
             TaskName = "Endorsement TAT Reset";
-            Description = "Runs at 7pm. Closes any open TAT cycles from the previous day " +
+            Description = "Runs at 8pm. Closes any open TAT cycles from the previous day " +
                           "without flagging violations, so the next day starts fresh.";
             IntervalSeconds = intervalSeconds;
         }
@@ -31,10 +31,10 @@ namespace SETSMiddleware.Tasks
         {
             var now = DateTime.Now;
 
-            // Only act at 7pm (19:00)
-            if (now.Hour != 19 || now.Minute != 00)
+            // Only act at 8pm (20:00)
+            if (now.Hour != 20 || now.Minute != 00)
             {
-                LastStatus = $"Waiting for 7:00 PM — current time: {now:HH:mm:ss}";
+                LastStatus = $"Waiting for 8:00 PM — current time: {now:HH:mm:ss}";
                 await Task.CompletedTask;
                 return;
             }

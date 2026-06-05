@@ -65,6 +65,8 @@ namespace SETSMiddleware
             int tatResetInterval = int.TryParse(_config["TaskIntervals:EndorsementTatReset"], out var v5) ? v5 : 60;
             int outboundSyncInterval = int.TryParse(_config["TaskIntervals:OutboundStatusSync"], out var v6) ? v6 : 60;
             int hclabPostCheckInterval = int.TryParse(_config["TaskIntervals:OutboundHclabPostCheck"], out var v7) ? v7 : 120;
+            int outboundTatInterval = int.TryParse(_config["TaskIntervals:OutboundTatWindowCheck"], out var v8) ? v8 : 60; 
+
 
             var dbFactory = new AppDbContextFactory();
 
@@ -78,8 +80,9 @@ namespace SETSMiddleware
                     _branch, outboundSyncInterval, dbFactory);
             var hclabPostCheckTask = new OutboundHclabPostCheckTask(
                     _branch, hclabPostCheckInterval, dbFactory);
+            var outboundTatTask = new OutboundTatWindowCheckTask(_branch, outboundTatInterval); 
 
-            foreach (var task in new TaskBase[] { hclabTask, schedTask, releaseTask, syncTask, tatResetTask, outboundSyncTask, hclabPostCheckTask })
+            foreach (var task in new TaskBase[] { hclabTask, schedTask, releaseTask, syncTask, tatResetTask, outboundSyncTask, hclabPostCheckTask, outboundTatTask })
             {
                 _tasks.Add(task);
                 _logs[task.TaskName] = new List<(string, TaskBase.LogLevel, DateTime)>();

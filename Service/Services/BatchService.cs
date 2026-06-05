@@ -199,7 +199,7 @@ namespace Service.Services
                     }
                 }
 
-                // ── TAT evaluation (Branch A only) ────────────────────────────────
+                // ── Local TAT evaluation (Branch A only) ─────────────────────────────────
                 bool isOutsideTat = false;
                 try
                 {
@@ -220,6 +220,53 @@ namespace Service.Services
                 catch (Exception tatEx)
                 {
                     Console.WriteLine($"[TAT] EvaluateAndCycle failed for {batchNo}: {tatEx.Message}");
+                }
+
+                // ── Outbound TAT evaluation (Branch A only, outbound batches only) ────────
+                if (isOutbound)
+                {
+                    try
+                    {
+                        using var master = new MasterService(_branch_raw);
+
+                        // Only evaluate if outbound TAT feature is enabled for this branch
+                        if (master.TatOutbound.IsOutboundTatEnabled())
+                        {
+                            bool isOutsideOutboundTat = master.TatOutbound.EvaluateOutboundBatch(now);
+
+                            if (isOutsideOutboundTat)
+                            {
+                                using var ctx3 = _factory.CreateContext(_branch);
+                                var committed = ctx3.Batch_Header.FirstOrDefault(h => h.BatchNo == batchNo);
+                                if (committed != null)
+                                {
+                                    committed.IsOutsideOutboundTat = true;
+                                    ctx3.SaveChanges();
+                                }
+                            }
+                            else
+                            {
+                                // Batch endorsed inside a valid window — append batch no to today's window log.
+                                // The log record is created by middleware when the window closes;
+                                // if it already exists (window already closed and logged), append to it.
+                                var currentWindow = master.TatOutbound.GetCurrentWindow(now);
+                                if (currentWindow != null)
+                                {
+                                    var existingLog = master.TatOutbound.GetLog(currentWindow.Id, now);
+                                    if (existingLog != null)
+                                    {
+                                        master.TatOutbound.AppendBatchToLog(currentWindow.Id, now, batchNo);
+                                    }
+                                    // If no log yet, middleware will create it with this batch included
+                                    // when the window closes — see OutboundTatWindowCheckTask
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception outboundTatEx)
+                    {
+                        Console.WriteLine($"[OUTBOUND TAT] Evaluation failed for {batchNo}: {outboundTatEx.Message}");
+                    }
                 }
 
                 // ── Audit Logging ─────────────────────────────────────────────────
