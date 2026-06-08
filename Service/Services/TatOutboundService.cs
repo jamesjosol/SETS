@@ -306,5 +306,24 @@ namespace Service.Services
             }
             catch { throw; }
         }
+
+        public bool HasEndorsedInWindow(Tat_Outbound_Window window, DateTime now)
+        {
+            try
+            {
+                using var context = _factory.CreateContext(_branch);
+                var windowStart = now.Date.Add(window.WindowStart);
+                var windowEnd = now.Date.Add(window.WindowEnd);
+
+                return context.Batch_Header
+                    .Where(h => h.IsOutbound
+                             && !h.IsInbound
+                             && h.Endorsed >= windowStart
+                             && h.Endorsed < windowEnd)
+                    .ToList()
+                    .Any();
+            }
+            catch { throw; }
+        }
     }
 }

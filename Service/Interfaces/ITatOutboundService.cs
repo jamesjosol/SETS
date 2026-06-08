@@ -32,6 +32,9 @@ namespace Service.Interfaces
         // Called at endorse time — returns true if outside all windows
         bool EvaluateOutboundBatch(DateTime endorsedAt);
 
+        // Returns true if at least one outbound batch was endorsed within the given window today
+        bool HasEndorsedInWindow(Tat_Outbound_Window window, DateTime now);
+
         // ── Log ───────────────────────────────────────────────────────────────
         // Called by middleware when a window closes
         void LogWindowResult(int windowId, DateTime windowDate, DateTime windowStart,

@@ -385,10 +385,10 @@
             </div>
 
             <!-- Lab Entries -->
-            <div class="flex-1 overflow-y-auto p-6 flex flex-col gap-4">
+            <div class="flex-1 overflow-hidden p-6 flex flex-col gap-4">
 
               <!-- Scan Input -->
-              <div class="drill-in-scan rounded-xl p-4 flex items-center gap-3"
+              <div class="drill-in-scan flex-shrink-0 rounded-xl p-4 flex items-center gap-3"
                    style="background-color: var(--color-surface); border: 1px solid var(--color-border);">
                 <span class="material-symbols-outlined text-base flex-shrink-0"
                       style="color: var(--color-primary);">barcode_scanner</span>
@@ -417,80 +417,164 @@
                      style="background-color: var(--color-surface);"></div>
               </div>
 
-              <!-- Empty -->
-              <div v-else-if="!labEntries.length"
-                   class="drill-in-empty flex flex-col items-center justify-center py-12 gap-2">
-                <span class="material-symbols-outlined text-4xl"
-                      style="color: var(--color-text-muted);">science_off</span>
-                <p class="text-sm font-bold" style="color: var(--color-text-muted);">No entries yet</p>
-                <p class="text-xs" style="color: var(--color-text-muted);">
-                  Scan a specimen barcode to log it here.
-                </p>
-              </div>
+              <template v-else>
 
-              <!-- Entries Table -->
-              <div v-else class="drill-in-table rounded-xl overflow-hidden"
-                   style="background-color: var(--color-surface); border: 1px solid var(--color-border);">
-                <table class="w-full text-sm">
-                  <thead>
-                    <tr style="background-color: var(--color-surface-low); border-bottom: 1px solid var(--color-border);">
-                      <th class="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-widest"
-                          style="color: var(--color-text-muted);">Specimen No.</th>
-                      <th class="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-widest"
-                          style="color: var(--color-text-muted);">PID</th>
-                      <th class="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-widest"
-                          style="color: var(--color-text-muted);">Patient Name</th>
-                      <th class="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-widest"
-                          style="color: var(--color-text-muted);">Sample Type</th>
-                      <th class="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-widest"
-                          style="color: var(--color-text-muted);">Date</th>
-                      <th class="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-widest"
-                          style="color: var(--color-text-muted);">Logged By</th>
-                      <th v-if="isTLOrAdmin"
-                          class="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-widest"
-                          style="color: var(--color-text-muted);"></th>
-                    </tr>
-                  </thead>
-                  <tbody ref="entryTbodyRef">
-                    <tr v-for="entry in labEntries" :key="entry.id"
-                        class="entry-row"
-                        style="border-bottom: 1px solid var(--color-border);">
-                      <td class="px-4 py-3 font-bold text-xs"
-                          style="color: var(--color-primary);">
-                        {{ entry.specimenNo }}
-                      </td>
-                      <td class="px-4 py-3 text-xs"
-                          style="color: var(--color-text-muted);">
-                        {{ entry.pid ?? '—' }}
-                      </td>
-                      <td class="px-4 py-3 text-xs font-bold"
-                          style="color: var(--color-text);">
-                        {{ entry.patientName ?? '—' }}
-                      </td>
-                      <td class="px-4 py-3 text-xs"
-                          style="color: var(--color-text-muted);">
-                        {{ entry.sampleTypeName ?? entry.sampleTypeCode ?? '—' }}
-                      </td>
-                      <td class="px-4 py-3 text-xs"
-                          style="color: var(--color-text-muted);">
-                        {{ formatEntryDate(entry.entryDate) }}
-                      </td>
-                      <td class="px-4 py-3 text-xs"
-                          style="color: var(--color-text-muted);">
-                        {{ entry.loggedBy }}
-                      </td>
-                      <td v-if="isTLOrAdmin" class="px-4 py-3">
-                        <button class="w-7 h-7 rounded-lg flex items-center justify-center transition-all active:scale-95"
-                                style="background-color: var(--color-error-soft); color: var(--color-error);"
-                                title="Delete entry"
-                                @click="promptDeleteEntry(entry)">
-                          <span class="material-symbols-outlined text-sm">delete</span>
-                        </button>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
+                <!-- Search bar -->
+                <div class="flex-shrink-0 flex items-center gap-2 rounded-xl px-4 py-2.5"
+                     style="background-color: var(--color-surface); border: 1px solid var(--color-border);">
+                  <span class="material-symbols-outlined text-base flex-shrink-0"
+                        style="color: var(--color-text-muted);">search</span>
+                  <input v-model="entrySearch"
+                         type="text"
+                         placeholder="Search by specimen no., lab no., PID, or patient name..."
+                         class="flex-1 border-none outline-none text-xs"
+                         style="background-color: transparent; color: var(--color-text);" />
+                  <button v-if="entrySearch"
+                          class="flex-shrink-0 transition-opacity hover:opacity-70"
+                          style="color: var(--color-text-muted);"
+                          @click="entrySearch = ''">
+                    <span class="material-symbols-outlined text-sm">close</span>
+                  </button>
+                </div>
+
+                <!-- Empty (no entries at all) -->
+                <div v-if="!labEntries.length"
+                     class="drill-in-empty flex flex-col items-center justify-center py-12 gap-2">
+                  <span class="material-symbols-outlined text-4xl"
+                        style="color: var(--color-text-muted);">science_off</span>
+                  <p class="text-sm font-bold" style="color: var(--color-text-muted);">No entries yet</p>
+                  <p class="text-xs" style="color: var(--color-text-muted);">
+                    Scan a specimen barcode to log it here.
+                  </p>
+                </div>
+
+                <!-- No search results -->
+                <div v-else-if="!filteredEntries.length"
+                     class="flex flex-col items-center justify-center py-12 gap-2">
+                  <span class="material-symbols-outlined text-4xl"
+                        style="color: var(--color-text-muted);">search_off</span>
+                  <p class="text-sm font-bold" style="color: var(--color-text-muted);">No matches found</p>
+                  <p class="text-xs" style="color: var(--color-text-muted);">Try a different search term.</p>
+                </div>
+
+                <!-- Entries Table -->
+                <div v-else class="drill-in-table flex-1 overflow-hidden rounded-xl flex flex-col"
+                     style="background-color: var(--color-surface); border: 1px solid var(--color-border);">
+
+                  <!-- Scrollable table body -->
+                  <div class="flex-1 overflow-y-auto">
+                    <table class="w-full text-sm">
+                      <thead class="sticky top-0 z-10">
+                        <tr style="background-color: var(--color-surface-low); border-bottom: 1px solid var(--color-border);">
+                          <th class="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-widest"
+                              style="color: var(--color-text-muted);">Specimen No.</th>
+                          <th class="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-widest"
+                              style="color: var(--color-text-muted);">PID</th>
+                          <th class="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-widest"
+                              style="color: var(--color-text-muted);">Patient Name</th>
+                          <th class="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-widest"
+                              style="color: var(--color-text-muted);">Sample Type</th>
+                          <th class="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-widest"
+                              style="color: var(--color-text-muted);">Date</th>
+                          <th class="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-widest"
+                              style="color: var(--color-text-muted);">Logged By</th>
+                          <th class="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-widest"
+                              style="color: var(--color-text-muted);"></th>
+                          <th v-if="isTLOrAdmin"
+                              class="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-widest"
+                              style="color: var(--color-text-muted);"></th>
+                        </tr>
+                      </thead>
+                      <tbody ref="entryTbodyRef">
+                        <tr v-for="entry in paginatedEntries" :key="entry.id"
+                            class="entry-row"
+                            style="border-bottom: 1px solid var(--color-border);">
+                          <td class="px-4 py-3 font-bold text-xs"
+                              style="color: var(--color-primary);">
+                            {{ entry.specimenNo }}
+                          </td>
+                          <td class="px-4 py-3 text-xs"
+                              style="color: var(--color-text-muted);">
+                            {{ entry.pid ?? '—' }}
+                          </td>
+                          <td class="px-4 py-3 text-xs font-bold"
+                              style="color: var(--color-text);">
+                            {{ entry.patientName ?? '—' }}
+                          </td>
+                          <td class="px-4 py-3 text-xs"
+                              style="color: var(--color-text-muted);">
+                            {{ entry.sampleTypeName ?? entry.sampleTypeCode ?? '—' }}
+                          </td>
+                          <td class="px-4 py-3 text-xs"
+                              style="color: var(--color-text-muted);">
+                            {{ formatEntryDate(entry.entryDate) }}
+                          </td>
+                          <td class="px-4 py-3 text-xs"
+                              style="color: var(--color-text-muted);">
+                            {{ entry.loggedBy }}
+                          </td>
+                          <td class="px-4 py-3">
+                            <button class="w-7 h-7 rounded-lg flex items-center justify-center transition-all active:scale-95"
+                                    :style="entry.remarks
+            ? 'background-color: var(--color-primary-soft); color: var(--color-primary);'
+            : 'background-color: var(--color-surface-low); color: var(--color-text-muted);'"
+                                    :title="entry.remarks ? 'View / edit remark' : 'Add remark'"
+                                    @click="openRemarkModal(entry)">
+                              <span class="material-symbols-outlined text-sm">
+                                {{ entry.remarks ? 'chat_bubble' : 'chat_bubble_outline' }}
+                              </span>
+                            </button>
+                          </td>
+                          <td v-if="isTLOrAdmin" class="px-4 py-3">
+                            <button class="w-7 h-7 rounded-lg flex items-center justify-center transition-all active:scale-95"
+                                    style="background-color: var(--color-error-soft); color: var(--color-error);"
+                                    title="Delete entry"
+                                    @click="promptDeleteEntry(entry)">
+                              <span class="material-symbols-outlined text-sm">delete</span>
+                            </button>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <!-- Pagination footer -->
+                  <div class="flex-shrink-0 flex items-center justify-between px-4 py-2.5"
+                       style="border-top: 1px solid var(--color-border); background-color: var(--color-surface-low);">
+                    <p class="text-[10px] font-bold uppercase tracking-widest"
+                       style="color: var(--color-text-muted);">
+                      {{ filteredEntries.length }} result{{ filteredEntries.length !== 1 ? 's' : '' }}
+                      <template v-if="entrySearch">
+                        &nbsp;&middot; filtered
+                      </template>
+                    </p>
+                    <div class="flex items-center gap-1.5">
+                      <button :disabled="entryPage === 1"
+                              class="w-7 h-7 rounded-lg flex items-center justify-center transition-all disabled:opacity-30"
+                              style="background-color: var(--color-surface); color: var(--color-text-muted);"
+                              @click="entryPage--">
+                        <span class="material-symbols-outlined text-sm">chevron_left</span>
+                      </button>
+                      <button v-for="p in entryTotalPages" :key="p"
+                              class="w-7 h-7 rounded-lg text-[11px] font-bold transition-all"
+                              :style="entryPage === p
+                                ? 'background-color: var(--color-primary); color: #ffffff;'
+                                : 'background-color: var(--color-surface); color: var(--color-text-muted);'"
+                              @click="entryPage = p">
+                        {{ p }}
+                      </button>
+                      <button :disabled="entryPage === entryTotalPages"
+                              class="w-7 h-7 rounded-lg flex items-center justify-center transition-all disabled:opacity-30"
+                              style="background-color: var(--color-surface); color: var(--color-text-muted);"
+                              @click="entryPage++">
+                        <span class="material-symbols-outlined text-sm">chevron_right</span>
+                      </button>
+                    </div>
+                  </div>
+
+                </div>
+
+              </template>
             </div>
           </div>
         </template>
@@ -580,6 +664,13 @@
                 @close="alert.isVisible = false"
                 @confirm="alert.isVisible = false" />
 
+    <!-- Remark Modal -->
+    <RemarkModal :isVisible="remarkModal.visible"
+                 title="Entry Remark"
+                 :initialText="remarkModal.entry?.remarks ?? ''"
+                 @save="saveRemark"
+                 @close="closeRemarkModal" />
+
   </AppLayout>
 </template>
 
@@ -589,6 +680,7 @@
   import AppLayout from '@/components/layout/AppLayout.vue'
   import AlertModal from '@/components/common/AlertModal.vue'
   import ConfirmModal from '@/components/common/ConfirmModal.vue'
+  import RemarkModal from '@/components/common/RemarkModal.vue'
   import { useAuthStore } from '@/stores/authStore'
   import { specimenIssueApi } from '@/api/specimenIssueApi'
 
@@ -887,9 +979,41 @@
   const entrySaving = ref(false)
   const scanInput = ref(null)
   const lastAddedEntryId = ref(null)
+  const ENTRY_PAGE_SIZE = 15
+  const entrySearch = ref('')
+  const entryPage = ref(1)
+
+  const filteredEntries = computed(() => {
+    const q = entrySearch.value.trim().toLowerCase()
+    if (!q) return labEntries.value
+    return labEntries.value.filter(e => {
+      const labNo = e.specimenNo?.substring(0, 10).toLowerCase() ?? ''
+      return (
+        e.specimenNo?.toLowerCase().includes(q) ||
+        labNo.includes(q) ||
+        e.pid?.toLowerCase().includes(q) ||
+        e.patientName?.toLowerCase().includes(q)
+      )
+    })
+  })
+
+  const entryTotalPages = computed(() =>
+    Math.max(1, Math.ceil(filteredEntries.value.length / ENTRY_PAGE_SIZE))
+  )
+
+  const paginatedEntries = computed(() => {
+    const start = (entryPage.value - 1) * ENTRY_PAGE_SIZE
+    return filteredEntries.value.slice(start, start + ENTRY_PAGE_SIZE)
+  })
+
+  // Reset to page 1 when search changes
+  watch(entrySearch, () => { entryPage.value = 1 })
+
 
   async function loadLabEntries(subCategoryId) {
     entriesLoading.value = true
+    entrySearch.value = ''   
+    entryPage.value = 1     
     try {
       labEntries.value = await specimenIssueApi.getLabEntries(subCategoryId)
       await nextTick()
@@ -1011,6 +1135,33 @@
     }
   }
 
+  // ── Remark Modal ───────────────────────────────────────────────────────────
+
+  const remarkModal = ref({ visible: false, entry: null, saving: false })
+
+  function openRemarkModal(entry) {
+    remarkModal.value = { visible: true, entry, saving: false }
+  }
+
+  function closeRemarkModal() {
+    remarkModal.value.visible = false
+  }
+
+  async function saveRemark(text) {
+    if (remarkModal.value.saving) return
+    remarkModal.value.saving = true
+    try {
+      await specimenIssueApi.updateLabEntryRemark(remarkModal.value.entry.id, { remarks: text })
+      // Update in-place — no full reload needed
+      const entry = labEntries.value.find(e => e.id === remarkModal.value.entry.id)
+      if (entry) entry.remarks = text.trim() || null
+      closeRemarkModal()
+    } catch (e) {
+      showAlert('error', 'Error', e.response?.data?.message ?? 'Failed to save remark.')
+    } finally {
+      remarkModal.value.saving = false
+    }
+  }
   // ── GSAP Animation Helpers ─────────────────────────────────────────────────
 
   /**

@@ -94,6 +94,8 @@ namespace Model.Main
         public DateOnly EntryDate { get; set; }
         public string LoggedBy { get; set; }
         public DateTime LoggedAt { get; set; }
+
+        public string? Remarks { get; set; }
     }
 
     public class CommentItem

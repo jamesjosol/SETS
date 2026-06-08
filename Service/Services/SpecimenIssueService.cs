@@ -229,7 +229,8 @@ namespace Service.Services
                         SampleTypeName = e.SampleTypeName,
                         EntryDate = e.EntryDate,
                         LoggedBy = e.LoggedBy,
-                        LoggedAt = e.LoggedAt
+                        LoggedAt = e.LoggedAt,
+                        Remarks = e.Remarks
                     }).ToList();
             }
             catch { throw; }
@@ -288,6 +289,25 @@ namespace Service.Services
                     LoggedBy = request.UserID,
                     LoggedAt = DateTime.Now
                 });
+            }
+            catch { throw; }
+        }
+
+        public void UpdateLabEntryRemark(int id, UpdateLabEntryRemarkRequest request)
+        {
+            try
+            {
+                using var context = _factory.CreateContext(_branch);
+                using var unit = new UnitOfWork(context);
+
+                var record = unit.IssueLabEntries.Get(id)
+                    ?? throw new Exception("Lab entry not found.");
+
+                record.Remarks = string.IsNullOrWhiteSpace(request.Remarks)
+                    ? null
+                    : request.Remarks.Trim();
+
+                unit.IssueLabEntries.Update(record);
             }
             catch { throw; }
         }

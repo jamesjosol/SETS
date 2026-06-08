@@ -500,6 +500,8 @@ namespace SETS.Server.Controllers
                 var todayWindows = master.TatOutbound.GetTodayWindows(now);
                 var currentWindow = master.TatOutbound.GetCurrentWindow(now);
                 var nextWindow = master.TatOutbound.GetNextWindow(now);
+                var hasEndorsedThisWindow = currentWindow != null &&
+                                master.TatOutbound.HasEndorsedInWindow(currentWindow, now);
 
                 return Ok(new
                 {
@@ -520,6 +522,7 @@ namespace SETS.Server.Controllers
                         windowStartFull = now.Date.Add(nextWindow.WindowStart)
                     },
                     hasWindowsToday = todayWindows.Count > 0,
+                    hasEndorsedThisWindow, 
                     serverTime = now
                 });
             }

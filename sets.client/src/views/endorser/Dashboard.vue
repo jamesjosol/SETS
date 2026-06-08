@@ -190,7 +190,17 @@
         <!-- Inside a window -->
         <div v-if="outboundTat.currentWindow"
              class="flex items-center gap-4 px-5 py-3 rounded-xl"
-             style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
+             :style="`background-color: var(--color-surface);
+             box-shadow: 0 1px 3px var(--color-shadow);
+             border: 1px solid ${
+             outboundWindowSecondsRemaining <= 0
+                 ? 'var(--color-error)'
+                 : outboundTat.hasEndorsedThisWindow
+                   ? 'var(--color-success)'
+                   : outboundWindowProgressPct <= 25
+                     ? 'var(--color-warning)'
+                     : 'var(--color-border)'
+             };`">
 
           <div class="flex items-center gap-2 flex-shrink-0">
             <span class="material-symbols-outlined text-base"
@@ -983,6 +993,8 @@
     const secs = outboundWindowSecondsRemaining.value
     if (secs === null) return 'color: var(--color-text-muted);'
     if (secs <= 0) return 'color: var(--color-error);'
+    // Already endorsed this window — stay green
+    if (outboundTat.value.hasEndorsedThisWindow) return 'color: var(--color-success);'
     if (outboundWindowProgressPct.value <= 25) return 'color: var(--color-warning);'
     return 'color: var(--color-success);'
   })
@@ -991,6 +1003,7 @@
     const secs = outboundWindowSecondsRemaining.value
     if (secs === null) return 'background-color: var(--color-text-muted);'
     if (secs <= 0) return 'background-color: var(--color-error);'
+    if (outboundTat.value.hasEndorsedThisWindow) return 'background-color: var(--color-success);'
     if (outboundWindowProgressPct.value <= 25) return 'background-color: var(--color-warning);'
     return 'background-color: var(--color-success);'
   })

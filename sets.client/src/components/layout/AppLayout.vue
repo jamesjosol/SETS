@@ -13,6 +13,7 @@
       </main>
     </div>
   </div>
+  <ChangelogModal />
 </template>
 
 <script setup>
@@ -24,11 +25,15 @@
   import { useNotificationStore } from '@/stores/notificationStore'
   import { usePresenceStore } from '@/stores/presenceStore'
   import { useAuthStore } from '@/stores/authStore'
+  import { useChangelogStore } from '@/stores/changelogStore'
+  import ChangelogModal from '@/components/common/ChangelogModal.vue'
 
   const announcementStore = useAnnouncementStore()
   const notificationStore = useNotificationStore()
   const presenceStore = usePresenceStore()
   const authStore = useAuthStore()
+  const changelogStore = useChangelogStore()
+
 
   let poller = null
 
@@ -43,6 +48,8 @@
 
     // ── Presence ──────────────────────────────────────────────────────────────
     await presenceStore.connectSignalR()
+
+    setTimeout(() => changelogStore.checkAndShow(), 1500)
   })
 
   onUnmounted(async () => {

@@ -52,6 +52,8 @@ namespace Reposi
         public BranchSettingsRepo BranchSettings { get; private set; }
         public TatOutboundWindowRepo TatOutboundWindows { get; private set; }
         public TatOutboundLogRepo TatOutboundLogs { get; private set; }
+        public ChangelogRepo Changelog { get; set; }
+        public ChangelogSeenRepo ChangelogSeen { get; set; }
 
         public UnitOfWork(AppDbContext context)
         {
@@ -95,6 +97,8 @@ namespace Reposi
             BranchSettings = new BranchSettingsRepo(context);
             TatOutboundWindows = new TatOutboundWindowRepo(_context);
             TatOutboundLogs = new TatOutboundLogRepo(_context);
+            Changelog = new ChangelogRepo(context); 
+            ChangelogSeen = new ChangelogSeenRepo(context);
         }
 
         public void Dispose()

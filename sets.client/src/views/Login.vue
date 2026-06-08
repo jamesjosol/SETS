@@ -333,6 +333,7 @@
   import { getDefaultRoute } from '@/router'
   import AlertModal from '@/components/common/AlertModal.vue'
   import { useTheme } from '@/composables/useTheme'
+  import { useChangelogStore } from '@/stores/changelogStore'
 
   // ── Splash refs (unchanged) ────────────────────────────────────────────────
   const splashRef = ref(null)
@@ -481,6 +482,10 @@
       router.push(getDefaultRoute(authStore))
       await nextTick(); await nextTick()
       if (splashRef.value) splashRef.value.style.display = 'none'
+
+      // ── Changelog check — session is guaranteed live at this point ──────
+      const changelogStore = useChangelogStore()
+      await changelogStore.checkAndShow()
 
     } catch (err) {
       if (err.response) {

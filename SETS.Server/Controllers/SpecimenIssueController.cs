@@ -266,6 +266,27 @@ namespace SETS.Server.Controllers
             }
         }
 
+        // PATCH api/specimenissue/entries/{id}/remark
+        [HttpPatch("entries/{id}/remark")]
+        public IActionResult UpdateLabEntryRemark(int id, [FromBody] UpdateLabEntryRemarkRequest request)
+        {
+            try
+            {
+                var branch = Branch;
+                if (string.IsNullOrEmpty(branch)) return SessionExpired();
+
+                request.UserID = CurrentUserID;
+
+                using var master = new MasterService(branch);
+                master.SpecimenIssue.UpdateLabEntryRemark(id, request);
+                return Ok(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(400, new { message = ex.Message });
+            }
+        }
+
         // ── GET api/specimenissue/incident-types/{id}/comments ────────────────
         [HttpGet("incident-types/{id}/comments")]
         public IActionResult GetComments(int id)

@@ -1083,7 +1083,7 @@
 
                 <!-- Appeal action -->
                 <td class="px-8 py-4">
-                  <button v-if="log.result === 'Missed' && outboundTatAppealEnabled"
+                  <button v-if="log.id === appealableLogId"
                           class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all active:scale-95"
                           style="background-color: var(--color-warning-soft); color: var(--color-warning);"
                           @click="handleOutboundAppeal(log.id)">
@@ -1566,6 +1566,15 @@
       missed: logs.filter(l => l.result === 'Missed').length,
       appealed: logs.filter(l => l.result === 'Appealed').length,
     }
+  })
+
+  // Only the single most recently closed missed window can be appealed
+  const appealableLogId = computed(() => {
+    if (!outboundTatAppealEnabled.value) return null
+    const missed = outboundTatLogs.value
+      .filter(l => l.result === 'Missed')
+      .sort((a, b) => new Date(b.windowEnd) - new Date(a.windowEnd))
+    return missed.length > 0 ? missed[0].id : null
   })
 
   // Count-up display refs

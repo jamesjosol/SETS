@@ -201,25 +201,28 @@ namespace Service.Services
 
                 // ── Local TAT evaluation (Branch A only) ─────────────────────────────────
                 bool isOutsideTat = false;
-                try
+                if (!isOutbound)
                 {
-                    using var master = new MasterService(_branch_raw);
-                    isOutsideTat = master.Tat.EvaluateAndCycle(request.SectionCode, batchNo, now);
-
-                    if (isOutsideTat)
+                    try
                     {
-                        using var ctx2 = _factory.CreateContext(_branch);
-                        var committed = ctx2.Batch_Header.FirstOrDefault(h => h.BatchNo == batchNo);
-                        if (committed != null)
+                        using var master = new MasterService(_branch_raw);
+                        isOutsideTat = master.Tat.EvaluateAndCycle(request.SectionCode, batchNo, now);
+
+                        if (isOutsideTat)
                         {
-                            committed.IsOutsideTat = true;
-                            ctx2.SaveChanges();
+                            using var ctx2 = _factory.CreateContext(_branch);
+                            var committed = ctx2.Batch_Header.FirstOrDefault(h => h.BatchNo == batchNo);
+                            if (committed != null)
+                            {
+                                committed.IsOutsideTat = true;
+                                ctx2.SaveChanges();
+                            }
                         }
                     }
-                }
-                catch (Exception tatEx)
-                {
-                    Console.WriteLine($"[TAT] EvaluateAndCycle failed for {batchNo}: {tatEx.Message}");
+                    catch (Exception tatEx)
+                    {
+                        Console.WriteLine($"[TAT] EvaluateAndCycle failed for {batchNo}: {tatEx.Message}");
+                    }
                 }
 
                 // ── Outbound TAT evaluation (Branch A only, outbound batches only) ────────

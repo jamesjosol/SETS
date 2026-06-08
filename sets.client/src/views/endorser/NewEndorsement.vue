@@ -35,7 +35,15 @@
         <div v-if="outboundTat.currentWindow"
              class="flex items-center gap-3 px-5 py-3 rounded-xl transition-all"
              :style="`background-color: var(--color-surface);
-             border: 1.5px solid ${outboundWindowSecondsRemaining <= 0 ? 'var(--color-error)' : outboundWindowProgressPct <= 25 ? 'var(--color-warning)' : 'var(--color-success)'};
+             border: 1.5px solid ${
+             outboundWindowSecondsRemaining <= 0
+               ? 'var(--color-error)'
+               : outboundTat.hasEndorsedThisWindow
+                 ? 'var(--color-success)'
+                 : outboundWindowProgressPct <= 25
+                   ? 'var(--color-warning)'
+                   : 'var(--color-success)'
+           };
            box-shadow: 0 1px 3px var(--color-shadow);`">
         <span class="material-symbols-outlined text-xl"
               :style="outboundWindowColorStyle">alt_route</span>
@@ -575,6 +583,13 @@
                 @close="alert.isVisible = false"
                 @confirm="alert.isVisible = false" />
 
+    <EndorseConfirmModal :isVisible="endorseConfirm.visible"
+                         :destination="endorseDestinationLabel"
+                         :isOutbound="isOutbound"
+                         @confirm="onEndorseConfirmed"
+                         @cancel="onEndorseCancelled"
+                         @close="onEndorseCancelled" />
+
   </AppLayout>
 </template>
 
@@ -584,6 +599,7 @@
   import AlertModal from '@/components/common/AlertModal.vue'
   import RemarkModal from '@/components/common/RemarkModal.vue'
   import ConfirmModal from '@/components/common/ConfirmModal.vue'
+  import EndorseConfirmModal from '@/components/common/EndorseConfirmModal.vue'
   import DropdownSelect from '@/components/common/DropdownSelect.vue'
   import PartnerCheckBanner from '@/components/common/PartnerCheckBanner.vue'
   import { useAuthStore } from '@/stores/authStore'
@@ -705,6 +721,7 @@ async function onOutboundBranchSelect(branchCode) {
   const nonBarcodedInput = ref({ type: 'joborder', labNo: '', description: '', quantity: 1 })
   const isEndorsed = ref(false)
   const isEndorsing = ref(false)
+  const endorseConfirm = ref({ visible: false, resolve: null })
 
   const remarkModal = ref({
     visible: false,
@@ -998,6 +1015,9 @@ async function onOutboundBranchSelect(branchCode) {
       return
     }
 
+    const confirmed = await requestEndorseConfirm()
+    if (!confirmed) return
+
     // Safety guard — re-check partner state before writing
     if (isOutbound.value && partnerBlocked.value) {
       showAlert('error', 'Cannot Endorse', 'Connection check failed. Please retry the connection check before endorsing.')
@@ -1080,6 +1100,22 @@ async function onOutboundBranchSelect(branchCode) {
   function handleConfirmNo() {
     confirmPrompt.value.visible = false
     confirmPrompt.value.resolve(false)
+  }
+
+  function requestEndorseConfirm() {
+    return new Promise((resolve) => {
+      endorseConfirm.value = { visible: true, resolve }
+    })
+  }
+
+  function onEndorseConfirmed() {
+    endorseConfirm.value.visible = false
+    endorseConfirm.value.resolve(true)
+  }
+
+  function onEndorseCancelled() {
+    endorseConfirm.value.visible = false
+    endorseConfirm.value.resolve(false)
   }
 
   // ── TAT Countdown (unchanged) ─────────────────────────────────────────────
@@ -1216,9 +1252,16 @@ async function onOutboundBranchSelect(branchCode) {
     const secs = outboundWindowSecondsRemaining.value
     if (secs === null) return 'color: var(--color-text-muted);'
     if (secs <= 0) return 'color: var(--color-error);'
-    const pct = outboundWindowProgressPct.value
-    if (pct <= 25) return 'color: var(--color-warning);'
+    // If already endorsed this window — stay green regardless of time left
+    if (outboundTat.value.hasEndorsedThisWindow) return 'color: var(--color-success);'
+    if (outboundWindowProgressPct.value <= 25) return 'color: var(--color-warning);'
     return 'color: var(--color-success);'
+  })
+
+  const endorseDestinationLabel = computed(() => {
+    if (isOutbound.value && outboundBranchCode.value)
+      return outboundBranchCode.value.toUpperCase()
+    return `Processing — ${authStore.branchCode}`.toUpperCase()
   })
 
 </script>

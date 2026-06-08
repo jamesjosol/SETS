@@ -46,6 +46,9 @@ namespace Reposi.Context
         public DbSet<Branch_Settings> Branch_Settings { get; set; }
         public DbSet<Tat_Outbound_Window> Tat_Outbound_Window { get; set; }
         public DbSet<Tat_Outbound_Log> Tat_Outbound_Log { get; set; }
+        public DbSet<App_Changelog> App_Changelog { get; set; }
+        public DbSet<App_Changelog_Item> App_Changelog_Item { get; set; }
+        public DbSet<App_Changelog_Seen> App_Changelog_Seen { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -278,6 +281,25 @@ namespace Reposi.Context
             modelBuilder.Entity<Tat_Outbound_Log>()
                 .HasIndex(l => new { l.WindowDate, l.WindowId });
 
+            // App_Changelog
+            modelBuilder.Entity<App_Changelog>().ToTable("App_Changelog");
+            modelBuilder.Entity<App_Changelog>().HasKey(c => c.Id);
+
+            // App_Changelog_Item
+            modelBuilder.Entity<App_Changelog_Item>().ToTable("App_Changelog_Item");
+            modelBuilder.Entity<App_Changelog_Item>().HasKey(i => i.Id);
+            modelBuilder.Entity<App_Changelog_Item>()
+                .HasOne<App_Changelog>()
+                .WithMany()
+                .HasForeignKey(i => i.ChangelogId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // App_Changelog_Seen
+            modelBuilder.Entity<App_Changelog_Seen>().ToTable("App_Changelog_Seen");
+            modelBuilder.Entity<App_Changelog_Seen>().HasKey(s => s.Id);
+            modelBuilder.Entity<App_Changelog_Seen>()
+                .HasIndex(s => new { s.UserID, s.Version })
+                .IsUnique();
         }
     }
 }
