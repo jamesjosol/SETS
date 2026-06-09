@@ -467,9 +467,10 @@
       }
 
       authStore.setUser(
-        { userID: data.data.userID, userName: data.data.userName, isAdmin: data.data.isAdmin, theme: data.data.theme, accentColor: data.data.accentColor },
+        { userID: data.data.userID, userName: data.data.userName, isAdmin: data.data.isAdmin, theme: data.data.theme, accentColor: data.data.accentColor, isDeveloper: data.data.isDeveloper },
         data.data.branchCode,
-        { code: data.data.sectionCode, name: data.data.sectionName, roleID: data.data.roleID, branchCode: data.data.branchCode, category: data.data.sectionCategory }
+        { code: data.data.sectionCode, name: data.data.sectionName, roleID: data.data.roleID, branchCode: data.data.branchCode, category: data.data.sectionCategory },
+
       )
 
       if (data.data.profilePicture) {

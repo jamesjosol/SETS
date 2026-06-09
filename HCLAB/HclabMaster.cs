@@ -314,8 +314,15 @@ namespace HCLAB
                     using var reader = await cmd.ExecuteReaderAsync();
                     while (await reader.ReadAsync())
                     {
-                        var actionFlag = reader["od_action_flag"];
-                        flags.Add(actionFlag == DBNull.Value ? string.Empty : actionFlag.ToString().Trim().ToUpper());
+                        var actionFlag = reader["od_action_flag"] == DBNull.Value
+                               ? string.Empty
+                               : reader["od_action_flag"].ToString().Trim().ToUpper();
+
+                        var ctlFlag2 = reader["od_ctl_flag2"] == DBNull.Value
+                            ? string.Empty
+                            : reader["od_ctl_flag2"].ToString().Trim().ToUpper();
+
+                        flags.Add(actionFlag == "R" || ctlFlag2 == "A" ? "R" : actionFlag);
                     }
 
                     // No child rows found — can't confirm release

@@ -62,7 +62,10 @@
               <div class="p-2 rounded-xl" style="background-color: rgba(217,119,6,0.1);">
                 <span class="material-symbols-outlined" style="color: var(--color-warning);">labs</span>
               </div>
-              <span class="text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-warning);">SELF</span>
+              <span class="text-[10px] font-bold uppercase tracking-widest"
+                    :style="runningView === 'self' ? 'color: var(--color-warning);' : 'color: var(--color-text-muted);'">
+                {{ runningView === 'self' ? 'SELF' : 'ALL' }}
+              </span>
             </div>
             <h3 class="text-4xl font-extrabold mb-1" style="color: var(--color-warning);">
               <span v-if="summaryLoading" class="block h-9 w-16 rounded-lg animate-pulse" style="background-color: var(--color-surface-low);"></span>
@@ -669,6 +672,12 @@
       : allRunningSpecimens.value
   )
 
+  const displayRunningCount = computed(() =>
+    runningView.value === 'self'
+      ? runningSpecimens.value.reduce((sum, s) => sum + s.tests.length, 0)
+      : allRunningSpecimens.value.reduce((sum, s) => sum + s.tests.length, 0)
+  )
+
   // ══════════════════════════════════════════════════════════════════════════
   // ADMIN DATA
   // ══════════════════════════════════════════════════════════════════════════
@@ -851,7 +860,7 @@
     // await animateKpiCards()
     countUp(displayPending, summary.value.pending)
     countUp(displayScheduled, summary.value.scheduled)
-    countUp(displayRunning, summary.value.running)
+    countUp(displayRunning, displayRunningCount.value)
     countUp(displayCompleted, summary.value.completedToday)
   })
 
@@ -860,9 +869,18 @@
     if (summaryLoading.value) return
     displayPending.value = val.pending
     displayScheduled.value = val.scheduled
-    displayRunning.value = val.running
+    displayRunning.value = displayRunningCount.value 
     displayCompleted.value = val.completedToday
   }, { deep: true })
+
+  watch(runningView, () => {
+    countUp(displayRunning, displayRunningCount.value)
+  })
+
+  watch([runningSpecimens, allRunningSpecimens], () => {
+    if (summaryLoading.value) return
+    displayRunning.value = displayRunningCount.value
+  })
 
   // Running card
   watch(runningLoading, async (isLoading) => {

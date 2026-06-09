@@ -20,6 +20,7 @@ namespace Model.Main
         public string UserID { get; set; }
         public string UserName { get; set; }
         public bool IsAdmin { get; set; }
+        public bool IsDeveloper { get; set; }
         public string BranchCode { get; set; }
         public string SectionCode { get; set; }
         public string SectionName { get; set; }

@@ -50,7 +50,7 @@
         <EndorsementTab v-if="activeTab === 'endorsement'" @toast="showToast" />
         <ArchiveTab v-if="activeTab === 'archive'" @toast="showToast" />
         <OnlineUsersTab v-if="activeTab === 'onlineUsers'" @toast="showToast" />
-        <ChangelogTab v-if="activeTab === 'changelog'" @toast="showToast" />
+        <ChangelogTab v-if="activeTab === 'changelog' && authStore.isDeveloper" @toast="showToast" />
       </div>
     </div>
 
@@ -67,7 +67,8 @@
 </template>
 
 <script setup>
-  import { ref } from "vue";
+  import { ref, computed } from "vue";
+  import { useAuthStore } from '@/stores/authStore'
   import AppLayout from "@/components/layout/AppLayout.vue";
   import PcRegistrationTab from "./PcRegistrationTab.vue";
   import UserManagementTab from "./UserManagementTab.vue";
@@ -86,24 +87,33 @@
   import ChangelogTab from './ChangelogTab.vue'
 
   const activeTab = ref("pc");
+  const authStore = useAuthStore()
 
-  const settingsTabs = [
-    { key: "pc", label: "PC Registration", icon: "computer" },
-    { key: "users", label: "Users", icon: "manage_accounts" },
-    { key: "sections", label: "Section", icon: "apartment" },
-    { key: "runningDays", label: "Running Days", icon: "calendar_month" },
-    { key: "tat", label: "TAT Set-Up", icon: "timer" },
-    { key: 'outboundTat', label: 'Outbound TAT', icon: 'alt_route' },
-    { key: "onsite", label: "On-Site", icon: "location_on" },
-    { key: "processing", label: "Processing", icon: "tune" },
-    { key: "branch", label: "Branch", icon: "location_city" },
-    { key: "contingency", label: "Contingency", icon: "offline_bolt" },
-    { key: 'announcement', label: 'Announcements', icon: 'campaign' },
-    { key: "endorsement", label: "Endorsement", icon: "swap_horiz" },
-    { key: "archive", label: "Archive", icon: "archive" },
-    { key: 'onlineUsers', label: 'Online Users', icon: 'groups' },
-    { key: 'changelog', label: 'Changelog', icon: 'new_releases' },
-  ];
+  const settingsTabs = computed(() => {
+    const tabs = [
+      { key: "pc", label: "PC Registration", icon: "computer" },
+      { key: "users", label: "Users", icon: "manage_accounts" },
+      { key: "sections", label: "Section", icon: "apartment" },
+      { key: "runningDays", label: "Running Days", icon: "calendar_month" },
+      { key: "tat", label: "TAT Set-Up", icon: "timer" },
+      { key: 'outboundTat', label: 'Outbound TAT', icon: 'alt_route' },
+      { key: "onsite", label: "On-Site", icon: "location_on" },
+      { key: "processing", label: "Processing", icon: "tune" },
+      { key: "branch", label: "Branch", icon: "location_city" },
+      { key: "contingency", label: "Contingency", icon: "offline_bolt" },
+      { key: 'announcement', label: 'Announcements', icon: 'campaign' },
+      { key: "endorsement", label: "Endorsement", icon: "swap_horiz" },
+      { key: "archive", label: "Archive", icon: "archive" },
+      { key: 'onlineUsers', label: 'Online Users', icon: 'groups' },
+    ]
+
+    // Only append Changelog tab for developer users
+    if (authStore.isDeveloper) {
+      tabs.push({ key: 'changelog', label: 'Changelog', icon: 'new_releases' })
+    }
+
+    return tabs
+  })
 
   const toast = ref({ visible: false, message: "" });
   let toastTimer = null;

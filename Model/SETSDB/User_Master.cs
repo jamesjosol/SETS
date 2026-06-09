@@ -19,5 +19,6 @@ namespace Model.SETSDB
         public DateTime? Updated { get; set; }
         public string? UpdatedBy { get; set; }
         public string? ProfilePicture { get; set; }
+        public bool IsDeveloper { get; set; }
     }
 }

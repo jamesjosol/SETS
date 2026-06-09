@@ -12,6 +12,7 @@ export const useAuthStore = defineStore('auth', {
     isContingencyMode: false,
     profilePicture: null,
     appVersion: '...',
+    isDeveloper: false,
   }),
   actions: {
     setUser(user, branch, section, isContingency = false) {
@@ -23,6 +24,7 @@ export const useAuthStore = defineStore('auth', {
       this.accentColor = user?.accentColor ?? 0
       this.isContingencyMode = isContingency
       this.profilePicture = null
+      this.isDeveloper = user?.isDeveloper ?? false
 
       const announcementStore = useAnnouncementStore()
       announcementStore.reset()
@@ -56,6 +58,7 @@ export const useAuthStore = defineStore('auth', {
     userID: (state) => state.user?.userID ?? '',
     userName: (state) => state.user?.userName ?? '',
     isAdmin: (state) => state.user?.isAdmin ?? false,
+    isDeveloper: (state) => state.user?.isDeveloper ?? false,
     isTL: (state) => state.section?.roleID == 2 ?? false,
     sectionCode: (state) => state.section?.code ?? '',
     sectionName: (state) => state.section?.name ?? '',

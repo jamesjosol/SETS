@@ -75,6 +75,7 @@ namespace SETS.Server.Controllers
                 HttpContext.Session.SetString("SectionCode", request.SectionCode);
                 HttpContext.Session.SetInt32("RoleID", userSection.RoleID);
                 HttpContext.Session.SetString("IsAdmin", user.IsAdmin.ToString());
+                HttpContext.Session.SetString("IsDeveloper", user.IsDeveloper.ToString());
                 HttpContext.Session.SetString("SectionCategory", section?.Category ?? "1");
 
                 Console.WriteLine("logged in: " + HttpContext.Session.GetString("UserID"));
@@ -88,6 +89,7 @@ namespace SETS.Server.Controllers
                         UserID = user.UserID,
                         UserName = user.UserName,
                         IsAdmin = user.IsAdmin,
+                        IsDeveloper = user.IsDeveloper,
                         BranchCode = request.Branch,
                         SectionCode = request.SectionCode,
                         SectionName = section?.Name ?? request.SectionCode,
