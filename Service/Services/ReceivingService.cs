@@ -898,12 +898,17 @@ namespace Service.Services
             context.SaveChanges(); // flush to get generated Id
 
             // Step 6 — Create child rows — one per test code
+            // Resolve test code alias (two-way) — HCLAB may use a different code than SETS
+            using var mapMaster = new MasterService(_branch_raw);
+
             foreach (var test in tests)
             {
+                var resolvedCode = mapMaster.TestCodeMap.ResolveCode(test.TESTCODE);
+
                 context.Specimen_Section_Test.Add(new Specimen_Section_Test
                 {
                     HeaderId = header.Id,
-                    TestCode = test.TESTCODE,
+                    TestCode = resolvedCode,
                     TestName = test.TESTNAME,
                     Status = "P"
                 });

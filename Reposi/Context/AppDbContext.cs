@@ -49,6 +49,7 @@ namespace Reposi.Context
         public DbSet<App_Changelog> App_Changelog { get; set; }
         public DbSet<App_Changelog_Item> App_Changelog_Item { get; set; }
         public DbSet<App_Changelog_Seen> App_Changelog_Seen { get; set; }
+        public DbSet<Test_Code_Map> Test_Code_Map { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -300,6 +301,10 @@ namespace Reposi.Context
             modelBuilder.Entity<App_Changelog_Seen>()
                 .HasIndex(s => new { s.UserID, s.Version })
                 .IsUnique();
+
+            // Test_Code_Map
+            modelBuilder.Entity<Test_Code_Map>().ToTable("Test_Code_Map");
+            modelBuilder.Entity<Test_Code_Map>().HasKey(t => t.Id);
         }
     }
 }

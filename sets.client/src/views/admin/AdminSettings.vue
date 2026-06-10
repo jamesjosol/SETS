@@ -40,6 +40,7 @@
         <UserManagementTab v-if="activeTab === 'users'" @toast="showToast" />
         <SectionTab v-if="activeTab === 'sections'" @toast="showToast" />
         <RunningDaysTab v-if="activeTab === 'runningDays'" @toast="showToast" />
+        <TestCodeMapTab v-if="activeTab === 'testCodeMap'" @toast="showToast" />
         <TatSetUpTab v-if="activeTab === 'tat'" @toast="showToast" />
         <OutboundTatTab v-if="activeTab === 'outboundTat'" @toast="showToast" />
         <OnSiteTab v-if="activeTab === 'onsite'" @toast="showToast" />
@@ -85,6 +86,7 @@
   import OnlineUsersTab from './OnlineUsersTab.vue'
   import OutboundTatTab from './OutboundTatTab.vue'
   import ChangelogTab from './ChangelogTab.vue'
+  import TestCodeMapTab from './TestCodeMapTab.vue'
 
   const activeTab = ref("pc");
   const authStore = useAuthStore()
@@ -95,6 +97,7 @@
       { key: "users", label: "Users", icon: "manage_accounts" },
       { key: "sections", label: "Section", icon: "apartment" },
       { key: "runningDays", label: "Running Days", icon: "calendar_month" },
+      { key: 'testCodeMap', label: 'Test Code Map', icon: 'compare_arrows' },
       { key: "tat", label: "TAT Set-Up", icon: "timer" },
       { key: 'outboundTat', label: 'Outbound TAT', icon: 'alt_route' },
       { key: "onsite", label: "On-Site", icon: "location_on" },

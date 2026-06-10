@@ -54,6 +54,7 @@ namespace Reposi
         public TatOutboundLogRepo TatOutboundLogs { get; private set; }
         public ChangelogRepo Changelog { get; set; }
         public ChangelogSeenRepo ChangelogSeen { get; set; }
+        public TestCodeMapRepo TestCodeMaps { get; private set; }
 
         public UnitOfWork(AppDbContext context)
         {
@@ -99,6 +100,7 @@ namespace Reposi
             TatOutboundLogs = new TatOutboundLogRepo(_context);
             Changelog = new ChangelogRepo(context); 
             ChangelogSeen = new ChangelogSeenRepo(context);
+            TestCodeMaps = new TestCodeMapRepo(_context);
         }
 
         public void Dispose()

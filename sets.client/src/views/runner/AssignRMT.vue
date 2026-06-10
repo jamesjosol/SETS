@@ -243,8 +243,22 @@
                       <table class="w-full text-xs">
                         <thead>
                           <tr style="background-color: var(--color-surface-low); border-bottom: 1px solid var(--color-border);">
-                            <th class="px-4 py-2.5 text-left text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Test Code</th>
-                            <th class="px-4 py-2.5 text-left text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Test Name</th>
+                            <th class="px-4 py-2.5 text-left text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">
+                              <div class="flex items-center gap-1.5">
+                                <span>{{ showCodeFirst ? 'Test Code' : 'Test Name' }}</span>
+                                <button class="flex items-center p-0.5 rounded-md transition-all"
+                                        style="color: var(--color-text-muted);"
+                                        @mouseenter="e => e.currentTarget.style.color = 'var(--color-primary)'"
+                                        @mouseleave="e => e.currentTarget.style.color = 'var(--color-text-muted)'"
+                                        @click="showCodeFirst = !showCodeFirst"
+                                        title="Swap columns">
+                                  <span class="material-symbols-outlined" style="font-size: 13px;">swap_horiz</span>
+                                </button>
+                              </div>
+                            </th>
+                            <th class="px-4 py-2.5 text-left text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">
+                              {{ showCodeFirst ? 'Test Name' : 'Test Code' }}
+                            </th>
                             <th class="px-4 py-2.5 text-left text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Status</th>
                             <th class="px-4 py-2.5 text-left text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Assigned RMT</th>
                             <th class="px-4 py-2.5 text-left text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Schedule</th>
@@ -259,10 +273,13 @@
                               : 'border-top: 1px solid var(--color-border);'">
 
                             <td class="px-4 py-3">
-                              <span class="font-mono font-bold" style="color: var(--color-text);">{{ test.testCode }}</span>
+                              <span v-if="showCodeFirst" class="font-mono font-bold" style="color: var(--color-text);">{{ test.testCode }}</span>
+                              <span v-else style="color: var(--color-text);">{{ test.testName }}</span>
                             </td>
-
-                            <td class="px-4 py-3" style="color: var(--color-text);">{{ test.testName }}</td>
+                            <td class="px-4 py-3" style="color: var(--color-text);">
+                              <span v-if="showCodeFirst">{{ test.testName }}</span>
+                              <span v-else class="font-mono font-bold">{{ test.testCode }}</span>
+                            </td>
 
                             <td class="px-4 py-3">
                               <div class="flex items-center gap-1.5">
@@ -440,7 +457,7 @@
 </template>
 
 <script setup>
-  import { ref, onMounted, nextTick, computed } from 'vue'
+  import { ref, watch, onMounted, nextTick, computed } from 'vue'
   import AppLayout from '@/components/layout/AppLayout.vue'
   import AlertModal from '@/components/common/AlertModal.vue'
   import RemarkModal from '@/components/common/RemarkModal.vue'
@@ -464,6 +481,7 @@
   const onSiteEnabled = ref(false)
   const sectionCutOff = ref(null)
   const scanMode = ref('standard') // 'standard' | 'onsite'
+  const showCodeFirst = ref(localStorage.getItem('assignRmt_showCodeFirst') !== 'false')
 
   // Schedule tag options
   const scheduleTags = [
@@ -479,6 +497,9 @@
     expandedSpecimen.value = expandedSpecimen.value === specimenNo ? null : specimenNo
   }
 
+  watch(showCodeFirst, val => {
+    localStorage.setItem('assignRmt_showCodeFirst', val)
+  })
   // ── Specimen Alert Modal ───────────────────────────────────────────────────
 
   const specimenAlertModal = ref({

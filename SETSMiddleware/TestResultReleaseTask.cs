@@ -59,8 +59,10 @@ namespace SETSMiddleware.Tasks
                             ? specimenNo.Substring(0, 10)
                             : specimenNo;
 
+                        var resolvedTestCode = master.TestCodeMap.ResolveCode(test.TestCode);
+
                         bool isReleased = await HclabMaster.HCLABTransactions
-                            .CheckTestReleased(oracleConn, labNo, test.TestCode);
+                            .CheckTestReleased(oracleConn, labNo, resolvedTestCode);
 
                         if (!isReleased) continue;
 
@@ -131,8 +133,10 @@ namespace SETSMiddleware.Tasks
                             ? specimenNo.Substring(0, 10)
                             : specimenNo;
 
+                        var resolvedTestCode = master.TestCodeMap.ResolveCode(test.TestCode);
+
                         bool isReleased = await HclabMaster.HCLABTransactions
-                            .CheckTestReleased(oracleConn, labNo, test.TestCode);
+                            .CheckTestReleased(oracleConn, labNo, resolvedTestCode);
 
                         if (!isReleased) continue;
 

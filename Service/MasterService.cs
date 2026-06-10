@@ -35,6 +35,7 @@ namespace Service
         public BranchSettingsService BranchSettings { get; private set; }
         public FlagService Flag { get; private set; }
         public ChangelogService Changelog { get; private set; }
+        public TestCodeMapService TestCodeMap { get; private set; }
 
         private readonly AppDbContextFactory _factory;
         private readonly string _branch;
@@ -77,6 +78,7 @@ namespace Service
             BranchSettings = new BranchSettingsService(_factory, _branch);
             Flag = new FlagService(_factory, _branch);
             Changelog = new ChangelogService(_factory, _branch);
+            TestCodeMap = new TestCodeMapService(_factory, _branch);
         }
 
         public void Dispose()
