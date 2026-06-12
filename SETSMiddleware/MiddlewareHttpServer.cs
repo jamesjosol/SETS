@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Text.Json;
+using SETSMiddleware.Monitoring;
 using SETSMiddleware.Tasks;
 
 namespace SETSMiddleware
@@ -27,6 +28,7 @@ namespace SETSMiddleware
         private readonly List<TaskBase> _tasks;
         private readonly string _deployerKey;
         private readonly string _siteName;
+        private readonly SetsMonitorSampler _monitor;
 
         private HttpListener _listener;
         private CancellationTokenSource _cts;
@@ -34,14 +36,15 @@ namespace SETSMiddleware
 
         public bool IsRunning { get; private set; }
 
-        public MiddlewareHttpServer(string branch, List<TaskBase> tasks, string deployerKey, string siteName = "SETS")
+        public MiddlewareHttpServer(string branch, List<TaskBase> tasks, string deployerKey,
+            string siteName = "SETS", SetsMonitorSampler monitor = null)
         {
             _branch = branch;
             _tasks = tasks;
             _deployerKey = deployerKey;
             _siteName = siteName;
+            _monitor = monitor;
         }
-
         public void Start()
         {
             if (IsRunning) return;
@@ -106,6 +109,29 @@ namespace SETSMiddleware
                         })
                     };
                     WriteJson(resp, 200, payload);
+                    return;
+                }
+
+                // ── GET /monitor/sets ─────────────────────────────────────────
+                if (req.HttpMethod == "GET" && path == "/monitor/sets")
+                {
+                    // Same key as the IIS endpoints — SETS.Server proxies this
+                    // server-side so the key never reaches the browser.
+                    var key = req.Headers["X-Deployer-Key"];
+                    if (string.IsNullOrEmpty(_deployerKey) || key != _deployerKey)
+                    {
+                        WriteJson(resp, 401, new { message = "Unauthorized. Invalid or missing X-Deployer-Key." });
+                        return;
+                    }
+
+                    if (_monitor == null)
+                    {
+                        WriteJson(resp, 503, new { available = false, message = "Monitor sampler not running." });
+                        return;
+                    }
+
+                    bool includeRequests = req.QueryString["requests"] != "0";
+                    WriteJson(resp, 200, _monitor.BuildSnapshot(includeRequests));
                     return;
                 }
 

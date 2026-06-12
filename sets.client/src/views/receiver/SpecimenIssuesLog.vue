@@ -114,10 +114,26 @@
               </p>
             </div>
 
-            <!-- Folder actions (TL/Admin only) -->
-            <div v-if="!selectedSubCategory && isTLOrAdmin"
+            <!-- Folder-level actions (only shown when not drilled into a sub-category) -->
+            <div v-if="!selectedSubCategory"
                  class="flex items-center gap-2 flex-shrink-0">
+
+              <!-- Export Excel (all users) -->
               <button class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold uppercase tracking-widest transition-all active:scale-95"
+                      :class="isExporting ? 'opacity-60 pointer-events-none' : ''"
+                      style="background-color: var(--color-success-soft); color: var(--color-success);"
+                      :title="`Export '${selectedFolder.name}' to Excel`"
+                      @click="exportFolder">
+                <span class="material-symbols-outlined text-sm"
+                      :class="isExporting ? 'animate-spin' : ''">
+                  {{ isExporting ? 'progress_activity' : 'download' }}
+                </span>
+                {{ isExporting ? 'Exporting...' : 'Export Excel' }}
+              </button>
+
+              <!-- Activate / Deactivate (TL/Admin only) -->
+              <button v-if="isTLOrAdmin"
+                      class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold uppercase tracking-widest transition-all active:scale-95"
                       :style="selectedFolder.isActive
                         ? 'background-color: var(--color-warning-soft); color: var(--color-warning);'
                         : 'background-color: var(--color-primary-soft); color: var(--color-primary);'"
@@ -127,8 +143,10 @@
                 </span>
                 {{ selectedFolder.isActive ? 'Deactivate' : 'Activate' }}
               </button>
+
             </div>
           </div>
+
 
           <!-- Sub-Category View -->
           <div v-if="!selectedSubCategory" class="flex-1 flex flex-col overflow-hidden">
@@ -1162,6 +1180,26 @@
       remarkModal.value.saving = false
     }
   }
+
+  // ── Export ─────────────────────────────────────────────────────────────────
+
+  const isExporting = ref(false)
+
+  async function exportFolder() {
+    if (!selectedFolder.value || isExporting.value) return
+    isExporting.value = true
+    try {
+      await specimenIssueApi.exportIncidentTypeExcel(
+        selectedFolder.value.id,
+        selectedFolder.value.name
+      )
+    } catch (e) {
+      showAlert('error', 'Export Failed', e.response?.data?.message ?? 'Could not generate the Excel file.')
+    } finally {
+      isExporting.value = false
+    }
+  }
+
   // ── GSAP Animation Helpers ─────────────────────────────────────────────────
 
   /**

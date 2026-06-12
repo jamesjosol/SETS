@@ -61,12 +61,12 @@ namespace SETSMiddleware.Tasks
 
                         var resolvedTestCode = master.TestCodeMap.ResolveCode(test.TestCode);
 
-                        bool isReleased = await HclabMaster.HCLABTransactions
-                            .CheckTestReleased(oracleConn, labNo, resolvedTestCode);
+                        var releaseResult = await HclabMaster.HCLABTransactions
+                       .CheckTestReleased(oracleConn, labNo, resolvedTestCode);
 
-                        if (!isReleased) continue;
+                        if (!releaseResult.IsReleased) continue;
 
-                        master.SpecimenSection.MarkTestReleased(test.Id);
+                        master.SpecimenSection.MarkTestReleased(test.Id, releaseResult.ReleasedBy, releaseResult.ReleasedOn);
 
                         // ── TryCompleteHeader now returns bool ─────────────
                         bool justCompleted = master.SpecimenSection.TryCompleteHeader(test.HeaderId);
@@ -135,12 +135,12 @@ namespace SETSMiddleware.Tasks
 
                         var resolvedTestCode = master.TestCodeMap.ResolveCode(test.TestCode);
 
-                        bool isReleased = await HclabMaster.HCLABTransactions
+                        var releaseResult = await HclabMaster.HCLABTransactions
                             .CheckTestReleased(oracleConn, labNo, resolvedTestCode);
 
-                        if (!isReleased) continue;
+                        if (!releaseResult.IsReleased) continue;
 
-                        master.OnSite.MarkTestReleased(test.Id);
+                        master.OnSite.MarkTestReleased(test.Id, releaseResult.ReleasedBy, releaseResult.ReleasedOn);
                         bool justCompleted = master.OnSite.TryCompleteHeader(test.HeaderId);
 
                         if (justCompleted && header != null)

@@ -29,6 +29,7 @@ namespace Service.Interfaces
         Task AddLabEntry(AddLabEntryRequest request);
         void UpdateLabEntryRemark(int id, UpdateLabEntryRemarkRequest request);
         void DeleteLabEntry(int id);
+        byte[] ExportIncidentTypeExcel(int incidentTypeId);
 
         // Comments
         List<CommentItem> GetComments(int incidentTypeId);

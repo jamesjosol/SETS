@@ -677,7 +677,7 @@ namespace Service.Services
             catch { throw; }
         }
 
-        public void MarkTestReleased(int testId)
+        public void MarkTestReleased(int testId, string? releasedBy, DateTime? releasedOn)
         {
             try
             {
@@ -687,6 +687,8 @@ namespace Service.Services
                 if (test == null) return;
                 test.Status = "X";
                 test.Updated = DateTime.Now;
+                test.ReleasedBy = releasedBy;
+                test.ReleasedOn = releasedOn;
                 unit.OnSiteSectionTests.Update(test);
             }
             catch { throw; }

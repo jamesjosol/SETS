@@ -283,17 +283,6 @@
                   @confirm="handleAppeal"
                   @close="appealConfirm.visible = false" />
 
-    <!-- Appeal Confirm Modal -->
-    <ConfirmModal :isVisible="appealConfirm.visible"
-                  type="warning"
-                  icon="do_not_disturb_on"
-                  title="Nothing to Endorse?"
-                  message="This will log an appeal and reset the TAT timer. Only proceed if there are genuinely no specimens to endorse at this time."
-                  confirmText="Yes, Submit Appeal"
-                  cancelText="Cancel"
-                  @confirm="handleAppeal"
-                  @close="appealConfirm.visible = false" />
-
     <!-- Main Grid -->
     <div class="grid grid-cols-12 gap-6">
 
@@ -590,6 +579,7 @@
 
   function closeDrawer() {
     drawerOpen.value = false
+    fetchTableData()
     drawerData.value = null
   }
 

@@ -239,7 +239,7 @@ namespace Service.Services
             catch { throw; }
         }
 
-        public void MarkTestReleased(int testId)
+        public void MarkTestReleased(int testId, string? releasedBy, DateTime? releasedOn)
         {
             try
             {
@@ -248,14 +248,16 @@ namespace Service.Services
                 var test = unit.SpecimenSectionTests.Get(testId);
                 if (test == null) return;
                 test.Status = "X";
+                test.ReleasedBy = releasedBy;
+                test.ReleasedOn = releasedOn;
                 unit.SpecimenSectionTests.Update(test);
             }
             catch { throw; }
         }
-
+        
         /// <summary>
-        /// Checks all tests under a header — if every one is "X", flips Header to "C".
-        /// </summary>
+                 /// Checks all tests under a header — if every one is "X", flips Header to "C".
+                 /// </summary>
         public bool TryCompleteHeader(int headerId)
         {
             try

@@ -34,7 +34,7 @@ namespace Service.Interfaces
         List<string> GetUnroutedSpecimenNos();
         void FlipHclabRouted(string specimenNo);
         List<Specimen_Section_Test> GetAllRunningTests();
-        void MarkTestReleased(int testId);
+        void MarkTestReleased(int testId, string? releasedBy, DateTime? releasedOn);
         bool TryCompleteHeader(int headerId);
 
 

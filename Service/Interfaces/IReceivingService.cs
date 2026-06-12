@@ -28,6 +28,8 @@ namespace Service.Interfaces
         CheckSpecimenResponse CheckSpecimen(string specimenNo, string? currentBatchNo);
         void SetSpecimenAlert(SetSpecimenAlertRequest request);
         void ClearSpecimenAlert(ClearSpecimenAlertRequest request);
+        List<Batch_Specimen> GetReceivedWithoutSection(int lookbackHours);
+        Task<bool> RetryRouteSpecimen(string specimenNo, Dictionary<string, string> mappingCache, HashSet<string> unmappedGroups, HashSet<string> emptyOracleKeys);
 
     }
 }

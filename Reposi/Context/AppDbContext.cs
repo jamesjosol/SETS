@@ -50,6 +50,7 @@ namespace Reposi.Context
         public DbSet<App_Changelog_Item> App_Changelog_Item { get; set; }
         public DbSet<App_Changelog_Seen> App_Changelog_Seen { get; set; }
         public DbSet<Test_Code_Map> Test_Code_Map { get; set; }
+        public DbSet<Test_Group_Override> Test_Group_Override { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -305,6 +306,10 @@ namespace Reposi.Context
             // Test_Code_Map
             modelBuilder.Entity<Test_Code_Map>().ToTable("Test_Code_Map");
             modelBuilder.Entity<Test_Code_Map>().HasKey(t => t.Id);
+
+            // Test_Group_Override
+            modelBuilder.Entity<Test_Group_Override>().ToTable("Test_Group_Override");
+            modelBuilder.Entity<Test_Group_Override>().HasKey(t => t.Id);
         }
     }
 }

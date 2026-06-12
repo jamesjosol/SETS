@@ -21,7 +21,7 @@ namespace Service.Interfaces
         void ReleaseScheduledHeaders(List<int> headerIds);
         List<OnSite_Section_Test> GetAllRunningTests();
         OnSite_Section_Header? GetHeaderById(int id);
-        void MarkTestReleased(int testId);
+        void MarkTestReleased(int testId, string? releasedBy, DateTime? releasedOn);
         bool TryCompleteHeader(int headerId);
         List<OnSite_Section_Test> GetTestsByHeaderId(int headerId);
         void CancelSpecimen(CancelSectionSpecimenRequest request);

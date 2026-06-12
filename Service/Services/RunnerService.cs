@@ -1971,6 +1971,8 @@ namespace Service.Services
                                 AssignedRMT = t.AssignedRMT,
                                 RunAt = t.RunAt,
                                 Assigned = t.Assigned,
+                                ReleasedBy = t.ReleasedBy,
+                                ReleasedOn = t.ReleasedOn,
                             }).ToList()
                     };
                 }).ToList();
@@ -2014,6 +2016,8 @@ namespace Service.Services
                             AssignedRMT = t.AssignedRMT,
                             RunAt = t.RunAt,
                             Assigned = t.Assigned,
+                            ReleasedBy = t.ReleasedBy,
+                            ReleasedOn = t.ReleasedOn,
                         }).ToList()
                 }).ToList();
 

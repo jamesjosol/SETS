@@ -1,7 +1,20 @@
-// sets.client/src/api/specimenIssueApi.js
 import api from './axiosInstance'
 
 const BASE_URL = '/api/SpecimenIssue'
+
+// ── Shared blob download helper (mirrors reportApi pattern) ──────────────────
+async function downloadExcel(endpoint, filename) {
+  const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '')
+  const response = await api.get(endpoint, { responseType: 'blob' })
+  const url = window.URL.createObjectURL(new Blob([response.data]))
+  const link = document.createElement('a')
+  link.href = url
+  link.setAttribute('download', `${filename}_${dateStr}.xlsx`)
+  document.body.appendChild(link)
+  link.click()
+  link.remove()
+  window.URL.revokeObjectURL(url)
+}
 
 export const specimenIssueApi = {
   // Incident Types
@@ -24,9 +37,14 @@ export const specimenIssueApi = {
   addLabEntry: (data) => api.post(`${BASE_URL}/entries`, data),
   deleteLabEntry: (id) => api.delete(`${BASE_URL}/entries/${id}`),
   updateLabEntryRemark: (id, data) => api.patch(`${BASE_URL}/entries/${id}/remark`, data),
+  exportIncidentTypeExcel: (incidentTypeId, folderName) =>
+    downloadExcel(
+      `${BASE_URL}/incident-types/${incidentTypeId}/export`,
+      `IssuesLog_${folderName.replace(/[^a-zA-Z0-9]/g, '_')}`
+    ),
 
   // Comments
-  getComments: (incidentTypeId) =>  api.get(`${BASE_URL}/incident-types/${incidentTypeId}/comments`).then(r => r.data),
+  getComments: (incidentTypeId) => api.get(`${BASE_URL}/incident-types/${incidentTypeId}/comments`).then(r => r.data),
   addComment: (data) => api.post(`${BASE_URL}/comments`, data),
   editComment: (id, data) => api.patch(`${BASE_URL}/comments/${id}`, data),
 }

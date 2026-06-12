@@ -862,7 +862,22 @@ namespace Service.Services
             if (tests == null || !tests.Any()) return string.Empty;
 
             // Step 2 — All rows share the same TestGroup — take it from the first row
+            // Step 2 — Resolve test group — check for override first, fall back to HCLAB value
+            using var mapMaster = new MasterService(_branch_raw);
+
             var testGroupCode = tests.First().TESTGROUP;
+
+            // Check each test code for a group override — first match wins
+            foreach (var test in tests)
+            {
+                var overriddenGroup = mapMaster.TestGroupOverride.ResolveGroup(test.TESTCODE);
+                if (!string.IsNullOrEmpty(overriddenGroup))
+                {
+                    testGroupCode = overriddenGroup;
+                    break;
+                }
+            }
+
             if (string.IsNullOrEmpty(testGroupCode)) return string.Empty;
 
             // Step 3 — Resolve which section owns this test group
@@ -899,7 +914,6 @@ namespace Service.Services
 
             // Step 6 — Create child rows — one per test code
             // Resolve test code alias (two-way) — HCLAB may use a different code than SETS
-            using var mapMaster = new MasterService(_branch_raw);
 
             foreach (var test in tests)
             {
@@ -916,6 +930,101 @@ namespace Service.Services
 
             context.SaveChanges();
             return mapping.SectionCode;
+        }
+
+        private async Task<string?> RouteToLabSections(
+                AppDbContext context,
+                Batch_Specimen specimen,
+                string routedByUserID,
+                DateTime routedAt,
+                Dictionary<string, string>? mappingCache = null,
+                HashSet<string>? unmappedGroups = null,
+                HashSet<string>? emptyOracleKeys = null)
+        {
+            var connStr = HclabConnection.ConnectionString(_branch_raw);
+
+            var testGroupToSection = mappingCache
+                ?? context.Section_TestGroup
+                       .Where(m => m.Active)
+                       .ToDictionary(m => m.TestGroupCode, m => m.SectionCode);
+
+            bool anyHeaderExists = context.Specimen_Section_Header
+                .Any(h => h.SpecimenNo == specimen.SpecimenNo);
+
+            if (anyHeaderExists) return string.Empty;
+
+            // Skip Oracle if this LabNo+SampleType already returned empty this tick
+            var oracleKey = $"{specimen.LabNo}|{specimen.SampleTypeCode}";
+            if (emptyOracleKeys?.Contains(oracleKey) == true)
+                return string.Empty;
+
+            // Query Oracle
+            var tests = await HclabMaster.HCLABTransactions
+                .GetOrd_Dtl(connStr, specimen.LabNo, specimen.SampleTypeCode);
+
+            if (tests == null || !tests.Any())
+            {
+                emptyOracleKeys?.Add(oracleKey); // remember for this tick
+                return string.Empty;
+            }
+
+            var testGroupCode = tests.First().TESTGROUP;
+            if (string.IsNullOrEmpty(testGroupCode))
+            {
+                emptyOracleKeys?.Add(oracleKey); // treat as empty — same outcome
+                return string.Empty;
+            }
+
+            // Skip if this test group was already confirmed unmapped this tick
+            if (unmappedGroups?.Contains(testGroupCode) == true)
+                return string.Empty;
+
+            if (!testGroupToSection.TryGetValue(testGroupCode, out var sectionCode))
+            {
+                unmappedGroups?.Add(testGroupCode); // remember for this tick
+                return string.Empty;
+            }
+
+            bool alreadyRouted = context.Specimen_Section_Header
+                .Any(h => h.SpecimenNo == specimen.SpecimenNo
+                       && h.TestGroupCode == testGroupCode);
+
+            if (alreadyRouted) return string.Empty;
+
+            bool isHclabRouted = await HclabMaster.HCLABTransactions
+                                    .CheckSplRouted(connStr, specimen.SpecimenNo);
+
+            var header = new Specimen_Section_Header
+            {
+                SpecimenNo = specimen.SpecimenNo,
+                SectionCode = sectionCode,
+                TestGroupCode = testGroupCode,
+                SampleTypeCode = specimen.SampleTypeCode,
+                Status = "P",
+                RoutedBy = routedByUserID,
+                Routed = routedAt,
+                IsHclabRouted = isHclabRouted
+            };
+
+            context.Specimen_Section_Header.Add(header);
+            context.SaveChanges();
+
+            using var mapMaster = new MasterService(_branch_raw);
+
+            foreach (var test in tests)
+            {
+                var resolvedCode = mapMaster.TestCodeMap.ResolveCode(test.TESTCODE);
+                context.Specimen_Section_Test.Add(new Specimen_Section_Test
+                {
+                    HeaderId = header.Id,
+                    TestCode = resolvedCode,
+                    TestName = test.TESTNAME,
+                    Status = "P"
+                });
+            }
+
+            context.SaveChanges();
+            return sectionCode;
         }
 
         public CancelSpecimenResult CancelSpecimen(CancelSpecimenRequest request)
@@ -1207,6 +1316,98 @@ namespace Service.Services
                 catch (Exception auditEx)
                 {
                     Console.WriteLine($"[AUDIT] SpecimenAlertCleared failed for {request.SpecimenNo}: {auditEx.Message}");
+                }
+            }
+            catch { throw; }
+        }
+
+        public List<Batch_Specimen> GetReceivedWithoutSection(int lookbackHours)
+        {
+            try
+            {
+                using var context = _factory.CreateContext(_branch);
+
+                var cutoff = DateTime.Now.AddHours(-lookbackHours);
+
+                var routedNos = context.Specimen_Section_Header
+                    .Select(h => h.SpecimenNo)
+                    .Distinct()
+                    .ToHashSet();
+
+                // Exclude outbound batches — those specimens are routed at the destination branch
+                var outboundBatchNos = context.Batch_Header
+                    .Where(h => h.IsOutbound)
+                    .Select(h => h.BatchNo)
+                    .ToHashSet();
+
+                return context.Batch_Specimen
+                    .Where(s => s.Status == "R" && s.Endorsed >= cutoff)
+                    .ToList()
+                    .Where(s => !routedNos.Contains(s.SpecimenNo)
+                             && !outboundBatchNos.Contains(s.BatchNo))
+                    .ToList();
+            }
+            catch { throw; }
+        }
+
+        public async Task<bool> RetryRouteSpecimen(
+            string specimenNo,
+            Dictionary<string, string> mappingCache,
+            HashSet<string> unmappedGroups,
+            HashSet<string> emptyOracleKeys)
+        {
+            try
+            {
+                using var context = _factory.CreateContext(_branch);
+                using var tx = context.Database.BeginTransaction();
+
+                try
+                {
+                    var specimen = context.Batch_Specimen
+                        .Where(s => s.SpecimenNo == specimenNo && s.Status == "R")
+                        .OrderByDescending(s => s.Endorsed)
+                        .FirstOrDefault();
+
+                    if (specimen == null)
+                    {
+                        tx.Rollback();
+                        return false;
+                    }
+
+                    var routedSectionCode = await RouteToLabSections(
+                        context, specimen, "SYSTEM", DateTime.Now,
+                        mappingCache, unmappedGroups, emptyOracleKeys);
+
+                    tx.Commit();
+
+                    if (string.IsNullOrEmpty(routedSectionCode))
+                        return false;
+
+                    try
+                    {
+                        using var autoRunMaster = new MasterService(_branch_raw);
+                        var routedSection = autoRunMaster.Section.GetByCode(routedSectionCode);
+
+                        if (routedSection?.AutoRun == true)
+                        {
+                            var sectionHeader = autoRunMaster.SpecimenSection
+                                .GetBySpecimenAndSection(specimenNo, routedSectionCode);
+
+                            if (sectionHeader?.IsHclabRouted == true)
+                                autoRunMaster.Runner.AutoReceiveAndRun(specimenNo, routedSectionCode, DateTime.Now);
+                        }
+                    }
+                    catch (Exception autoRunEx)
+                    {
+                        Console.WriteLine($"[RetryRoute-AutoRun] {specimenNo}: {autoRunEx.Message}");
+                    }
+
+                    return true;
+                }
+                catch
+                {
+                    tx.Rollback();
+                    throw;
                 }
             }
             catch { throw; }

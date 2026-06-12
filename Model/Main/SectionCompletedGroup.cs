@@ -36,5 +36,7 @@ namespace Model.Main
         public string? AssignedRMT { get; set; }
         public DateTime? RunAt { get; set; }
         public DateTime? Assigned { get; set; }
+        public string? ReleasedBy { get; set; }
+        public DateTime? ReleasedOn { get; set; }
     }
 }

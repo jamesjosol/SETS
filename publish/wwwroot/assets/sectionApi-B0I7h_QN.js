@@ -1,1 +1,0 @@
-import{s as e}from"./useTheme-1HDzC9s2.js";var t={getAll:()=>e.get(`/api/section`),add:t=>e.post(`/api/section`,t),update:(t,n)=>e.put(`/api/section/${t}`,n),toggle:t=>e.patch(`/api/section/${t}/toggle`),checkCode:t=>e.get(`/api/section/check-code/${t}`),getTestGroups:()=>e.get(`/api/section/test-groups`)};export{t};

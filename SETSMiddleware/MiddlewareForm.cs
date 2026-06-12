@@ -5,6 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
+using SETSMiddleware.Monitoring;
+
 
 namespace SETSMiddleware
 {
@@ -30,6 +32,7 @@ namespace SETSMiddleware
         private TaskBase _selectedTask;
         private TaskRow _selectedRow;
         private MiddlewareHttpServer _httpServer;
+        private SetsMonitorSampler _monitorSampler;
         private readonly IConfiguration _config;
 
         // ── Log buffer per task ───────────────────────────────────────────────────
@@ -45,10 +48,15 @@ namespace SETSMiddleware
             BuildTaskList();
 
             // Start the health endpoint so the web app can detect this instance
-           
+
             string deployerKey = _config["DeployerKey"] ?? "sets-deployer-2024";
             string siteName = _config["SiteName"] ?? "SETS";
-            _httpServer = new MiddlewareHttpServer(_branch, _tasks, deployerKey, siteName);
+            string appPoolName = _config["AppPoolName"] ?? siteName;
+
+            //_monitorSampler = new SetsMonitorSampler(appPoolName, siteName);
+            //_monitorSampler.Start();
+
+            _httpServer = new MiddlewareHttpServer(_branch, _tasks, deployerKey, siteName, _monitorSampler);
             _httpServer.Start();
 
             if (_tasks.Count > 0)
@@ -65,7 +73,9 @@ namespace SETSMiddleware
             int tatResetInterval = int.TryParse(_config["TaskIntervals:EndorsementTatReset"], out var v5) ? v5 : 60;
             int outboundSyncInterval = int.TryParse(_config["TaskIntervals:OutboundStatusSync"], out var v6) ? v6 : 60;
             int hclabPostCheckInterval = int.TryParse(_config["TaskIntervals:OutboundHclabPostCheck"], out var v7) ? v7 : 120;
-            int outboundTatInterval = int.TryParse(_config["TaskIntervals:OutboundTatWindowCheck"], out var v8) ? v8 : 60; 
+            int outboundTatInterval = int.TryParse(_config["TaskIntervals:OutboundTatWindowCheck"], out var v8) ? v8 : 60;
+            int unroutedRetryInterval = int.TryParse(_config["TaskIntervals:UnroutedSpecimenRetry"], out var v9) ? v9 : 120;
+            int unroutedLookbackHours = int.TryParse(_config["TaskIntervals:UnroutedSpecimenLookbackHours"], out var v10) ? v10 : 24;
 
 
             var dbFactory = new AppDbContextFactory();
@@ -80,9 +90,10 @@ namespace SETSMiddleware
                     _branch, outboundSyncInterval, dbFactory);
             var hclabPostCheckTask = new OutboundHclabPostCheckTask(
                     _branch, hclabPostCheckInterval, dbFactory);
-            var outboundTatTask = new OutboundTatWindowCheckTask(_branch, outboundTatInterval); 
+            var outboundTatTask = new OutboundTatWindowCheckTask(_branch, outboundTatInterval);
+            var unroutedRetryTask = new UnroutedSpecimenRetryTask(_branch, unroutedRetryInterval, unroutedLookbackHours);
 
-            foreach (var task in new TaskBase[] { hclabTask, schedTask, releaseTask, syncTask, tatResetTask, outboundSyncTask, hclabPostCheckTask, outboundTatTask })
+            foreach (var task in new TaskBase[] { hclabTask, schedTask, releaseTask, syncTask, tatResetTask, outboundSyncTask, hclabPostCheckTask, outboundTatTask, unroutedRetryTask })
             {
                 _tasks.Add(task);
                 _logs[task.TaskName] = new List<(string, TaskBase.LogLevel, DateTime)>();
@@ -273,6 +284,7 @@ namespace SETSMiddleware
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
             _httpServer?.Stop();
+            _monitorSampler?.Dispose();
             foreach (var task in _tasks)
                 task.Stop();
             base.OnFormClosing(e);

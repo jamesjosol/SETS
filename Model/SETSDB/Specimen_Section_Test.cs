@@ -20,5 +20,7 @@ namespace Model.SETSDB
         public DateTime? Assigned { get; set; }
         public string? UpdatedBy { get; set; }
         public DateTime? Updated { get; set; }
+        public string? ReleasedBy { get; set; }
+        public DateTime? ReleasedOn { get; set; }
     }
 }

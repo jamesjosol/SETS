@@ -352,5 +352,28 @@ namespace SETS.Server.Controllers
                 return StatusCode(400, new { message = ex.Message });
             }
         }
+
+        // ── GET api/specimenissue/incident-types/{id}/export ─────────────────
+        [HttpGet("incident-types/{id}/export")]
+        public IActionResult ExportIncidentType(int id)
+        {
+            try
+            {
+                var branch = Branch;
+                if (string.IsNullOrEmpty(branch)) return SessionExpired();
+
+                using var master = new MasterService(branch);
+                var bytes = master.SpecimenIssue.ExportIncidentTypeExcel(id);
+
+                var fileName = $"IssuesLog_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
+                return File(bytes,
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    fileName);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
     }
 }

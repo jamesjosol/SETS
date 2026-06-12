@@ -293,13 +293,16 @@ namespace HCLAB
                 }
             }
 
+            // New result record — add this near the top of HclabMaster.cs or in its own file
+            // (placing it inside the HCLAB namespace is fine)
+            public record TestReleaseResult(bool IsReleased, string? ReleasedBy, DateTime? ReleasedOn);
+
             /// <summary>
             /// Checks if a test (including profiles) is fully released in HCLAB.
-            /// For profiles: all child rows (od_item_type = 'U') must have od_action_flag = 'R'.
-            /// For single tests: the single 'U' row must have od_action_flag = 'R'.
-            /// Returns true if released, false if not yet.
+            /// Returns IsReleased=true only when ALL child rows resolve to 'R'.
+            /// ReleasedBy/ReleasedOn are taken from the row with the latest od_validate_on.
             /// </summary>
-            public static async Task<bool> CheckTestReleased(string conn, string labNo, string testCode)
+            public static async Task<TestReleaseResult> CheckTestReleased(string conn, string labNo, string testCode)
             {
                 try
                 {
@@ -309,27 +312,55 @@ namespace HCLAB
                     cmd.Parameters.Add("p1", testCode);
                     await con.OpenAsync();
 
-                    var flags = new List<string>();
+                    var rows = new List<(string Flag, string? ValidateBy, DateTime? ValidateOn)>();
 
                     using var reader = await cmd.ExecuteReaderAsync();
                     while (await reader.ReadAsync())
                     {
                         var actionFlag = reader["od_action_flag"] == DBNull.Value
-                               ? string.Empty
-                               : reader["od_action_flag"].ToString().Trim().ToUpper();
+                            ? string.Empty
+                            : reader["od_action_flag"].ToString().Trim().ToUpper();
 
                         var ctlFlag2 = reader["od_ctl_flag2"] == DBNull.Value
                             ? string.Empty
                             : reader["od_ctl_flag2"].ToString().Trim().ToUpper();
 
-                        flags.Add(actionFlag == "R" || ctlFlag2 == "A" ? "R" : actionFlag);
+                        var validateBy = reader["od_validate_by"] == DBNull.Value
+                            ? null
+                            : reader["od_validate_by"].ToString().Trim();
+
+                        DateTime? validateOn = null;
+                        if (reader["od_validate_on"] != DBNull.Value)
+                        {
+                            if (reader["od_validate_on"] is DateTime dt)
+                                validateOn = dt;
+                            else if (DateTime.TryParse(reader["od_validate_on"].ToString(), out var parsed))
+                                validateOn = parsed;
+                        }
+
+                        var resolvedFlag = (actionFlag == "R" || ctlFlag2 == "A") ? "R" : actionFlag;
+                        rows.Add((resolvedFlag, validateBy, validateOn));
                     }
 
-                    // No child rows found — can't confirm release
-                    if (flags.Count == 0) return false;
+                    // No rows — cannot confirm release
+                    if (rows.Count == 0)
+                        return new TestReleaseResult(false, null, null);
 
-                    // All child rows must have action flag = 'R'
-                    return flags.All(f => f == "R");
+                    bool allReleased = rows.All(r => r.Flag == "R");
+                    if (!allReleased)
+                        return new TestReleaseResult(false, null, null);
+
+                    // Pick the row with the latest ValidateOn as the canonical releaser
+                    var best = rows
+                        .Where(r => r.ValidateOn.HasValue)
+                        .OrderByDescending(r => r.ValidateOn)
+                        .FirstOrDefault();
+
+                    return new TestReleaseResult(
+                        IsReleased: true,
+                        ReleasedBy: best.ValidateBy,
+                        ReleasedOn: best.ValidateOn
+                    );
                 }
                 catch { throw; }
             }

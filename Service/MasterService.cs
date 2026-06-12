@@ -36,6 +36,8 @@ namespace Service
         public FlagService Flag { get; private set; }
         public ChangelogService Changelog { get; private set; }
         public TestCodeMapService TestCodeMap { get; private set; }
+        public MonitorService Monitor { get; private set; }
+        public TestGroupOverrideService TestGroupOverride { get; private set; }
 
         private readonly AppDbContextFactory _factory;
         private readonly string _branch;
@@ -79,6 +81,8 @@ namespace Service
             Flag = new FlagService(_factory, _branch);
             Changelog = new ChangelogService(_factory, _branch);
             TestCodeMap = new TestCodeMapService(_factory, _branch);
+            Monitor = new MonitorService(_branch);
+            TestGroupOverride = new TestGroupOverrideService(_factory, _branch);
         }
 
         public void Dispose()

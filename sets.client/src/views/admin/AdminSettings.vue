@@ -52,6 +52,7 @@
         <ArchiveTab v-if="activeTab === 'archive'" @toast="showToast" />
         <OnlineUsersTab v-if="activeTab === 'onlineUsers'" @toast="showToast" />
         <ChangelogTab v-if="activeTab === 'changelog' && authStore.isDeveloper" @toast="showToast" />
+        <ServerMonitorTab v-if="activeTab === 'serverMonitor' && authStore.isDeveloper" @toast="showToast" />
       </div>
     </div>
 
@@ -87,6 +88,7 @@
   import OutboundTatTab from './OutboundTatTab.vue'
   import ChangelogTab from './ChangelogTab.vue'
   import TestCodeMapTab from './TestCodeMapTab.vue'
+  import ServerMonitorTab from './ServerMonitorTab.vue'
 
   const activeTab = ref("pc");
   const authStore = useAuthStore()
@@ -97,7 +99,7 @@
       { key: "users", label: "Users", icon: "manage_accounts" },
       { key: "sections", label: "Section", icon: "apartment" },
       { key: "runningDays", label: "Running Days", icon: "calendar_month" },
-      { key: 'testCodeMap', label: 'Test Code Map', icon: 'compare_arrows' },
+      { key: 'testCodeMap', label: 'Test Mapping & Overrides', icon: 'compare_arrows' },
       { key: "tat", label: "TAT Set-Up", icon: "timer" },
       { key: 'outboundTat', label: 'Outbound TAT', icon: 'alt_route' },
       { key: "onsite", label: "On-Site", icon: "location_on" },
@@ -113,6 +115,7 @@
     // Only append Changelog tab for developer users
     if (authStore.isDeveloper) {
       tabs.push({ key: 'changelog', label: 'Changelog', icon: 'new_releases' })
+      tabs.push({ key: 'serverMonitor', label: 'Server Monitor', icon: 'monitor_heart' })
     }
 
     return tabs

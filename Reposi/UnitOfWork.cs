@@ -55,6 +55,7 @@ namespace Reposi
         public ChangelogRepo Changelog { get; set; }
         public ChangelogSeenRepo ChangelogSeen { get; set; }
         public TestCodeMapRepo TestCodeMaps { get; private set; }
+        public TestGroupOverrideRepo TestGroupOverrides { get; private set; }
 
         public UnitOfWork(AppDbContext context)
         {
@@ -101,6 +102,7 @@ namespace Reposi
             Changelog = new ChangelogRepo(context); 
             ChangelogSeen = new ChangelogSeenRepo(context);
             TestCodeMaps = new TestCodeMapRepo(_context);
+            TestGroupOverrides = new TestGroupOverrideRepo(_context);
         }
 
         public void Dispose()

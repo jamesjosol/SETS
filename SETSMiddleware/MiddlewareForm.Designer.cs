@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SETSMiddleware.Tasks;
+using System;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -15,6 +16,7 @@ namespace SETSMiddleware
         private Label lblAppTitle;
         private Label lblBranchBadge;
         private Label lblOverallStatus;
+        private Button btnRunAll;
 
         // Layout
         private Panel pnlMain;
@@ -57,8 +59,8 @@ namespace SETSMiddleware
 
             // ── Form ─────────────────────────────────────────────────────────────
             Text = "SETS Middleware";
-            Size = new Size(980, 640);
-            MinimumSize = new Size(820, 520);
+            Size = new Size(980, 720);
+            MinimumSize = new Size(820, 620);
             StartPosition = FormStartPosition.CenterScreen;
             BackColor = C_BG;
             ForeColor = C_TEXT;
@@ -108,7 +110,23 @@ namespace SETSMiddleware
             };
             lblOverallStatus.Location = new Point(pnlTopBar.Width - 90, 17);
 
-            pnlTopBar.Controls.AddRange(new Control[] { lblAppTitle, lblBranchBadge, lblOverallStatus });
+            btnRunAll = new Button
+            {
+                Text = "⚡  Run All",
+                Width = 100,
+                Height = 28,
+                FlatStyle = FlatStyle.Flat,
+                Font = new Font("Segoe UI", 8.5f, FontStyle.Bold),
+                ForeColor = C_TEXT_MUTED,
+                BackColor = C_SURFACE_HIGH,
+                Cursor = Cursors.Hand,
+                Anchor = AnchorStyles.Top | AnchorStyles.Right
+            };
+            btnRunAll.FlatAppearance.BorderSize = 0;
+            btnRunAll.Location = new Point(pnlTopBar.Width - 220, 12);
+            btnRunAll.Click += btnRunAll_Click;
+
+            pnlTopBar.Controls.AddRange(new Control[] { lblAppTitle, lblBranchBadge, lblOverallStatus, btnRunAll });
 
             // ── Main Panel ────────────────────────────────────────────────────────
             pnlMain = new Panel
@@ -332,6 +350,32 @@ namespace SETSMiddleware
             Controls.Add(pnlTopBar);
 
             ResumeLayout(false);
+        }
+
+        private async void btnRunAll_Click(object sender, EventArgs e)
+        {
+            btnRunAll.Enabled = false;
+            btnRunAll.Text = "Running...";
+
+            try
+            {
+                var runTasks = _tasks.Select(async task =>
+                {
+                    try { await task.RunNowAsync(); task.Start(); }
+                    catch (Exception ex)
+                    {
+                        AppendLog(task, $"Run All error: {ex.Message}", TaskBase.LogLevel.Error);
+        
+                    }
+                });
+
+                await Task.WhenAll(runTasks);
+            }
+            finally
+            {
+                btnRunAll.Enabled = true;
+                btnRunAll.Text = "⚡  Run All";
+            }
         }
     }
 }

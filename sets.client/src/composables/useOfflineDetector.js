@@ -5,7 +5,7 @@ const PING_URL = '/api/health/status'
 const PING_INTERVAL = 10_000
 const RETRY_COUNTDOWN = 10
 const RELOAD_INTERVAL = 30_000
-const FAILURE_THRESHOLD = 5  // must fail this many times in a row before showing overlay
+const FAILURE_THRESHOLD = 8  // must fail this many times in a row before showing overlay
 
 export function useOfflineDetector() {
   const isOffline = ref(false)
