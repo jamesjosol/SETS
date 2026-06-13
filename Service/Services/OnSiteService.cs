@@ -187,7 +187,6 @@ namespace Service.Services
                     var testIds = new HashSet<int>(request.Assignments.Select(a => a.TestId));
                     var today = DateOnly.FromDateTime(now);
                     var tests = context.OnSite_Section_Test
-                        .ToList()
                         .Where(t => testIds.Contains(t.Id))
                         .ToList();
 
@@ -442,7 +441,6 @@ namespace Service.Services
                 var headerIds = headers.Select(h => h.Id).ToList();
 
                 var allTests = context.OnSite_Section_Test
-                    .ToList()
                     .Where(t => headerIds.Contains(t.HeaderId)
                              && (t.Status == "P" || t.Status == "R"))
                     .ToList();
@@ -499,7 +497,6 @@ namespace Service.Services
                 var headerIds = headers.Select(h => h.Id).ToList();
 
                 var savedTests = context.OnSite_Section_Test
-                    .ToList()
                     .Where(t => headerIds.Contains(t.HeaderId) && t.Status == "S")
                     .ToList();
 
@@ -558,7 +555,6 @@ namespace Service.Services
                 var headerIds = headers.Select(h => h.Id).ToList();
 
                 var runningTests = context.OnSite_Section_Test
-                    .ToList()
                     .Where(t => headerIds.Contains(t.HeaderId)
                              && t.Status == "R"
                              && (userID == null || t.AssignedRMT == userID))

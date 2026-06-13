@@ -626,6 +626,153 @@
                 </ScrollViewer>
             </TabItem>
 
+            <!-- ══════════════════ SQL RUNNER (DML) TAB ══════════════════ -->
+            <TabItem Header="SQL Runner (DML)">
+                <ScrollViewer VerticalScrollBarVisibility="Auto"
+                              Background="{StaticResource Brush_BG0}">
+                    <StackPanel Margin="16">
+
+                        <!-- Warning banner -->
+                        <Border Background="#0a1628" BorderBrush="#1e3a5f"
+                                BorderThickness="1" CornerRadius="8"
+                                Padding="14,10" Margin="0,0,0,12">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="ℹ" FontSize="14" Foreground="#3b82f6"
+                                           VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                <TextBlock FontSize="12" Foreground="#60a5fa" TextWrapping="Wrap">
+                                    <Run FontWeight="SemiBold">DML only.</Run>
+                                    <Run>Only INSERT, UPDATE, and EXEC statements are permitted. SELECT, DELETE, DROP, ALTER and DDL statements are blocked.</Run>
+                                    <LineBreak/>
+                                    <Run>Executes simultaneously across all selected branches. Returns rows affected per branch.</Run>
+                                </TextBlock>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Query input -->
+                        <Border Style="{StaticResource Card}" Margin="0,0,0,12">
+                            <StackPanel>
+                                <DockPanel Margin="0,0,0,10">
+                                    <TextBlock Text="DML QUERY" Style="{StaticResource SectionLabel}"
+                                               VerticalAlignment="Center" Margin="0"/>
+                                    <Button Content="Clear" Style="{StaticResource LinkButton}"
+                                            HorizontalAlignment="Right" Click="ClearDml_Click"/>
+                                </DockPanel>
+                                <TextBox x:Name="DmlQueryBox"
+                                         Text="{Binding DmlQuery, UpdateSourceTrigger=PropertyChanged}"
+                                         MinHeight="140" MaxHeight="300"
+                                         FontFamily="Consolas" FontSize="12"
+                                         AcceptsReturn="True" AcceptsTab="True"
+                                         VerticalScrollBarVisibility="Auto"
+                                         TextWrapping="Wrap"
+                                         VerticalContentAlignment="Top"
+                                         Padding="10,8"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Branch selection -->
+                        <Border Style="{StaticResource Card}" Margin="0,0,0,12">
+                            <DockPanel>
+                                <DockPanel DockPanel.Dock="Top" Margin="0,0,0,10">
+                                    <TextBlock Text="TARGET BRANCHES" Style="{StaticResource SectionLabel}"
+                                               VerticalAlignment="Center" Margin="0"/>
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                        <Button Content="Select All" Style="{StaticResource LinkButton}"
+                                                Margin="0,0,12,0" Click="DmlSelectAll_Click"/>
+                                        <Button Content="Clear All" Style="{StaticResource LinkButton}"
+                                                Click="DmlClearAll_Click"/>
+                                    </StackPanel>
+                                </DockPanel>
+                                <ItemsControl ItemsSource="{Binding Branches}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Margin="0,0,0,4" CornerRadius="5" Padding="12,8"
+                                                    Background="{Binding IsDmlChecked, Converter={StaticResource CheckedToBg}}"
+                                                    BorderBrush="{StaticResource Brush_Border}"
+                                                    BorderThickness="1" Cursor="Hand"
+                                                    MouseLeftButtonUp="DmlBranchRow_Click">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="110"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <CheckBox Grid.Column="0" IsChecked="{Binding IsDmlChecked}"
+                                                              VerticalAlignment="Center" Margin="0,0,12,0"/>
+                                                    <TextBlock Grid.Column="1" Text="{Binding Name}"
+                                                               FontWeight="SemiBold" FontSize="13"
+                                                               VerticalAlignment="Center"/>
+                                                    <TextBlock Grid.Column="2" Text="{Binding UncPath}"
+                                                               FontFamily="Consolas" FontSize="11"
+                                                               Foreground="{StaticResource Brush_Text2}"
+                                                               VerticalAlignment="Center"
+                                                               TextTrimming="CharacterEllipsis"/>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </DockPanel>
+                        </Border>
+
+                        <!-- Execute / Cancel -->
+                        <Button Content="▶   Execute on Selected Branches"
+                                Style="{StaticResource PrimaryButton}"
+                                Background="#3b82f6" Height="46" Margin="0,0,0,4"
+                                IsEnabled="{Binding IsDmlNotRunning}"
+                                Visibility="{Binding IsDmlNotRunning, Converter={StaticResource BoolToVis}}"
+                                Click="RunDml_Click"/>
+                        <Button Content="✕   Cancel"
+                                Style="{StaticResource DangerButton}"
+                                Height="46" Margin="0,0,0,4"
+                                Visibility="{Binding IsDmlRunning, Converter={StaticResource BoolToVis}}"
+                                Click="CancelDml_Click"/>
+
+                        <!-- Results -->
+                        <Border Style="{StaticResource Card}" Margin="0,10,0,0">
+                            <StackPanel>
+                                <TextBlock Text="RESULTS" Style="{StaticResource SectionLabel}"/>
+                                <ItemsControl ItemsSource="{Binding DmlResults}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Margin="0,0,0,4" CornerRadius="5" Padding="12,8"
+                                                    Background="{StaticResource Brush_BG2}"
+                                                    BorderBrush="{StaticResource Brush_Border}"
+                                                    BorderThickness="1">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="16"/>
+                                                        <ColumnDefinition Width="110"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <!-- Status dot -->
+                                                    <Ellipse Grid.Column="0" Width="8" Height="8"
+                                                             VerticalAlignment="Center"
+                                                             Fill="{Binding Success, Converter={StaticResource StatusToBrush}}"/>
+                                                    <TextBlock Grid.Column="1" Text="{Binding BranchName}"
+                                                               FontWeight="SemiBold" FontSize="12"
+                                                               VerticalAlignment="Center" Margin="8,0,0,0"/>
+                                                    <TextBlock Grid.Column="2" Text="{Binding Message}"
+                                                               FontFamily="Consolas" FontSize="11"
+                                                               Foreground="{StaticResource Brush_Text2}"
+                                                               VerticalAlignment="Center"
+                                                               TextWrapping="Wrap"/>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                                <TextBlock Text="No results yet." FontSize="12"
+                                           Foreground="{StaticResource Brush_Text3}"
+                                           Margin="0,4,0,0"
+                                           Visibility="{Binding DmlResults.Count, Converter={StaticResource InvBoolToVis}}"/>
+                            </StackPanel>
+                        </Border>
+
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+
         </TabControl>
     </DockPanel>
 </Window>

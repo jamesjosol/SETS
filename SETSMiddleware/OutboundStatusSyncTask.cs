@@ -129,21 +129,18 @@ namespace SETSMiddleware.Tasks
 
                 // Specimens — materialize then filter in memory (avoid CTE)
                 destSpecimens = destCtx.Batch_Specimen
-                    .ToList()
                     .Where(s => batchNos.Contains(s.BatchNo))
                     .GroupBy(s => s.BatchNo)
                     .ToDictionary(g => g.Key, g => g.ToList());
 
                 // Receiving records
                 destReceiving = destCtx.Batch_Specimen_Receiving
-                    .ToList()
                     .Where(r => batchNos.Contains(r.BatchNo))
                     .GroupBy(r => r.BatchNo)
                     .ToDictionary(g => g.Key, g => g.ToList());
 
                 // NonBarcoded
                 destNonBarcoded = destCtx.Batch_NonBarcoded
-                    .ToList()
                     .Where(n => batchNos.Contains(n.BatchNo))
                     .GroupBy(n => n.BatchNo)
                     .ToDictionary(g => g.Key, g => g.ToList());

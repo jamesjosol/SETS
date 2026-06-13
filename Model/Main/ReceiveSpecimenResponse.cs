@@ -24,6 +24,10 @@ namespace Model.Main
         public string? BagNo { get; set; }          // ← add
         public string EndorsedBy { get; set; }
         public string? RoutedSectionCode { get; set; }
+        public bool NeedsFlagConfirmation { get; set; }
+        public string? FlagReason { get; set; }
+        public string? FlaggedBy { get; set; }
+        public DateTime? FlaggedAt { get; set; }
 
     }
 }

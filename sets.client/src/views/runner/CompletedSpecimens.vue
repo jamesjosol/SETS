@@ -329,6 +329,8 @@
                                   <th class="px-4 py-2 text-left text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Test Name</th>
                                   <th class="px-4 py-2 text-left text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Assigned RMT</th>
                                   <th class="px-4 py-2 text-left text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Run At</th>
+                                  <th class="px-4 py-2 text-left text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Released By</th>
+                                  <th class="px-4 py-2 text-left text-[10px] font-bold uppercase tracking-widest" style="color: var(--color-text-muted);">Released On</th>
                                 </tr>
                               </thead>
                               <tbody>
@@ -340,6 +342,8 @@
                                   <td class="px-4 py-2.5" style="color: var(--color-text);">{{ test.testName }}</td>
                                   <td class="px-4 py-2.5" style="color: var(--color-text-muted);">{{ test.assignedRMT || '—' }}</td>
                                   <td class="px-4 py-2.5" style="color: var(--color-text-muted);">{{ formatDt(test.runAt) }}</td>
+                                  <td class="px-4 py-2" style="color: var(--color-text-muted);">{{ test.releasedBy || '—' }}</td>
+                                  <td class="px-4 py-2" style="color: var(--color-text-muted);">{{ formatDt(test.releasedOn) || '—' }}</td>
                                 </tr>
                               </tbody>
                             </table>

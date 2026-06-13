@@ -338,6 +338,73 @@ namespace SETSDeployer.ViewModels
 
         public void CancelSql() => _sqlCts?.Cancel();
 
+        // ── SQL Runner (DML) ──────────────────────────────────────────────────
+
+        private string _dmlQuery = string.Empty;
+        public string DmlQuery
+        {
+            get => _dmlQuery;
+            set { _dmlQuery = value; OnPropertyChanged(); }
+        }
+
+        private bool _isDmlRunning = false;
+        public bool IsDmlRunning
+        {
+            get => _isDmlRunning;
+            set { _isDmlRunning = value; OnPropertyChanged(); OnPropertyChanged(nameof(IsDmlNotRunning)); }
+        }
+        public bool IsDmlNotRunning => !_isDmlRunning;
+
+        private CancellationTokenSource? _dmlCts;
+
+        public ObservableCollection<SqlDmlRunnerResult> DmlResults { get; } = new();
+
+        public async Task RunDmlAsync(IEnumerable<BranchViewModel> targets)
+        {
+            var svc = new SqlDmlRunnerService(_settings, Log);
+
+            // Validate
+            var (valid, reason) = svc.ValidateQuery(DmlQuery);
+            if (!valid) { Log($"Validation failed: {reason}", LogLevel.Error); return; }
+
+            // Load connection strings
+            Dictionary<string, string> connStrings;
+            try
+            {
+                connStrings = svc.LoadConnectionStrings();
+            }
+            catch (Exception ex)
+            {
+                Log($"Could not load connection strings: {ex.Message}", LogLevel.Error);
+                return;
+            }
+
+            var selectedBranches = targets.Select(b => b.Config).ToList();
+            if (!selectedBranches.Any()) { Log("No branches selected.", LogLevel.Warning); return; }
+
+            IsDmlRunning = true;
+            _dmlCts = new CancellationTokenSource();
+            DmlResults.Clear();
+
+            Log($"━━━ DML: Executing on {selectedBranches.Count} branch(es) ━━━", LogLevel.Info);
+            Log(DmlQuery.Trim(), LogLevel.Dim);
+
+            try
+            {
+                var results = await svc.ExecuteAsync(DmlQuery, selectedBranches, connStrings, _dmlCts.Token);
+                foreach (var r in results)
+                    System.Windows.Application.Current.Dispatcher.Invoke(() => DmlResults.Add(r));
+            }
+            finally
+            {
+                IsDmlRunning = false;
+                _dmlCts?.Dispose();
+                _dmlCts = null;
+            }
+        }
+
+        public void CancelDml() => _dmlCts?.Cancel();
+
         public void SaveBranches()
         {
             ConfigManager.SaveBranches(Branches.Select(b => b.Config).ToList());

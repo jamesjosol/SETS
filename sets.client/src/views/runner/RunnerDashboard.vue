@@ -267,9 +267,12 @@
 
           <!-- Completed Today -->
           <div ref="completedCardRef" class="rounded-2xl overflow-hidden" style="background-color: var(--color-surface); box-shadow: 0 1px 3px var(--color-shadow);">
-            <div class="px-6 py-4 flex items-center gap-2" style="border-bottom: 1px solid var(--color-border);">
-              <span class="material-symbols-outlined text-base" style="color: var(--color-success, #16a34a);">check_circle</span>
-              <h2 class="text-sm font-bold uppercase tracking-widest" style="color: var(--color-text);">Completed Today</h2>
+            <div class="px-6 py-4 flex items-center justify-between" style="border-bottom: 1px solid var(--color-border);">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-base" style="color: var(--color-success, #16a34a);">check_circle</span>
+                <h2 class="text-sm font-bold uppercase tracking-widests" style="color: var(--color-text);">Completed Today</h2>
+              </div>
+              <router-link to="/runner/completed" class="text-xs font-bold uppercase tracking-widest" style="color: var(--color-primary);">View All →</router-link>
             </div>
             <div v-if="completedTodayLoading" class="p-6 flex flex-col gap-3">
               <div v-for="i in 3" :key="i" class="h-10 rounded-xl animate-pulse" style="background-color: var(--color-surface-low);"></div>
@@ -279,7 +282,7 @@
               <p class="text-xs font-bold" style="color: var(--color-text-muted);">None completed yet</p>
             </div>
             <div v-else ref="completedListRef">
-              <div v-for="item in completedTodayList" :key="item.id"
+              <div v-for="item in completedTodayList.slice(0, 10)" :key="item.id"
                    class="completed-item px-6 py-3 flex items-center justify-between gap-3" style="border-bottom: 1px solid var(--color-border);">
                 <div class="flex items-center gap-3 min-w-0">
                   <div class="p-2 rounded-xl flex-shrink-0" style="background-color: rgba(22,163,74,0.1);">

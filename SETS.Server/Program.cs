@@ -10,7 +10,12 @@ SetsConnection.Initialize(builder.Configuration);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddSignalR();
+builder.Services.AddSignalR(options =>  
+{
+    options.KeepAliveInterval = TimeSpan.FromSeconds(15);
+    options.ClientTimeoutInterval = TimeSpan.FromSeconds(60);
+    options.HandshakeTimeout = TimeSpan.FromSeconds(30);
+});
 builder.Services.AddSingleton<IUserPresenceService, UserPresenceService>();
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>

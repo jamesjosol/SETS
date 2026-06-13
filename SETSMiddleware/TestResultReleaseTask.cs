@@ -35,6 +35,18 @@ namespace SETSMiddleware.Tasks
             var oracleConn = HclabConnection.ConnectionString(_branch);
             int releasedCount = 0;
 
+            var codeMaps = master.TestCodeMap.GetAll()
+                .Where(m => m.IsActive)
+                .ToList();
+
+            string ResolveTestCode(string code)
+            {
+                if (string.IsNullOrEmpty(code)) return code;
+                var map = codeMaps.FirstOrDefault(m => m.CodeA == code || m.CodeB == code);
+                if (map == null) return code;
+                return map.CodeA == code ? map.CodeB : map.CodeA;
+            }
+
             // ── Standard specimens ─────────────────────────────────────────
             var runningTests = master.SpecimenSection.GetAllRunningTests();
 
@@ -59,7 +71,7 @@ namespace SETSMiddleware.Tasks
                             ? specimenNo.Substring(0, 10)
                             : specimenNo;
 
-                        var resolvedTestCode = master.TestCodeMap.ResolveCode(test.TestCode);
+                        var resolvedTestCode = ResolveTestCode(test.TestCode);
 
                         var releaseResult = await HclabMaster.HCLABTransactions
                        .CheckTestReleased(oracleConn, labNo, resolvedTestCode);
@@ -133,7 +145,7 @@ namespace SETSMiddleware.Tasks
                             ? specimenNo.Substring(0, 10)
                             : specimenNo;
 
-                        var resolvedTestCode = master.TestCodeMap.ResolveCode(test.TestCode);
+                        var resolvedTestCode = ResolveTestCode(test.TestCode);
 
                         var releaseResult = await HclabMaster.HCLABTransactions
                             .CheckTestReleased(oracleConn, labNo, resolvedTestCode);

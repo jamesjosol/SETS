@@ -10,7 +10,8 @@ namespace Model.Main
     {
         public string UserID { get; set; }
         public string SpecimenNo { get; set; }
-        public string? CurrentBatchNo { get; set; }    // ← add — null on first scan
+        public string? CurrentBatchNo { get; set; } 
         public string? ReceivingRemarks { get; set; }
+        public bool ConfirmFlagged { get; set; }      
     }
 }

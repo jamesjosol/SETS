@@ -1,14 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using HCLAB;
+﻿using HCLAB;
+using Model.HCLAB;
 using Model.Main;
 using Model.SETSDB;
 using Reposi;
 using Reposi.Context;
 using Service.Interfaces;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace Service.Services
 {
@@ -62,6 +63,21 @@ namespace Service.Services
                     if (alreadyReceived && specimen.Status != "X")
                         throw new Exception($"Specimen '{request.SpecimenNo}' has already been received.");
 
+                    // 3b. Flag gate — if flagged and not yet confirmed, return WITHOUT writing.
+                    //     Nothing is persisted, so disposing the transaction is a harmless no-op.
+                    //     The client shows the warning and re-calls with ConfirmFlagged = true.
+                    if (specimen.IsFlagged && !request.ConfirmFlagged)
+                    {
+                        return new ReceiveSpecimenResponse
+                        {
+                            NeedsFlagConfirmation = true,
+                            SpecimenNo = specimen.SpecimenNo,
+                            BatchNo = specimen.BatchNo,
+                            FlagReason = specimen.FlagReason,
+                            FlaggedBy = specimen.FlaggedBy,
+                            FlaggedAt = specimen.FlaggedAt
+                        };
+                    }
 
                     // 3. Insert receiving record
                     context.Batch_Specimen_Receiving.Add(new Batch_Specimen_Receiving
@@ -130,20 +146,20 @@ namespace Service.Services
                     // ── Inbound HCLAB post check ──────────────────────────────────────
                     // For inbound batches, verify the lab order exists in THIS branch's
                     // HCLAB before routing. If not posted yet, block the receive.
+                    List<Ord_Dtl>? inboundTests = null;
                     if (header.IsInbound)
                     {
                         try
                         {
                             var hclabConn = HclabConnection.ConnectionString(_branch_raw);
-                            var tests = await HclabMaster.HCLABTransactions
+                            inboundTests = await HclabMaster.HCLABTransactions
                                 .GetOrd_Dtl(hclabConn, specimen.LabNo, specimen.SampleTypeCode);
 
-                            if (tests == null || !tests.Any())
+                            if (inboundTests == null || !inboundTests.Any())
                             {
-              
                                 throw new Exception(
                                     $"Transaction for specimen '{specimen.SpecimenNo}' (Lab No: {specimen.LabNo}) " +
-                                    $"has not been posted to this branch yet. ");
+                                    $"has not been posted to this branch yet.");
                             }
                         }
                         catch (Exception ex) when (ex.Message.Contains("not been posted"))
@@ -158,8 +174,9 @@ namespace Service.Services
                         }
                     }
 
-                    // Route specimen to lab sections
-                    var routedSectionCode = await RouteToLabSections(context, specimen, request.UserID, now);
+                    // Route specimen to lab sections — reuse inbound tests when present (inbound);
+                    // otherwise RouteToLabSections fetches them itself (local batches).
+                    var routedSectionCode = await RouteToLabSections(context, specimen, request.UserID, now, inboundTests);
 
                     tx.Commit();
 
@@ -566,8 +583,6 @@ namespace Service.Services
 
                 // Fetch specimens in memory then group
                 var specimenCounts = context.Batch_Specimen
-                    .Where(s => s.Status != null)   // fetch all, filter by batchNo in memory
-                    .ToList()
                     .Where(s => batchNos.Contains(s.BatchNo))
                     .GroupBy(s => s.BatchNo)
                     .ToDictionary(
@@ -762,13 +777,11 @@ namespace Service.Services
 
                 // Get all pending specimens from those batches — in memory
                 var specimens = context.Batch_Specimen
-                    .Where(s => s.Status == "P")
-                    .ToList()
-                    .Where(s => pendingBatchNos.Contains(s.BatchNo))
-                    .OrderByDescending(s => s.Endorsed)
-                    .ThenBy(s => s.BatchNo)
-                    .ThenBy(s => s.SpecimenNo)
-                    .ToList();
+                     .Where(s => s.Status == "P" && pendingBatchNos.Contains(s.BatchNo))
+                     .OrderByDescending(s => s.Endorsed)
+                     .ThenBy(s => s.BatchNo)
+                     .ThenBy(s => s.SpecimenNo)
+                     .ToList();
 
                 return specimens.Select(s =>
                 {
@@ -852,28 +865,36 @@ namespace Service.Services
                 AppDbContext context,
                 Batch_Specimen specimen,
                 string routedByUserID,
-                DateTime routedAt)
+                DateTime routedAt,
+                List<Ord_Dtl>? preFetchedTests = null)
         {
             // Step 1 — Query Oracle for all tests under this specimen
             var connStr = HclabConnection.ConnectionString(_branch_raw);
-            var tests = await HclabMaster.HCLABTransactions
-                .GetOrd_Dtl(connStr, specimen.LabNo, specimen.SampleTypeCode);
+            var tests = preFetchedTests
+                           ?? await HclabMaster.HCLABTransactions
+                                   .GetOrd_Dtl(connStr, specimen.LabNo, specimen.SampleTypeCode);
 
             if (tests == null || !tests.Any()) return string.Empty;
 
             // Step 2 — All rows share the same TestGroup — take it from the first row
             // Step 2 — Resolve test group — check for override first, fall back to HCLAB value
-            using var mapMaster = new MasterService(_branch_raw);
+            var groupOverrides = context.Set<Test_Group_Override>()
+                    .Where(o => o.IsActive)
+                    .ToList();
+
+            var codeMaps = context.Set<Test_Code_Map>()
+                .Where(m => m.IsActive)
+                .ToList();
 
             var testGroupCode = tests.First().TESTGROUP;
 
-            // Check each test code for a group override — first match wins
+            // First active override matching any test code wins
             foreach (var test in tests)
             {
-                var overriddenGroup = mapMaster.TestGroupOverride.ResolveGroup(test.TESTCODE);
-                if (!string.IsNullOrEmpty(overriddenGroup))
+                var ov = groupOverrides.FirstOrDefault(o => o.TestCode == test.TESTCODE);
+                if (ov != null && !string.IsNullOrEmpty(ov.OverrideGroup))
                 {
-                    testGroupCode = overriddenGroup;
+                    testGroupCode = ov.OverrideGroup;
                     break;
                 }
             }
@@ -917,7 +938,7 @@ namespace Service.Services
 
             foreach (var test in tests)
             {
-                var resolvedCode = mapMaster.TestCodeMap.ResolveCode(test.TESTCODE);
+                var resolvedCode = ResolveCodeFromMap(codeMaps, test.TESTCODE);
 
                 context.Specimen_Section_Test.Add(new Specimen_Section_Test
                 {
@@ -930,6 +951,16 @@ namespace Service.Services
 
             context.SaveChanges();
             return mapping.SectionCode;
+        }
+
+        private static string ResolveCodeFromMap(List<Test_Code_Map> codeMaps, string code)
+        {
+            if (string.IsNullOrEmpty(code)) return code;
+
+            var map = codeMaps.FirstOrDefault(m => m.CodeA == code || m.CodeB == code);
+            if (map == null) return code;
+
+            return map.CodeA == code ? map.CodeB : map.CodeA;
         }
 
         private async Task<string?> RouteToLabSections(
@@ -1009,11 +1040,13 @@ namespace Service.Services
             context.Specimen_Section_Header.Add(header);
             context.SaveChanges();
 
-            using var mapMaster = new MasterService(_branch_raw);
+            var codeMaps = context.Set<Test_Code_Map>()
+                  .Where(m => m.IsActive)
+                  .ToList();
 
             foreach (var test in tests)
             {
-                var resolvedCode = mapMaster.TestCodeMap.ResolveCode(test.TESTCODE);
+                var resolvedCode = ResolveCodeFromMap(codeMaps, test.TESTCODE);
                 context.Specimen_Section_Test.Add(new Specimen_Section_Test
                 {
                     HeaderId = header.Id,

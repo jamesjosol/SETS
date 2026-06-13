@@ -712,7 +712,7 @@
   async function confirmFlaggedSpecimen() {
     flagWarning.value.saving = true
     try {
-      await doReceive(flagWarning.value.specimenNo)
+      await doReceive(flagWarning.value.specimenNo, true)
     } catch (err) {
       const msg = err.response?.data?.message
       showAlert('error', 'Cannot Receive', msg || 'An error occurred.')
@@ -746,25 +746,7 @@
     NProgress.start()
 
     try {
-      // Step 1 — pre-check: validate + get flag info, no DB write
-      const check = await receivingApi.checkSpecimen(input, activeBatchNo.value ?? null)
-
-      // Step 2 — if flagged, show warning and hold
-      if (check.isFlagged) {
-        flagWarning.value = {
-          visible: true,
-          specimenNo: check.specimenNo,
-          batchNo: check.batchNo,
-          flagReason: check.flagReason,
-          flaggedBy: check.flaggedBy,
-          flaggedAt: check.flaggedAt,
-          saving: false,
-          pendingData: null,   // no pending data yet — actual receive happens on confirm
-        }
-        return
-      }
-
-      // Step 3 — not flagged, proceed with actual receive
+      // Single call — receives immediately, or returns a flag-confirmation request.
       await doReceive(input)
 
     } catch (err) {
@@ -784,15 +766,31 @@
     }
   }
 
-  async function doReceive(specimenNo) {
+  async function doReceive(specimenNo, confirmFlagged = false) {
     const response = await receivingApi.receiveSpecimen({
       userID: authStore.userID,
       specimenNo: specimenNo,
       currentBatchNo: activeBatchNo.value ?? null,
-      receivingRemarks: null
+      receivingRemarks: null,
+      confirmFlagged: confirmFlagged
     })
 
     const data = response.data.data
+
+    // Flagged and not yet confirmed — nothing was received; show the warning and hold.
+    if (data.needsFlagConfirmation) {
+      flagWarning.value = {
+        visible: true,
+        specimenNo: data.specimenNo,
+        batchNo: data.batchNo,
+        flagReason: data.flagReason,
+        flaggedBy: data.flaggedBy,
+        flaggedAt: data.flaggedAt,
+        saving: false,
+        pendingData: null,
+      }
+      return
+    }
 
     if (!activeBatchNo.value) {
       activeBatchNo.value = data.batchNo

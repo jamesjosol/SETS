@@ -118,7 +118,6 @@ namespace Service.Services
 
                     var testCodes = tests.Select(t => t.TestCode).ToList();
                     var allRunningDayRecords = context.Test_RunningDay
-                      .ToList()
                       .Where(r => testCodes.Contains(r.TestCode))
                       .ToList();
 
@@ -139,13 +138,14 @@ namespace Service.Services
                         temp : context.Batch_Specimen
                         .FirstOrDefault(b => b.SpecimenNo == header.SpecimenNo);
 
-                    using var runningDayMaster = new MasterService(_branch_raw);
+                    var fromDate = DateOnly.FromDateTime(now).AddDays(1);
+                    var runningDaySetup = allRunningDayRecords.ToDictionary(r => r.TestCode);
+
                     var nextRunningDates = tests
                         .Where(t => testCodesWithRunningDay.Contains(t.TestCode))
                         .ToDictionary(
                             t => t.TestCode,
-                            t => runningDayMaster.TestRunningDay
-                                    .GetNearestRunningDate(t.TestCode, DateOnly.FromDateTime(now).AddDays(1))
+                            t => runningDaySetup[t.TestCode].GetNearestRunningDate(fromDate)
                         );
 
 
@@ -214,7 +214,6 @@ namespace Service.Services
 
                     // Load all tests in memory first — avoids EF Core CTE syntax error with Contains()
                     var tests = context.Specimen_Section_Test
-                        .ToList()
                         .Where(t => testIds.Contains(t.Id))
                         .ToList();
 
@@ -321,7 +320,6 @@ namespace Service.Services
                     {
                         var headerIds = request.SpecimenRemarks.Select(r => r.HeaderId).ToHashSet();
                         var _headers = context.Specimen_Section_Header
-                            .ToList()
                             .Where(h => headerIds.Contains(h.Id))
                             .ToList();
 
@@ -343,12 +341,10 @@ namespace Service.Services
                         .ToList();
 
                     var allTestsForHeaders = context.Specimen_Section_Test
-                        .ToList()
                         .Where(t => affectedHeaderIds.Contains(t.HeaderId))
                         .ToList();
 
                     var headers = context.Specimen_Section_Header
-                        .ToList()
                         .Where(h => affectedHeaderIds.Contains(h.Id))
                         .ToList();
 
@@ -393,8 +389,8 @@ namespace Service.Services
 
                         var auditSpecimenNos = headers.Select(h => h.SpecimenNo).ToHashSet();
                         var batchSpecimenMap = context.Batch_Specimen
-                            .ToList()
                             .Where(b => auditSpecimenNos.Contains(b.SpecimenNo))
+                            .ToList()
                             .GroupBy(b => b.SpecimenNo)
                             .ToDictionary(g => g.Key, g => g.OrderBy(b => b.Status == "X" ? 1 : 0).First());
 
@@ -830,7 +826,6 @@ namespace Service.Services
                 var scheduledHeaderIds = scheduledHeaders.Select(h => h.Id).ToList();
 
                 var dueTestHeaderIds = context.Specimen_Section_Test
-                    .ToList()
                     .Where(t => scheduledHeaderIds.Contains(t.HeaderId)
                              && t.Status == "S"
                              && t.RunningDate.HasValue
@@ -853,7 +848,6 @@ namespace Service.Services
 
                 var specimenNos = headers.Select(h => h.SpecimenNo).ToList();
                 var batchSpecimens = context.Batch_Specimen
-                    .ToList()
                     .Where(b => specimenNos.Contains(b.SpecimenNo))
                     .GroupBy(b => b.SpecimenNo)
                     .ToDictionary(
@@ -930,7 +924,6 @@ namespace Service.Services
                 var headerIds = headers.Select(h => h.Id).ToList();
 
                 var allSavedTests = context.Specimen_Section_Test
-                    .ToList()
                     .Where(t => headerIds.Contains(t.HeaderId) && t.Status == "S")
                     .ToList();
 
@@ -945,7 +938,6 @@ namespace Service.Services
 
                 var specimenNos = relevantHeaders.Select(h => h.SpecimenNo).ToList();
                 var batchSpecimens = context.Batch_Specimen
-                    .ToList()
                     .Where(b => specimenNos.Contains(b.SpecimenNo))
                     .GroupBy(b => b.SpecimenNo)
                     .ToDictionary(
@@ -995,7 +987,6 @@ namespace Service.Services
                 var onSiteHeaderIds = onSiteHeaders.Select(h => h.Id).ToList();
 
                 var allOnSiteSavedTests = context.OnSite_Section_Test
-                    .ToList()
                     .Where(t => onSiteHeaderIds.Contains(t.HeaderId) && t.Status == "S")
                     .ToList();
 
@@ -1273,7 +1264,6 @@ namespace Service.Services
                 var headerIds = headers.Select(h => h.Id).ToList();
 
                 var runningTests = context.Specimen_Section_Test
-                    .ToList()
                     .Where(t => headerIds.Contains(t.HeaderId)
                                 && t.Status == "R"
                                 && (userID == null || t.AssignedRMT == userID || t.AssignedRMT == "SYSTEM"))
@@ -1285,7 +1275,6 @@ namespace Service.Services
                 var specimenNos = relevantHeaders.Select(h => h.SpecimenNo).ToList();
 
                 var batchSpecimens = context.Batch_Specimen
-                       .ToList()
                        .Where(b => specimenNos.Contains(b.SpecimenNo))
                        .GroupBy(b => b.SpecimenNo)
                        .ToDictionary(
@@ -1334,7 +1323,6 @@ namespace Service.Services
                 var onSiteHeaderIds = onSiteHeaders.Select(h => h.Id).ToList();
 
                 var onSiteRunningTests = context.OnSite_Section_Test
-                    .ToList()
                     .Where(t => onSiteHeaderIds.Contains(t.HeaderId)
                              && t.Status == "R"
                              && (userID == null || t.AssignedRMT == userID))
@@ -1390,47 +1378,57 @@ namespace Service.Services
             try
             {
                 using var context = _factory.CreateContext(_branch);
-                var today = DateOnly.FromDateTime(DateTime.Today);
 
-                // ── Standard ───────────────────────────────────────────────────
-                var headers = context.Specimen_Section_Header
-                    .Where(h => h.SectionCode == sectionCode && h.IsHclabRouted)
-                    .ToList();
-                var headerIds = headers.Select(h => h.Id).ToList();
-                var allTests = context.Specimen_Section_Test
-                    .ToList()
-                    .Where(t => headerIds.Contains(t.HeaderId))
-                    .ToList();
+                var today = DateTime.Today;
+                var tomorrow = today.AddDays(1);
 
-                // ── On-Site ────────────────────────────────────────────────────
-                var onSiteHeaders = context.OnSite_Section_Header
-                    .Where(h => h.SectionCode == sectionCode)
-                    .ToList();
-                var onSiteHeaderIds = onSiteHeaders.Select(h => h.Id).ToList();
-                var onSiteTests = context.OnSite_Section_Test
-                    .ToList()
-                    .Where(t => onSiteHeaderIds.Contains(t.HeaderId))
-                    .ToList();
+                // ── Standard: header-based counts ──────────────────────────────
+                int pending = context.Specimen_Section_Header
+                    .Count(h => h.SectionCode == sectionCode && h.IsHclabRouted
+                             && h.Status == "P" && h.ReceivedBy == null);
+
+                int completedToday = context.Specimen_Section_Header
+                    .Count(h => h.SectionCode == sectionCode && h.IsHclabRouted
+                             && h.Status == "C"
+                             && h.Updated >= today && h.Updated < tomorrow);
+
+                // ── Standard: test-based counts — scope to section via EXISTS ──
+                int scheduled = context.Specimen_Section_Test
+                    .Count(t => t.Status == "S"
+                             && context.Specimen_Section_Header.Any(h =>
+                                    h.Id == t.HeaderId && h.SectionCode == sectionCode && h.IsHclabRouted));
+
+                int running = context.Specimen_Section_Test
+                    .Count(t => t.Status == "R" && t.AssignedRMT == userID
+                             && context.Specimen_Section_Header.Any(h =>
+                                    h.Id == t.HeaderId && h.SectionCode == sectionCode && h.IsHclabRouted));
+
+                // ── On-Site counts ─────────────────────────────────────────────
+                int onSitePending = context.OnSite_Section_Header
+                    .Count(h => h.SectionCode == sectionCode
+                             && h.Status == "P" && h.ReceivedBy == null);
+
+                int onSiteCompletedToday = context.OnSite_Section_Header
+                    .Count(h => h.SectionCode == sectionCode
+                             && h.Status == "C"
+                             && h.Updated >= today && h.Updated < tomorrow);
+
+                int onSiteScheduled = context.OnSite_Section_Test
+                    .Count(t => t.Status == "S"
+                             && context.OnSite_Section_Header.Any(h =>
+                                    h.Id == t.HeaderId && h.SectionCode == sectionCode));
+
+                int onSiteRunning = context.OnSite_Section_Test
+                    .Count(t => t.Status == "R" && t.AssignedRMT == userID
+                             && context.OnSite_Section_Header.Any(h =>
+                                    h.Id == t.HeaderId && h.SectionCode == sectionCode));
 
                 return new RunnerDashboardSummary
                 {
-                    Pending = headers.Count(h => (h.Status == "P") && h.ReceivedBy == null)
-                        + onSiteHeaders.Count(h => (h.Status == "P") && h.ReceivedBy == null),
-
-                    Scheduled = allTests.Count(t => t.Status == "S")
-                              + onSiteTests.Count(t => t.Status == "S"),
-
-                    Running = allTests.Count(t => t.Status == "R" && t.AssignedRMT == userID)
-                            + onSiteTests.Count(t => t.Status == "R" && t.AssignedRMT == userID),
-
-                    CompletedToday = headers.Count(h =>
-                                        h.Status == "C" &&
-                                        h.Updated.HasValue &&
-                                        DateOnly.FromDateTime(h.Updated.Value) == today)
-                                   + onSiteHeaders.Count(h =>
-                                        h.Status == "C" &&
-                                        h.Updated.HasValue &&
-                                        DateOnly.FromDateTime(h.Updated.Value) == today),
+                    Pending = pending + onSitePending,
+                    Scheduled = scheduled + onSiteScheduled,
+                    Running = running + onSiteRunning,
+                    CompletedToday = completedToday + onSiteCompletedToday,
                 };
             }
             catch { throw; }
@@ -1442,38 +1440,54 @@ namespace Service.Services
             {
                 using var context = _factory.CreateContext(_branch);
 
+                var today = DateTime.Today;
+                var tomorrow = today.AddDays(1);
+
                 var sections = context.Section_Master
                     .Where(s => s.Category == "3" && s.Active)
                     .OrderBy(s => s.Name)
                     .ToList();
+                var sectionCodes = sections.Select(s => s.Code).ToHashSet();
 
-                var today = DateOnly.FromDateTime(DateTime.Today);
+                // Header counts per section — one aggregate query
+                var headerCounts = context.Specimen_Section_Header
+                    .Where(h => sectionCodes.Contains(h.SectionCode) && h.IsHclabRouted)
+                    .GroupBy(h => h.SectionCode)
+                    .Select(g => new
+                    {
+                        SectionCode = g.Key,
+                        Pending = g.Sum(h => h.Status == "P" && h.ReceivedBy == null ? 1 : 0),
+                        CompletedToday = g.Sum(h => h.Status == "C" && h.Updated >= today && h.Updated < tomorrow ? 1 : 0),
+                    })
+                    .ToList()
+                    .ToDictionary(x => x.SectionCode);
+
+                // Test counts per section — one aggregate query (join header for section)
+                var testCounts = (from t in context.Specimen_Section_Test
+                                  join h in context.Specimen_Section_Header on t.HeaderId equals h.Id
+                                  where sectionCodes.Contains(h.SectionCode) && h.IsHclabRouted
+                                  group t by h.SectionCode into g
+                                  select new
+                                  {
+                                      SectionCode = g.Key,
+                                      Scheduled = g.Sum(t => t.Status == "S" ? 1 : 0),
+                                      Running = g.Sum(t => t.Status == "R" ? 1 : 0),
+                                  })
+                                  .ToList()
+                                  .ToDictionary(x => x.SectionCode);
 
                 return sections.Select(s =>
                 {
-                    var headers = context.Specimen_Section_Header
-                        .Where(h => h.SectionCode == s.Code && h.IsHclabRouted)
-                        .ToList();
-
-                    var headerIds = headers.Select(h => h.Id).ToList();
-
-                    var allTests = context.Specimen_Section_Test
-                        .ToList()
-                        .Where(t => headerIds.Contains(t.HeaderId))
-                        .ToList();
-
+                    headerCounts.TryGetValue(s.Code, out var hc);
+                    testCounts.TryGetValue(s.Code, out var tc);
                     return new LabSectionSummary
                     {
                         SectionCode = s.Code,
                         SectionName = s.Name,
-                        Pending = headers.Count(h =>
-                                             h.Status == "P" && h.ReceivedBy == null),
-                        Scheduled = allTests.Count(t => t.Status == "S"),
-                        Running = allTests.Count(t => t.Status == "R"),
-                        CompletedToday = headers.Count(h =>
-                                             h.Status == "C" &&
-                                             h.Updated.HasValue &&
-                                             DateOnly.FromDateTime(h.Updated.Value) == today),
+                        Pending = hc?.Pending ?? 0,
+                        Scheduled = tc?.Scheduled ?? 0,
+                        Running = tc?.Running ?? 0,
+                        CompletedToday = hc?.CompletedToday ?? 0,
                     };
                 }).ToList();
             }
@@ -1485,24 +1499,141 @@ namespace Service.Services
             try
             {
                 using var context = _factory.CreateContext(_branch);
+                using var unit = new UnitOfWork(context);
 
+                // 1. Active Cat-3 sections
                 var sections = context.Section_Master
                     .Where(s => s.Category == "3" && s.Active)
                     .OrderBy(s => s.Name)
                     .ToList();
+                var sectionCodes = sections.Select(s => s.Code).ToHashSet();
 
+                // 2. Running tests only (small subset) — these drive everything below
+                var runningTests = context.Specimen_Section_Test
+                    .Where(t => t.Status == "R")
+                    .ToList();
+                var onSiteRunningTests = context.OnSite_Section_Test
+                    .Where(t => t.Status == "R")
+                    .ToList();
+
+                // 3. Load only the headers those running tests belong to, scoped to Cat-3
+                var runHeaderIds = runningTests.Select(t => t.HeaderId).Distinct().ToList();
+                var headers = context.Specimen_Section_Header
+                    .Where(h => runHeaderIds.Contains(h.Id) && sectionCodes.Contains(h.SectionCode))
+                    .ToList();
+                var headerById = headers.ToDictionary(h => h.Id);
+
+                var onSiteRunHeaderIds = onSiteRunningTests.Select(t => t.HeaderId).Distinct().ToList();
+                var onSiteHeaders = context.OnSite_Section_Header
+                    .Where(h => onSiteRunHeaderIds.Contains(h.Id) && sectionCodes.Contains(h.SectionCode))
+                    .ToList();
+                var onSiteHeaderById = onSiteHeaders.ToDictionary(h => h.Id);
+
+                // Drop tests whose header was filtered out (wrong section / inactive)
+                runningTests = runningTests.Where(t => headerById.ContainsKey(t.HeaderId)).ToList();
+                onSiteRunningTests = onSiteRunningTests.Where(t => onSiteHeaderById.ContainsKey(t.HeaderId)).ToList();
+
+                // 4. Batch_Specimen — only for standard specimens that have running tests
+                var specimenNos = headers.Select(h => h.SpecimenNo).ToHashSet();
+                var batchSpecimenMap = context.Batch_Specimen
+                    .Where(b => specimenNos.Contains(b.SpecimenNo))
+                    .ToList()
+                    .GroupBy(b => b.SpecimenNo)
+                    .ToDictionary(g => g.Key, g => g.OrderBy(b => b.Status == "X" ? 1 : 0).First());
+
+                // 5. Sample types (OnSite name resolution) — loaded once
+                var sampleTypes = unit.SampleTypes.GetActive();
+
+                // 6. Build per-section groups in memory
                 var result = new List<SectionRunningGroup>();
 
                 foreach (var section in sections)
                 {
-                    var specimens = GetRunningSpecimens(section.Code, null); // null = all users
-                    if (!specimens.Any()) continue;
+                    var standard = headers
+                        .Where(h => h.SectionCode == section.Code)
+                        .Select(h =>
+                        {
+                            batchSpecimenMap.TryGetValue(h.SpecimenNo, out var bs);
+                            var tests = runningTests
+                                .Where(t => t.HeaderId == h.Id)
+                                .OrderBy(t => t.RunAt)
+                                .ThenBy(t => t.TestCode)
+                                .Select(t => new RunningTestItem
+                                {
+                                    Id = t.Id,
+                                    TestCode = t.TestCode,
+                                    TestName = t.TestName,
+                                    AssignedRMT = t.AssignedRMT,
+                                    Assigned = t.Assigned,
+                                    RunAt = t.RunAt,
+                                }).ToList();
+
+                            return new RunningSpecimenItem
+                            {
+                                HeaderId = h.Id,
+                                SpecimenNo = h.SpecimenNo,
+                                SectionCode = h.SectionCode,
+                                SampleTypeCode = h.SampleTypeCode,
+                                SampleTypeName = bs?.SampleTypeName ?? h.SampleTypeCode,
+                                PatientName = bs?.PatientName,
+                                PatientID = bs?.PID,
+                                Remarks = h.Remarks,
+                                Received = h.Received,
+                                IsAutoRun = h.IsAutoRun,
+                                Tests = tests
+                            };
+                        })
+                        .Where(item => item.Tests.Any())
+                        .ToList();
+
+                    var onSite = onSiteHeaders
+                        .Where(h => h.SectionCode == section.Code)
+                        .Select(h =>
+                        {
+                            var tests = onSiteRunningTests
+                                .Where(t => t.HeaderId == h.Id)
+                                .OrderBy(t => t.RunAt)
+                                .ThenBy(t => t.TestCode)
+                                .Select(t => new RunningTestItem
+                                {
+                                    Id = t.Id,
+                                    TestCode = t.TestCode,
+                                    TestName = t.TestName,
+                                    AssignedRMT = t.AssignedRMT,
+                                    Assigned = t.Assigned,
+                                    RunAt = t.RunAt,
+                                }).ToList();
+
+                            return new RunningSpecimenItem
+                            {
+                                HeaderId = h.Id,
+                                SpecimenNo = h.SpecimenNo,
+                                SectionCode = h.SectionCode,
+                                SampleTypeCode = h.SampleTypeCode,
+                                SampleTypeName = sampleTypes.FirstOrDefault(s => s.Code == h.SampleTypeCode)?.Name ?? h.SampleTypeCode,
+                                PatientName = h.PatientName,
+                                PatientID = h.PID,
+                                Remarks = h.Remarks,
+                                Received = h.Received,
+                                IsOnSite = true,
+                                Tests = tests
+                            };
+                        })
+                        .Where(item => item.Tests.Any())
+                        .ToList();
+
+                    var combined = standard
+                        .Concat(onSite)
+                        .OrderBy(s => s.Tests.Min(t => t.RunAt ?? DateTime.MaxValue))
+                        .ToList();
+
+                    if (!combined.Any()) continue;
 
                     result.Add(new SectionRunningGroup
                     {
                         SectionCode = section.Code,
                         SectionName = section.Name,
-                        Specimens = specimens,
+                        Specimens = combined,
                     });
                 }
 
@@ -1511,30 +1642,124 @@ namespace Service.Services
             catch { throw; }
         }
 
-        public List<SectionPendingGroup> GetAllSectionsRecentlyRouted()
+       public List<SectionPendingGroup> GetAllSectionsRecentlyRouted()
         {
             try
             {
                 using var context = _factory.CreateContext(_branch);
+                using var unit = new UnitOfWork(context);
+
+                var today = DateOnly.FromDateTime(DateTime.Today);
 
                 var sections = context.Section_Master
                     .Where(s => s.Category == "3" && s.Active)
                     .OrderBy(s => s.Name)
                     .ToList();
+                var sectionCodes = sections.Select(s => s.Code).ToHashSet();
+
+                var allHeaders = context.Specimen_Section_Header
+                    .Where(h => sectionCodes.Contains(h.SectionCode)
+                             && (h.Status == "P" || h.Status == "S")
+                             && h.IsHclabRouted)
+                    .ToList();
+
+                var savedHeaderIds = allHeaders
+                    .Where(h => h.Status == "S")
+                    .Select(h => h.Id)
+                    .ToHashSet();
+
+                HashSet<int> dueHeaderIds = new();
+                if (savedHeaderIds.Count > 0)
+                {
+                    dueHeaderIds = context.Specimen_Section_Test
+                        .Where(t => savedHeaderIds.Contains(t.HeaderId)
+                                 && t.Status == "S"
+                                 && t.RunningDate.HasValue
+                                 && t.RunningDate.Value <= today)
+                        .Select(t => t.HeaderId)
+                        .Distinct()
+                        .ToHashSet();
+                }
+
+                var relevantHeaders = allHeaders
+                    .Where(h => h.Status == "P" || dueHeaderIds.Contains(h.Id))
+                    .ToList();
+
+                var specimenNos = relevantHeaders.Select(h => h.SpecimenNo).ToHashSet();
+                var batchSpecimenMap = context.Batch_Specimen
+                    .Where(b => specimenNos.Contains(b.SpecimenNo))
+                    .ToList()
+                    .GroupBy(b => b.SpecimenNo)
+                    .ToDictionary(g => g.Key, g => g.OrderBy(b => b.Status == "X" ? 1 : 0).First());
+
+                var allOnSiteHeaders = context.OnSite_Section_Header
+                    .Where(h => sectionCodes.Contains(h.SectionCode) && h.Status == "P")
+                    .ToList();
+
+                var sampleTypes = unit.SampleTypes.GetActive();
 
                 var result = new List<SectionPendingGroup>();
 
                 foreach (var section in sections)
                 {
-                    var all = GetPendingSpecimens(section.Code);
-                    var unReceived = all.Where(s => s.ReceivedBy == null).ToList();
-                    if (!unReceived.Any()) continue;
+                    var standard = relevantHeaders
+                        .Where(h => h.SectionCode == section.Code && h.ReceivedBy == null)
+                        .OrderByDescending(h => h.Routed)
+                        .Select(h =>
+                        {
+                            batchSpecimenMap.TryGetValue(h.SpecimenNo, out var bs);
+                            return new PendingSpecimenItem
+                            {
+                                Id = h.Id,
+                                SpecimenNo = h.SpecimenNo,
+                                SectionCode = h.SectionCode,
+                                TestGroupCode = h.TestGroupCode,
+                                SampleTypeCode = h.SampleTypeCode,
+                                SampleTypeName = bs?.SampleTypeName ?? h.SampleTypeCode,
+                                Status = h.Status,
+                                RoutedBy = h.RoutedBy,
+                                Routed = h.Routed,
+                                ReceivedBy = h.ReceivedBy,
+                                Received = h.Received,
+                                Remarks = h.Remarks,
+                                PatientName = bs?.PatientName,
+                                PatientID = bs?.PID,
+                                IsOnSite = false,
+                            };
+                        })
+                        .ToList();
+
+                    var onSite = allOnSiteHeaders
+                        .Where(h => h.SectionCode == section.Code && h.ReceivedBy == null)
+                        .Select(h => new PendingSpecimenItem
+                        {
+                            Id = h.Id,
+                            SpecimenNo = h.SpecimenNo,
+                            SectionCode = h.SectionCode,
+                            TestGroupCode = h.TestGroupCode,
+                            SampleTypeCode = h.SampleTypeCode,
+                            SampleTypeName = sampleTypes.FirstOrDefault(s => s.Code == h.SampleTypeCode)?.Name ?? h.SampleTypeCode,
+                            Status = h.Status,
+                            ReceivedBy = h.ReceivedBy,
+                            Received = h.Received,
+                            Remarks = h.Remarks,
+                            PatientName = h.PatientName,
+                            PatientID = h.PID,
+                            IsOnSite = true,
+                        })
+                        .ToList();
+
+                    var combined = standard.Concat(onSite)
+                        .OrderByDescending(s => s.Routed)
+                        .ToList();
+
+                    if (!combined.Any()) continue;
 
                     result.Add(new SectionPendingGroup
                     {
                         SectionCode = section.Code,
                         SectionName = section.Name,
-                        Specimens = unReceived,
+                        Specimens = combined,
                     });
                 }
 
@@ -1549,30 +1774,137 @@ namespace Service.Services
             {
                 using var context = _factory.CreateContext(_branch);
 
+                var today = DateOnly.FromDateTime(DateTime.Today);
+
                 var sections = context.Section_Master
                     .Where(s => s.Category == "3" && s.Active)
                     .OrderBy(s => s.Name)
                     .ToList();
+                var sectionCodes = sections.Select(s => s.Code).ToHashSet();
 
-                var todayStr = DateOnly.FromDateTime(DateTime.Today);
+                var dueTests = context.Specimen_Section_Test
+                    .Where(t => t.Status == "S"
+                             && t.RunningDate.HasValue
+                             && t.RunningDate.Value == today
+                             && (t.ScheduleTag == "END" || t.ScheduleTag == "CRD" || t.ScheduleTag == "SRD"))
+                    .ToList();
+                var dueHeaderIds = dueTests.Select(t => t.HeaderId).Distinct().ToList();
+
+                var headers = context.Specimen_Section_Header
+                    .Where(h => dueHeaderIds.Contains(h.Id) && sectionCodes.Contains(h.SectionCode))
+                    .ToList();
+                var headerById = headers.ToDictionary(h => h.Id);
+                dueTests = dueTests.Where(t => headerById.ContainsKey(t.HeaderId)).ToList();
+
+                var specimenNos = headers.Select(h => h.SpecimenNo).ToHashSet();
+                var batchSpecimenMap = context.Batch_Specimen
+                    .Where(b => specimenNos.Contains(b.SpecimenNo))
+                    .ToList()
+                    .GroupBy(b => b.SpecimenNo)
+                    .ToDictionary(g => g.Key, g => g.OrderBy(b => b.Status == "X" ? 1 : 0).First());
+
+                var onSiteDueTests = context.OnSite_Section_Test
+                    .Where(t => t.Status == "S"
+                             && t.RunningDate.HasValue
+                             && t.RunningDate.Value == today
+                             && (t.ScheduleTag == "END" || t.ScheduleTag == "CRD" || t.ScheduleTag == "SRD"))
+                    .ToList();
+                var onSiteDueHeaderIds = onSiteDueTests.Select(t => t.HeaderId).Distinct().ToList();
+                var onSiteHeaders = context.OnSite_Section_Header
+                    .Where(h => onSiteDueHeaderIds.Contains(h.Id) && sectionCodes.Contains(h.SectionCode))
+                    .ToList();
+                var onSiteHeaderById = onSiteHeaders.ToDictionary(h => h.Id);
+                onSiteDueTests = onSiteDueTests.Where(t => onSiteHeaderById.ContainsKey(t.HeaderId)).ToList();
+
                 var result = new List<SectionScheduledGroup>();
 
                 foreach (var section in sections)
                 {
-                    var scheduled = GetScheduledSpecimens(section.Code);
-                    var due = scheduled.Where(s =>
-                        s.Tests.Any(t =>
-                            (t.ScheduleTag == "END" || t.ScheduleTag == "CRD" || t.ScheduleTag == "SRD") &&
-                            t.RunningDate == todayStr
-                        )).ToList();
+                    var standard = headers
+                        .Where(h => h.SectionCode == section.Code)
+                        .Select(h =>
+                        {
+                            batchSpecimenMap.TryGetValue(h.SpecimenNo, out var bs);
+                            var tests = dueTests
+                                .Where(t => t.HeaderId == h.Id)
+                                .OrderBy(t => t.RunningDate).ThenBy(t => t.TestCode)
+                                .Select(t => new ScheduledTestItem
+                                {
+                                    Id = t.Id,
+                                    TestCode = t.TestCode,
+                                    TestName = t.TestName,
+                                    Status = t.Status,
+                                    ScheduleTag = t.ScheduleTag,
+                                    RunningDate = t.RunningDate,
+                                    AssignedRMT = t.AssignedRMT,
+                                }).ToList();
 
-                    if (!due.Any()) continue;
+                            return new ScheduledSpecimenItem
+                            {
+                                HeaderId = h.Id,
+                                SpecimenNo = h.SpecimenNo,
+                                SectionCode = h.SectionCode,
+                                SampleTypeCode = h.SampleTypeCode,
+                                SampleTypeName = bs?.SampleTypeName ?? h.SampleTypeCode,
+                                PatientName = bs?.PatientName,
+                                PatientID = bs?.PID,
+                                Remarks = h.Remarks,
+                                ReceivedBy = h.ReceivedBy,
+                                Received = h.Received,
+                                Tests = tests
+                            };
+                        })
+                        .Where(item => item.Tests.Any())
+                        .ToList();
+
+                    var onSite = onSiteHeaders
+                        .Where(h => h.SectionCode == section.Code)
+                        .Select(h =>
+                        {
+                            var tests = onSiteDueTests
+                                .Where(t => t.HeaderId == h.Id)
+                                .OrderBy(t => t.RunningDate).ThenBy(t => t.TestCode)
+                                .Select(t => new ScheduledTestItem
+                                {
+                                    Id = t.Id,
+                                    TestCode = t.TestCode,
+                                    TestName = t.TestName,
+                                    Status = t.Status,
+                                    ScheduleTag = t.ScheduleTag,
+                                    RunningDate = t.RunningDate,
+                                    AssignedRMT = t.AssignedRMT,
+                                }).ToList();
+
+                            return new ScheduledSpecimenItem
+                            {
+                                HeaderId = h.Id,
+                                SpecimenNo = h.SpecimenNo,
+                                SectionCode = h.SectionCode,
+                                SampleTypeCode = h.SampleTypeCode,
+                                SampleTypeName = null,
+                                PatientName = h.PatientName,
+                                PatientID = h.PID,
+                                Remarks = h.Remarks,
+                                ReceivedBy = h.ReceivedBy,
+                                Received = h.Received,
+                                IsOnSite = true,
+                                Tests = tests
+                            };
+                        })
+                        .Where(item => item.Tests.Any())
+                        .ToList();
+
+                    var combined = standard.Concat(onSite)
+                        .OrderBy(s => s.Tests.Min(t => t.RunningDate ?? DateOnly.MaxValue))
+                        .ToList();
+
+                    if (!combined.Any()) continue;
 
                     result.Add(new SectionScheduledGroup
                     {
                         SectionCode = section.Code,
                         SectionName = section.Name,
-                        Specimens = due,
+                        Specimens = combined,
                     });
                 }
 
@@ -1586,24 +1918,101 @@ namespace Service.Services
             try
             {
                 using var context = _factory.CreateContext(_branch);
+                using var unit = new UnitOfWork(context);
+
+                var today = DateTime.Today;
+                var tomorrow = today.AddDays(1);
 
                 var sections = context.Section_Master
                     .Where(s => s.Category == "3" && s.Active)
                     .OrderBy(s => s.Name)
                     .ToList();
+                var sectionCodes = sections.Select(s => s.Code).ToHashSet();
+
+                var headers = context.Specimen_Section_Header
+                    .Where(h => sectionCodes.Contains(h.SectionCode)
+                             && h.Status == "C"
+                             && h.Updated >= today && h.Updated < tomorrow)
+                    .ToList();
+
+                var specimenNos = headers.Select(h => h.SpecimenNo).ToHashSet();
+                var batchSpecimenMap = context.Batch_Specimen
+                    .Where(b => specimenNos.Contains(b.SpecimenNo))
+                    .ToList()
+                    .GroupBy(b => b.SpecimenNo)
+                    .ToDictionary(g => g.Key, g => g.OrderByDescending(b => b.Id).First());
+
+                var onSiteHeaders = context.OnSite_Section_Header
+                    .Where(h => sectionCodes.Contains(h.SectionCode)
+                             && h.Status == "C"
+                             && h.Updated >= today && h.Updated < tomorrow)
+                    .ToList();
+
+                var sampleTypes = unit.SampleTypes.GetActive();
 
                 var result = new List<SectionPendingGroup>();
 
                 foreach (var section in sections)
                 {
-                    var completed = GetCompletedToday(section.Code);
-                    if (!completed.Any()) continue;
+                    var standard = headers
+                        .Where(h => h.SectionCode == section.Code)
+                        .OrderByDescending(h => h.Updated)
+                        .Select(h =>
+                        {
+                            batchSpecimenMap.TryGetValue(h.SpecimenNo, out var bs);
+                            return new PendingSpecimenItem
+                            {
+                                Id = h.Id,
+                                SpecimenNo = h.SpecimenNo,
+                                SectionCode = h.SectionCode,
+                                TestGroupCode = h.TestGroupCode,
+                                SampleTypeCode = h.SampleTypeCode,
+                                SampleTypeName = bs?.SampleTypeName ?? h.SampleTypeCode,
+                                Status = h.Status,
+                                RoutedBy = h.RoutedBy,
+                                Routed = h.Routed,
+                                ReceivedBy = h.ReceivedBy,
+                                Received = h.Received,
+                                Remarks = h.Remarks,
+                                PatientName = bs?.PatientName,
+                                PatientID = bs?.PID,
+                                IsOnSite = false,
+                            };
+                        })
+                        .ToList();
+
+                    var onSite = onSiteHeaders
+                        .Where(h => h.SectionCode == section.Code)
+                        .OrderByDescending(h => h.Updated)
+                        .Select(h => new PendingSpecimenItem
+                        {
+                            Id = h.Id,
+                            SpecimenNo = h.SpecimenNo,
+                            SectionCode = h.SectionCode,
+                            TestGroupCode = h.TestGroupCode,
+                            SampleTypeCode = h.SampleTypeCode,
+                            SampleTypeName = sampleTypes.FirstOrDefault(s => s.Code == h.SampleTypeCode)?.Name ?? h.SampleTypeCode,
+                            Status = h.Status,
+                            ReceivedBy = h.ReceivedBy,
+                            Received = h.Received,
+                            Remarks = h.Remarks,
+                            PatientName = h.PatientName,
+                            PatientID = h.PID,
+                            IsOnSite = true,
+                        })
+                        .ToList();
+
+                    var combined = standard.Concat(onSite)
+                        .OrderByDescending(s => s.Received)
+                        .ToList();
+
+                    if (!combined.Any()) continue;
 
                     result.Add(new SectionPendingGroup
                     {
                         SectionCode = section.Code,
                         SectionName = section.Name,
-                        Specimens = completed,
+                        Specimens = combined,
                     });
                 }
 
@@ -1631,7 +2040,6 @@ namespace Service.Services
 
             var specimenNos = headers.Select(h => h.SpecimenNo).ToList();
             var batchSpecimens = context.Batch_Specimen
-                .ToList()
                 .Where(b => specimenNos.Contains(b.SpecimenNo))
                 .GroupBy(b => b.SpecimenNo)
                 .ToDictionary(g => g.Key, g => g.OrderByDescending(b => b.Id).First());
@@ -1871,23 +2279,131 @@ namespace Service.Services
             {
                 using var context = _factory.CreateContext(_branch);
 
+                var today = DateOnly.FromDateTime(DateTime.Today);
+
                 var sections = context.Section_Master
                     .Where(s => s.Category == "3" && s.Active)
                     .OrderBy(s => s.Name)
                     .ToList();
+                var sectionCodes = sections.Select(s => s.Code).ToHashSet();
+
+                var futureTests = context.Specimen_Section_Test
+                    .Where(t => t.Status == "S" && t.RunningDate.HasValue && t.RunningDate.Value > today)
+                    .ToList();
+                var futureHeaderIds = futureTests.Select(t => t.HeaderId).Distinct().ToList();
+
+                var headers = context.Specimen_Section_Header
+                    .Where(h => futureHeaderIds.Contains(h.Id) && sectionCodes.Contains(h.SectionCode))
+                    .ToList();
+                var headerById = headers.ToDictionary(h => h.Id);
+                futureTests = futureTests.Where(t => headerById.ContainsKey(t.HeaderId)).ToList();
+
+                var specimenNos = headers.Select(h => h.SpecimenNo).ToHashSet();
+                var batchSpecimenMap = context.Batch_Specimen
+                    .Where(b => specimenNos.Contains(b.SpecimenNo))
+                    .ToList()
+                    .GroupBy(b => b.SpecimenNo)
+                    .ToDictionary(g => g.Key, g => g.OrderBy(b => b.Status == "X" ? 1 : 0).First());
+
+                var onSiteFutureTests = context.OnSite_Section_Test
+                    .Where(t => t.Status == "S" && t.RunningDate.HasValue && t.RunningDate.Value > today)
+                    .ToList();
+                var onSiteFutureHeaderIds = onSiteFutureTests.Select(t => t.HeaderId).Distinct().ToList();
+                var onSiteHeaders = context.OnSite_Section_Header
+                    .Where(h => onSiteFutureHeaderIds.Contains(h.Id) && sectionCodes.Contains(h.SectionCode) && h.Status == "S")
+                    .ToList();
+                var onSiteHeaderById = onSiteHeaders.ToDictionary(h => h.Id);
+                onSiteFutureTests = onSiteFutureTests.Where(t => onSiteHeaderById.ContainsKey(t.HeaderId)).ToList();
 
                 var result = new List<SectionScheduledGroup>();
 
                 foreach (var section in sections)
                 {
-                    var specimens = GetScheduledSpecimens(section.Code);
-                    if (!specimens.Any()) continue;
+                    var standard = headers
+                        .Where(h => h.SectionCode == section.Code)
+                        .Select(h =>
+                        {
+                            batchSpecimenMap.TryGetValue(h.SpecimenNo, out var bs);
+                            var tests = futureTests
+                                .Where(t => t.HeaderId == h.Id)
+                                .OrderBy(t => t.RunningDate).ThenBy(t => t.TestCode)
+                                .Select(t => new ScheduledTestItem
+                                {
+                                    Id = t.Id,
+                                    TestCode = t.TestCode,
+                                    TestName = t.TestName,
+                                    Status = t.Status,
+                                    ScheduleTag = t.ScheduleTag,
+                                    RunningDate = t.RunningDate,
+                                    AssignedRMT = t.AssignedRMT,
+                                }).ToList();
+
+                            return new ScheduledSpecimenItem
+                            {
+                                HeaderId = h.Id,
+                                SpecimenNo = h.SpecimenNo,
+                                SectionCode = h.SectionCode,
+                                SampleTypeCode = h.SampleTypeCode,
+                                SampleTypeName = bs?.SampleTypeName ?? h.SampleTypeCode,
+                                PatientName = bs?.PatientName,
+                                PatientID = bs?.PID,
+                                Remarks = h.Remarks,
+                                ReceivedBy = h.ReceivedBy,
+                                Received = h.Received,
+                                Tests = tests
+                            };
+                        })
+                        .Where(item => item.Tests.Any())
+                        .ToList();
+
+                    var onSite = onSiteHeaders
+                        .Where(h => h.SectionCode == section.Code)
+                        .Select(h =>
+                        {
+                            var tests = onSiteFutureTests
+                                .Where(t => t.HeaderId == h.Id)
+                                .OrderBy(t => t.RunningDate).ThenBy(t => t.TestCode)
+                                .Select(t => new ScheduledTestItem
+                                {
+                                    Id = t.Id,
+                                    TestCode = t.TestCode,
+                                    TestName = t.TestName,
+                                    Status = t.Status,
+                                    ScheduleTag = t.ScheduleTag,
+                                    RunningDate = t.RunningDate,
+                                    AssignedRMT = t.AssignedRMT,
+                                }).ToList();
+
+                            return new ScheduledSpecimenItem
+                            {
+                                HeaderId = h.Id,
+                                SpecimenNo = h.SpecimenNo,
+                                SectionCode = h.SectionCode,
+                                SampleTypeCode = h.SampleTypeCode,
+                                SampleTypeName = null,
+                                PatientName = h.PatientName,
+                                PatientID = h.PID,
+                                Remarks = h.Remarks,
+                                ReceivedBy = h.ReceivedBy,
+                                Received = h.Received,
+                                IsOnSite = true,
+                                Tests = tests
+                            };
+                        })
+                        .Where(item => item.Tests.Any())
+                        .ToList();
+
+                    var combined = standard.Concat(onSite)
+                        .OrderBy(s => s.Tests.Min(t => t.RunningDate ?? DateOnly.MaxValue))
+                        .ToList();
+
+                    if (!combined.Any()) continue;
 
                     result.Add(new SectionScheduledGroup
                     {
                         SectionCode = section.Code,
                         SectionName = section.Name,
-                        Specimens = specimens,
+                        Specimens = combined,
                     });
                 }
 
@@ -1933,15 +2449,12 @@ namespace Service.Services
                 var specimenNos = headers.Select(h => h.SpecimenNo).ToList();
 
                 var tests = context.Specimen_Section_Test
-                    .ToList()
                     .Where(t => headerIds.Contains(t.HeaderId))
                     .ToList();
 
-                var allSpecimens = context.Batch_Specimen
-                    .Where(s => s.TrxDate >= from.Date.AddMonths(-3))
-                    .ToList();
-                var specimens = allSpecimens
+                var specimens = context.Batch_Specimen
                     .Where(s => specimenNos.Contains(s.SpecimenNo))
+                    .ToList()
                     .GroupBy(b => b.SpecimenNo)
                     .ToDictionary(g => g.Key, g => g.OrderByDescending(b => b.Id).First());
 
@@ -1989,7 +2502,6 @@ namespace Service.Services
                 var onSiteHeaderIds = onSiteHeaders.Select(h => h.Id).ToList();
 
                 var onSiteTests = context.OnSite_Section_Test
-                    .ToList()
                     .Where(t => onSiteHeaderIds.Contains(t.HeaderId))
                     .ToList();
 
@@ -2035,24 +2547,130 @@ namespace Service.Services
             try
             {
                 using var context = _factory.CreateContext(_branch);
+                using var unit = new UnitOfWork(context);
+
+                var fromDate = from.Date;
+                var toInclusive = to.Date.AddDays(1);
 
                 var sections = context.Section_Master
                     .Where(s => s.Category == "3" && s.Active)
                     .OrderBy(s => s.Name)
                     .ToList();
+                var sectionCodes = sections.Select(s => s.Code).ToHashSet();
+
+                var headers = context.Specimen_Section_Header
+                    .Where(h => sectionCodes.Contains(h.SectionCode)
+                             && h.Status == "C"
+                             && h.Updated >= fromDate && h.Updated < toInclusive)
+                    .ToList();
+                var headerIds = headers.Select(h => h.Id).ToList();
+
+                var tests = context.Specimen_Section_Test
+                    .Where(t => headerIds.Contains(t.HeaderId))
+                    .ToList();
+
+                var specimenNos = headers.Select(h => h.SpecimenNo).ToHashSet();
+                var batchSpecimenMap = context.Batch_Specimen
+                    .Where(b => specimenNos.Contains(b.SpecimenNo))
+                    .ToList()
+                    .GroupBy(b => b.SpecimenNo)
+                    .ToDictionary(g => g.Key, g => g.OrderByDescending(b => b.Id).First());
+
+                var onSiteHeaders = context.OnSite_Section_Header
+                    .Where(h => sectionCodes.Contains(h.SectionCode)
+                             && h.Status == "C"
+                             && h.Updated >= fromDate && h.Updated < toInclusive)
+                    .ToList();
+                var onSiteHeaderIds = onSiteHeaders.Select(h => h.Id).ToList();
+                var onSiteTests = context.OnSite_Section_Test
+                    .Where(t => onSiteHeaderIds.Contains(t.HeaderId))
+                    .ToList();
+
+                var sampleTypes = unit.SampleTypes.GetActive();
 
                 var result = new List<SectionCompletedGroup>();
 
                 foreach (var section in sections)
                 {
-                    var specimens = GetCompletedSpecimens(section.Code, from, to);
-                    if (!specimens.Any()) continue;
+                    var standard = headers
+                        .Where(h => h.SectionCode == section.Code)
+                        .OrderByDescending(h => h.Updated)
+                        .Select(h =>
+                        {
+                            batchSpecimenMap.TryGetValue(h.SpecimenNo, out var bs);
+                            return new CompletedSpecimenItem
+                            {
+                                HeaderId = h.Id,
+                                SpecimenNo = h.SpecimenNo,
+                                PID = bs?.PID ?? string.Empty,
+                                PatientName = bs?.PatientName ?? string.Empty,
+                                SampleTypeCode = h.SampleTypeCode,
+                                SampleTypeName = bs?.SampleTypeName ?? h.SampleTypeCode,
+                                Received = h.Received,
+                                ReceivedBy = h.ReceivedBy,
+                                Completed = h.Updated,
+                                CompletedBy = h.UpdatedBy,
+                                IsOnSite = false,
+                                Tests = tests
+                                    .Where(t => t.HeaderId == h.Id)
+                                    .Select(t => new CompletedTestItem
+                                    {
+                                        Id = t.Id,
+                                        TestCode = t.TestCode,
+                                        TestName = t.TestName,
+                                        AssignedRMT = t.AssignedRMT,
+                                        RunAt = t.RunAt,
+                                        Assigned = t.Assigned,
+                                        ReleasedBy = t.ReleasedBy,
+                                        ReleasedOn = t.ReleasedOn,
+                                    }).ToList()
+                            };
+                        })
+                        .ToList();
+
+                    var onSite = onSiteHeaders
+                        .Where(h => h.SectionCode == section.Code)
+                        .OrderByDescending(h => h.Updated)
+                        .Select(h => new CompletedSpecimenItem
+                        {
+                            HeaderId = h.Id,
+                            SpecimenNo = h.SpecimenNo,
+                            PID = h.PID ?? string.Empty,
+                            PatientName = h.PatientName ?? string.Empty,
+                            SampleTypeCode = h.SampleTypeCode,
+                            SampleTypeName = sampleTypes.FirstOrDefault(s => s.Code == h.SampleTypeCode)?.Name ?? h.SampleTypeCode,
+                            Received = h.Received,
+                            ReceivedBy = h.ReceivedBy,
+                            Completed = h.Updated,
+                            CompletedBy = h.UpdatedBy,
+                            IsOnSite = true,
+                            Tests = onSiteTests
+                                .Where(t => t.HeaderId == h.Id)
+                                .Select(t => new CompletedTestItem
+                                {
+                                    Id = t.Id,
+                                    TestCode = t.TestCode,
+                                    TestName = t.TestName,
+                                    AssignedRMT = t.AssignedRMT,
+                                    RunAt = t.RunAt,
+                                    Assigned = t.Assigned,
+                                    ReleasedBy = t.ReleasedBy,
+                                    ReleasedOn = t.ReleasedOn,
+                                }).ToList()
+                        })
+                        .ToList();
+
+                    var combined = standard.Concat(onSite)
+                        .OrderByDescending(s => s.Completed)
+                        .ToList();
+
+                    if (!combined.Any()) continue;
 
                     result.Add(new SectionCompletedGroup
                     {
                         SectionCode = section.Code,
                         SectionName = section.Name,
-                        Specimens = specimens,
+                        Specimens = combined,
                     });
                 }
 

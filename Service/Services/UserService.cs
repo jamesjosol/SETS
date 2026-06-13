@@ -106,7 +106,6 @@ namespace Service.Services
                 var sectionCodes = userSections.Select(us => us.SectionCode).ToList();
 
                 var sections = context.Section_Master
-                    .ToList()
                     .Where(s => sectionCodes.Contains(s.Code))
                     .ToDictionary(s => s.Code);
 

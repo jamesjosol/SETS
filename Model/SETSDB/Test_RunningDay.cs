@@ -33,5 +33,24 @@ namespace Model.SETSDB
                 .Split(';', StringSplitOptions.RemoveEmptyEntries)
                 .Select(d => d.Trim())
                 .ToList();
+
+        public DateOnly? GetNearestRunningDate(DateOnly from)
+        {
+            var days = GetDayList()
+                .Select(d => Enum.TryParse<DayOfWeek>(d?.Trim(), true, out var dow) ? (DayOfWeek?)dow : null)
+                .Where(d => d.HasValue)
+                .Select(d => d!.Value)
+                .ToHashSet();
+
+            if (days.Count == 0) return null;
+
+            for (int i = 0; i <= 7; i++)
+            {
+                var candidate = from.AddDays(i);
+                if (days.Contains(candidate.DayOfWeek))
+                    return candidate;
+            }
+            return null;
+        }
     }
 }

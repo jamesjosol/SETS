@@ -200,6 +200,44 @@ namespace SETSDeployer.Views
         private void CancelSql_Click(object sender, RoutedEventArgs e)
             => _vm.CancelSql();
 
+
+        // ── SQL Runner (DML) ──────────────────────────────────────────────────
+
+        private void ClearDml_Click(object sender, RoutedEventArgs e)
+            => _vm.DmlQuery = string.Empty;
+
+        private void DmlSelectAll_Click(object sender, RoutedEventArgs e)
+            => _vm.Branches.ToList().ForEach(b => b.IsDmlChecked = true);
+
+        private void DmlClearAll_Click(object sender, RoutedEventArgs e)
+            => _vm.Branches.ToList().ForEach(b => b.IsDmlChecked = false);
+
+        private void DmlBranchRow_Click(object sender, RoutedEventArgs e)
+        {
+            if ((sender as FrameworkElement)?.DataContext is BranchViewModel b)
+                b.IsDmlChecked = !b.IsDmlChecked;
+        }
+
+        private async void RunDml_Click(object sender, RoutedEventArgs e)
+        {
+            var targets = _vm.Branches.Where(b => b.IsDmlChecked).ToList();
+            if (!targets.Any()) { AppendLog("No branches selected.", LogLevel.Warning); return; }
+
+            var names = string.Join(", ", targets.Select(b => b.Name));
+            var confirm = System.Windows.MessageBox.Show(
+                $"Execute DML on: {names}?\n\nThis will modify data and cannot be undone.",
+                "Confirm DML Execution",
+                System.Windows.MessageBoxButton.YesNo,
+                System.Windows.MessageBoxImage.Warning);
+
+            if (confirm != System.Windows.MessageBoxResult.Yes) return;
+
+            await _vm.RunDmlAsync(targets);
+        }
+
+        private void CancelDml_Click(object sender, RoutedEventArgs e)
+            => _vm.CancelDml();
+
         private void BrowseSolution_Click(object sender, RoutedEventArgs e)
         {
             using var dlg = new System.Windows.Forms.FolderBrowserDialog

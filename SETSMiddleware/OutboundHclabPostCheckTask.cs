@@ -174,7 +174,6 @@ namespace SETSMiddleware.Tasks
 
                     // Materialize then filter in memory — avoid EF Core CTE issue
                     var toUpdate = localCtx.Batch_Specimen
-                        .ToList()
                         .Where(s => confirmedSpecimenIds.Contains(s.Id))
                         .ToList();
 
